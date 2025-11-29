@@ -47,8 +47,8 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const email = process.argv[2] || 'admin@nexus.os';
-const password = process.argv[3] || 'nexus-admin-123';
+const email = process.argv[2] || 'admin@evolv.os';
+const password = process.argv[3] || 'evolv-admin-123';
 
 console.log(`Attempting to create user: ${email}`);
 console.log(`Using Service Role: ${isServiceRole}`);

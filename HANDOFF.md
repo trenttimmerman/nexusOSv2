@@ -1,4 +1,4 @@
-# Nexus Commerce OS - Developer Handoff
+# Evolv Commerce OS - Developer Handoff
 
 **Date:** Current
 **Status:** 🟢 STABLE MILESTONE (Routing & Identity)
@@ -49,7 +49,7 @@ Since sign-ups are disabled/hidden, use the provided script to create your first
 ```bash
 node scripts/create-admin.js "your@email.com" "your-password"
 ```
-*Default credentials if run without args:* `admin@nexus.os` / `nexus-admin-123`
+*Default credentials if run without args:* `admin@evolv.os` / `evolv-admin-123`
 
 ### Running the App
 ```bash
