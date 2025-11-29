@@ -1,59 +1,65 @@
 # Nexus Commerce OS - Developer Handoff
 
-**Date:** November 24, 2024
-**Status:** 🟢 STABLE MILESTONE (Unified Page Builder)
-**Tech Stack:** React, Tailwind CSS, TypeScript
+**Date:** Current
+**Status:** 🟢 STABLE MILESTONE (Routing & Identity)
+**Tech Stack:** React, Tailwind CSS, TypeScript, Supabase, React Router
 
 ## 🚀 Milestone Overview
-We have successfully consolidated the design workflow into a **Linear, Unified Page Builder**. The complex "Engine" accordions have been replaced by a single **Page Layout** list that treats Headers, Heroes, Product Grids, and Footers as manageable blocks.
+We have transformed the single-page prototype into a multi-route application with secure authentication. The application now supports deep linking, protected admin routes, and a centralized data context.
 
 ## ✅ Current Architecture
 
-### 1. The Layout Hub (Admin Panel)
-*   **Left-Sidebar Navigation:** Fixed main menu (`w-64`) on the left.
-*   **Resizable Tool Column:** The Design Studio column is resizable and sits immediately to the right of the nav.
-*   **Unified Page Layout:**
-    *   **Header:** Locked at the top. Editing opens the **Header Studio**.
-    *   **Page Sections:** A reorderable list of blocks (Heroes, Grids, Text). Editing opens the context-aware modal (System or Architect).
-    *   **Footer:** Locked at the bottom. Editing opens the **Footer Studio**.
-*   **Add Section Workflow:** A slide-out library allows adding System Blocks (Hero/Grid) or Content Blocks with a **Live Preview** before confirming.
+### 1. Routing & Navigation (`react-router-dom`)
+*   **`/` (Storefront):** Public-facing shop.
+*   **`/login`:** Admin authentication portal.
+*   **`/admin`:** Protected dashboard. Requires Supabase session.
+*   **`ProtectedRoute`:** A wrapper component that checks for a valid session and redirects to `/login` if unauthorized.
 
-### 2. The Preview Engine
-*   **Real-Time Resizing:** When a tool panel (Add Section, Architect, etc.) slides out, the Live Canvas automatically adds padding (`pl-96`) to keep the storefront visible and centered.
-*   **Device Toggles:** Switch between Desktop and Mobile views instantly.
-*   **Preview Mode:** New sections show a "Preview" badge on the storefront before they are committed to the state.
+### 2. State Management (`DataContext`)
+*   **Centralized Logic:** All data fetching (Products, Pages, Config) and Supabase interactions are moved from `App.tsx` to `context/DataContext.tsx`.
+*   **Global Access:** Components can access data via the `useData()` hook.
+*   **Persistence:** Data is fetched from Supabase on mount.
 
-### 3. Component Engines (The "Brains")
-*   **Header Engine:** 21 Styles (Canvas, Pilot, Nebula, etc.) with Sort/Filter.
-*   **System Blocks:**
-    *   **Hero Engine:** 5 Styles (Impact, Kinetik, Split, etc.).
-    *   **Product Grid Engine:** 6 Styles (Classic, Hype, Glass, etc.).
-    *   **Footer Engine:** 5 Styles (Minimal, Sitemap, Brand, etc.).
-*   **Block Architect:** A visual builder for custom HTML content (Images, Text, Layouts) with AI simulation.
+### 3. Authentication (Supabase Auth)
+*   **Login Flow:** Users sign in with Email/Password.
+*   **Session Handling:** `DataContext` listens for auth state changes.
+*   **Security:** Admin routes are guarded. RLS policies (on Supabase) should ensure data security.
 
-### 4. Data Structure
-*   **Global Footer:** The footer is no longer a "Block" in the page array; it is rendered globally at the bottom of `Storefront.tsx`.
-*   **System Blocks:** Heroes and Grids are stored as `PageBlock` items with `type: 'system-hero'` or `'system-grid'`, allowing them to be placed anywhere on a page.
+### 4. Admin Panel Updates
+*   **Logout:** Added a "Sign Out" button to the sidebar.
+*   **Structure:** The Admin Panel is now a route (`/admin`) rather than a conditional render.
 
 ---
 
 ## 📂 Key Files
 
-*   **`components/AdminPanel.tsx`:** The core logic. Contains the state for `activePage`, `selectedBlock`, and the rendering logic for all slide-out modals.
-*   **`components/Storefront.tsx`:** The renderer. Iterates through `activePage.blocks` and switches between `HERO_COMPONENTS`, `PRODUCT_CARD_COMPONENTS`, or raw HTML based on the block type.
-*   **`App.tsx`:** Holds the "Database" (State). Contains the initial block configuration for Home, About, and Journal pages.
+*   **`App.tsx`:** The application entry point. Defines the Router and Routes.
+*   **`context/DataContext.tsx`:** The brain of the app. Handles state, fetching, and auth.
+*   **`components/Login.tsx`:** The authentication UI.
+*   **`components/ProtectedRoute.tsx`:** Security guard for admin routes.
+*   **`components/AdminPanel.tsx`:** The dashboard UI (now accepts `onLogout`).
+*   **`scripts/create-admin.js`:** Utility script to create the first admin user.
+
+---
+
+## 🛠️ Setup & Usage
+
+### Creating an Admin User
+Since sign-ups are disabled/hidden, use the provided script to create your first admin user:
+```bash
+node scripts/create-admin.js "your@email.com" "your-password"
+```
+*Default credentials if run without args:* `admin@nexus.os` / `nexus-admin-123`
+
+### Running the App
+```bash
+npm run dev
+```
+Visit `http://localhost:5173/admin` to log in.
 
 ---
 
 ## 🚧 Known Issues / To-Do
-1.  **Persistence:** State resets on refresh. Needs LocalStorage or Backend connection.
-2.  **Image Upload:** The Logo Upload and Magic Product Upload are simulated (Base64/Timeout).
-3.  **Undo/Redo:** Currently, deletions are permanent.
-4.  **Drag & Drop:** We use Up/Down arrows for block reordering. True Drag & Drop (dnd-kit) is the next UX upgrade.
-
----
-
-## 🗺️ Roadmap: Next Phase
-1.  **Content Library Expansion:** Add "Testimonials", "FAQ", and "Logo Cloud" to the *Add Section* library.
-2.  **Theme Presets:** Allow saving the entire configuration (Header + Hero + Colors + Fonts) as a "Theme".
-3.  **Backend Connection:** Wire up Supabase for real data persistence.
+1.  **Deep Linking:** The Storefront currently defaults to the 'home' page. We need to implement dynamic routing (e.g., `/pages/:slug` and `/products/:id`) in `StorefrontWrapper`.
+2.  **RLS Policies:** Ensure Supabase Row Level Security policies are strict (only authenticated users can write).
+3.  **Image Uploads:** Still rely on base64/simulated uploads in some places. Need to fully integrate Supabase Storage.

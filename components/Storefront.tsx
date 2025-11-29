@@ -11,9 +11,9 @@ import { Plus } from 'lucide-react';
 export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages, activePageId, onNavigate, previewBlock, activeBlockId, onUpdateBlock }) => {
   const [cart, setCart] = useState<Product[]>([]);
 
-  const HeaderComponent = HEADER_COMPONENTS[config.headerStyle];
+  const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
   // Hero, Card, Footer components are now determined dynamically in renderBlock to allow for variants
-  const FooterComponent = FOOTER_COMPONENTS[config.footerStyle];
+  const FooterComponent = FOOTER_COMPONENTS[config.footerStyle] || FOOTER_COMPONENTS['columns'];
 
   const addToCart = (product: Product) => {
     setCart([...cart, product]);
@@ -23,16 +23,24 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
   const isSidebar = config.headerStyle === 'studio';
 
   // Map Pages to NavLinks
-  const navLinks = pages.map(p => ({
-    label: p.title,
-    href: '#',
-    active: p.id === activePageId,
-  }));
+  const navLinks = pages.map(p => {
+    let href = '/';
+    if (p.type !== 'home') {
+      const cleanSlug = p.slug.startsWith('/') ? p.slug.substring(1) : p.slug;
+      href = `/pages/${cleanSlug}`;
+    }
+    
+    return {
+      label: p.title,
+      href,
+      active: p.id === activePageId,
+    };
+  });
 
   // Render System Product Grid
   const renderProductGrid = (variant?: string, data?: any) => {
-    const styleId = (variant as ProductCardStyleId) || config.productCardStyle;
-    const CardComponent = PRODUCT_CARD_COMPONENTS[styleId] || PRODUCT_CARD_COMPONENTS[config.productCardStyle];
+    const styleId = (variant as ProductCardStyleId) || config.productCardStyle || 'classic';
+    const CardComponent = PRODUCT_CARD_COMPONENTS[styleId] || PRODUCT_CARD_COMPONENTS['classic'];
     const heading = data?.heading || "Latest Drops.";
     const subheading = data?.subheading || "Curated essentials for the modern digital nomad.";
 
@@ -66,8 +74,8 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
 
     switch (block.type) {
       case 'system-hero':
-        const heroStyle = (block.variant as HeroStyleId) || config.heroStyle;
-        const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS[config.heroStyle];
+        const heroStyle = (block.variant as HeroStyleId) || config.heroStyle || 'impact';
+        const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
         return HeroComponent ? (
           <HeroComponent
             key={block.id}

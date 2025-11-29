@@ -16,13 +16,15 @@ export const SCROLL_OPTIONS = [
 // --- COMPONENTS ---
 
 const LogoMarquee: React.FC<ScrollSectionProps> = ({ data }) => {
-    const logos = data?.logos || [
+    const rawLogos = data?.logos || [
         'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/2560px-Google_2015_logo.svg.png',
         'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/IBM_logo.svg/2560px-IBM_logo.svg.png',
         'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/2560px-Amazon_logo.svg.png',
         'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/2560px-Netflix_2015_logo.svg.png',
         'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1667px-Apple_logo_black.svg.png'
     ];
+    
+    const logos = rawLogos.filter((l: string) => l && l.trim() !== '');
 
     return (
         <div className="py-12 bg-white border-y border-neutral-100 overflow-hidden">

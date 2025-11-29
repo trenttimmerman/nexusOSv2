@@ -7,6 +7,8 @@ import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS } from './ProductCardLibr
 import { FOOTER_OPTIONS } from './FooterLibrary';
 import { SCROLL_OPTIONS } from './ScrollLibrary';
 import { Storefront } from './Storefront';
+import { MediaLibrary } from './MediaLibrary';
+import { CampaignManager } from './CampaignManager';
 
 const SCROLLBAR_OPTIONS = [
   { id: 'native', name: 'Native', description: 'Default browser scrollbar' },
@@ -95,7 +97,8 @@ import {
   Check,
   Pencil,
   AlertTriangle,
-  Repeat
+  Repeat,
+  FolderOpen
 } from 'lucide-react';
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -110,7 +113,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onAddPage,
   onUpdatePage,
   onSetActivePage,
-  onDeletePage
+  onDeletePage,
+  mediaAssets,
+  onAddAsset,
+  onDeleteAsset,
+  campaigns,
+  onAddCampaign,
+  onUpdateCampaign,
+  onDeleteCampaign,
+  onLogout
 }) => {
 
   // Product Editor State
@@ -464,13 +475,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.DASHBOARD, icon: LayoutDashboard, label: 'Command Center' },
           { id: AdminTab.PRODUCTS, icon: Package, label: 'Products' },
           { id: AdminTab.PAGES, icon: FileText, label: 'Pages' },
+          { id: AdminTab.MEDIA, icon: FolderOpen, label: 'Media Library' },
           { id: AdminTab.DESIGN, icon: Palette, label: 'Design Studio' },
           { id: AdminTab.CAMPAIGNS, icon: Megaphone, label: 'Agent Campaigns' },
           { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' },
         ].map((item) => (
           <button
             key={item.id}
-            onClick={() => onTabChange(item.id)}
+            onClick={() => {
+              onTabChange(item.id);
+              setIsHeaderModalOpen(false);
+              setIsSystemModalOpen(false);
+              setIsInterfaceModalOpen(false);
+              setIsAddSectionOpen(false);
+              setIsArchitectOpen(false);
+              setIsProductEditorOpen(false);
+            }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === item.id
               ? 'bg-blue-600/10 text-blue-500 border border-blue-600/20'
               : 'hover:bg-white/5 hover:text-white'
@@ -481,6 +501,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </button>
         ))}
       </nav>
+      <div className="p-4 border-t border-nexus-gray">
+        <button
+          onClick={onLogout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-500/10 transition-all"
+        >
+          <div className="w-4 h-4"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></div>
+          <span className="font-medium text-sm">Sign Out</span>
+        </button>
+      </div>
     </div>
   );
 
@@ -810,7 +839,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               {selectedCategory === 'hero' && (
                 <div className="grid grid-cols-1 gap-2">
                   {HERO_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => handlePreviewBlock('system-hero', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-purple-600/20 border-purple-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-hero', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-purple-600/20 border-purple-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
                       <div className="font-bold text-sm">{opt.name}</div>
                       <div className="text-[10px] opacity-60">{opt.description}</div>
                     </button>
@@ -821,7 +850,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               {selectedCategory === 'grid' && (
                 <div className="grid grid-cols-1 gap-2">
                   {PRODUCT_CARD_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => handlePreviewBlock('system-grid', `Grid: ${opt.name}`, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-green-600/20 border-green-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <button key={opt.id} onClick={() => addBlock('', `Grid: ${opt.name}`, 'system-grid', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-green-600/20 border-green-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
                       <div className="font-bold text-sm">{opt.name}</div>
                       <div className="text-[10px] opacity-60">{opt.description}</div>
                     </button>
@@ -832,7 +861,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               {selectedCategory === 'scroll' && (
                 <div className="grid grid-cols-1 gap-2">
                   {SCROLL_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => handlePreviewBlock('system-scroll', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-orange-600/20 border-orange-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-scroll', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-orange-600/20 border-orange-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
                       <div className="font-bold text-sm">{opt.name}</div>
                       <div className="text-[10px] opacity-60">{opt.description}</div>
                     </button>
@@ -841,17 +870,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               )}
             </div>
           )}
-        </div>
-
-        {/* Footer Actions */}
-        <div className="p-6 border-t border-neutral-800 bg-neutral-900/50 backdrop-blur z-20">
-          <button
-            disabled={!previewBlock}
-            onClick={() => previewBlock && addBlock(previewBlock.content, previewBlock.name, previewBlock.type, previewBlock.variant)}
-            className="w-full py-3 bg-white text-black rounded-lg font-bold hover:bg-neutral-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            <Check size={16} /> Confirm Selection
-          </button>
         </div>
       </div>
     );
@@ -873,7 +891,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="p-4 space-y-3">
 
                   {/* Pages & Navigation (Kept as requested) */}
-                  <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+                  <div className="bg-neutral-900 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-xl overflow-hidden">
                     <button onClick={() => setDesignSections(prev => ({ ...prev, pages: !prev.pages }))} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
                       <div className="flex items-center gap-3"><div className="p-1.5 bg-neutral-800 rounded text-neutral-400"><FileText size={16} /></div><span className="font-bold text-sm text-white">Pages</span></div><ChevronDown size={16} className={`text-neutral-500 transition-transform ${designSections.pages ? 'rotate-180' : ''}`} />
                     </button>
@@ -903,7 +921,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
 
                   {/* GLOBAL INTERFACE */}
-                  <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden mb-3">
+                  <div className="bg-neutral-900 border border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.3)] rounded-xl overflow-hidden mb-3">
                     <button onClick={() => setIsInterfaceModalOpen(true)} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
                       <div className="flex items-center gap-3"><div className="p-1.5 bg-neutral-800 rounded text-neutral-400"><Monitor size={16} /></div><span className="font-bold text-sm text-white">Interface</span></div>
                       <div className="text-[10px] text-neutral-500 uppercase font-bold">{config.scrollbarStyle}</div>
@@ -911,7 +929,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
 
                   {/* UNIFIED PAGE LAYOUT (The Hub) */}
-                  <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+                  <div className="bg-neutral-900 border border-orange-500/50 shadow-[0_0_20px_rgba(249,115,22,0.3)] rounded-xl overflow-hidden">
                     <button onClick={() => setDesignSections(prev => ({ ...prev, pageSections: !prev.pageSections }))} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
                       <div className="flex items-center gap-3"><div className="p-1.5 bg-neutral-800 rounded text-neutral-400"><Layers size={16} /></div><span className="font-bold text-sm text-white">Layout</span></div><ChevronDown size={16} className={`text-neutral-500 transition-transform ${designSections.pageSections ? 'rotate-180' : ''}`} />
                     </button>
@@ -1158,49 +1176,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         );
 
+      case AdminTab.MEDIA:
+        return (
+          <MediaLibrary
+            assets={mediaAssets}
+            onAddAsset={onAddAsset}
+            onDeleteAsset={onDeleteAsset}
+          />
+        );
+
       case AdminTab.CAMPAIGNS:
         return (
-          <div className="p-8 w-full max-w-5xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
-              <div><h2 className="text-3xl font-black text-white tracking-tight">Agent Campaigns</h2><p className="text-neutral-500">AI-driven marketing automation</p></div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-6">
-                <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-                  <h3 className="font-bold text-white mb-4 flex items-center gap-2"><Zap className="text-yellow-500" /> Campaign Trigger</h3>
-                  <div className="space-y-3">
-                    <label className="block p-4 rounded-xl bg-black border border-neutral-800 cursor-pointer hover:border-blue-500 transition-all">
-                      <div className="font-bold text-white text-sm mb-1">Flash Sale Announcement</div>
-                      <div className="text-xs text-neutral-500">Notify VIPs about 24h exclusive access</div>
-                    </label>
-                    <label className="block p-4 rounded-xl bg-black border border-neutral-800 cursor-pointer hover:border-blue-500 transition-all">
-                      <div className="font-bold text-white text-sm mb-1">Cart Abandonment Recovery</div>
-                      <div className="text-xs text-neutral-500">Target users with items in cart &gt; 24h</div>
-                    </label>
-                  </div>
-                  <button onClick={generateCampaign} disabled={isGeneratingEmail} className="w-full py-3 bg-white text-black font-bold rounded-xl mt-6 hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2">
-                    {isGeneratingEmail ? <Loader2 className="animate-spin" /> : <><Sparkles size={16} /> Generate Campaign</>}
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 flex flex-col h-[500px]">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-white flex items-center gap-2"><Mail className="text-blue-500" /> Preview</h3>
-                  <div className="flex gap-2">
-                    <button className="p-2 hover:bg-neutral-800 rounded text-neutral-400 hover:text-white"><RefreshCw size={14} /></button>
-                    <button className="p-2 hover:bg-neutral-800 rounded text-neutral-400 hover:text-white"><Edit3 size={14} /></button>
-                  </div>
-                </div>
-                <div className="flex-1 bg-black rounded-xl border border-neutral-800 p-6 font-mono text-sm text-neutral-300 whitespace-pre-wrap overflow-y-auto">
-                  {generatedEmail || <span className="text-neutral-700 italic">Select a trigger to generate campaign content...</span>}
-                </div>
-                <div className="pt-4 mt-4 border-t border-neutral-800 flex justify-end">
-                  <button disabled={!generatedEmail} className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"><Send size={16} /> Launch Campaign</button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <CampaignManager
+            campaigns={campaigns}
+            onAddCampaign={onAddCampaign}
+            onUpdateCampaign={onUpdateCampaign}
+            onDeleteCampaign={onDeleteCampaign}
+          />
         );
 
       case AdminTab.SETTINGS:

@@ -13,11 +13,13 @@ interface ProductCardProps {
 export const ProductCardClassic: React.FC<ProductCardProps> = ({ product, onAddToCart }) => (
   <div className="group">
     <div className="relative aspect-[3/4] bg-neutral-100 overflow-hidden rounded-xl mb-4">
-      <img 
-        src={product.image} 
-        alt={product.name} 
-        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-      />
+      {product.image && (
+        <img 
+          src={product.image} 
+          alt={product.name} 
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+        />
+      )}
       <div className="absolute inset-x-4 bottom-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
         <button 
           onClick={() => onAddToCart(product)}
@@ -44,11 +46,13 @@ export const ProductCardIndustrial: React.FC<ProductCardProps> = ({ product, onA
       ID: {product.id}
     </div>
     <div className="aspect-square bg-neutral-100 overflow-hidden mb-3 border border-neutral-100 relative">
-      <img 
-        src={product.image} 
-        alt={product.name} 
-        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
-      />
+      {product.image && (
+        <img 
+          src={product.image} 
+          alt={product.name} 
+          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+        />
+      )}
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
     </div>
     <div className="font-mono">
@@ -73,11 +77,13 @@ export const ProductCardIndustrial: React.FC<ProductCardProps> = ({ product, onA
 // 3. Focus (Image First, Reveal on Hover)
 export const ProductCardFocus: React.FC<ProductCardProps> = ({ product, onAddToCart }) => (
   <div className="group relative aspect-[3/4] overflow-hidden cursor-pointer">
-    <img 
-      src={product.image} 
-      alt={product.name} 
-      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-    />
+    {product.image && (
+      <img 
+        src={product.image} 
+        alt={product.name} 
+        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+      />
+    )}
     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300"></div>
     
     <div className="absolute inset-0 p-8 flex flex-col justify-end text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-4 group-hover:translate-y-0">
@@ -109,7 +115,7 @@ export const ProductCardHype: React.FC<ProductCardProps> = ({ product, onAddToCa
     </div>
     
     <div className="aspect-[4/5] bg-neutral-100 border-2 border-black rounded-xl overflow-hidden mb-3 relative shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] group-hover:translate-x-1 group-hover:translate-y-1 group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
-       <img src={product.image} className="w-full h-full object-cover" />
+       {product.image && <img src={product.image} className="w-full h-full object-cover" />}
        <button 
          onClick={() => onAddToCart(product)}
          className="absolute bottom-4 right-4 bg-black text-white w-12 h-12 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
@@ -129,10 +135,12 @@ export const ProductCardHype: React.FC<ProductCardProps> = ({ product, onAddToCa
 export const ProductCardMagazine: React.FC<ProductCardProps> = ({ product, onAddToCart }) => (
   <div className="group cursor-pointer">
     <div className="mb-4 overflow-hidden">
-       <img 
-         src={product.image} 
-         className="w-full aspect-[3/4] object-cover hover:opacity-90 transition-opacity" 
-       />
+       {product.image && (
+         <img 
+           src={product.image} 
+           className="w-full aspect-[3/4] object-cover hover:opacity-90 transition-opacity" 
+         />
+       )}
     </div>
     <div className="text-center">
        <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-400 mb-2 block">
@@ -157,10 +165,12 @@ export const ProductCardMagazine: React.FC<ProductCardProps> = ({ product, onAdd
 // 6. Glass (Modern, Blur, Overlay)
 export const ProductCardGlass: React.FC<ProductCardProps> = ({ product, onAddToCart }) => (
   <div className="relative aspect-[3/4] rounded-2xl overflow-hidden group">
-    <img 
-      src={product.image} 
-      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-    />
+    {product.image && (
+      <img 
+        src={product.image} 
+        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+      />
+    )}
     
     <div className="absolute inset-x-2 bottom-2 p-3 bg-white/70 backdrop-blur-md border border-white/50 rounded-xl flex items-center justify-between transition-transform duration-300 translate-y-[calc(100%+8px)] group-hover:translate-y-0 shadow-lg">
        <div className="flex flex-col">

@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { ShoppingBag, Menu, Search, X, User, Globe, Command, ChevronDown, ArrowRight, Hexagon, Grid, Disc, Activity } from 'lucide-react';
 import { NavLink } from '../types';
 
@@ -27,9 +28,9 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-bold tracking-tight" />
         <nav className="hidden md:flex gap-6">
           {links.map(l => (
-            <a key={l.label} href={l.href} className="text-sm font-medium text-gray-500 hover:text-black transition-colors">
+            <Link key={l.label} to={l.href} className="text-sm font-medium text-gray-500 hover:text-black transition-colors">
               {l.label}
-            </a>
+            </Link>
           ))}
         </nav>
       </div>
@@ -244,9 +245,9 @@ export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
     
     <nav className="flex flex-col gap-6 flex-1">
        {links.map(l => (
-         <a key={l.label} href={l.href} className="text-lg font-medium text-neutral-500 hover:text-black hover:pl-2 transition-all duration-300">
+         <Link key={l.label} to={l.href} className="text-lg font-medium text-neutral-500 hover:text-black hover:pl-2 transition-all duration-300">
            {l.label}
-         </a>
+         </Link>
        ))}
     </nav>
 
@@ -654,9 +655,9 @@ export const HeaderPilot: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
                     {/* Middle section: Navigation Links */}
                     <nav className="hidden md:flex space-x-8">
                         {links.map(l => (
-                             <a key={l.label} href={l.href} className="text-gray-600 hover:text-indigo-600 transition-colors font-medium text-sm">
+                             <Link key={l.label} to={l.href} className="text-gray-600 hover:text-indigo-600 transition-colors font-medium text-sm">
                                 {l.label}
-                             </a>
+                             </Link>
                         ))}
                     </nav>
 

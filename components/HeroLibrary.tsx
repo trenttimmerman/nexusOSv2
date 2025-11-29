@@ -105,7 +105,13 @@ const EditableImage: React.FC<{
 
   return (
     <div className={`relative group ${className}`}>
-      <img src={src} className="w-full h-full object-cover" alt={alt} />
+      {src ? (
+        <img src={src} className="w-full h-full object-cover" alt={alt} />
+      ) : (
+        <div className="w-full h-full bg-neutral-200 flex items-center justify-center text-neutral-400">
+          <ImageIcon size={24} />
+        </div>
+      )}
       {isEditable && (
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
            <label className="pointer-events-auto cursor-pointer bg-white text-black px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-neutral-200 transition-colors">

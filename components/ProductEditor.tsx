@@ -281,7 +281,7 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                         <div className="grid grid-cols-2 gap-4">
                                             {formData.images.map((img, idx) => (
                                                 <div key={img.id} className="relative aspect-square bg-black rounded-xl overflow-hidden border border-neutral-800 group">
-                                                    <img src={img.url} className="w-full h-full object-cover" />
+                                                    {img.url && <img src={img.url} className="w-full h-full object-cover" />}
                                                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                         <button onClick={() => setPrimaryImage(img.id)} className={`p-2 rounded-lg ${img.isPrimary ? 'bg-blue-600 text-white' : 'bg-white text-black hover:bg-neutral-200'}`} title="Set Primary">
                                                             <Sparkles size={16} />
@@ -418,6 +418,20 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                             {activeTab === 'design' && (
                                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                     <h3 className="font-bold text-white border-b border-neutral-800 pb-2">Product Page Design</h3>
+
+                                    {/* Customization Toggle */}
+                                    <div className="flex items-center justify-between p-4 bg-black rounded-xl border border-neutral-800">
+                                        <div>
+                                            <div className="font-bold text-white flex items-center gap-2">
+                                                <Sparkles size={16} className="text-purple-500" />
+                                                Product Customizer
+                                            </div>
+                                            <div className="text-xs text-neutral-500">Allow customers to personalize this product</div>
+                                        </div>
+                                        <button onClick={() => handleInputChange('allowCustomization', !formData.allowCustomization)} className={`w-12 h-6 rounded-full transition-colors relative ${formData.allowCustomization ? 'bg-purple-600' : 'bg-neutral-700'}`}>
+                                            <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${formData.allowCustomization ? 'translate-x-6' : ''}`}></div>
+                                        </button>
+                                    </div>
 
                                     <div className="grid grid-cols-1 gap-4">
                                         {PRODUCT_PAGE_OPTIONS.map(option => (

@@ -8,6 +8,7 @@ export enum AdminTab {
   DASHBOARD = 'DASHBOARD',
   PRODUCTS = 'PRODUCTS',
   PAGES = 'PAGES',
+  MEDIA = 'MEDIA',
   DESIGN = 'DESIGN',
   CAMPAIGNS = 'CAMPAIGNS',
   SETTINGS = 'SETTINGS'
@@ -156,6 +157,10 @@ export interface Product {
   // Status
   status: 'active' | 'draft' | 'archived';
   template?: ProductPageStyleId;
+  
+  // Customization
+  allowCustomization?: boolean;
+  
   createdAt: string;
   updatedAt: string;
 }
@@ -201,6 +206,32 @@ export interface Page {
   type: 'home' | 'custom';
 }
 
+export interface MediaAsset {
+  id: string;
+  url: string;
+  name: string;
+  type: 'image' | 'model' | 'video';
+  size?: number;
+  createdAt: string;
+}
+
+export interface Campaign {
+  id: string;
+  name: string;
+  type: 'email' | 'sms' | 'social';
+  status: 'draft' | 'scheduled' | 'sent';
+  subject?: string;
+  content: string;
+  audience: string; // e.g., "All Users", "VIPs", "Cart Abandoners"
+  scheduledFor?: string;
+  sentAt?: string;
+  stats?: {
+    sent: number;
+    opened: number;
+    clicked: number;
+  };
+}
+
 export interface AdminPanelProps {
   activeTab: AdminTab;
   onTabChange: (tab: AdminTab) => void;
@@ -214,6 +245,14 @@ export interface AdminPanelProps {
   onUpdatePage: (pageId: string, updates: Partial<Page>) => void;
   onSetActivePage: (pageId: string) => void;
   onDeletePage: (pageId: string) => void;
+  mediaAssets: MediaAsset[];
+  onAddAsset: (asset: MediaAsset) => void;
+  onDeleteAsset: (assetId: string) => void;
+  campaigns: Campaign[];
+  onAddCampaign: (campaign: Campaign) => void;
+  onUpdateCampaign: (id: string, updates: Partial<Campaign>) => void;
+  onDeleteCampaign: (id: string) => void;
+  onLogout: () => void;
 }
 
 export interface StorefrontProps {

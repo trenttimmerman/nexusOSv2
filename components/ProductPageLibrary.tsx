@@ -1,10 +1,11 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Product } from '../types';
-import { ShoppingBag, Star, ChevronRight, Share2, Heart, ShieldCheck, Truck, RefreshCw, ArrowRight } from 'lucide-react';
+import { ShoppingBag, Star, ChevronRight, Share2, Heart, ShieldCheck, Truck, RefreshCw, ArrowRight, Sparkles } from 'lucide-react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ProductCustomizer } from './ProductCustomizer';
 
 interface ProductPageProps {
     product: Product;
@@ -12,13 +13,17 @@ interface ProductPageProps {
 }
 
 // 1. Standard (Classic E-commerce)
-export const ProductPageStandard: React.FC<ProductPageProps> = ({ product }) => (
+export const ProductPageStandard: React.FC<ProductPageProps> = ({ product }) => {
+    const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
+    const mainImage = product.image || product.images[0]?.url;
+
+    return (
     <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Gallery */}
             <div className="space-y-4">
                 <div className="aspect-[3/4] bg-neutral-100 rounded-2xl overflow-hidden">
-                    <img src={product.image || product.images[0]?.url} className="w-full h-full object-cover" alt={product.name} />
+                    {mainImage && <img src={mainImage} className="w-full h-full object-cover" alt={product.name} />}
                 </div>
                 {product.images.length > 1 && (
                     <div className="grid grid-cols-4 gap-4">
@@ -54,6 +59,16 @@ export const ProductPageStandard: React.FC<ProductPageProps> = ({ product }) => 
                     <button className="flex-1 bg-black text-white h-14 rounded-full font-bold text-lg hover:bg-neutral-800 transition-all flex items-center justify-center gap-3">
                         <ShoppingBag size={20} /> Add to Cart
                     </button>
+                    
+                    {product.allowCustomization && (
+                        <button 
+                            onClick={() => setIsCustomizerOpen(true)}
+                            className="flex-1 bg-blue-600 text-white h-14 rounded-full font-bold text-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20"
+                        >
+                            <Sparkles size={20} /> Customize Now
+                        </button>
+                    )}
+
                     <button className="w-14 h-14 border border-neutral-200 rounded-full flex items-center justify-center hover:border-black transition-colors">
                         <Heart size={20} />
                     </button>
@@ -75,14 +90,28 @@ export const ProductPageStandard: React.FC<ProductPageProps> = ({ product }) => 
                 </div>
             </div>
         </div>
+
+        {isCustomizerOpen && (
+            <ProductCustomizer 
+                product={product} 
+                onClose={() => setIsCustomizerOpen(false)} 
+                onAddToCart={(data) => {
+                    console.log('Added custom product:', data);
+                    setIsCustomizerOpen(false);
+                }} 
+            />
+        )}
     </div>
-);
+    );
+};
 
 // 2. Split (Modern, Full Height)
-export const ProductPageSplit: React.FC<ProductPageProps> = ({ product }) => (
+export const ProductPageSplit: React.FC<ProductPageProps> = ({ product }) => {
+    const mainImage = product.image || product.images[0]?.url;
+    return (
     <div className="flex flex-col lg:flex-row min-h-screen">
         <div className="lg:w-1/2 bg-neutral-100 relative">
-            <img src={product.image || product.images[0]?.url} className="w-full h-full object-cover absolute inset-0" alt={product.name} />
+            {mainImage && <img src={mainImage} className="w-full h-full object-cover absolute inset-0" alt={product.name} />}
         </div>
         <div className="lg:w-1/2 p-12 lg:p-24 flex flex-col justify-center bg-white">
             <span className="text-sm font-bold tracking-widest uppercase text-neutral-400 mb-4">{product.category}</span>
@@ -98,17 +127,20 @@ export const ProductPageSplit: React.FC<ProductPageProps> = ({ product }) => (
             <p className="text-center text-xs text-neutral-400 uppercase tracking-widest">Free shipping worldwide on all orders</p>
         </div>
     </div>
-);
+    );
+};
 
 // 3. Minimal (Centered, Clean)
-export const ProductPageMinimal: React.FC<ProductPageProps> = ({ product }) => (
+export const ProductPageMinimal: React.FC<ProductPageProps> = ({ product }) => {
+    const mainImage = product.image || product.images[0]?.url;
+    return (
     <div className="max-w-4xl mx-auto px-6 py-24 text-center">
         <span className="text-xs font-bold tracking-[0.2em] uppercase text-neutral-400 mb-6 block">{product.category}</span>
         <h1 className="text-5xl font-serif italic mb-4">{product.name}</h1>
         <p className="text-xl text-neutral-600 mb-12">${(product.price / 100).toFixed(2)}</p>
 
         <div className="aspect-[4/3] bg-neutral-100 mb-12 overflow-hidden">
-            <img src={product.image || product.images[0]?.url} className="w-full h-full object-cover" alt={product.name} />
+            {mainImage && <img src={mainImage} className="w-full h-full object-cover" alt={product.name} />}
         </div>
 
         <div className="max-w-xl mx-auto prose prose-neutral mb-12" dangerouslySetInnerHTML={{ __html: product.description }} />
@@ -117,13 +149,17 @@ export const ProductPageMinimal: React.FC<ProductPageProps> = ({ product }) => (
             Add to Bag
         </button>
     </div>
-);
+    );
+};
 
 // 4. Gallery (Grid, Visual Heavy)
-export const ProductPageGallery: React.FC<ProductPageProps> = ({ product }) => (
+export const ProductPageGallery: React.FC<ProductPageProps> = ({ product }) => {
+    const imagesToDisplay = (product.images.length > 0 ? product.images : (product.image ? [{ id: '1', url: product.image }] : [])).slice(0, 4);
+
+    return (
     <div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-1 p-1">
-            {(product.images.length > 0 ? product.images : [{ id: '1', url: product.image }]).slice(0, 4).map((img, i) => (
+            {imagesToDisplay.map((img, i) => (
                 <div key={i} className="aspect-[4/5] bg-neutral-100 relative group overflow-hidden">
                     <img src={img.url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
                 </div>
@@ -140,13 +176,16 @@ export const ProductPageGallery: React.FC<ProductPageProps> = ({ product }) => (
             </button>
         </div>
     </div>
-);
+    );
+};
 
 // 5. Immersive (Dark Mode, Premium)
-export const ProductPageImmersive: React.FC<ProductPageProps> = ({ product }) => (
+export const ProductPageImmersive: React.FC<ProductPageProps> = ({ product }) => {
+    const mainImage = product.image || product.images[0]?.url;
+    return (
     <div className="min-h-screen bg-neutral-900 text-white flex items-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-40">
-            <img src={product.image || product.images[0]?.url} className="w-full h-full object-cover blur-sm scale-110" alt="" />
+            {mainImage && <img src={mainImage} className="w-full h-full object-cover blur-sm scale-110" alt="" />}
             <div className="absolute inset-0 bg-gradient-to-r from-neutral-900 via-neutral-900/80 to-transparent"></div>
         </div>
 
@@ -172,12 +211,13 @@ export const ProductPageImmersive: React.FC<ProductPageProps> = ({ product }) =>
 
             <div className="hidden lg:block">
                 <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border border-white/10 transform rotate-3 hover:rotate-0 transition-transform duration-500">
-                    <img src={product.image || product.images[0]?.url} className="w-full h-full object-cover" alt={product.name} />
+                    {mainImage && <img src={mainImage} className="w-full h-full object-cover" alt={product.name} />}
                 </div>
             </div>
         </div>
     </div>
-);
+    );
+};
 
 // 6. Liquid Reveal (WebGL, Interactive)
 export const ProductPageLiquidReveal: React.FC<ProductPageProps> = ({ product }) => {
@@ -292,8 +332,20 @@ export const ProductPageLiquidReveal: React.FC<ProductPageProps> = ({ product })
         };
         window.addEventListener('resize', handleResize);
 
+        // Touch support for mobile
+        const handleTouchMove = (e: TouchEvent) => {
+            const rect = currentMount.getBoundingClientRect();
+            const touch = e.touches[0];
+            targetMousePos.current = {
+                x: (touch.clientX - rect.left) / rect.width,
+                y: 1.0 - ((touch.clientY - rect.top) / rect.height)
+            };
+        };
+        currentMount.addEventListener('touchmove', handleTouchMove, { passive: false });
+
         return () => {
             currentMount.removeEventListener('mousemove', handleMouseMove);
+            currentMount.removeEventListener('touchmove', handleTouchMove);
             window.removeEventListener('resize', handleResize);
             if (currentMount && currentMount.contains(renderer.domElement)) {
                 currentMount.removeChild(renderer.domElement);
@@ -307,22 +359,22 @@ export const ProductPageLiquidReveal: React.FC<ProductPageProps> = ({ product })
     }, [product.image, product.images]);
 
     return (
-        <div className="relative w-full h-[800px] bg-neutral-900 overflow-hidden group">
-            <div ref={mountRef} className="absolute inset-0 w-full h-full cursor-none" />
+        <div className="relative w-full h-[60vh] md:h-[800px] bg-neutral-900 overflow-hidden group">
+            <div ref={mountRef} className="absolute inset-0 w-full h-full cursor-none touch-none" />
 
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-center p-8 z-10 mix-blend-difference text-white">
-                <span className="text-sm font-mono tracking-widest uppercase mb-4 opacity-80">{product.category || 'Collection'}</span>
-                <h1 className="text-6xl md:text-9xl font-black uppercase tracking-tighter leading-none mb-6">{product.name}</h1>
-                <p className="text-2xl font-light opacity-80 mb-8">${(product.price / 100).toFixed(2)}</p>
+                <span className="text-xs md:text-sm font-mono tracking-widest uppercase mb-2 md:mb-4 opacity-80">{product.category || 'Collection'}</span>
+                <h1 className="text-4xl md:text-6xl lg:text-9xl font-black uppercase tracking-tighter leading-none mb-4 md:mb-6">{product.name}</h1>
+                <p className="text-xl md:text-2xl font-light opacity-80 mb-6 md:mb-8">${(product.price / 100).toFixed(2)}</p>
                 <div className="flex gap-4 pointer-events-auto">
-                    <button className="px-8 py-3 bg-white text-black font-bold uppercase tracking-wider hover:bg-neutral-200 transition-colors">
+                    <button className="px-6 py-2 md:px-8 md:py-3 bg-white text-black text-sm md:text-base font-bold uppercase tracking-wider hover:bg-neutral-200 transition-colors">
                         Add to Cart
                     </button>
                 </div>
             </div>
 
-            <div className="absolute bottom-8 left-8 text-white/50 text-xs font-mono pointer-events-none">
-                MOVE CURSOR TO REVEAL // WEBGL ENABLED
+            <div className="absolute bottom-8 left-8 text-white/50 text-[10px] md:text-xs font-mono pointer-events-none">
+                MOVE CURSOR / TOUCH TO REVEAL
             </div>
         </div>
     );
@@ -420,23 +472,23 @@ export const ProductPageScroll3D: React.FC<ProductPageProps> = ({ product }) => 
 
     return (
         <div className="bg-gray-100">
-            <div ref={mountRef} className="h-screen w-full relative">
+            <div ref={mountRef} className="h-[60vh] md:h-screen w-full relative">
                 <div ref={annotationsRef} className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-center items-center text-center text-gray-800">
-                    <div className="annotation annotation-1 opacity-0 max-w-sm p-4 mt-48">
-                        <h2 className="text-3xl font-bold">{product.name}</h2>
-                        <p>{product.description ? product.description.slice(0, 100) + '...' : 'Product details'}</p>
+                    <div className="annotation annotation-1 opacity-0 max-w-[200px] md:max-w-sm p-4 mt-24 md:mt-48 bg-white/80 backdrop-blur-sm rounded-xl md:bg-transparent md:backdrop-blur-none">
+                        <h2 className="text-xl md:text-3xl font-bold">{product.name}</h2>
+                        <p className="text-sm md:text-base">{product.description ? product.description.slice(0, 100) + '...' : 'Product details'}</p>
                     </div>
-                    <div className="annotation annotation-2 opacity-0 max-w-sm p-4 mb-48">
-                        <h3 className="text-xl font-semibold">Premium Materials</h3>
-                        <p className="text-sm">Crafted with the finest attention to detail.</p>
+                    <div className="annotation annotation-2 opacity-0 max-w-[200px] md:max-w-sm p-4 mb-24 md:mb-48 bg-white/80 backdrop-blur-sm rounded-xl md:bg-transparent md:backdrop-blur-none">
+                        <h3 className="text-lg md:text-xl font-semibold">Premium Materials</h3>
+                        <p className="text-xs md:text-sm">Crafted with the finest attention to detail.</p>
                     </div>
                 </div>
             </div>
-            <div className="h-screen bg-gray-100 flex items-center justify-center">
+            <div className="min-h-[50vh] md:h-screen bg-gray-100 flex items-center justify-center py-12 md:py-0">
                 <div className="text-center p-8">
-                    <h2 className="text-5xl font-bold">History Forged in Combat</h2>
-                    <p className="mt-4 text-lg text-gray-600">Analyze the details of this battle-worn relic.</p>
-                    <button className="mt-8 px-8 py-3 bg-black text-white font-bold rounded-full">Add to Cart - ${(product.price / 100).toFixed(2)}</button>
+                    <h2 className="text-3xl md:text-5xl font-bold">History Forged in Combat</h2>
+                    <p className="mt-4 text-base md:text-lg text-gray-600">Analyze the details of this battle-worn relic.</p>
+                    <button className="mt-8 px-8 py-3 bg-black text-white font-bold rounded-full w-full md:w-auto">Add to Cart - ${(product.price / 100).toFixed(2)}</button>
                 </div>
             </div>
         </div>
@@ -477,24 +529,24 @@ export const ProductPageDrawing: React.FC<ProductPageProps> = ({ product }) => {
 
     return (
         <div className="bg-white">
-            <div ref={sectionRef} className="h-screen w-full flex items-center justify-center overflow-hidden">
+            <div ref={sectionRef} className="h-[60vh] md:h-screen w-full flex items-center justify-center overflow-hidden">
                 <div className="relative w-full max-w-4xl p-8">
                     <svg viewBox="0 0 800 600" className="w-full h-auto">
                         <path ref={svgPathRef} d="M150,200 h500 a50,50 0 0 1 50,50 v200 a50,50 0 0 1 -50,50 h-500 a50,50 0 0 1 -50,-50 v-200 a50,50 0 0 1 50,-50 z M400,150 a50,50 0 0 1 0,100 M400,150 h-100 a50,50 0 0 0 -50,50 h200 a50,50 0 0 0 -50,-50 z M400,350 a100,100 0 1 0 0,-200 a100,100 0 1 0 0,200 z M400,320 a70,70 0 1 0 0,-140 a70,70 0 1 0 0,140 z" stroke="black" strokeWidth="2" fill="none" />
                     </svg>
-                    <div className="product-info absolute inset-0 flex flex-col justify-center items-center text-center opacity-0 transform translate-y-10">
-                        <h1 className="text-5xl font-bold">{product.name}</h1>
-                        <p className="mt-2 text-lg text-gray-600">{product.category}</p>
-                        <button className="mt-6 px-6 py-2 bg-black text-white font-semibold rounded-full">
+                    <div className="product-info absolute inset-0 flex flex-col justify-center items-center text-center opacity-0 transform translate-y-10 p-4">
+                        <h1 className="text-3xl md:text-5xl font-bold">{product.name}</h1>
+                        <p className="mt-2 text-base md:text-lg text-gray-600">{product.category}</p>
+                        <button className="mt-6 px-6 py-2 bg-black text-white font-semibold rounded-full text-sm md:text-base">
                             Add to Cart - ${(product.price / 100).toFixed(2)}
                         </button>
                     </div>
                 </div>
             </div>
-            <div className="h-screen bg-white flex items-center justify-center">
+            <div className="min-h-[50vh] md:h-screen bg-white flex items-center justify-center py-12 md:py-0">
                 <div className="text-center p-8">
-                    <h2 className="text-5xl font-bold">The Art of Creation</h2>
-                    <p className="mt-4 text-lg text-gray-600 max-w-lg">Every line tells a story. Every detail matters.</p>
+                    <h2 className="text-3xl md:text-5xl font-bold">The Art of Creation</h2>
+                    <p className="mt-4 text-base md:text-lg text-gray-600 max-w-lg mx-auto">Every line tells a story. Every detail matters.</p>
                 </div>
             </div>
         </div>
@@ -518,51 +570,51 @@ export const ProductPageBuilder: React.FC<ProductPageProps> = ({ product }) => {
 
     return (
         <div className="bg-gray-100 min-h-screen grid grid-cols-1 lg:grid-cols-3 font-mono">
-            <div className="lg:col-span-2 flex items-center justify-center p-8 relative bg-gray-200">
-                <div className="w-[300px] h-[800px] relative">
+            <div className="lg:col-span-2 flex items-center justify-center p-8 relative bg-gray-200 min-h-[50vh] lg:min-h-screen overflow-hidden">
+                <div className="w-[200px] h-[533px] md:w-[300px] md:h-[800px] relative transform scale-75 md:scale-100 origin-center">
                     {/* Skateboard Deck */}
-                    <div className={`w-full h-full rounded-[150px] transition-colors ${config.deck} shadow-2xl`} />
+                    <div className={`w-full h-full rounded-[100px] md:rounded-[150px] transition-colors ${config.deck} shadow-2xl`} />
                     {/* Trucks */}
-                    <div className={`absolute top-[180px] left-1/2 -translate-x-1/2 w-48 h-6 rounded-sm transition-colors ${config.trucks} shadow-md`} />
-                    <div className={`absolute bottom-[180px] left-1/2 -translate-x-1/2 w-48 h-6 rounded-sm transition-colors ${config.trucks} shadow-md`} />
+                    <div className={`absolute top-[120px] md:top-[180px] left-1/2 -translate-x-1/2 w-32 md:w-48 h-4 md:h-6 rounded-sm transition-colors ${config.trucks} shadow-md`} />
+                    <div className={`absolute bottom-[120px] md:bottom-[180px] left-1/2 -translate-x-1/2 w-32 md:w-48 h-4 md:h-6 rounded-sm transition-colors ${config.trucks} shadow-md`} />
                     {/* Wheels */}
-                    <div className={`absolute top-[175px] left-4 w-12 h-12 rounded-full transition-colors ${config.wheels} shadow-lg`} />
-                    <div className={`absolute top-[175px] right-4 w-12 h-12 rounded-full transition-colors ${config.wheels} shadow-lg`} />
-                    <div className={`absolute bottom-[175px] left-4 w-12 h-12 rounded-full transition-colors ${config.wheels} shadow-lg`} />
-                    <div className={`absolute bottom-[175px] right-4 w-12 h-12 rounded-full transition-colors ${config.wheels} shadow-lg`} />
+                    <div className={`absolute top-[115px] md:top-[175px] left-2 md:left-4 w-8 md:w-12 h-8 md:h-12 rounded-full transition-colors ${config.wheels} shadow-lg`} />
+                    <div className={`absolute top-[115px] md:top-[175px] right-2 md:right-4 w-8 md:w-12 h-8 md:h-12 rounded-full transition-colors ${config.wheels} shadow-lg`} />
+                    <div className={`absolute bottom-[115px] md:bottom-[175px] left-2 md:left-4 w-8 md:w-12 h-8 md:h-12 rounded-full transition-colors ${config.wheels} shadow-lg`} />
+                    <div className={`absolute bottom-[115px] md:bottom-[175px] right-2 md:right-4 w-8 md:w-12 h-8 md:h-12 rounded-full transition-colors ${config.wheels} shadow-lg`} />
                 </div>
             </div>
 
             <div className="bg-white p-8 flex flex-col justify-center">
-                <h1 className="text-3xl font-bold uppercase">{product.name}</h1>
-                <p className="mt-2 text-gray-600">Drag and drop components to create your custom board.</p>
+                <h1 className="text-2xl md:text-3xl font-bold uppercase">{product.name}</h1>
+                <p className="mt-2 text-sm md:text-base text-gray-600">Drag and drop components to create your custom board.</p>
 
                 <div className="mt-8">
-                    <h2 className="font-bold uppercase">Decks</h2>
-                    <div className="flex gap-4 mt-2">
+                    <h2 className="font-bold uppercase text-sm md:text-base">Decks</h2>
+                    <div className="flex gap-4 mt-2 overflow-x-auto pb-2">
                         {parts.decks.map(color => (
-                            <div key={color} className={`w-16 h-24 rounded-lg cursor-pointer ${color} border-2 ${config.deck === color ? 'border-black' : 'border-transparent'}`} onClick={() => setConfig(c => ({ ...c, deck: color }))} />
+                            <div key={color} className={`w-12 h-16 md:w-16 md:h-24 rounded-lg cursor-pointer shrink-0 ${color} border-2 ${config.deck === color ? 'border-black' : 'border-transparent'}`} onClick={() => setConfig(c => ({ ...c, deck: color }))} />
                         ))}
                     </div>
                 </div>
-                <div className="mt-8">
-                    <h2 className="font-bold uppercase">Trucks</h2>
-                    <div className="flex gap-4 mt-2">
+                <div className="mt-6 md:mt-8">
+                    <h2 className="font-bold uppercase text-sm md:text-base">Trucks</h2>
+                    <div className="flex gap-4 mt-2 overflow-x-auto pb-2">
                         {parts.trucks.map(color => (
-                            <div key={color} className={`w-16 h-8 rounded-sm cursor-pointer ${color} border-2 ${config.trucks === color ? 'border-black' : 'border-transparent'}`} onClick={() => setConfig(c => ({ ...c, trucks: color }))} />
+                            <div key={color} className={`w-12 h-6 md:w-16 md:h-8 rounded-sm cursor-pointer shrink-0 ${color} border-2 ${config.trucks === color ? 'border-black' : 'border-transparent'}`} onClick={() => setConfig(c => ({ ...c, trucks: color }))} />
                         ))}
                     </div>
                 </div>
-                <div className="mt-8">
-                    <h2 className="font-bold uppercase">Wheels</h2>
-                    <div className="flex gap-4 mt-2">
+                <div className="mt-6 md:mt-8">
+                    <h2 className="font-bold uppercase text-sm md:text-base">Wheels</h2>
+                    <div className="flex gap-4 mt-2 overflow-x-auto pb-2">
                         {parts.wheels.map(color => (
-                            <div key={color} className={`w-12 h-12 rounded-full cursor-pointer ${color} border-2 ${config.wheels === color ? 'border-black' : 'border-transparent'}`} onClick={() => setConfig(c => ({ ...c, wheels: color }))} />
+                            <div key={color} className={`w-10 h-10 md:w-12 md:h-12 rounded-full cursor-pointer shrink-0 ${color} border-2 ${config.wheels === color ? 'border-black' : 'border-transparent'}`} onClick={() => setConfig(c => ({ ...c, wheels: color }))} />
                         ))}
                     </div>
                 </div>
 
-                <button className="mt-12 w-full p-4 bg-black text-white font-bold text-lg hover:bg-gray-800 uppercase">
+                <button className="mt-8 md:mt-12 w-full p-4 bg-black text-white font-bold text-base md:text-lg hover:bg-gray-800 uppercase sticky bottom-4 shadow-xl">
                     ADD TO CART // ${(product.price / 100).toFixed(2)}
                 </button>
             </div>
