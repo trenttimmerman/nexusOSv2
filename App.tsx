@@ -92,7 +92,8 @@ const LoadingScreen = () => (
 );
 
 export default function App() {
-  const basename = import.meta.env.PROD ? '/NexusOS' : '';
+  // Use the base URL defined in vite.config.ts (handles both local and GH Pages)
+  const basename = import.meta.env.BASE_URL;
 
   return (
     <DataProvider>
