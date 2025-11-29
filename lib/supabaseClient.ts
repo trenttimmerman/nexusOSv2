@@ -5,7 +5,13 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PU
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Missing Supabase environment variables. Please check your .env file or deployment settings.');
+  console.error('CRITICAL: Missing Supabase environment variables.');
+  console.log('Debug Info:', {
+    urlPresent: !!supabaseUrl,
+    keyPresent: !!supabaseAnonKey,
+    envKeys: Object.keys(import.meta.env).filter(k => k.includes('SUPABASE')),
+    mode: import.meta.env.MODE
+  });
 }
 
 export const supabase = createClient(
