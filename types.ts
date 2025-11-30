@@ -11,7 +11,8 @@ export enum AdminTab {
   MEDIA = 'MEDIA',
   DESIGN = 'DESIGN',
   CAMPAIGNS = 'CAMPAIGNS',
-  SETTINGS = 'SETTINGS'
+  SETTINGS = 'SETTINGS',
+  PLATFORM = 'PLATFORM'
 }
 
 export type HeaderStyleId =
@@ -259,6 +260,7 @@ export interface AdminPanelProps {
   onUpdateCampaign: (id: string, updates: Partial<Campaign>) => void;
   onDeleteCampaign: (id: string) => void;
   onLogout: () => void;
+  userRole?: string | null;
 }
 
 export interface StorefrontProps {

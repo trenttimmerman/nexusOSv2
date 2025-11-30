@@ -121,7 +121,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onAddCampaign,
   onUpdateCampaign,
   onDeleteCampaign,
-  onLogout
+  onLogout,
+  userRole
 }) => {
 
   // Product Editor State
@@ -479,6 +480,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.DESIGN, icon: Palette, label: 'Design Studio' },
           { id: AdminTab.CAMPAIGNS, icon: Megaphone, label: 'Agent Campaigns' },
           { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' },
+          ...(userRole === 'superuser' ? [{ id: AdminTab.PLATFORM, icon: Users, label: 'Platform Admin' }] : [])
         ].map((item) => (
           <button
             key={item.id}
@@ -1215,6 +1217,59 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <h3 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4">Contact & Social</h3>
                 <div><label className="text-xs font-bold text-neutral-500 uppercase">Support Email</label><input defaultValue="support@evolv.os" className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1" /></div>
                 <div><label className="text-xs font-bold text-neutral-500 uppercase">Instagram</label><input defaultValue="@evolv_os" className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1" /></div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case AdminTab.PLATFORM:
+        return (
+          <div className="p-8 w-full max-w-7xl mx-auto">
+            <div className="mb-8">
+              <h2 className="text-3xl font-black text-white tracking-tight">Platform Administration</h2>
+              <p className="text-neutral-500">Manage tenants, subscriptions, and global settings</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl">
+                <div className="text-neutral-500 text-sm font-bold uppercase mb-2">Total Tenants</div>
+                <div className="text-4xl font-bold text-white">1</div>
+              </div>
+              <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl">
+                <div className="text-neutral-500 text-sm font-bold uppercase mb-2">Active Subscriptions</div>
+                <div className="text-4xl font-bold text-white">1</div>
+              </div>
+              <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl">
+                <div className="text-neutral-500 text-sm font-bold uppercase mb-2">Monthly Revenue</div>
+                <div className="text-4xl font-bold text-white">$0.00</div>
+              </div>
+            </div>
+
+            <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
+              <div className="p-6 border-b border-neutral-800">
+                <h3 className="font-bold text-white">Tenants</h3>
+              </div>
+              <div className="p-6">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="text-neutral-500 text-xs uppercase">
+                      <th className="pb-4">Store Name</th>
+                      <th className="pb-4">Slug</th>
+                      <th className="pb-4">Status</th>
+                      <th className="pb-4">Created</th>
+                      <th className="pb-4"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-sm">
+                    <tr className="border-b border-neutral-800 last:border-0">
+                      <td className="py-4 font-bold text-white">Demo Store</td>
+                      <td className="py-4 text-neutral-400">demo-store</td>
+                      <td className="py-4"><span className="px-2 py-1 bg-green-900/30 text-green-500 rounded text-xs font-bold">Active</span></td>
+                      <td className="py-4 text-neutral-500">Just now</td>
+                      <td className="py-4 text-right"><button className="text-blue-500 hover:text-white font-bold">Manage</button></td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

@@ -49,7 +49,7 @@ const AdminWrapper = () => {
     storeConfig, products, pages, mediaAssets, campaigns, loading,
     updateConfig, addProduct, addPage, updatePage, deletePage, 
     addAsset, deleteAsset, addCampaign, updateCampaign, deleteCampaign,
-    signOut
+    signOut, userRole
   } = useData();
 
   const [activeTab, setActiveTab] = React.useState<AdminTab>(AdminTab.DASHBOARD);
@@ -79,6 +79,7 @@ const AdminWrapper = () => {
       onUpdateCampaign={updateCampaign}
       onDeleteCampaign={deleteCampaign}
       onLogout={signOut}
+      userRole={userRole}
     />
   );
 };

@@ -111,6 +111,7 @@ interface DataContextType {
   deleteCampaign: (id: string) => Promise<void>;
   updateConfig: (config: StoreConfig) => Promise<void>;
   signOut: () => Promise<void>;
+  userRole: string | null;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -123,6 +124,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [storeConfig, setStoreConfig] = useState<StoreConfig>(DEFAULT_STORE_CONFIG);
   const [loading, setLoading] = useState(true);
   const [storeId, setStoreId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   const fetchAllData = async () => {
     setLoading(true);
@@ -132,8 +134,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // If authenticated, load tenant data
       if (session) {
         // 1. Get Profile & Store ID
-        const { data: profile } = await supabase.from('profiles').select('store_id').eq('id', session.user.id).single();
+        const { data: profile } = await supabase.from('profiles').select('store_id, role').eq('id', session.user.id).single();
         
+        if (profile) {
+          setUserRole(profile.role);
+        }
+
         if (profile?.store_id) {
           setStoreId(profile.store_id);
           const currentStoreId = profile.store_id;
@@ -354,7 +360,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <DataContext.Provider value={{
       products, pages, mediaAssets, campaigns, storeConfig, loading, refreshData: fetchAllData,
-      addProduct, addPage, updatePage, deletePage, addAsset, deleteAsset, addCampaign, updateCampaign, deleteCampaign, updateConfig, signOut
+      addProduct, addPage, updatePage, deletePage, addAsset, deleteAsset, addCampaign, updateCampaign, deleteCampaign, updateConfig, signOut, userRole
     }}>
       {children}
     </DataContext.Provider>
