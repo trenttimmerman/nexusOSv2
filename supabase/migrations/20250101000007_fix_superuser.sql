@@ -2,6 +2,22 @@
 -- This migration will run on deployment and attempt to fix the superuser role for 'trent@3thirty3.ca'
 -- It also ensures a Demo Store exists.
 
+-- 0. Fix store_config id to be auto-incrementing
+-- The initial migration set default id=1, which causes conflicts for multi-tenant setups.
+DO $$
+BEGIN
+    -- Create sequence if not exists
+    CREATE SEQUENCE IF NOT EXISTS store_config_id_seq;
+    
+    -- Sync sequence to max id
+    PERFORM setval('store_config_id_seq', COALESCE((SELECT MAX(id) FROM store_config), 0) + 1, false);
+    
+    -- Set new default
+    ALTER TABLE store_config ALTER COLUMN id SET DEFAULT nextval('store_config_id_seq');
+EXCEPTION WHEN OTHERS THEN
+    RAISE NOTICE 'Schema fix for store_config might have already been applied: %', SQLERRM;
+END $$;
+
 DO $$
 DECLARE
   target_user_id uuid;
@@ -23,7 +39,7 @@ BEGIN
     ON CONFLICT (id) DO UPDATE
     SET role = 'superuser',
         store_id = demo_store_id;
-        
+
     RAISE NOTICE 'User trent@3thirty3.ca promoted to superuser.';
   ELSE
     RAISE NOTICE 'User trent@3thirty3.ca not found. Please sign up first.';

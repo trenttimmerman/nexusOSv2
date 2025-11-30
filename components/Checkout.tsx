@@ -2,20 +2,118 @@ import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, CreditCard, Truck, ShieldCheck, ShoppingBag } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+import { useData } from '../context/DataContext';
 
 export const Checkout: React.FC = () => {
   const { cart: items, cartTotal, clearCart } = useCart();
+  const { storeId } = useData();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<'shipping' | 'payment' | 'confirmation'>('shipping');
+  const [orderId, setOrderId] = useState<string | null>(null);
+
+  const [customerDetails, setCustomerDetails] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    address: '',
+    city: '',
+    postalCode: ''
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setCustomerDetails(prev => ({ ...prev, [name]: value }));
+  };
 
   const handlePlaceOrder = async () => {
+    if (!storeId) {
+      alert('Store configuration error: No Store ID found. Please contact support.');
+      return;
+    }
+
+    if (!customerDetails.email || !customerDetails.firstName || !customerDetails.lastName) {
+        alert('Please fill in all required shipping information.');
+        setStep('shipping');
+        return;
+    }
+
     setIsProcessing(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsProcessing(false);
-    setStep('confirmation');
-    clearCart();
+
+    try {
+      // 1. Create/Get Customer
+      const { data: customer, error: customerError } = await supabase
+        .from('customers')
+        .insert({
+          store_id: storeId,
+          email: customerDetails.email,
+          first_name: customerDetails.firstName,
+          last_name: customerDetails.lastName,
+          phone: '' 
+        })
+        .select()
+        .single();
+
+      if (customerError) throw customerError;
+
+      // 2. Create Order
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          store_id: storeId,
+          customer_id: customer.id,
+          total_amount: cartTotal * 1.08, // Including tax
+          status: 'pending',
+          payment_status: 'paid'
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // 3. Create Order Items
+      const orderItems = items.map(item => ({
+        order_id: order.id,
+        product_id: item.id,
+        quantity: item.quantity,
+        price_at_purchase: item.price
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      // 4. Decrement Stock (Inventory Sync)
+      // Note: In a production environment, this should be done via a database trigger or RPC function
+      // to ensure atomicity and prevent race conditions.
+      // We are using a custom RPC function 'decrement_stock' if available, or falling back to client-side update (insecure but functional for prototype).
+      
+      for (const item of items) {
+        const { error: rpcError } = await supabase.rpc('decrement_stock', { 
+          product_id: item.id, 
+          quantity_to_decrement: item.quantity 
+        });
+
+        if (rpcError) {
+          console.warn(`Failed to decrement stock via RPC for item ${item.id}. Attempting direct update...`, rpcError);
+          // Fallback: Direct update (Only works if RLS allows public updates, which is risky)
+          // We will skip this fallback to avoid security risks, assuming the RPC migration will be applied.
+        }
+      }
+
+      setOrderId(order.id);
+      setStep('confirmation');
+      clearCart();
+
+    } catch (error: any) {
+      console.error('Checkout error:', error);
+      alert('Failed to place order: ' + error.message);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (items.length === 0 && step !== 'confirmation') {
@@ -47,7 +145,7 @@ export const Checkout: React.FC = () => {
           </div>
           <div>
             <h2 className="text-3xl font-bold text-neutral-900 mb-2">Order Confirmed!</h2>
-            <p className="text-neutral-500">Thank you for your purchase. Your order #NX-{Math.floor(Math.random() * 10000)} has been received.</p>
+            <p className="text-neutral-500">Thank you for your purchase. Your order #{orderId ? orderId.slice(0, 8) : 'NX-0000'} has been received.</p>
           </div>
           <div className="border-t border-neutral-100 pt-6 space-y-3">
             <button 
@@ -97,25 +195,29 @@ export const Checkout: React.FC = () => {
               <h2 className="text-lg font-bold">Shipping Information</h2>
             </div>
             <div className="p-6 grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">Email Address</label>
+                <input name="email" value={customerDetails.email} onChange={handleInputChange} type="email" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="jane@example.com" />
+              </div>
               <div className="col-span-2 sm:col-span-1">
                 <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">First Name</label>
-                <input type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="Jane" />
+                <input name="firstName" value={customerDetails.firstName} onChange={handleInputChange} type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="Jane" />
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">Last Name</label>
-                <input type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="Doe" />
+                <input name="lastName" value={customerDetails.lastName} onChange={handleInputChange} type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="Doe" />
               </div>
               <div className="col-span-2">
                 <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">Address</label>
-                <input type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="123 Nexus Blvd" />
+                <input name="address" value={customerDetails.address} onChange={handleInputChange} type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="123 Nexus Blvd" />
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">City</label>
-                <input type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="New York" />
+                <input name="city" value={customerDetails.city} onChange={handleInputChange} type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="New York" />
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">Postal Code</label>
-                <input type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="10001" />
+                <input name="postalCode" value={customerDetails.postalCode} onChange={handleInputChange} type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="10001" />
               </div>
               {step === 'shipping' && (
                 <div className="col-span-2 mt-4">

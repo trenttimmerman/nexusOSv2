@@ -132,6 +132,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      let targetStoreId = overrideStoreId;
       
       // If authenticated, load tenant data
       if (session) {
@@ -149,9 +150,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Determine which store ID to use
         // Priority: 1. Override (switchStore), 2. Current State (if set), 3. Profile Default
-        let targetStoreId = overrideStoreId || storeId || profile?.store_id;
+        targetStoreId = overrideStoreId || storeId || profile?.store_id;
+      }
 
-        if (targetStoreId) {
+      // If no store ID yet (Public Visitor or Guest), try to fetch the first store
+      if (!targetStoreId) {
+        const { data: stores } = await supabase.from('stores').select('id').limit(1);
+        if (stores && stores.length > 0) {
+          targetStoreId = stores[0].id;
+        }
+      }
+
+      if (targetStoreId) {
           setStoreId(targetStoreId);
           const currentStoreId = targetStoreId;
 
@@ -221,17 +231,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
              // Reset config if not found for this store
              setStoreConfig(DEFAULT_STORE_CONFIG);
           }
-        } else {
-           // Logged in but no admin profile (Customer)
-           // Fallback to Mock Data for now
-           setProducts(MOCK_PRODUCTS);
-           setPages(DEFAULT_PAGES);
-           setMediaAssets(DEFAULT_MEDIA_ASSETS);
-           setCampaigns(DEFAULT_CAMPAIGNS);
-           setStoreConfig(DEFAULT_STORE_CONFIG);
-        }
       } else {
-        // Not authenticated - Load Mock Data for Demo Storefront
+        // Fallback to Mock Data if absolutely no store found
         setProducts(MOCK_PRODUCTS);
         setPages(DEFAULT_PAGES);
         setMediaAssets(DEFAULT_MEDIA_ASSETS);
