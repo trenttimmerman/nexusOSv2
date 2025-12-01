@@ -124,9 +124,61 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
     };
 
     const updateVariantOption = (id: string, field: 'name' | 'values', value: any) => {
+        setFormData(prev => {
+            const newOptions = prev.variantOptions.map(opt => opt.id === id ? { ...opt, [field]: value } : opt);
+            
+            // Auto-generate variants if options change
+            // This is a simplified generation strategy that preserves existing variant data if possible
+            if (field === 'values' || field === 'name') {
+                // We only regenerate if we have valid options
+                const validOptions = newOptions.filter(o => o.name && o.values.length > 0);
+                if (validOptions.length > 0) {
+                    const generatedVariants = generateVariantsFromOptions(validOptions, prev.variants);
+                    return { ...prev, variantOptions: newOptions, variants: generatedVariants, hasVariants: true };
+                }
+            }
+            
+            return { ...prev, variantOptions: newOptions };
+        });
+    };
+
+    // Helper to generate combinatorial variants
+    const generateVariantsFromOptions = (options: ProductVariantOption[], existingVariants: ProductVariant[]): ProductVariant[] => {
+        if (options.length === 0) return [];
+
+        const cartesian = (...a: any[][]) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
+        
+        const optionValues = options.map(o => o.values);
+        // If only one option, cartesian needs special handling or just map directly
+        const combinations = options.length === 1 
+            ? optionValues[0].map(v => [v]) 
+            : cartesian(...optionValues);
+
+        return combinations.map((combo: string[]) => {
+            const title = combo.join(' / ');
+            // Try to find existing variant to preserve stock/price
+            const existing = existingVariants.find(v => v.title === title);
+            
+            const variantOptions: { [key: string]: string } = {};
+            options.forEach((opt, idx) => {
+                variantOptions[opt.name] = combo[idx];
+            });
+
+            return existing || {
+                id: Math.random().toString(36).substr(2, 9),
+                title,
+                price: formData.price,
+                stock: 0,
+                sku: `${formData.sku}-${combo.join('-').toUpperCase()}`,
+                options: variantOptions
+            };
+        });
+    };
+
+    const updateVariant = (id: string, field: keyof ProductVariant, value: any) => {
         setFormData(prev => ({
             ...prev,
-            variantOptions: prev.variantOptions.map(opt => opt.id === id ? { ...opt, [field]: value } : opt)
+            variants: prev.variants.map(v => v.id === id ? { ...v, [field]: value } : v)
         }));
     };
 
@@ -356,6 +408,56 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                             </div>
                                         ))}
                                     </div>
+
+                                    {/* Generated Variants Table */}
+                                    {formData.variants.length > 0 && (
+                                        <div className="mt-8 border-t border-neutral-800 pt-6">
+                                            <h4 className="font-bold text-white mb-4">Variant Inventory</h4>
+                                            <div className="bg-black border border-neutral-800 rounded-xl overflow-hidden">
+                                                <table className="w-full text-sm text-left">
+                                                    <thead className="bg-neutral-900 text-neutral-500 font-bold uppercase text-xs">
+                                                        <tr>
+                                                            <th className="p-3">Variant</th>
+                                                            <th className="p-3">Price</th>
+                                                            <th className="p-3">Stock</th>
+                                                            <th className="p-3">SKU</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-neutral-800">
+                                                        {formData.variants.map((variant) => (
+                                                            <tr key={variant.id} className="hover:bg-neutral-900/50">
+                                                                <td className="p-3 font-medium text-white">{variant.title}</td>
+                                                                <td className="p-3">
+                                                                    <input 
+                                                                        type="number" 
+                                                                        value={variant.price}
+                                                                        onChange={(e) => updateVariant(variant.id, 'price', parseFloat(e.target.value))}
+                                                                        className="w-24 bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-white focus:border-blue-500 outline-none"
+                                                                    />
+                                                                </td>
+                                                                <td className="p-3">
+                                                                    <input 
+                                                                        type="number" 
+                                                                        value={variant.stock}
+                                                                        onChange={(e) => updateVariant(variant.id, 'stock', parseInt(e.target.value))}
+                                                                        className="w-20 bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-white focus:border-blue-500 outline-none"
+                                                                    />
+                                                                </td>
+                                                                <td className="p-3">
+                                                                    <input 
+                                                                        type="text" 
+                                                                        value={variant.sku || ''}
+                                                                        onChange={(e) => updateVariant(variant.id, 'sku', e.target.value)}
+                                                                        className="w-32 bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-white focus:border-blue-500 outline-none font-mono text-xs"
+                                                                    />
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

@@ -31,7 +31,7 @@ export const MarketingLanding = () => {
             <Link to="/login" className="text-sm font-bold text-white hover:text-blue-400 transition-colors">
               Log In
             </Link>
-            <Link to="/login" className="px-5 py-2.5 bg-white text-black text-sm font-bold rounded-full hover:bg-neutral-200 transition-colors">
+            <Link to="/signup" className="px-5 py-2.5 bg-white text-black text-sm font-bold rounded-full hover:bg-neutral-200 transition-colors">
               Start Building
             </Link>
           </div>
@@ -54,7 +54,7 @@ export const MarketingLanding = () => {
             The headless commerce platform for brands that refuse to compromise. Build, scale, and dominate with the world's most advanced visual editor.
           </p>
           <div className="flex flex-col md:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-            <Link to="/login" className="w-full md:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full flex items-center justify-center gap-2 transition-all hover:scale-105">
+            <Link to="/signup" className="w-full md:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full flex items-center justify-center gap-2 transition-all hover:scale-105">
               Start Free Trial <ArrowRight size={18} />
             </Link>
             <Link to="/store" className="w-full md:w-auto px-8 py-4 bg-neutral-900 hover:bg-neutral-800 text-white border border-neutral-800 font-bold rounded-full flex items-center justify-center gap-2 transition-all">
@@ -155,7 +155,7 @@ export const MarketingLanding = () => {
         <div className="max-w-3xl mx-auto">
           <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-8">Ready to evolve?</h2>
           <p className="text-xl text-neutral-400 mb-12">Join thousands of high-growth brands building on Evolv today.</p>
-          <Link to="/login" className="inline-flex items-center justify-center px-10 py-5 bg-white text-black font-bold text-lg rounded-full hover:bg-neutral-200 transition-colors">
+          <Link to="/signup" className="inline-flex items-center justify-center px-10 py-5 bg-white text-black font-bold text-lg rounded-full hover:bg-neutral-200 transition-colors">
             Start Your Free Trial
           </Link>
           <p className="mt-6 text-sm text-neutral-600">No credit card required. 14-day free trial.</p>

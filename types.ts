@@ -348,6 +348,9 @@ export interface Order {
   status: 'pending' | 'paid' | 'fulfilled' | 'cancelled' | 'refunded';
   payment_status: 'unpaid' | 'paid' | 'failed';
   created_at: string;
+  tracking_number?: string;
+  carrier?: string;
+  shipped_at?: string;
 }
 
 export interface Subscription {
@@ -358,12 +361,21 @@ export interface Subscription {
   current_period_end?: string;
 }
 
+export interface Domain {
+  id: string;
+  store_id: string;
+  domain: string;
+  status: 'pending' | 'active' | 'error';
+  verified_at?: string;
+  created_at: string;
+}
 
 export interface StorefrontProps {
   config: StoreConfig;
   products: Product[];
   pages: Page[];
   activePageId: string;
+  activeProductSlug?: string; // Add this
   onNavigate?: (pageId: string) => void;
   previewBlock?: PageBlock | null;
   activeBlockId?: string | null;

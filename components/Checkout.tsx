@@ -216,7 +216,9 @@ export const Checkout: React.FC = () => {
         order_id: order.id,
         product_id: item.id,
         quantity: item.quantity,
-        price_at_purchase: item.price
+        price_at_purchase: item.price,
+        variant_id: item.selectedVariantId || null,
+        variant_title: item.selectedVariantTitle || null
       }));
 
       const { error: itemsError } = await supabase
@@ -233,7 +235,8 @@ export const Checkout: React.FC = () => {
       for (const item of items) {
         const { error: rpcError } = await supabase.rpc('decrement_stock', { 
           product_id: item.id, 
-          quantity_to_decrement: item.quantity 
+          quantity_to_decrement: item.quantity,
+          variant_id: item.selectedVariantId || null
         });
 
         if (rpcError) {

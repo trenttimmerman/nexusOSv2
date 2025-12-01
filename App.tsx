@@ -5,6 +5,7 @@ import { MarketingLanding } from './components/MarketingLanding';
 import { AdminPanel } from './components/AdminPanel';
 import { Storefront } from './components/Storefront';
 import { Login } from './components/Login';
+import { SignUp } from './components/SignUp';
 import { AccountPage } from './components/AccountPage';
 import { Checkout } from './components/Checkout';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -16,7 +17,7 @@ import { ViewMode, AdminTab } from './types';
 // Wrapper to inject data into Storefront
 const StorefrontWrapper = () => {
   const { storeConfig, products, pages, loading } = useData(); 
-  const { slug } = useParams();
+  const { slug, productSlug } = useParams();
   const navigate = useNavigate();
   
   if (loading) return <LoadingScreen />;
@@ -41,6 +42,7 @@ const StorefrontWrapper = () => {
       products={products || []}
       pages={pages || []}
       activePageId={activePageId}
+      activeProductSlug={productSlug}
       onNavigate={(path) => navigate(path)}
     />
   );
@@ -118,11 +120,13 @@ export default function App() {
             {/* Public Storefront (Preview) */}
             <Route path="/store" element={<StorefrontWrapper />} />
             <Route path="/store/pages/:slug" element={<StorefrontWrapper />} />
+            <Route path="/store/products/:productSlug" element={<StorefrontWrapper />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/account" element={<AccountPage />} />
             
             {/* Admin Authentication */}
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
             
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

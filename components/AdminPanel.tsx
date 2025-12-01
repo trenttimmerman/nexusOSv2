@@ -11,6 +11,7 @@ import { CartDrawer } from './CartDrawer';
 import { MediaLibrary } from './MediaLibrary';
 import { CampaignManager } from './CampaignManager';
 import { OrderManager } from './OrderManager';
+import { DomainManager } from './DomainManager';
 import { supabase } from '../lib/supabaseClient';
 
 const SCROLLBAR_OPTIONS = [
@@ -146,7 +147,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isCreatingTenant, setIsCreatingTenant] = useState(false);
 
   // Settings State
-  const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'payments' | 'shipping' | 'taxes' | 'policies' | 'notifications'>('general');
+  const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'payments' | 'shipping' | 'taxes' | 'policies' | 'notifications' | 'domains'>('general');
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
   const [editingTaxRegionId, setEditingTaxRegionId] = useState<string | null>(null);
 
@@ -1524,6 +1525,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
               {[
                 { id: 'general', label: 'General', icon: Settings },
+                { id: 'domains', label: 'Domains', icon: Globe },
                 { id: 'payments', label: 'Payments', icon: CreditCard },
                 { id: 'shipping', label: 'Shipping & Delivery', icon: Package },
                 { id: 'taxes', label: 'Taxes and Duties', icon: DollarSign },
@@ -1620,6 +1622,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
                   </div>
                 </div>
+              )}
+
+              {activeSettingsTab === 'domains' && (
+                <DomainManager storeId={storeId || ''} />
               )}
 
               {activeSettingsTab === 'payments' && (

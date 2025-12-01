@@ -14,6 +14,13 @@ export const OrderManager: React.FC<OrderManagerProps> = ({ storeId }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
+  const [isFulfillModalOpen, setIsFulfillModalOpen] = useState(false);
+  const [fulfillmentData, setFulfillmentData] = useState({
+    trackingNumber: '',
+    carrier: 'Canada Post',
+    notifyCustomer: true
+  });
+
   useEffect(() => {
     fetchOrders();
   }, [storeId]);
@@ -48,7 +55,48 @@ export const OrderManager: React.FC<OrderManagerProps> = ({ storeId }) => {
     }
   };
 
+  const handleFulfillOrder = async () => {
+    if (!selectedOrder) return;
+    
+    try {
+      const updates = {
+        status: 'fulfilled',
+        tracking_number: fulfillmentData.trackingNumber,
+        carrier: fulfillmentData.carrier,
+        shipped_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('orders')
+        .update(updates)
+        .eq('id', selectedOrder.id);
+
+      if (error) throw error;
+
+      // Optimistic update
+      setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, ...updates } : o));
+      setSelectedOrder({ ...selectedOrder, ...updates });
+      setIsFulfillModalOpen(false);
+      
+      // TODO: Trigger email notification if notifyCustomer is true
+      if (fulfillmentData.notifyCustomer) {
+          await supabase.functions.invoke('send-shipping-update', {
+              body: { order_id: selectedOrder.id }
+          });
+      }
+
+    } catch (error) {
+      console.error('Error fulfilling order:', error);
+      alert('Failed to fulfill order');
+    }
+  };
+
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    if (newStatus === 'fulfilled') {
+        setIsFulfillModalOpen(true);
+        return;
+    }
+
     try {
       const { error } = await supabase
         .from('orders')
@@ -217,6 +265,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({ storeId }) => {
                         )}
                         <div>
                           <div className="text-white text-sm font-medium">{item.product?.name || 'Unknown Product'}</div>
+                          {item.variant_title && <div className="text-neutral-500 text-xs">{item.variant_title}</div>}
                           <div className="text-neutral-500 text-xs">Qty: {item.quantity}</div>
                         </div>
                       </div>
@@ -241,10 +290,94 @@ export const OrderManager: React.FC<OrderManagerProps> = ({ storeId }) => {
                   <span>${selectedOrder.total_amount.toFixed(2)}</span>
                 </div>
               </div>
+
+              {/* Fulfillment Details */}
+              {selectedOrder.status === 'fulfilled' && selectedOrder.tracking_number && (
+                  <div className="bg-green-900/20 border border-green-900/50 rounded-xl p-4 mt-4">
+                      <h4 className="text-green-500 font-bold text-sm mb-2 flex items-center gap-2"><CheckCircle size={16}/> Fulfilled</h4>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                              <div className="text-neutral-500 text-xs uppercase font-bold">Carrier</div>
+                              <div className="text-white">{selectedOrder.carrier}</div>
+                          </div>
+                          <div>
+                              <div className="text-neutral-500 text-xs uppercase font-bold">Tracking #</div>
+                              <div className="text-white font-mono">{selectedOrder.tracking_number}</div>
+                          </div>
+                          <div className="col-span-2">
+                              <div className="text-neutral-500 text-xs uppercase font-bold">Shipped At</div>
+                              <div className="text-white">{selectedOrder.shipped_at ? new Date(selectedOrder.shipped_at).toLocaleString() : '-'}</div>
+                          </div>
+                      </div>
+                  </div>
+              )}
             </div>
           </div>
         )}
       </div>
+
+      {/* Fulfillment Modal */}
+      {isFulfillModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-md p-6 space-y-6 animate-in zoom-in-95 duration-200">
+                <div className="flex justify-between items-center">
+                    <h3 className="text-xl font-bold text-white">Fulfill Order</h3>
+                    <button onClick={() => setIsFulfillModalOpen(false)} className="text-neutral-500 hover:text-white"><XCircle size={24}/></button>
+                </div>
+                
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Carrier</label>
+                        <select 
+                            value={fulfillmentData.carrier}
+                            onChange={(e) => setFulfillmentData({ ...fulfillmentData, carrier: e.target.value })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white focus:border-blue-500 outline-none appearance-none"
+                        >
+                            <option value="Canada Post">Canada Post</option>
+                            <option value="UPS">UPS</option>
+                            <option value="FedEx">FedEx</option>
+                            <option value="DHL">DHL</option>
+                            <option value="Purolator">Purolator</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Tracking Number</label>
+                        <input 
+                            value={fulfillmentData.trackingNumber}
+                            onChange={(e) => setFulfillmentData({ ...fulfillmentData, trackingNumber: e.target.value })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white font-mono focus:border-blue-500 outline-none"
+                            placeholder="e.g. 1Z999AA10123456784"
+                        />
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-black rounded-lg border border-neutral-800">
+                        <input 
+                            type="checkbox"
+                            checked={fulfillmentData.notifyCustomer}
+                            onChange={(e) => setFulfillmentData({ ...fulfillmentData, notifyCustomer: e.target.checked })}
+                            className="w-4 h-4 rounded border-neutral-700 bg-neutral-800 text-blue-600 focus:ring-blue-500"
+                        />
+                        <label className="text-sm text-white font-medium">Send shipping update email</label>
+                    </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                    <button 
+                        onClick={() => setIsFulfillModalOpen(false)}
+                        className="flex-1 py-3 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl font-bold transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={handleFulfillOrder}
+                        className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-colors"
+                    >
+                        Mark Fulfilled
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   );
 };

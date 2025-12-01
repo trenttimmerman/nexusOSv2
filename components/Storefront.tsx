@@ -4,13 +4,14 @@ import { StorefrontProps, Product, PageBlock, HeroStyleId, ProductCardStyleId } 
 import { HEADER_COMPONENTS } from './HeaderLibrary';
 import { HERO_COMPONENTS } from './HeroLibrary';
 import { PRODUCT_CARD_COMPONENTS } from './ProductCardLibrary';
+import { PRODUCT_PAGE_COMPONENTS } from './ProductPageLibrary';
 import { FOOTER_COMPONENTS } from './FooterLibrary';
 import { SCROLL_COMPONENTS } from './ScrollLibrary';
 import { Plus } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 
-export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages, activePageId, onNavigate, previewBlock, activeBlockId, onUpdateBlock, showCartDrawer = true }) => {
+export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, showCartDrawer = true }) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
 
   const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
@@ -35,6 +36,31 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
     };
   });
 
+  // If activeProductSlug is present, render Product Page
+  if (activeProductSlug) {
+      const product = products.find(p => p.seo.slug === activeProductSlug || p.id === activeProductSlug);
+      if (product) {
+          const ProductComponent = PRODUCT_PAGE_COMPONENTS[product.template || 'standard'] || PRODUCT_PAGE_COMPONENTS['standard'];
+          return (
+              <div className={`min-h-screen flex flex-col bg-white selection:bg-black selection:text-white ${isSidebar ? 'md:pl-64' : ''}`}>
+                  <HeaderComponent
+                      storeName={config.name}
+                      logoUrl={config.logoUrl}
+                      logoHeight={config.logoHeight}
+                      links={navLinks}
+                      cartCount={cartCount}
+                      onOpenCart={() => setIsCartOpen(true)}
+                  />
+                  <main className="flex-1">
+                      <ProductComponent product={product} onAddToCart={addToCart} />
+                  </main>
+                  <FooterComponent storeName={config.name} primaryColor={config.primaryColor} />
+                  {showCartDrawer && <CartDrawer />}
+              </div>
+          );
+      }
+  }
+
   // Render System Product Grid
   const renderProductGrid = (variant?: string, data?: any) => {
     const styleId = (variant as ProductCardStyleId) || config.productCardStyle || 'classic';
@@ -58,6 +84,7 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
               key={product.id}
               product={product}
               onAddToCart={addToCart}
+              onNavigate={() => onNavigate && onNavigate(`/store/products/${product.seo.slug || product.id}`)}
               primaryColor={config.primaryColor}
             />
           ))}

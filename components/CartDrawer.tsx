@@ -54,7 +54,7 @@ export const CartDrawer: React.FC<{ variant?: 'fixed' | 'absolute' }> = ({ varia
             </div>
           ) : (
             cart.map((item) => (
-              <div key={item.id} className="flex gap-4">
+              <div key={`${item.id}-${item.selectedVariantId || 'default'}`} className="flex gap-4">
                 <div className="w-20 h-20 bg-neutral-100 rounded-lg overflow-hidden shrink-0">
                   <img 
                     src={item.images?.[0]?.url || item.image} 
@@ -65,9 +65,14 @@ export const CartDrawer: React.FC<{ variant?: 'fixed' | 'absolute' }> = ({ varia
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <div className="flex justify-between items-start">
-                      <h3 className="font-bold text-sm line-clamp-2">{item.name}</h3>
+                      <div>
+                        <h3 className="font-bold text-sm line-clamp-2">{item.name}</h3>
+                        {item.selectedVariantTitle && (
+                          <p className="text-xs text-neutral-500">{item.selectedVariantTitle}</p>
+                        )}
+                      </div>
                       <button 
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item.id, item.selectedVariantId)}
                         className="text-neutral-400 hover:text-red-500 transition-colors"
                       >
                         <Trash2 size={16} />
@@ -79,14 +84,14 @@ export const CartDrawer: React.FC<{ variant?: 'fixed' | 'absolute' }> = ({ varia
                   <div className="flex items-center gap-3">
                     <div className="flex items-center border border-neutral-200 rounded-lg">
                       <button 
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedVariantId)}
                         className="p-1 hover:bg-neutral-50 transition-colors"
                       >
                         <Minus size={14} />
                       </button>
                       <span className="w-8 text-center text-xs font-bold">{item.quantity}</span>
                       <button 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedVariantId)}
                         className="p-1 hover:bg-neutral-50 transition-colors"
                       >
                         <Plus size={14} />

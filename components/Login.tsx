@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, ShieldCheck } from 'lucide-react';
 
 export const Login = () => {
@@ -85,7 +85,7 @@ export const Login = () => {
         
         <div className="mt-6 text-center">
             <p className="text-xs text-neutral-600">
-                Don't have an account? <span className="text-neutral-500">Contact System Administrator.</span>
+                Don't have an account? <Link to="/signup" className="text-blue-500 hover:text-blue-400 font-bold">Start Free Trial</Link>
             </p>
         </div>
       </div>

@@ -9,13 +9,85 @@ import { ProductCustomizer } from './ProductCustomizer';
 
 interface ProductPageProps {
     product: Product;
-    onAddToCart?: () => void;
+    onAddToCart?: (product: Product, variantId?: string, variantTitle?: string) => void;
 }
 
+const VariantSelector: React.FC<{
+    product: Product;
+    selectedOptions: Record<string, string>;
+    onChange: (optionName: string, value: string) => void;
+}> = ({ product, selectedOptions, onChange }) => {
+    if (!product.hasVariants || !product.variantOptions) return null;
+
+    return (
+        <div className="space-y-4 mb-6">
+            {product.variantOptions.map((option) => (
+                <div key={option.id}>
+                    <label className="block text-sm font-medium text-neutral-700 mb-2">
+                        {option.name}
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                        {option.values.map((value) => (
+                            <button
+                                key={value}
+                                onClick={() => onChange(option.name, value)}
+                                className={`px-4 py-2 rounded-full text-sm border transition-all ${
+                                    selectedOptions[option.name] === value
+                                        ? 'border-black bg-black text-white'
+                                        : 'border-neutral-200 hover:border-neutral-400 text-neutral-900'
+                                }`}
+                            >
+                                {value}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
 // 1. Standard (Classic E-commerce)
-export const ProductPageStandard: React.FC<ProductPageProps> = ({ product }) => {
+export const ProductPageStandard: React.FC<ProductPageProps> = ({ product, onAddToCart }) => {
     const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
-    const mainImage = product.image || product.images[0]?.url;
+    const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+    const [selectedVariant, setSelectedVariant] = useState<any>(null); // Use ProductVariant type if available
+
+    const mainImage = selectedVariant?.imageId 
+        ? product.images.find(img => img.id === selectedVariant.imageId)?.url || product.image 
+        : (product.image || product.images[0]?.url);
+
+    useEffect(() => {
+        if (product.hasVariants && product.variantOptions?.length > 0) {
+            const defaults: Record<string, string> = {};
+            product.variantOptions.forEach(opt => {
+                defaults[opt.name] = opt.values[0];
+            });
+            setSelectedOptions(defaults);
+        }
+    }, [product]);
+
+    useEffect(() => {
+        if (product.hasVariants && product.variants) {
+            const variant = product.variants.find(v => 
+                Object.entries(v.options).every(([key, val]) => selectedOptions[key] === val)
+            );
+            setSelectedVariant(variant || null);
+        }
+    }, [selectedOptions, product]);
+
+    const handleAddToCart = () => {
+        if (product.hasVariants) {
+            if (selectedVariant && onAddToCart) {
+                onAddToCart(product, selectedVariant.id, selectedVariant.title);
+            }
+        } else {
+            onAddToCart?.(product);
+        }
+    };
+
+    const currentPrice = selectedVariant ? selectedVariant.price : product.price;
+    const isOutOfStock = product.hasVariants ? (selectedVariant?.stock === 0) : (product.stock === 0);
 
     return (
     <div className="max-w-6xl mx-auto px-6 py-12">
@@ -28,7 +100,13 @@ export const ProductPageStandard: React.FC<ProductPageProps> = ({ product }) => 
                 {product.images.length > 1 && (
                     <div className="grid grid-cols-4 gap-4">
                         {product.images.map((img) => (
-                            <div key={img.id} className="aspect-square bg-neutral-100 rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-black transition-all">
+                            <div 
+                                key={img.id} 
+                                className="aspect-square bg-neutral-100 rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-black transition-all"
+                                onClick={() => {
+                                    // Optional: Select variant associated with image if any
+                                }}
+                            >
                                 <img src={img.url} className="w-full h-full object-cover" alt="" />
                             </div>
                         ))}
@@ -46,7 +124,7 @@ export const ProductPageStandard: React.FC<ProductPageProps> = ({ product }) => 
                     </div>
                     <h1 className="text-4xl font-bold text-neutral-900 mb-2">{product.name}</h1>
                     <div className="flex items-center gap-4 mb-6">
-                        <span className="text-2xl font-medium text-neutral-900">${(product.price / 100).toFixed(2)}</span>
+                        <span className="text-2xl font-medium text-neutral-900">${(currentPrice / 100).toFixed(2)}</span>
                         {product.compareAtPrice && (
                             <span className="text-lg text-neutral-400 line-through">${product.compareAtPrice.toFixed(2)}</span>
                         )}
@@ -55,9 +133,24 @@ export const ProductPageStandard: React.FC<ProductPageProps> = ({ product }) => 
 
                 <div className="prose prose-neutral mb-8" dangerouslySetInnerHTML={{ __html: product.description }} />
 
+                <VariantSelector 
+                    product={product} 
+                    selectedOptions={selectedOptions} 
+                    onChange={(name, value) => setSelectedOptions(prev => ({ ...prev, [name]: value }))} 
+                />
+
                 <div className="flex gap-4 mb-8">
-                    <button className="flex-1 bg-black text-white h-14 rounded-full font-bold text-lg hover:bg-neutral-800 transition-all flex items-center justify-center gap-3">
-                        <ShoppingBag size={20} /> Add to Cart
+                    <button 
+                        onClick={handleAddToCart}
+                        disabled={isOutOfStock}
+                        className={`flex-1 h-14 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-3 ${
+                            isOutOfStock 
+                            ? 'bg-neutral-200 text-neutral-400 cursor-not-allowed' 
+                            : 'bg-black text-white hover:bg-neutral-800'
+                        }`}
+                    >
+                        <ShoppingBag size={20} /> 
+                        {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                     </button>
                     
                     {product.allowCustomization && (
@@ -106,8 +199,46 @@ export const ProductPageStandard: React.FC<ProductPageProps> = ({ product }) => 
 };
 
 // 2. Split (Modern, Full Height)
-export const ProductPageSplit: React.FC<ProductPageProps> = ({ product }) => {
-    const mainImage = product.image || product.images[0]?.url;
+export const ProductPageSplit: React.FC<ProductPageProps> = ({ product, onAddToCart }) => {
+    const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+    const [selectedVariant, setSelectedVariant] = useState<any>(null);
+
+    const mainImage = selectedVariant?.imageId 
+        ? product.images.find(img => img.id === selectedVariant.imageId)?.url || product.image 
+        : (product.image || product.images[0]?.url);
+
+    useEffect(() => {
+        if (product.hasVariants && product.variantOptions?.length > 0) {
+            const defaults: Record<string, string> = {};
+            product.variantOptions.forEach(opt => {
+                defaults[opt.name] = opt.values[0];
+            });
+            setSelectedOptions(defaults);
+        }
+    }, [product]);
+
+    useEffect(() => {
+        if (product.hasVariants && product.variants) {
+            const variant = product.variants.find(v => 
+                Object.entries(v.options).every(([key, val]) => selectedOptions[key] === val)
+            );
+            setSelectedVariant(variant || null);
+        }
+    }, [selectedOptions, product]);
+
+    const handleAddToCart = () => {
+        if (product.hasVariants) {
+            if (selectedVariant && onAddToCart) {
+                onAddToCart(product, selectedVariant.id, selectedVariant.title);
+            }
+        } else {
+            onAddToCart?.(product);
+        }
+    };
+
+    const currentPrice = selectedVariant ? selectedVariant.price : product.price;
+    const isOutOfStock = product.hasVariants ? (selectedVariant?.stock === 0) : (product.stock === 0);
+
     return (
     <div className="flex flex-col lg:flex-row min-h-screen">
         <div className="lg:w-1/2 bg-neutral-100 relative">
@@ -116,12 +247,26 @@ export const ProductPageSplit: React.FC<ProductPageProps> = ({ product }) => {
         <div className="lg:w-1/2 p-12 lg:p-24 flex flex-col justify-center bg-white">
             <span className="text-sm font-bold tracking-widest uppercase text-neutral-400 mb-4">{product.category}</span>
             <h1 className="text-5xl lg:text-6xl font-black text-neutral-900 mb-6 leading-none">{product.name}</h1>
-            <p className="text-3xl font-light text-neutral-600 mb-12">${(product.price / 100).toFixed(2)}</p>
+            <p className="text-3xl font-light text-neutral-600 mb-12">${(currentPrice / 100).toFixed(2)}</p>
 
             <div className="prose prose-lg prose-neutral mb-12" dangerouslySetInnerHTML={{ __html: product.description }} />
 
-            <button className="w-full bg-black text-white h-16 text-xl font-bold hover:bg-neutral-900 transition-all flex items-center justify-center gap-3 mb-6">
-                Add to Cart <ArrowRight size={20} />
+            <VariantSelector 
+                product={product} 
+                selectedOptions={selectedOptions} 
+                onChange={(name, value) => setSelectedOptions(prev => ({ ...prev, [name]: value }))} 
+            />
+
+            <button 
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                className={`w-full h-16 text-xl font-bold transition-all flex items-center justify-center gap-3 mb-6 ${
+                    isOutOfStock 
+                    ? 'bg-neutral-200 text-neutral-400 cursor-not-allowed' 
+                    : 'bg-black text-white hover:bg-neutral-900'
+                }`}
+            >
+                {isOutOfStock ? 'Out of Stock' : 'Add to Cart'} <ArrowRight size={20} />
             </button>
 
             <p className="text-center text-xs text-neutral-400 uppercase tracking-widest">Free shipping worldwide on all orders</p>
@@ -131,13 +276,51 @@ export const ProductPageSplit: React.FC<ProductPageProps> = ({ product }) => {
 };
 
 // 3. Minimal (Centered, Clean)
-export const ProductPageMinimal: React.FC<ProductPageProps> = ({ product }) => {
-    const mainImage = product.image || product.images[0]?.url;
+export const ProductPageMinimal: React.FC<ProductPageProps> = ({ product, onAddToCart }) => {
+    const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+    const [selectedVariant, setSelectedVariant] = useState<any>(null);
+
+    const mainImage = selectedVariant?.imageId 
+        ? product.images.find(img => img.id === selectedVariant.imageId)?.url || product.image 
+        : (product.image || product.images[0]?.url);
+
+    useEffect(() => {
+        if (product.hasVariants && product.variantOptions?.length > 0) {
+            const defaults: Record<string, string> = {};
+            product.variantOptions.forEach(opt => {
+                defaults[opt.name] = opt.values[0];
+            });
+            setSelectedOptions(defaults);
+        }
+    }, [product]);
+
+    useEffect(() => {
+        if (product.hasVariants && product.variants) {
+            const variant = product.variants.find(v => 
+                Object.entries(v.options).every(([key, val]) => selectedOptions[key] === val)
+            );
+            setSelectedVariant(variant || null);
+        }
+    }, [selectedOptions, product]);
+
+    const handleAddToCart = () => {
+        if (product.hasVariants) {
+            if (selectedVariant && onAddToCart) {
+                onAddToCart(product, selectedVariant.id, selectedVariant.title);
+            }
+        } else {
+            onAddToCart?.(product);
+        }
+    };
+
+    const currentPrice = selectedVariant ? selectedVariant.price : product.price;
+    const isOutOfStock = product.hasVariants ? (selectedVariant?.stock === 0) : (product.stock === 0);
+
     return (
     <div className="max-w-4xl mx-auto px-6 py-24 text-center">
         <span className="text-xs font-bold tracking-[0.2em] uppercase text-neutral-400 mb-6 block">{product.category}</span>
         <h1 className="text-5xl font-serif italic mb-4">{product.name}</h1>
-        <p className="text-xl text-neutral-600 mb-12">${(product.price / 100).toFixed(2)}</p>
+        <p className="text-xl text-neutral-600 mb-12">${(currentPrice / 100).toFixed(2)}</p>
 
         <div className="aspect-[4/3] bg-neutral-100 mb-12 overflow-hidden">
             {mainImage && <img src={mainImage} className="w-full h-full object-cover" alt={product.name} />}
@@ -145,8 +328,24 @@ export const ProductPageMinimal: React.FC<ProductPageProps> = ({ product }) => {
 
         <div className="max-w-xl mx-auto prose prose-neutral mb-12" dangerouslySetInnerHTML={{ __html: product.description }} />
 
-        <button className="px-12 py-4 border-2 border-black text-black font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-colors">
-            Add to Bag
+        <div className="flex justify-center mb-8">
+            <VariantSelector 
+                product={product} 
+                selectedOptions={selectedOptions} 
+                onChange={(name, value) => setSelectedOptions(prev => ({ ...prev, [name]: value }))} 
+            />
+        </div>
+
+        <button 
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+            className={`px-12 py-4 border-2 font-bold uppercase tracking-widest transition-colors ${
+                isOutOfStock 
+                ? 'border-neutral-200 text-neutral-400 cursor-not-allowed' 
+                : 'border-black text-black hover:bg-black hover:text-white'
+            }`}
+        >
+            {isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
         </button>
     </div>
     );

@@ -10,6 +10,8 @@ interface Order {
   status: string;
   payment_status: string;
   items: OrderItem[];
+  tracking_number?: string;
+  carrier?: string;
 }
 
 interface OrderItem {
@@ -17,6 +19,7 @@ interface OrderItem {
   product_id: string;
   quantity: number;
   price_at_purchase: number;
+  variant_title?: string;
   product?: {
     name: string;
     image: string;
@@ -129,6 +132,18 @@ export const CustomerProfile: React.FC = () => {
                     <StatusBadge status={order.status} />
                   </div>
                 </div>
+
+                {order.status === 'fulfilled' && order.tracking_number && (
+                  <div className="mb-4 p-3 bg-green-50 border border-green-100 rounded-lg flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Package className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-medium text-green-800">Shipped via {order.carrier}</span>
+                    </div>
+                    <div className="text-sm font-mono text-green-700">
+                      {order.tracking_number}
+                    </div>
+                  </div>
+                )}
                 
                 <div className="space-y-4">
                   {order.items.map((item) => (
@@ -146,6 +161,11 @@ export const CustomerProfile: React.FC = () => {
                         <div className="font-medium text-neutral-900">
                           {item.product?.name || 'Unknown Product'}
                         </div>
+                        {item.variant_title && (
+                            <div className="text-xs text-neutral-500">
+                                {item.variant_title}
+                            </div>
+                        )}
                         <div className="text-neutral-500">
                           Qty: {item.quantity}
                         </div>

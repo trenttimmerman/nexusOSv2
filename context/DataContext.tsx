@@ -147,13 +147,34 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { data: { session } } = await supabase.auth.getSession();
       let targetStoreId = overrideStoreId;
+
+      // 0. Check Custom Domain
+      if (!targetStoreId) {
+        const hostname = window.location.hostname;
+        // Exclude localhost and codespaces from domain lookup for dev convenience
+        // In production, you might want to allow localhost testing via /etc/hosts
+        const isDev = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.github.dev') || hostname.endsWith('.app.github.dev');
+        
+        if (!isDev) {
+            const { data: domainData } = await supabase
+                .from('domains')
+                .select('store_id')
+                .eq('domain', hostname)
+                .eq('status', 'active')
+                .maybeSingle();
+            
+            if (domainData) {
+                targetStoreId = domainData.store_id;
+            }
+        }
+      }
       
-      // If authenticated, load tenant data
+      // 1. If authenticated and no domain override, load tenant data from profile
       if (session) {
         // HARDCODE OVERRIDE FOR OWNER
         const isOwner = session.user.email === 'trent@3thirty3.ca';
 
-        // 1. Get Profile & Store ID
+        // Get Profile & Store ID
         const { data: profile } = await supabase.from('profiles').select('store_id, role').eq('id', session.user.id).single();
         
         if (profile) {
@@ -163,8 +184,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         // Determine which store ID to use
-        // Priority: 1. Override (switchStore), 2. Current State (if set), 3. Profile Default
-        targetStoreId = overrideStoreId || storeId || profile?.store_id;
+        // Priority: 1. Override (switchStore), 2. Domain Match, 3. Current State (if set), 4. Profile Default
+        if (!targetStoreId) {
+             targetStoreId = storeId || profile?.store_id;
+        }
       }
 
       // If no store ID yet (Public Visitor or Guest), try to fetch the first store

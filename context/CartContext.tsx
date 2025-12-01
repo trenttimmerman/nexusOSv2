@@ -3,13 +3,15 @@ import { Product } from '../types';
 
 interface CartItem extends Product {
   quantity: number;
+  selectedVariantId?: string;
+  selectedVariantTitle?: string;
 }
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addToCart: (product: Product, variantId?: string, variantTitle?: string) => void;
+  removeFromCart: (productId: string, variantId?: string) => void;
+  updateQuantity: (productId: string, quantity: number, variantId?: string) => void;
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
@@ -40,32 +42,44 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('nexus_cart', JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, variantId?: string, variantTitle?: string) => {
     setCart(prev => {
-      const existingItem = prev.find(item => item.id === product.id);
+      const existingItem = prev.find(item => 
+        item.id === product.id && item.selectedVariantId === variantId
+      );
+      
       if (existingItem) {
         return prev.map(item =>
-          item.id === product.id
+          (item.id === product.id && item.selectedVariantId === variantId)
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+
+      let price = product.price;
+      if (variantId && product.variants) {
+          const variant = product.variants.find(v => v.id === variantId);
+          if (variant) {
+              price = variant.price;
+          }
+      }
+
+      return [...prev, { ...product, price, quantity: 1, selectedVariantId: variantId, selectedVariantTitle: variantTitle }];
     });
     setIsCartOpen(true);
   };
 
-  const removeFromCart = (productId: string) => {
-    setCart(prev => prev.filter(item => item.id !== productId));
+  const removeFromCart = (productId: string, variantId?: string) => {
+    setCart(prev => prev.filter(item => !(item.id === productId && item.selectedVariantId === variantId)));
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, variantId?: string) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(productId, variantId);
       return;
     }
     setCart(prev => prev.map(item =>
-      item.id === productId
+      (item.id === productId && item.selectedVariantId === variantId)
         ? { ...item, quantity }
         : item
     ));
