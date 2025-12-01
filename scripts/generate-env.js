@@ -1,9 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(__dirname, '..');
+
+// Load env vars from .env and .env.local
+dotenv.config({ path: path.join(rootDir, '.env') });
+dotenv.config({ path: path.join(rootDir, '.env.local'), override: true });
 
 // Try to get variables from any possible source
 const url = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXUS_SUPABASE_URL;
