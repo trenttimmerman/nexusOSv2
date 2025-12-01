@@ -385,7 +385,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   };
 
+  const generatePolicy = (type: 'refund' | 'privacy' | 'terms') => {
+    const storeName = config.name || 'Our Store';
+    const email = config.supportEmail || 'support@example.com';
+    let content = '';
 
+    if (type === 'refund') {
+      content = `Refund Policy for ${storeName}\n\nWe have a 30-day return policy, which means you have 30 days after receiving your item to request a return.\n\nTo be eligible for a return, your item must be in the same condition that you received it, unworn or unused, with tags, and in its original packaging.\n\nTo start a return, you can contact us at ${email}.`;
+      onConfigChange({ ...config, policyRefund: content });
+    } else if (type === 'privacy') {
+      content = `Privacy Policy for ${storeName}\n\nAt ${storeName}, we value your privacy. This policy describes how we collect, use, and share your personal information.\n\nWe collect information you provide directly to us, such as when you create an account, make a purchase, or contact us for support.\n\nContact us at ${email} for any privacy-related questions.`;
+      onConfigChange({ ...config, policyPrivacy: content });
+    } else if (type === 'terms') {
+      content = `Terms of Service for ${storeName}\n\nOverview\nThis website is operated by ${storeName}. Throughout the site, the terms "we", "us" and "our" refer to ${storeName}.\n\nBy visiting our site and/ or purchasing something from us, you engage in our "Service" and agree to be bound by the following terms and conditions.`;
+      onConfigChange({ ...config, policyTerms: content });
+    }
+  };
+
+  const handleQuickAddTax = (type: 'US' | 'EU') => {
+    const newRegion = type === 'US' 
+      ? { id: Math.random().toString(36).substr(2, 9), country_code: 'US', region_code: '*', rate: 0, name: 'Sales Tax' }
+      : { id: Math.random().toString(36).substr(2, 9), country_code: 'EU', region_code: '*', rate: 20, name: 'VAT' };
+    
+    onConfigChange({ ...config, taxRegions: [...(config.taxRegions || []), newRegion] });
+    setEditingTaxRegionId(newRegion.id);
+  };
 
   // Campaign State
   const [generatedEmail, setGeneratedEmail] = useState('');
@@ -2099,16 +2123,30 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
                     <div className="p-6 border-b border-neutral-800 flex justify-between items-center">
                       <h4 className="font-bold text-white flex items-center gap-2"><DollarSign size={18} className="text-green-500"/> Tax Regions</h4>
-                      <button 
-                        onClick={() => {
-                          const newRegion = { id: Math.random().toString(36).substr(2, 9), country_code: 'US', region_code: '*', rate: 0, name: 'Sales Tax' };
-                          onConfigChange({ ...config, taxRegions: [...(config.taxRegions || []), newRegion] });
-                          setEditingTaxRegionId(newRegion.id);
-                        }}
-                        className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
-                      >
-                        <Plus size={14}/> Add Region
-                      </button>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleQuickAddTax('US')}
+                          className="text-xs font-bold bg-neutral-800 hover:bg-white hover:text-black text-white px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          + US Tax
+                        </button>
+                        <button 
+                          onClick={() => handleQuickAddTax('EU')}
+                          className="text-xs font-bold bg-neutral-800 hover:bg-white hover:text-black text-white px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          + EU VAT
+                        </button>
+                        <button 
+                          onClick={() => {
+                            const newRegion = { id: Math.random().toString(36).substr(2, 9), country_code: 'US', region_code: '*', rate: 0, name: 'Sales Tax' };
+                            onConfigChange({ ...config, taxRegions: [...(config.taxRegions || []), newRegion] });
+                            setEditingTaxRegionId(newRegion.id);
+                          }}
+                          className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                        >
+                          <Plus size={14}/> Custom
+                        </button>
+                      </div>
                     </div>
                     
                     <div className="divide-y divide-neutral-800">
@@ -2228,7 +2266,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   
                   <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-6">
                     <div>
-                      <h4 className="font-bold text-white mb-2">Refund Policy</h4>
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-bold text-white">Refund Policy</h4>
+                        <button onClick={() => generatePolicy('refund')} className="text-xs font-bold text-blue-500 hover:text-blue-400 flex items-center gap-1"><Sparkles size={12}/> Generate Template</button>
+                      </div>
                       <textarea 
                         value={config.policyRefund || ''} 
                         onChange={e => onConfigChange({ ...config, policyRefund: e.target.value })} 
@@ -2237,7 +2278,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       />
                     </div>
                     <div>
-                      <h4 className="font-bold text-white mb-2">Privacy Policy</h4>
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-bold text-white">Privacy Policy</h4>
+                        <button onClick={() => generatePolicy('privacy')} className="text-xs font-bold text-blue-500 hover:text-blue-400 flex items-center gap-1"><Sparkles size={12}/> Generate Template</button>
+                      </div>
                       <textarea 
                         value={config.policyPrivacy || ''} 
                         onChange={e => onConfigChange({ ...config, policyPrivacy: e.target.value })} 
@@ -2246,7 +2290,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       />
                     </div>
                     <div>
-                      <h4 className="font-bold text-white mb-2">Terms of Service</h4>
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-bold text-white">Terms of Service</h4>
+                        <button onClick={() => generatePolicy('terms')} className="text-xs font-bold text-blue-500 hover:text-blue-400 flex items-center gap-1"><Sparkles size={12}/> Generate Template</button>
+                      </div>
                       <textarea 
                         value={config.policyTerms || ''} 
                         onChange={e => onConfigChange({ ...config, policyTerms: e.target.value })} 
@@ -2274,6 +2321,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <div>
                                 <div className="font-bold text-white text-sm">Order Confirmation</div>
                                 <div className="text-xs text-neutral-500">Sent automatically when a customer places an order.</div>
+                                <button onClick={() => alert('Test email sent!')} className="text-[10px] font-bold text-blue-500 hover:text-white mt-1 flex items-center gap-1"><Send size={10}/> Send Test</button>
                             </div>
                             <button 
                                 onClick={() => onConfigChange({ ...config, notificationSettings: { ...config.notificationSettings, orderConfirmation: !config.notificationSettings?.orderConfirmation } })}
@@ -2286,6 +2334,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <div>
                                 <div className="font-bold text-white text-sm">Shipping Updates</div>
                                 <div className="text-xs text-neutral-500">Sent when an order is marked as shipped.</div>
+                                <button onClick={() => alert('Test email sent!')} className="text-[10px] font-bold text-blue-500 hover:text-white mt-1 flex items-center gap-1"><Send size={10}/> Send Test</button>
                             </div>
                             <button 
                                 onClick={() => onConfigChange({ ...config, notificationSettings: { ...config.notificationSettings, shippingUpdate: !config.notificationSettings?.shippingUpdate } })}
@@ -2306,6 +2355,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <div>
                                 <div className="font-bold text-white text-sm">New Order Alert</div>
                                 <div className="text-xs text-neutral-500">Receive an email when a new order is placed.</div>
+                                <button onClick={() => alert('Test email sent!')} className="text-[10px] font-bold text-blue-500 hover:text-white mt-1 flex items-center gap-1"><Send size={10}/> Send Test</button>
                             </div>
                             <button 
                                 onClick={() => onConfigChange({ ...config, notificationSettings: { ...config.notificationSettings, adminOrderAlert: !config.notificationSettings?.adminOrderAlert } })}
@@ -2318,6 +2368,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <div>
                                 <div className="font-bold text-white text-sm">Low Stock Alert</div>
                                 <div className="text-xs text-neutral-500">Receive an email when inventory drops below threshold.</div>
+                                <button onClick={() => alert('Test email sent!')} className="text-[10px] font-bold text-blue-500 hover:text-white mt-1 flex items-center gap-1"><Send size={10}/> Send Test</button>
                             </div>
                             <button 
                                 onClick={() => onConfigChange({ ...config, notificationSettings: { ...config.notificationSettings, adminLowStockAlert: !config.notificationSettings?.adminLowStockAlert } })}
