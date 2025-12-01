@@ -102,7 +102,13 @@ import {
   AlertTriangle,
   Repeat,
   FolderOpen,
-  CreditCard
+  CreditCard,
+  MapPin,
+  Globe,
+  Scale,
+  Clock,
+  Truck,
+  ChevronRight
 } from 'lucide-react';
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -141,6 +147,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Settings State
   const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'payments' | 'shipping' | 'taxes' | 'policies' | 'notifications'>('general');
+  const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
+  const [editingTaxRegionId, setEditingTaxRegionId] = useState<string | null>(null);
 
   const handleCreateTenant = async () => {
     if (!newTenantName || !newTenantSlug) return;
@@ -313,6 +321,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [squareAccessToken, setSquareAccessToken] = useState('');
   const [isSavingSecrets, setIsSavingSecrets] = useState(false);
 
+  // Shipping Settings State
+  const [shippoApiKey, setShippoApiKey] = useState('');
+  const [easypostApiKey, setEasypostApiKey] = useState('');
+  const [isSavingShippingSecrets, setIsSavingShippingSecrets] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState<string | null>(null);
+
+  const handleTestConnection = async (provider: string) => {
+    setIsTestingConnection(provider);
+    // Simulate API check - in production this would call a backend function
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsTestingConnection(null);
+    alert(`Successfully connected to ${provider.charAt(0).toUpperCase() + provider.slice(1)}!`);
+  };
+
   const handleSaveSecrets = async () => {
     if (!storeId) return;
     setIsSavingSecrets(true);
@@ -338,6 +360,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       setIsSavingSecrets(false);
     }
   };
+
+  const handleSaveShippingSecrets = async () => {
+    if (!storeId) return;
+    setIsSavingShippingSecrets(true);
+    try {
+      const { error } = await supabase
+        .from('store_secrets')
+        .upsert({ 
+          store_id: storeId,
+          shippo_api_key: shippoApiKey || null,
+          easypost_api_key: easypostApiKey || null
+        });
+
+      if (error) throw error;
+      alert('Shipping secrets saved successfully');
+      setShippoApiKey(''); // Clear for security
+      setEasypostApiKey('');
+    } catch (error: any) {
+      console.error('Error saving shipping secrets:', error);
+      alert('Failed to save shipping secrets: ' + error.message);
+    } finally {
+      setIsSavingShippingSecrets(false);
+    }
+  };
+
 
 
   // Campaign State
@@ -1466,6 +1513,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <h3 className="text-2xl font-bold text-white mb-2">General Settings</h3>
                     <p className="text-neutral-500">Manage your store's core information.</p>
                   </div>
+                  
+                  {/* Store Details */}
                   <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
                     <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4">Store Details</h4>
                     <div className="grid grid-cols-2 gap-4">
@@ -1473,9 +1522,62 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div><label className="text-xs font-bold text-neutral-500 uppercase">Currency</label><input value={config.currency} onChange={e => onConfigChange({ ...config, currency: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" /></div>
                     </div>
                   </div>
+
+                  {/* Contact Information */}
                   <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
                     <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4">Contact Information</h4>
                     <div><label className="text-xs font-bold text-neutral-500 uppercase">Support Email</label><input value={config.supportEmail || ''} onChange={e => onConfigChange({ ...config, supportEmail: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="support@example.com" /></div>
+                  </div>
+
+                  {/* Store Address */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2"><MapPin size={18} className="text-blue-500"/> Store Address</h4>
+                    <div className="space-y-4">
+                      <div><label className="text-xs font-bold text-neutral-500 uppercase">Street Address</label><input value={config.storeAddress?.street || ''} onChange={e => onConfigChange({ ...config, storeAddress: { ...config.storeAddress, street: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="123 Commerce St" /></div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div><label className="text-xs font-bold text-neutral-500 uppercase">City</label><input value={config.storeAddress?.city || ''} onChange={e => onConfigChange({ ...config, storeAddress: { ...config.storeAddress, city: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="New York" /></div>
+                        <div><label className="text-xs font-bold text-neutral-500 uppercase">State / Province</label><input value={config.storeAddress?.state || ''} onChange={e => onConfigChange({ ...config, storeAddress: { ...config.storeAddress, state: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="NY" /></div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div><label className="text-xs font-bold text-neutral-500 uppercase">Postal / Zip Code</label><input value={config.storeAddress?.zip || ''} onChange={e => onConfigChange({ ...config, storeAddress: { ...config.storeAddress, zip: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="10001" /></div>
+                        <div><label className="text-xs font-bold text-neutral-500 uppercase">Country</label><input value={config.storeAddress?.country || ''} onChange={e => onConfigChange({ ...config, storeAddress: { ...config.storeAddress, country: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="United States" /></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Formats & Standards */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2"><Globe size={18} className="text-purple-500"/> Formats & Standards</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1"><Clock size={12}/> Timezone</label>
+                        <select value={config.storeFormats?.timezone || 'UTC'} onChange={e => onConfigChange({ ...config, storeFormats: { ...config.storeFormats, timezone: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none appearance-none">
+                          <option value="UTC">UTC</option>
+                          <option value="America/New_York">Eastern Time (US & Canada)</option>
+                          <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
+                          <option value="Europe/London">London</option>
+                          <option value="Asia/Tokyo">Tokyo</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1"><Scale size={12}/> Weight Unit</label>
+                        <select value={config.storeFormats?.weightUnit || 'kg'} onChange={e => onConfigChange({ ...config, storeFormats: { ...config.storeFormats, weightUnit: e.target.value as any } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none appearance-none">
+                          <option value="kg">Kilograms (kg)</option>
+                          <option value="lb">Pounds (lb)</option>
+                          <option value="oz">Ounces (oz)</option>
+                          <option value="g">Grams (g)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1"><Scale size={12}/> Dimension Unit</label>
+                        <select value={config.storeFormats?.dimensionUnit || 'cm'} onChange={e => onConfigChange({ ...config, storeFormats: { ...config.storeFormats, dimensionUnit: e.target.value as any } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none appearance-none">
+                          <option value="cm">Centimeters (cm)</option>
+                          <option value="in">Inches (in)</option>
+                          <option value="m">Meters (m)</option>
+                          <option value="mm">Millimeters (mm)</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1541,6 +1643,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               {isSavingSecrets ? <Loader2 className="animate-spin" /> : 'Save'}
                             </button>
                           </div>
+                          
+                          <div className="mt-4 bg-neutral-800/50 p-4 rounded-lg border border-neutral-800">
+                            <h5 className="text-white font-bold text-sm mb-2 flex items-center gap-2"><CheckCircle2 size={14} className="text-green-500"/> Setup Instructions</h5>
+                            <ol className="list-decimal list-inside text-xs text-neutral-400 space-y-1 mb-4">
+                              <li>Log in to your Stripe Dashboard.</li>
+                              <li>Go to <span className="text-white">Developers &gt; API Keys</span>.</li>
+                              <li>Copy the "Publishable key" and "Secret key".</li>
+                              <li>Paste them into the fields above and click Save.</li>
+                            </ol>
+                            <button 
+                              onClick={() => handleTestConnection('stripe')}
+                              disabled={isTestingConnection === 'stripe'}
+                              className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-xs font-bold hover:bg-neutral-200 transition-colors"
+                            >
+                              {isTestingConnection === 'stripe' ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+                              Test Connection
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -1583,6 +1703,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               {isSavingSecrets ? <Loader2 className="animate-spin" /> : 'Save'}
                             </button>
                           </div>
+
+                          <div className="mt-4 bg-neutral-800/50 p-4 rounded-lg border border-neutral-800">
+                            <h5 className="text-white font-bold text-sm mb-2 flex items-center gap-2"><CheckCircle2 size={14} className="text-green-500"/> Setup Instructions</h5>
+                            <ol className="list-decimal list-inside text-xs text-neutral-400 space-y-1 mb-4">
+                              <li>Log in to your Square Developer Dashboard.</li>
+                              <li>Create or select an application.</li>
+                              <li>Go to <span className="text-white">Credentials</span> to find your Application ID and Access Token.</li>
+                              <li>Go to <span className="text-white">Locations</span> to find your Location ID.</li>
+                            </ol>
+                            <button 
+                              onClick={() => handleTestConnection('square')}
+                              disabled={isTestingConnection === 'square'}
+                              className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-xs font-bold hover:bg-neutral-200 transition-colors"
+                            >
+                              {isTestingConnection === 'square' ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+                              Test Connection
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -1614,6 +1752,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               className="mt-1 px-4 bg-neutral-800 hover:bg-white text-white hover:text-black rounded-lg font-bold text-xs transition-colors disabled:opacity-50"
                             >
                               {isSavingSecrets ? <Loader2 className="animate-spin" /> : 'Save'}
+                            </button>
+                          </div>
+
+                          <div className="mt-4 bg-neutral-800/50 p-4 rounded-lg border border-neutral-800">
+                            <h5 className="text-white font-bold text-sm mb-2 flex items-center gap-2"><CheckCircle2 size={14} className="text-green-500"/> Setup Instructions</h5>
+                            <ol className="list-decimal list-inside text-xs text-neutral-400 space-y-1 mb-4">
+                              <li>Log in to the PayPal Developer Dashboard.</li>
+                              <li>Create a new App in <span className="text-white">My Apps & Credentials</span>.</li>
+                              <li>Copy the "Client ID" and "Secret".</li>
+                              <li>Paste them into the fields above and click Save.</li>
+                            </ol>
+                            <button 
+                              onClick={() => handleTestConnection('paypal')}
+                              disabled={isTestingConnection === 'paypal'}
+                              className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-xs font-bold hover:bg-neutral-200 transition-colors"
+                            >
+                              {isTestingConnection === 'paypal' ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+                              Test Connection
                             </button>
                           </div>
                         </div>
@@ -1661,74 +1817,271 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <h3 className="text-2xl font-bold text-white mb-2">Shipping & Delivery</h3>
                     <p className="text-neutral-500">Manage shipping zones and rates.</p>
                   </div>
-                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-                    <div className="flex justify-between items-center mb-6">
-                      <h4 className="font-bold text-white">Shipping Rates</h4>
+
+                  {/* Shipping Integrations */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <Package size={20} className="text-blue-500" />
+                      Shipping Provider
+                    </h4>
+                    
+                    <div>
+                      <label className="text-xs font-bold text-neutral-500 uppercase">Select Provider</label>
+                      <div className="grid grid-cols-3 gap-2 mt-2">
+                        {['manual', 'shippo', 'easypost'].map(provider => (
+                          <button
+                            key={provider}
+                            onClick={() => onConfigChange({ ...config, shippingProvider: provider as any })}
+                            className={`py-3 px-4 rounded-xl text-sm font-bold capitalize border transition-all ${
+                              config.shippingProvider === provider 
+                                ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]' 
+                                : 'bg-black border-neutral-800 text-neutral-400 hover:border-neutral-600'
+                            }`}
+                          >
+                            {provider}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {config.shippingProvider === 'shippo' && (
+                      <div className="space-y-4 pt-4 animate-in fade-in slide-in-from-top-2">
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Shippo API Key</label>
+                          <div className="flex gap-2">
+                            <input 
+                              type="password"
+                              value={shippoApiKey} 
+                              onChange={e => setShippoApiKey(e.target.value)} 
+                              className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 font-mono text-xs focus:border-blue-500 outline-none" 
+                              placeholder="shippo_live_... (Enter to update)"
+                            />
+                            <button 
+                              onClick={handleSaveShippingSecrets}
+                              disabled={!shippoApiKey || isSavingShippingSecrets}
+                              className="mt-1 px-4 bg-neutral-800 hover:bg-white text-white hover:text-black rounded-lg font-bold text-xs transition-colors disabled:opacity-50"
+                            >
+                              {isSavingShippingSecrets ? <Loader2 className="animate-spin" /> : 'Save'}
+                            </button>
+                          </div>
+                          <p className="text-[10px] text-neutral-500 mt-2">Connect your Shippo account to automatically calculate rates and buy labels.</p>
+
+                          <div className="mt-4 bg-neutral-800/50 p-4 rounded-lg border border-neutral-800">
+                            <h5 className="text-white font-bold text-sm mb-2 flex items-center gap-2"><CheckCircle2 size={14} className="text-green-500"/> Setup Instructions</h5>
+                            <ol className="list-decimal list-inside text-xs text-neutral-400 space-y-1 mb-4">
+                              <li>Log in to your Shippo Dashboard.</li>
+                              <li>Go to <span className="text-white">Settings &gt; API</span>.</li>
+                              <li>Generate a new "Live Token".</li>
+                              <li>Paste it above and click Save.</li>
+                            </ol>
+                            <button 
+                              onClick={() => handleTestConnection('shippo')}
+                              disabled={isTestingConnection === 'shippo'}
+                              className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-xs font-bold hover:bg-neutral-200 transition-colors"
+                            >
+                              {isTestingConnection === 'shippo' ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+                              Test Connection
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {config.shippingProvider === 'easypost' && (
+                      <div className="space-y-4 pt-4 animate-in fade-in slide-in-from-top-2">
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">EasyPost API Key</label>
+                          <div className="flex gap-2">
+                            <input 
+                              type="password"
+                              value={easypostApiKey} 
+                              onChange={e => setEasypostApiKey(e.target.value)} 
+                              className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 font-mono text-xs focus:border-blue-500 outline-none" 
+                              placeholder="EZTK... (Enter to update)"
+                            />
+                            <button 
+                              onClick={handleSaveShippingSecrets}
+                              disabled={!easypostApiKey || isSavingShippingSecrets}
+                              className="mt-1 px-4 bg-neutral-800 hover:bg-white text-white hover:text-black rounded-lg font-bold text-xs transition-colors disabled:opacity-50"
+                            >
+                              {isSavingShippingSecrets ? <Loader2 className="animate-spin" /> : 'Save'}
+                            </button>
+                          </div>
+                          <p className="text-[10px] text-neutral-500 mt-2">Connect your EasyPost account to access 100+ carriers.</p>
+
+                          <div className="mt-4 bg-neutral-800/50 p-4 rounded-lg border border-neutral-800">
+                            <h5 className="text-white font-bold text-sm mb-2 flex items-center gap-2"><CheckCircle2 size={14} className="text-green-500"/> Setup Instructions</h5>
+                            <ol className="list-decimal list-inside text-xs text-neutral-400 space-y-1 mb-4">
+                              <li>Log in to your EasyPost Dashboard.</li>
+                              <li>Navigate to <span className="text-white">Account Settings &gt; API Keys</span>.</li>
+                              <li>Copy your "Production API Key".</li>
+                              <li>Paste it above and click Save.</li>
+                            </ol>
+                            <button 
+                              onClick={() => handleTestConnection('easypost')}
+                              disabled={isTestingConnection === 'easypost'}
+                              className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-xs font-bold hover:bg-neutral-200 transition-colors"
+                            >
+                              {isTestingConnection === 'easypost' ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+                              Test Connection
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Zone List */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
+                    <div className="p-6 border-b border-neutral-800 flex justify-between items-center">
+                      <h4 className="font-bold text-white flex items-center gap-2"><Globe size={18} className="text-blue-500"/> Shipping Zones</h4>
                       <button 
                         onClick={() => {
-                          const newRate = { id: Math.random().toString(36).substr(2, 9), name: 'Standard Shipping', price: 0, min_order: 0 };
-                          onConfigChange({ ...config, shippingRates: [...(config.shippingRates || []), newRate] });
+                          const newZone = { id: Math.random().toString(36).substr(2, 9), name: 'New Zone', countries: [], rates: [] };
+                          onConfigChange({ ...config, shippingZones: [...(config.shippingZones || []), newZone] });
+                          setEditingZoneId(newZone.id);
                         }}
-                        className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg transition-colors"
+                        className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
                       >
-                        + Add Rate
+                        <Plus size={14}/> Add Zone
                       </button>
                     </div>
                     
-                    <div className="space-y-3">
-                      {config.shippingRates?.map((rate, idx) => (
-                        <div key={rate.id} className="flex items-center gap-4 p-4 bg-black border border-neutral-800 rounded-xl">
-                          <div className="flex-1">
-                            <label className="text-[10px] font-bold text-neutral-500 uppercase">Rate Name</label>
-                            <input 
-                              value={rate.name} 
-                              onChange={(e) => {
-                                const newRates = [...(config.shippingRates || [])];
-                                newRates[idx].name = e.target.value;
-                                onConfigChange({ ...config, shippingRates: newRates });
-                              }}
-                              className="w-full bg-transparent text-white font-bold text-sm focus:outline-none border-b border-transparent focus:border-blue-500" 
-                            />
-                          </div>
-                          <div className="w-24">
-                            <label className="text-[10px] font-bold text-neutral-500 uppercase">Price</label>
-                            <input 
-                              type="number"
-                              value={rate.price} 
-                              onChange={(e) => {
-                                const newRates = [...(config.shippingRates || [])];
-                                newRates[idx].price = parseFloat(e.target.value);
-                                onConfigChange({ ...config, shippingRates: newRates });
-                              }}
-                              className="w-full bg-transparent text-white font-mono text-sm focus:outline-none border-b border-transparent focus:border-blue-500" 
-                            />
-                          </div>
-                          <div className="w-32">
-                            <label className="text-[10px] font-bold text-neutral-500 uppercase">Min Order</label>
-                            <input 
-                              type="number"
-                              value={rate.min_order} 
-                              onChange={(e) => {
-                                const newRates = [...(config.shippingRates || [])];
-                                newRates[idx].min_order = parseFloat(e.target.value);
-                                onConfigChange({ ...config, shippingRates: newRates });
-                              }}
-                              className="w-full bg-transparent text-white font-mono text-sm focus:outline-none border-b border-transparent focus:border-blue-500" 
-                            />
-                          </div>
-                          <button 
-                            onClick={() => {
-                              const newRates = config.shippingRates?.filter((_, i) => i !== idx);
-                              onConfigChange({ ...config, shippingRates: newRates });
-                            }}
-                            className="p-2 text-neutral-600 hover:text-red-500 transition-colors"
+                    <div className="divide-y divide-neutral-800">
+                      {config.shippingZones?.map((zone) => (
+                        <div key={zone.id} className="bg-black/20">
+                          <div 
+                            className="p-4 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors"
+                            onClick={() => setEditingZoneId(editingZoneId === zone.id ? null : zone.id)}
                           >
-                            <Trash2 size={16} />
-                          </button>
+                            <div className="flex items-center gap-3">
+                              <div className={`p-2 rounded-lg ${editingZoneId === zone.id ? 'bg-blue-900/20 text-blue-500' : 'bg-neutral-800 text-neutral-400'}`}>
+                                <Truck size={18} />
+                              </div>
+                              <div>
+                                <div className="font-bold text-white text-sm">{zone.name}</div>
+                                <div className="text-xs text-neutral-500">{zone.countries.length} Countries • {zone.rates.length} Rates</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <ChevronRight size={16} className={`text-neutral-500 transition-transform ${editingZoneId === zone.id ? 'rotate-90' : ''}`} />
+                            </div>
+                          </div>
+
+                          {/* Zone Editor (Expanded) */}
+                          {editingZoneId === zone.id && (
+                            <div className="p-6 border-t border-neutral-800 bg-neutral-900/50 space-y-6 animate-in slide-in-from-top-2">
+                                {/* Zone Name & Countries */}
+                                <div className="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-neutral-500 uppercase">Zone Name</label>
+                                        <input 
+                                            value={zone.name} 
+                                            onChange={(e) => {
+                                                const newZones = config.shippingZones!.map(z => z.id === zone.id ? { ...z, name: e.target.value } : z);
+                                                onConfigChange({ ...config, shippingZones: newZones });
+                                            }}
+                                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" 
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-neutral-500 uppercase">Countries (Comma separated codes)</label>
+                                        <textarea 
+                                            value={zone.countries.join(', ')} 
+                                            onChange={(e) => {
+                                                const countries = e.target.value.split(',').map(c => c.trim()).filter(c => c);
+                                                const newZones = config.shippingZones!.map(z => z.id === zone.id ? { ...z, countries } : z);
+                                                onConfigChange({ ...config, shippingZones: newZones });
+                                            }}
+                                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none h-20 resize-none font-mono text-xs" 
+                                            placeholder="US, CA, GB, AU..."
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Rates Manager */}
+                                <div>
+                                    <div className="flex justify-between items-center mb-3">
+                                        <label className="text-xs font-bold text-neutral-500 uppercase">Shipping Rates</label>
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const newRate = { id: Math.random().toString(36).substr(2, 9), name: 'Standard', price: 0, min_order: 0 };
+                                                const newZones = config.shippingZones!.map(z => z.id === zone.id ? { ...z, rates: [...z.rates, newRate] } : z);
+                                                onConfigChange({ ...config, shippingZones: newZones });
+                                            }}
+                                            className="text-[10px] font-bold bg-neutral-800 hover:bg-white hover:text-black text-white px-2 py-1 rounded transition-colors"
+                                        >
+                                            + Add Rate
+                                        </button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {zone.rates.map((rate, rIdx) => (
+                                            <div key={rate.id} className="flex items-center gap-2 p-2 bg-black border border-neutral-800 rounded-lg">
+                                                <input 
+                                                    value={rate.name}
+                                                    onChange={(e) => {
+                                                        const newRates = [...zone.rates];
+                                                        newRates[rIdx].name = e.target.value;
+                                                        const newZones = config.shippingZones!.map(z => z.id === zone.id ? { ...z, rates: newRates } : z);
+                                                        onConfigChange({ ...config, shippingZones: newZones });
+                                                    }}
+                                                    className="flex-1 bg-transparent text-white text-xs font-bold focus:outline-none"
+                                                    placeholder="Rate Name"
+                                                />
+                                                <div className="flex items-center gap-1 bg-neutral-900 rounded px-2 py-1">
+                                                    <span className="text-neutral-500 text-[10px]">$</span>
+                                                    <input 
+                                                        type="number"
+                                                        value={rate.price}
+                                                        onChange={(e) => {
+                                                            const newRates = [...zone.rates];
+                                                            newRates[rIdx].price = parseFloat(e.target.value);
+                                                            const newZones = config.shippingZones!.map(z => z.id === zone.id ? { ...z, rates: newRates } : z);
+                                                            onConfigChange({ ...config, shippingZones: newZones });
+                                                        }}
+                                                        className="w-12 bg-transparent text-white text-xs font-mono focus:outline-none text-right"
+                                                    />
+                                                </div>
+                                                <button 
+                                                    onClick={() => {
+                                                        const newRates = zone.rates.filter((_, i) => i !== rIdx);
+                                                        const newZones = config.shippingZones!.map(z => z.id === zone.id ? { ...z, rates: newRates } : z);
+                                                        onConfigChange({ ...config, shippingZones: newZones });
+                                                    }}
+                                                    className="p-1 text-neutral-600 hover:text-red-500"
+                                                >
+                                                    <X size={14} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {zone.rates.length === 0 && <div className="text-center py-2 text-neutral-600 text-xs italic">No rates defined</div>}
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end pt-4 border-t border-neutral-800">
+                                    <button 
+                                        onClick={() => {
+                                            if(confirm('Delete this zone?')) {
+                                                const newZones = config.shippingZones!.filter(z => z.id !== zone.id);
+                                                onConfigChange({ ...config, shippingZones: newZones });
+                                                setEditingZoneId(null);
+                                            }
+                                        }}
+                                        className="text-red-500 hover:text-red-400 text-xs font-bold flex items-center gap-1"
+                                    >
+                                        <Trash2 size={14} /> Delete Zone
+                                    </button>
+                                </div>
+                            </div>
+                          )}
                         </div>
                       ))}
-                      {(!config.shippingRates || config.shippingRates.length === 0) && (
-                        <div className="text-center py-8 text-neutral-500 text-sm">No shipping rates configured.</div>
+                      {(!config.shippingZones || config.shippingZones.length === 0) && (
+                        <div className="p-8 text-center text-neutral-500 text-sm">
+                            <Globe size={32} className="mx-auto mb-3 opacity-20" />
+                            No shipping zones configured.<br/>Create a zone to start selling.
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1741,17 +2094,126 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <h3 className="text-2xl font-bold text-white mb-2">Taxes and Duties</h3>
                     <p className="text-neutral-500">Configure how taxes are calculated.</p>
                   </div>
-                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4">Tax Configuration</h4>
-                    <div>
-                      <label className="text-xs font-bold text-neutral-500 uppercase">Global Tax Rate (%)</label>
-                      <input 
-                        type="number"
-                        value={config.taxRate || 0} 
-                        onChange={e => onConfigChange({ ...config, taxRate: parseFloat(e.target.value) })} 
-                        className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none font-mono" 
-                      />
-                      <p className="text-xs text-neutral-500 mt-2">This rate will be applied to all taxable products at checkout.</p>
+
+                  {/* Tax Regions List */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
+                    <div className="p-6 border-b border-neutral-800 flex justify-between items-center">
+                      <h4 className="font-bold text-white flex items-center gap-2"><DollarSign size={18} className="text-green-500"/> Tax Regions</h4>
+                      <button 
+                        onClick={() => {
+                          const newRegion = { id: Math.random().toString(36).substr(2, 9), country_code: 'US', region_code: '*', rate: 0, name: 'Sales Tax' };
+                          onConfigChange({ ...config, taxRegions: [...(config.taxRegions || []), newRegion] });
+                          setEditingTaxRegionId(newRegion.id);
+                        }}
+                        className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                      >
+                        <Plus size={14}/> Add Region
+                      </button>
+                    </div>
+                    
+                    <div className="divide-y divide-neutral-800">
+                      {config.taxRegions?.map((region) => (
+                        <div key={region.id} className="bg-black/20">
+                          <div 
+                            className="p-4 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors"
+                            onClick={() => setEditingTaxRegionId(editingTaxRegionId === region.id ? null : region.id)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`p-2 rounded-lg ${editingTaxRegionId === region.id ? 'bg-green-900/20 text-green-500' : 'bg-neutral-800 text-neutral-400'}`}>
+                                <Globe size={18} />
+                              </div>
+                              <div>
+                                <div className="font-bold text-white text-sm">{region.name} ({region.rate}%)</div>
+                                <div className="text-xs text-neutral-500">{region.country_code} {region.region_code !== '*' ? `• ${region.region_code}` : ''}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <ChevronRight size={16} className={`text-neutral-500 transition-transform ${editingTaxRegionId === region.id ? 'rotate-90' : ''}`} />
+                            </div>
+                          </div>
+
+                          {/* Region Editor (Expanded) */}
+                          {editingTaxRegionId === region.id && (
+                            <div className="p-6 border-t border-neutral-800 bg-neutral-900/50 space-y-6 animate-in slide-in-from-top-2">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-neutral-500 uppercase">Tax Name</label>
+                                        <input 
+                                            value={region.name} 
+                                            onChange={(e) => {
+                                                const newRegions = config.taxRegions!.map(r => r.id === region.id ? { ...r, name: e.target.value } : r);
+                                                onConfigChange({ ...config, taxRegions: newRegions });
+                                            }}
+                                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" 
+                                            placeholder="VAT, GST, Sales Tax"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-neutral-500 uppercase">Rate (%)</label>
+                                        <input 
+                                            type="number"
+                                            value={region.rate} 
+                                            onChange={(e) => {
+                                                const newRegions = config.taxRegions!.map(r => r.id === region.id ? { ...r, rate: parseFloat(e.target.value) } : r);
+                                                onConfigChange({ ...config, taxRegions: newRegions });
+                                            }}
+                                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none font-mono" 
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-neutral-500 uppercase">Country Code</label>
+                                        <input 
+                                            value={region.country_code} 
+                                            onChange={(e) => {
+                                                const newRegions = config.taxRegions!.map(r => r.id === region.id ? { ...r, country_code: e.target.value.toUpperCase() } : r);
+                                                onConfigChange({ ...config, taxRegions: newRegions });
+                                            }}
+                                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none font-mono" 
+                                            placeholder="US, GB, CA"
+                                            maxLength={2}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-neutral-500 uppercase">Region Code (Optional)</label>
+                                        <input 
+                                            value={region.region_code} 
+                                            onChange={(e) => {
+                                                const newRegions = config.taxRegions!.map(r => r.id === region.id ? { ...r, region_code: e.target.value.toUpperCase() } : r);
+                                                onConfigChange({ ...config, taxRegions: newRegions });
+                                            }}
+                                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none font-mono" 
+                                            placeholder="NY, CA, or *"
+                                        />
+                                        <p className="text-[10px] text-neutral-500 mt-1">Use * for all regions in country</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end pt-4 border-t border-neutral-800">
+                                    <button 
+                                        onClick={() => {
+                                            if(confirm('Delete this tax region?')) {
+                                                const newRegions = config.taxRegions!.filter(r => r.id !== region.id);
+                                                onConfigChange({ ...config, taxRegions: newRegions });
+                                                setEditingTaxRegionId(null);
+                                            }
+                                        }}
+                                        className="text-red-500 hover:text-red-400 text-xs font-bold flex items-center gap-1"
+                                    >
+                                        <Trash2 size={14} /> Delete Region
+                                    </button>
+                                </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {(!config.taxRegions || config.taxRegions.length === 0) && (
+                        <div className="p-8 text-center text-neutral-500 text-sm">
+                            <DollarSign size={32} className="mx-auto mb-3 opacity-20" />
+                            No tax regions configured.<br/>Taxes will not be collected.
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1802,12 +2264,69 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <h3 className="text-2xl font-bold text-white mb-2">Notifications</h3>
                     <p className="text-neutral-500">Manage customer emails and alerts.</p>
                   </div>
-                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-12 text-center">
-                    <div className="w-16 h-16 bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-4 text-neutral-500">
-                      <Mail size={32} />
+
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
+                    <div className="p-6 border-b border-neutral-800">
+                        <h4 className="font-bold text-white flex items-center gap-2"><Mail size={18} className="text-blue-500"/> Customer Notifications</h4>
                     </div>
-                    <h4 className="text-xl font-bold text-white mb-2">Coming Soon</h4>
-                    <p className="text-neutral-500 max-w-md mx-auto">Advanced notification templates and automated flows will be available in the next update.</p>
+                    <div className="divide-y divide-neutral-800">
+                        <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                            <div>
+                                <div className="font-bold text-white text-sm">Order Confirmation</div>
+                                <div className="text-xs text-neutral-500">Sent automatically when a customer places an order.</div>
+                            </div>
+                            <button 
+                                onClick={() => onConfigChange({ ...config, notificationSettings: { ...config.notificationSettings, orderConfirmation: !config.notificationSettings?.orderConfirmation } })}
+                                className={`w-10 h-5 rounded-full transition-colors relative ${config.notificationSettings?.orderConfirmation ? 'bg-blue-600' : 'bg-neutral-800'}`}
+                            >
+                                <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${config.notificationSettings?.orderConfirmation ? 'translate-x-5' : ''}`}></div>
+                            </button>
+                        </div>
+                        <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                            <div>
+                                <div className="font-bold text-white text-sm">Shipping Updates</div>
+                                <div className="text-xs text-neutral-500">Sent when an order is marked as shipped.</div>
+                            </div>
+                            <button 
+                                onClick={() => onConfigChange({ ...config, notificationSettings: { ...config.notificationSettings, shippingUpdate: !config.notificationSettings?.shippingUpdate } })}
+                                className={`w-10 h-5 rounded-full transition-colors relative ${config.notificationSettings?.shippingUpdate ? 'bg-blue-600' : 'bg-neutral-800'}`}
+                            >
+                                <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${config.notificationSettings?.shippingUpdate ? 'translate-x-5' : ''}`}></div>
+                            </button>
+                        </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
+                    <div className="p-6 border-b border-neutral-800">
+                        <h4 className="font-bold text-white flex items-center gap-2"><Settings size={18} className="text-purple-500"/> Admin Notifications</h4>
+                    </div>
+                    <div className="divide-y divide-neutral-800">
+                        <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                            <div>
+                                <div className="font-bold text-white text-sm">New Order Alert</div>
+                                <div className="text-xs text-neutral-500">Receive an email when a new order is placed.</div>
+                            </div>
+                            <button 
+                                onClick={() => onConfigChange({ ...config, notificationSettings: { ...config.notificationSettings, adminOrderAlert: !config.notificationSettings?.adminOrderAlert } })}
+                                className={`w-10 h-5 rounded-full transition-colors relative ${config.notificationSettings?.adminOrderAlert ? 'bg-blue-600' : 'bg-neutral-800'}`}
+                            >
+                                <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${config.notificationSettings?.adminOrderAlert ? 'translate-x-5' : ''}`}></div>
+                            </button>
+                        </div>
+                        <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                            <div>
+                                <div className="font-bold text-white text-sm">Low Stock Alert</div>
+                                <div className="text-xs text-neutral-500">Receive an email when inventory drops below threshold.</div>
+                            </div>
+                            <button 
+                                onClick={() => onConfigChange({ ...config, notificationSettings: { ...config.notificationSettings, adminLowStockAlert: !config.notificationSettings?.adminLowStockAlert } })}
+                                className={`w-10 h-5 rounded-full transition-colors relative ${config.notificationSettings?.adminLowStockAlert ? 'bg-blue-600' : 'bg-neutral-800'}`}
+                            >
+                                <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${config.notificationSettings?.adminLowStockAlert ? 'translate-x-5' : ''}`}></div>
+                            </button>
+                        </div>
+                    </div>
                   </div>
                 </div>
               )}

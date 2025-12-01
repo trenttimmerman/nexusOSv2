@@ -112,11 +112,57 @@ export interface StoreConfig {
 
   // Extended Settings
   supportEmail?: string;
+  shippingProvider?: 'manual' | 'shippo' | 'easypost';
   shippingRates?: { id: string; name: string; price: number; min_order: number }[];
   taxRate?: number;
   policyRefund?: string;
   policyPrivacy?: string;
   policyTerms?: string;
+
+  // Advanced Settings
+  storeAddress?: {
+    street1?: string;
+    street2?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    country?: string;
+    phone?: string;
+  };
+  storeFormats?: {
+    timezone: string;
+    weightUnit: 'kg' | 'lb' | 'oz' | 'g';
+    dimensionUnit: 'cm' | 'in' | 'm' | 'mm';
+    orderIdPrefix?: string;
+    orderIdSuffix?: string;
+  };
+  shippingZones?: {
+    id: string;
+    name: string;
+    countries: string[];
+    rates: {
+      id: string;
+      name: string;
+      price: number;
+      type: 'flat' | 'weight' | 'price';
+      min?: number;
+      max?: number;
+    }[];
+  }[];
+  taxRegions?: {
+    id: string;
+    country: string;
+    region: string;
+    rate: number;
+    taxName: string;
+    shippingTaxed: boolean;
+  }[];
+  notificationSettings?: {
+    orderConfirmation?: boolean;
+    shippingUpdate?: boolean;
+    orderDelivered?: boolean;
+    emailBranding?: boolean;
+  };
 }
 
 export interface ProductImage {

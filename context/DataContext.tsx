@@ -93,7 +93,12 @@ const DEFAULT_STORE_CONFIG: StoreConfig = {
   taxRate: 0,
   policyRefund: '',
   policyPrivacy: '',
-  policyTerms: ''
+  policyTerms: '',
+  storeAddress: {},
+  storeFormats: { timezone: 'UTC', weightUnit: 'kg', dimensionUnit: 'cm' },
+  shippingZones: [],
+  taxRegions: [],
+  notificationSettings: {}
 };
 
 interface DataContextType {
@@ -240,11 +245,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               enableApplePay: configData.enable_apple_pay,
               enableGooglePay: configData.enable_google_pay,
               supportEmail: configData.support_email,
+              shippingProvider: configData.shipping_provider as any,
               shippingRates: configData.shipping_rates,
               taxRate: configData.tax_rate,
               policyRefund: configData.policy_refund,
               policyPrivacy: configData.policy_privacy,
-              policyTerms: configData.policy_terms
+              policyTerms: configData.policy_terms,
+              storeAddress: configData.store_address,
+              storeFormats: configData.store_formats,
+              shippingZones: configData.shipping_zones,
+              taxRegions: configData.tax_regions,
+              notificationSettings: configData.notification_settings
             });
           } else {
              // Reset config if not found for this store
@@ -401,11 +412,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       enable_apple_pay: newConfig.enableApplePay,
       enable_google_pay: newConfig.enableGooglePay,
       support_email: newConfig.supportEmail,
+      shipping_provider: newConfig.shippingProvider,
       shipping_rates: newConfig.shippingRates,
       tax_rate: newConfig.taxRate,
       policy_refund: newConfig.policyRefund,
       policy_privacy: newConfig.policyPrivacy,
       policy_terms: newConfig.policyTerms,
+      store_address: newConfig.storeAddress,
+      store_formats: newConfig.storeFormats,
+      shipping_zones: newConfig.shippingZones,
+      tax_regions: newConfig.taxRegions,
+      notification_settings: newConfig.notificationSettings,
       updated_at: new Date().toISOString()
     };
     // Upsert config for this store
