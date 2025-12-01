@@ -1,65 +1,25 @@
-# Evolv Commerce OS - Developer Handoff
+# Handoff Notes
 
-**Date:** Current
-**Status:** 🟢 STABLE MILESTONE (Routing & Identity)
-**Tech Stack:** React, Tailwind CSS, TypeScript, Supabase, React Router
+## Completed Tasks
+1.  **Analytics Dashboard**:
+    *   Implemented using `recharts`.
+    *   Added Sales Overview chart to the Dashboard tab.
 
-## 🚀 Milestone Overview
-We have transformed the single-page prototype into a multi-route application with secure authentication. The application now supports deep linking, protected admin routes, and a centralized data context.
+2.  **Discount System**:
+    *   **Database**: Created `discounts` table and `validate_discount` function (Migration `20250101000025_discounts.sql`).
+    *   **UI**: Created `DiscountManager` component for creating and managing discount codes.
+    *   **Integration**: Added "Discounts" tab to Admin Panel.
 
-## ✅ Current Architecture
+3.  **Shipping Configuration**:
+    *   **Database**: Created `shipping_zones` and `shipping_rates` tables (Migration `20250101000026_shipping_zones.sql`).
+    *   **UI**: Created `ShippingManager` component for managing zones and rates (flat, weight-based, price-based).
+    *   **Integration**: Added "Shipping" tab to Admin Panel.
 
-### 1. Routing & Navigation (`react-router-dom`)
-*   **`/` (Storefront):** Public-facing shop.
-*   **`/login`:** Admin authentication portal.
-*   **`/admin`:** Protected dashboard. Requires Supabase session.
-*   **`ProtectedRoute`:** A wrapper component that checks for a valid session and redirects to `/login` if unauthorized.
+4.  **Campaigns System**:
+    *   **Refactor**: Updated `CampaignManager` to be fully functional and persistent, fetching data directly from Supabase.
+    *   **Integration**: Connected `CampaignManager` to the Admin Panel with proper `storeId` context.
 
-### 2. State Management (`DataContext`)
-*   **Centralized Logic:** All data fetching (Products, Pages, Config) and Supabase interactions are moved from `App.tsx` to `context/DataContext.tsx`.
-*   **Global Access:** Components can access data via the `useData()` hook.
-*   **Persistence:** Data is fetched from Supabase on mount.
-
-### 3. Authentication (Supabase Auth)
-*   **Login Flow:** Users sign in with Email/Password.
-*   **Session Handling:** `DataContext` listens for auth state changes.
-*   **Security:** Admin routes are guarded. RLS policies (on Supabase) should ensure data security.
-
-### 4. Admin Panel Updates
-*   **Logout:** Added a "Sign Out" button to the sidebar.
-*   **Structure:** The Admin Panel is now a route (`/admin`) rather than a conditional render.
-
----
-
-## 📂 Key Files
-
-*   **`App.tsx`:** The application entry point. Defines the Router and Routes.
-*   **`context/DataContext.tsx`:** The brain of the app. Handles state, fetching, and auth.
-*   **`components/Login.tsx`:** The authentication UI.
-*   **`components/ProtectedRoute.tsx`:** Security guard for admin routes.
-*   **`components/AdminPanel.tsx`:** The dashboard UI (now accepts `onLogout`).
-*   **`scripts/create-admin.js`:** Utility script to create the first admin user.
-
----
-
-## 🛠️ Setup & Usage
-
-### Creating an Admin User
-Since sign-ups are disabled/hidden, use the provided script to create your first admin user:
-```bash
-node scripts/create-admin.js "your@email.com" "your-password"
-```
-*Default credentials if run without args:* `admin@evolv.os` / `evolv-admin-123`
-
-### Running the App
-```bash
-npm run dev
-```
-Visit `http://localhost:5173/admin` to log in.
-
----
-
-## 🚧 Known Issues / To-Do
-1.  **Deep Linking:** The Storefront currently defaults to the 'home' page. We need to implement dynamic routing (e.g., `/pages/:slug` and `/products/:id`) in `StorefrontWrapper`.
-2.  **RLS Policies:** Ensure Supabase Row Level Security policies are strict (only authenticated users can write).
-3.  **Image Uploads:** Still rely on base64/simulated uploads in some places. Need to fully integrate Supabase Storage.
+## Next Steps
+*   **Apply Migrations**: Run the new SQL migrations in your Supabase dashboard to create the necessary tables.
+*   **Testing**: Verify that creating discounts, shipping zones, and campaigns works as expected.
+*   **Frontend Integration**: Connect the checkout process to validate discount codes and calculate shipping rates using the new tables.

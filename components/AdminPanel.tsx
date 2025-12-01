@@ -12,6 +12,8 @@ import { MediaLibrary } from './MediaLibrary';
 import { CampaignManager } from './CampaignManager';
 import { OrderManager } from './OrderManager';
 import { DomainManager } from './DomainManager';
+import { DiscountManager } from './DiscountManager';
+import { ShippingManager } from './ShippingManager';
 import { supabase } from '../lib/supabaseClient';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -53,6 +55,7 @@ import {
   DollarSign,
   Zap,
   ShoppingBag,
+  Truck,
   Plus,
   Loader2,
   Sparkles,
@@ -110,7 +113,8 @@ import {
   Scale,
   Clock,
   Truck,
-  ChevronRight
+  ChevronRight,
+  Tag
 } from 'lucide-react';
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -822,6 +826,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.DASHBOARD, icon: LayoutDashboard, label: 'Command Center' },
           { id: AdminTab.ORDERS, icon: ShoppingBag, label: 'Orders' },
           { id: AdminTab.PRODUCTS, icon: Package, label: 'Products' },
+          { id: AdminTab.DISCOUNTS, icon: Tag, label: 'Discounts' },
+          { id: AdminTab.SHIPPING, icon: Truck, label: 'Shipping' },
           { id: AdminTab.PAGES, icon: FileText, label: 'Pages' },
           { id: AdminTab.MEDIA, icon: FolderOpen, label: 'Media Library' },
           { id: AdminTab.DESIGN, icon: Palette, label: 'Design Studio' },
@@ -1230,6 +1236,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const renderContent = () => {
     switch (activeTab) {
+      case AdminTab.DISCOUNTS:
+        return <DiscountManager storeId={storeId || null} />;
+
+      case AdminTab.SHIPPING:
+        return <ShippingManager storeId={storeId || null} />;
+
       case AdminTab.DESIGN:
         const isAnyModalOpen = isHeaderModalOpen || isSystemModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
         return (
@@ -1585,12 +1597,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
       case AdminTab.CAMPAIGNS:
         return (
-          <CampaignManager
-            campaigns={campaigns}
-            onAddCampaign={onAddCampaign}
-            onUpdateCampaign={onUpdateCampaign}
-            onDeleteCampaign={onDeleteCampaign}
-          />
+          <CampaignManager storeId={storeId || null} />
         );
 
       case AdminTab.SETTINGS:

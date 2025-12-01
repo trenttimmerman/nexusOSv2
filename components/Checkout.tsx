@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CreditCard, Truck, ShieldCheck, ShoppingBag, Loader2 } from 'lucide-react';
+import { ArrowLeft, CreditCard, Truck, ShieldCheck, ShoppingBag, Loader2, Tag, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useData } from '../context/DataContext';
 import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { PaymentForm, CreditCard as SquareCreditCard, ApplePay, GooglePay } from 'react-square-web-payments-sdk';
+import { Discount, ShippingRate, ShippingZone } from '../types';
 
 // Stripe Form Component
 const StripePaymentForm = ({ amount, onProcessPayment, isProcessing }: { amount: number, onProcessPayment: () => void, isProcessing: boolean }) => {
@@ -84,6 +85,125 @@ export const Checkout: React.FC = () => {
     country: 'CA' // Default to Canada
   });
 
+  // Discount & Shipping State
+  const [discountCode, setDiscountCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState<Discount | null>(null);
+  const [discountError, setDiscountError] = useState<string | null>(null);
+  const [isCheckingDiscount, setIsCheckingDiscount] = useState(false);
+  
+  const [shippingRates, setShippingRates] = useState<ShippingRate[]>([]);
+  const [selectedShippingRate, setSelectedShippingRate] = useState<ShippingRate | null>(null);
+  const [isLoadingShipping, setIsLoadingShipping] = useState(false);
+
+  // Fetch Shipping Rates when Country changes
+  useEffect(() => {
+    const fetchShippingRates = async () => {
+      if (!storeId) return;
+      setIsLoadingShipping(true);
+      setShippingRates([]);
+      setSelectedShippingRate(null);
+
+      try {
+        // 1. Find matching zone
+        const { data: zones } = await supabase
+          .from('shipping_zones')
+          .select('*')
+          .eq('store_id', storeId);
+
+        if (!zones) return;
+
+        // Find specific country match first, then fallback to "Rest of World" (empty countries array)
+        let matchedZone = zones.find(z => z.countries && z.countries.includes(customerDetails.country));
+        if (!matchedZone) {
+          matchedZone = zones.find(z => !z.countries || z.countries.length === 0);
+        }
+
+        if (matchedZone) {
+          // 2. Fetch rates for this zone
+          const { data: rates } = await supabase
+            .from('shipping_rates')
+            .select('*')
+            .eq('zone_id', matchedZone.id);
+
+          if (rates) {
+            // Filter rates based on cart total/weight
+            const validRates = rates.filter(rate => {
+              if (rate.type === 'price') {
+                const min = rate.min_value || 0;
+                const max = rate.max_value || Infinity;
+                return cartTotal >= min && cartTotal <= max;
+              }
+              // For weight, we'd need cart weight. Assuming valid for now or skipping if weight-based.
+              // Let's include them but maybe we should have a default weight?
+              return true; 
+            });
+            setShippingRates(validRates);
+            if (validRates.length > 0) {
+              setSelectedShippingRate(validRates[0]); // Default to first option
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching shipping rates:', err);
+      } finally {
+        setIsLoadingShipping(false);
+      }
+    };
+
+    fetchShippingRates();
+  }, [storeId, customerDetails.country, cartTotal]);
+
+  const handleApplyDiscount = async () => {
+    if (!discountCode || !storeId) return;
+    setIsCheckingDiscount(true);
+    setDiscountError(null);
+
+    try {
+      const { data, error } = await supabase.rpc('validate_discount', {
+        p_code: discountCode.toUpperCase(),
+        p_store_id: storeId
+      });
+
+      if (error) throw error;
+
+      if (data) {
+        // Check minimum order amount
+        if (cartTotal < data.min_order_amount) {
+          setDiscountError(`Minimum order amount is $${data.min_order_amount}`);
+          setAppliedDiscount(null);
+        } else {
+          setAppliedDiscount(data as Discount);
+          setDiscountCode(''); // Clear input on success
+        }
+      } else {
+        setDiscountError('Invalid or expired discount code');
+        setAppliedDiscount(null);
+      }
+    } catch (err: any) {
+      console.error('Discount validation error:', err);
+      setDiscountError('Failed to validate discount');
+    } finally {
+      setIsCheckingDiscount(false);
+    }
+  };
+
+  const removeDiscount = () => {
+    setAppliedDiscount(null);
+    setDiscountError(null);
+  };
+
+  // Calculate Totals
+  const discountAmount = appliedDiscount 
+    ? (appliedDiscount.type === 'percentage' 
+        ? cartTotal * (appliedDiscount.value / 100) 
+        : appliedDiscount.value)
+    : 0;
+  
+  // Ensure discount doesn't exceed total
+  const actualDiscount = Math.min(discountAmount, cartTotal);
+  const subtotalAfterDiscount = Math.max(0, cartTotal - actualDiscount);
+  const shippingCost = selectedShippingRate ? selectedShippingRate.amount : 0;
+
   // Tax Calculation Logic
   const calculateTaxes = (subtotal: number, country: string, state: string) => {
     if (!config.taxRegions) return { totalTax: 0, breakdown: [] };
@@ -110,8 +230,8 @@ export const Checkout: React.FC = () => {
     return { totalTax, breakdown };
   };
 
-  const { totalTax, breakdown: taxBreakdown } = calculateTaxes(cartTotal, customerDetails.country, customerDetails.state);
-  const orderTotal = cartTotal + totalTax;
+  const { totalTax, breakdown: taxBreakdown } = calculateTaxes(subtotalAfterDiscount, customerDetails.country, customerDetails.state);
+  const orderTotal = subtotalAfterDiscount + totalTax + shippingCost;
 
   useEffect(() => {
     if (config.paymentProvider === 'stripe' && config.stripePublishableKey) {
@@ -379,6 +499,42 @@ export const Checkout: React.FC = () => {
                 <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">Country Code</label>
                 <input name="country" value={customerDetails.country} onChange={handleInputChange} type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="CA" maxLength={2} />
               </div>
+
+              {/* Shipping Method Selection */}
+              <div className="col-span-2 mt-4 pt-4 border-t border-neutral-100">
+                <h3 className="text-sm font-bold mb-3 flex items-center gap-2"><Truck size={16} /> Shipping Method</h3>
+                {isLoadingShipping ? (
+                  <div className="flex items-center gap-2 text-sm text-neutral-500">
+                    <Loader2 size={14} className="animate-spin" /> Calculating rates...
+                  </div>
+                ) : shippingRates.length > 0 ? (
+                  <div className="space-y-2">
+                    {shippingRates.map(rate => (
+                      <label key={rate.id} className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${selectedShippingRate?.id === rate.id ? 'border-black bg-neutral-50' : 'border-neutral-200 hover:border-neutral-300'}`}>
+                        <div className="flex items-center gap-3">
+                          <input 
+                            type="radio" 
+                            name="shippingRate" 
+                            checked={selectedShippingRate?.id === rate.id}
+                            onChange={() => setSelectedShippingRate(rate)}
+                            className="accent-black"
+                          />
+                          <div>
+                            <div className="font-bold text-sm">{rate.name}</div>
+                            <div className="text-xs text-neutral-500 capitalize">{rate.type} Based</div>
+                          </div>
+                        </div>
+                        <div className="font-bold text-sm">${rate.amount.toFixed(2)}</div>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-neutral-500 italic">
+                    Enter your shipping address to see available rates.
+                  </div>
+                )}
+              </div>
+
               {step === 'shipping' && (
                 <div className="col-span-2 mt-4">
                   <button 
@@ -532,13 +688,62 @@ export const Checkout: React.FC = () => {
             </div>
             
             <div className="space-y-3 border-t border-neutral-100 pt-6">
+              {/* Discount Code Input */}
+              <div className="mb-4">
+                {appliedDiscount ? (
+                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      <Tag size={16} className="text-green-600" />
+                      <div>
+                        <div className="text-sm font-bold text-green-700">{appliedDiscount.code}</div>
+                        <div className="text-xs text-green-600">
+                          {appliedDiscount.type === 'percentage' ? `${appliedDiscount.value}% Off` : `$${appliedDiscount.value} Off`}
+                        </div>
+                      </div>
+                    </div>
+                    <button onClick={removeDiscount} className="text-xs font-bold text-green-700 hover:underline">Remove</button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input 
+                        value={discountCode}
+                        onChange={(e) => setDiscountCode(e.target.value)}
+                        placeholder="Discount code"
+                        className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black"
+                      />
+                      <button 
+                        onClick={handleApplyDiscount}
+                        disabled={!discountCode || isCheckingDiscount}
+                        className="px-4 py-2 bg-neutral-900 text-white text-sm font-bold rounded-lg hover:bg-neutral-800 disabled:opacity-50"
+                      >
+                        {isCheckingDiscount ? <Loader2 size={14} className="animate-spin" /> : 'Apply'}
+                      </button>
+                    </div>
+                    {discountError && (
+                      <div className="flex items-center gap-1 text-xs text-red-500 font-medium">
+                        <AlertCircle size={12} /> {discountError}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div className="flex justify-between text-sm text-neutral-600">
                 <span>Subtotal</span>
                 <span>${cartTotal.toFixed(2)}</span>
               </div>
+              
+              {appliedDiscount && (
+                <div className="flex justify-between text-sm text-green-600 font-medium">
+                  <span>Discount</span>
+                  <span>-${actualDiscount.toFixed(2)}</span>
+                </div>
+              )}
+
               <div className="flex justify-between text-sm text-neutral-600">
                 <span>Shipping</span>
-                <span>Free</span>
+                <span>{selectedShippingRate ? `$${selectedShippingRate.amount.toFixed(2)}` : 'Calculated at next step'}</span>
               </div>
               
               {/* Tax Breakdown */}

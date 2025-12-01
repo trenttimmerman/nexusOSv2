@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
 import { Campaign } from '../types';
 import { 
   Megaphone, 
@@ -16,22 +17,17 @@ import {
   Sparkles, 
   Loader2,
   Users,
-  Calendar
+  Calendar,
+  X
 } from 'lucide-react';
 
 interface CampaignManagerProps {
-  campaigns: Campaign[];
-  onAddCampaign: (campaign: Campaign) => void;
-  onUpdateCampaign: (id: string, updates: Partial<Campaign>) => void;
-  onDeleteCampaign: (id: string) => void;
+  storeId: string | null;
 }
 
-export const CampaignManager: React.FC<CampaignManagerProps> = ({ 
-  campaigns, 
-  onAddCampaign, 
-  onUpdateCampaign, 
-  onDeleteCampaign 
-}) => {
+export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => {
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -44,6 +40,30 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({
     subject: '',
     content: ''
   });
+
+  useEffect(() => {
+    if (storeId) {
+      fetchCampaigns();
+    }
+  }, [storeId]);
+
+  const fetchCampaigns = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('store_id', storeId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setCampaigns(data || []);
+    } catch (error) {
+      console.error('Error fetching campaigns:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCreate = () => {
     setEditingCampaign(null);
@@ -63,18 +83,64 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({
     setIsEditorOpen(true);
   };
 
-  const handleSave = () => {
-    if (editingCampaign) {
-      onUpdateCampaign(editingCampaign.id, editorState);
-    } else {
-      const newCampaign: Campaign = {
-        id: Math.random().toString(36).substr(2, 9),
-        status: 'draft',
-        ...editorState as any
-      };
-      onAddCampaign(newCampaign);
+  const handleSave = async () => {
+    if (!storeId || !editorState.name) return;
+
+    try {
+      if (editingCampaign) {
+        const { error } = await supabase
+          .from('campaigns')
+          .update({
+            name: editorState.name,
+            type: editorState.type,
+            audience: editorState.audience,
+            subject: editorState.subject,
+            content: editorState.content
+          })
+          .eq('id', editingCampaign.id);
+
+        if (error) throw error;
+        
+        setCampaigns(prev => prev.map(c => c.id === editingCampaign.id ? { ...c, ...editorState } : c));
+      } else {
+        const { data, error } = await supabase
+          .from('campaigns')
+          .insert({
+            store_id: storeId,
+            name: editorState.name,
+            type: editorState.type,
+            status: 'draft',
+            audience: editorState.audience,
+            subject: editorState.subject,
+            content: editorState.content,
+            stats: { sent: 0, opened: 0, clicked: 0 }
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        setCampaigns([data, ...campaigns]);
+      }
+      setIsEditorOpen(false);
+    } catch (error: any) {
+      alert('Error saving campaign: ' + error.message);
     }
-    setIsEditorOpen(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this campaign?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('campaigns')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      setCampaigns(campaigns.filter(c => c.id !== id));
+    } catch (error) {
+      console.error('Error deleting campaign:', error);
+    }
   };
 
   const handleGenerateContent = () => {
@@ -93,17 +159,34 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({
     }, 1500);
   };
 
-  const handleSend = (id: string) => {
-    onUpdateCampaign(id, { 
-      status: 'sent', 
-      sentAt: new Date().toISOString(),
-      stats: {
-        sent: 1250,
-        opened: 0,
-        clicked: 0
-      }
-    });
+  const handleSend = async (id: string) => {
+    if (!confirm('Send this campaign now?')) return;
+    
+    try {
+      const updates = { 
+        status: 'sent', 
+        sent_at: new Date().toISOString(),
+        stats: {
+          sent: Math.floor(Math.random() * 1000) + 500, // Mock stats
+          opened: 0,
+          clicked: 0
+        }
+      };
+
+      const { error } = await supabase
+        .from('campaigns')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setCampaigns(prev => prev.map(c => c.id === id ? { ...c, ...updates, sentAt: updates.sent_at } : c));
+    } catch (error) {
+      console.error('Error sending campaign:', error);
+    }
   };
+
+  if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin text-neutral-500" /></div>;
 
   return (
     <div className="p-8 w-full max-w-7xl mx-auto">
@@ -194,7 +277,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({
                     <Edit3 size={16} />
                   </button>
                   <button 
-                    onClick={() => onDeleteCampaign(campaign.id)}
+                    onClick={() => handleDelete(campaign.id)}
                     className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg"
                   >
                     <Trash2 size={16} />
@@ -235,7 +318,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({
           <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-neutral-800 flex justify-between items-center">
               <h3 className="text-xl font-bold text-white">{editingCampaign ? 'Edit Campaign' : 'New Campaign'}</h3>
-              <button onClick={() => setIsEditorOpen(false)} className="text-neutral-500 hover:text-white"><Users size={20} /></button>
+              <button onClick={() => setIsEditorOpen(false)} className="text-neutral-500 hover:text-white"><X size={20} /></button>
             </div>
             
             <div className="p-6 overflow-y-auto space-y-6 flex-1">

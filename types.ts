@@ -12,6 +12,8 @@ export enum AdminTab {
   MEDIA = 'MEDIA',
   DESIGN = 'DESIGN',
   CAMPAIGNS = 'CAMPAIGNS',
+  DISCOUNTS = 'DISCOUNTS',
+  SHIPPING = 'SHIPPING',
   SETTINGS = 'SETTINGS',
   PLATFORM = 'PLATFORM'
 }
@@ -367,6 +369,40 @@ export interface Domain {
   domain: string;
   status: 'pending' | 'active' | 'error';
   verified_at?: string;
+  created_at: string;
+}
+
+export interface Discount {
+  id: string;
+  store_id: string;
+  code: string;
+  type: 'percentage' | 'fixed';
+  value: number;
+  min_order_amount: number;
+  starts_at: string;
+  ends_at?: string;
+  usage_limit?: number;
+  usage_count: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface ShippingZone {
+  id: string;
+  store_id: string;
+  name: string;
+  countries: string[];
+  created_at: string;
+}
+
+export interface ShippingRate {
+  id: string;
+  zone_id: string;
+  name: string;
+  type: 'flat' | 'weight' | 'price';
+  amount: number;
+  min_value?: number;
+  max_value?: number;
   created_at: string;
 }
 
