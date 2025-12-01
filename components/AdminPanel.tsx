@@ -176,7 +176,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             product_card_style: 'minimal',
             tax_regions: [
               { id: 'ca-gst', country_code: 'CA', region_code: '*', rate: 5, name: 'GST' },
-              { id: 'ca-on-hst', country_code: 'CA', region_code: 'ON', rate: 13, name: 'HST' }
+              { id: 'ca-on-hst', country_code: 'CA', region_code: 'ON', rate: 8, name: 'HST (Provincial)' }
             ]
         });
 
@@ -410,7 +410,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     if (type === 'CA') {
         const newRegions = [
             { id: Math.random().toString(36).substr(2, 9), country_code: 'CA', region_code: '*', rate: 5, name: 'GST' },
-            { id: Math.random().toString(36).substr(2, 9), country_code: 'CA', region_code: 'ON', rate: 13, name: 'HST' },
+            { id: Math.random().toString(36).substr(2, 9), country_code: 'CA', region_code: 'ON', rate: 8, name: 'HST (Provincial)' },
             { id: Math.random().toString(36).substr(2, 9), country_code: 'CA', region_code: 'BC', rate: 7, name: 'PST' },
             { id: Math.random().toString(36).substr(2, 9), country_code: 'CA', region_code: 'QC', rate: 9.975, name: 'QST' }
         ];

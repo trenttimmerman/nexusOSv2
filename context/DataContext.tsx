@@ -99,7 +99,7 @@ const DEFAULT_STORE_CONFIG: StoreConfig = {
   shippingZones: [],
   taxRegions: [
       { id: 'ca-gst', country_code: 'CA', region_code: '*', rate: 5, name: 'GST' },
-      { id: 'ca-on-hst', country_code: 'CA', region_code: 'ON', rate: 13, name: 'HST' }
+      { id: 'ca-on-hst', country_code: 'CA', region_code: 'ON', rate: 8, name: 'HST (Provincial)' }
   ],
   notificationSettings: {}
 };

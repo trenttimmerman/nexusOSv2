@@ -79,8 +79,39 @@ export const Checkout: React.FC = () => {
     email: '',
     address: '',
     city: '',
-    postalCode: ''
+    state: '',
+    postalCode: '',
+    country: 'CA' // Default to Canada
   });
+
+  // Tax Calculation Logic
+  const calculateTaxes = (subtotal: number, country: string, state: string) => {
+    if (!config.taxRegions) return { totalTax: 0, breakdown: [] };
+
+    const applicableTaxes = config.taxRegions.filter(region => {
+      // Match Country
+      if (region.country_code !== country) return false;
+      
+      // Match Region (Wildcard or Specific)
+      if (region.region_code === '*') return true;
+      if (region.region_code === state) return true;
+      
+      return false;
+    });
+
+    const breakdown = applicableTaxes.map(tax => ({
+      name: tax.name,
+      rate: tax.rate,
+      amount: subtotal * (tax.rate / 100)
+    }));
+
+    const totalTax = breakdown.reduce((sum, tax) => sum + tax.amount, 0);
+    
+    return { totalTax, breakdown };
+  };
+
+  const { totalTax, breakdown: taxBreakdown } = calculateTaxes(cartTotal, customerDetails.country, customerDetails.state);
+  const orderTotal = cartTotal + totalTax;
 
   useEffect(() => {
     if (config.paymentProvider === 'stripe' && config.stripePublishableKey) {
@@ -161,24 +192,24 @@ export const Checkout: React.FC = () => {
         customerId = customer.id;
       }
 
-      // 2. Create Order
+          // 2. Create Order
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
           store_id: storeId,
           customer_id: customerId,
-          total_amount: cartTotal * 1.08, // Including tax
+          total_amount: orderTotal, // Calculated total
           status: 'pending',
           payment_status: 'paid',
           shipping_address_line1: customerDetails.address,
           shipping_city: customerDetails.city,
+          shipping_state: customerDetails.state,
           shipping_postal_code: customerDetails.postalCode,
+          shipping_country: customerDetails.country,
           customer_email: customerDetails.email
         })
         .select()
-        .single();
-
-      if (orderError) throw orderError;
+        .single();      if (orderError) throw orderError;
 
       // 3. Create Order Items
       const orderItems = items.map(item => ({
@@ -331,11 +362,19 @@ export const Checkout: React.FC = () => {
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">City</label>
-                <input name="city" value={customerDetails.city} onChange={handleInputChange} type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="New York" />
+                <input name="city" value={customerDetails.city} onChange={handleInputChange} type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="Toronto" />
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">Province / State Code</label>
+                <input name="state" value={customerDetails.state} onChange={handleInputChange} type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="ON" maxLength={2} />
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">Postal Code</label>
-                <input name="postalCode" value={customerDetails.postalCode} onChange={handleInputChange} type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="10001" />
+                <input name="postalCode" value={customerDetails.postalCode} onChange={handleInputChange} type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="M5V 2T6" />
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">Country Code</label>
+                <input name="country" value={customerDetails.country} onChange={handleInputChange} type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="CA" maxLength={2} />
               </div>
               {step === 'shipping' && (
                 <div className="col-span-2 mt-4">
@@ -361,7 +400,7 @@ export const Checkout: React.FC = () => {
               {config.paymentProvider === 'stripe' && stripePromise && (
                 <Elements stripe={stripePromise}>
                   <StripePaymentForm 
-                    amount={cartTotal * 1.08} 
+                    amount={orderTotal} 
                     onProcessPayment={handlePlaceOrder} 
                     isProcessing={isProcessing} 
                   />
@@ -378,8 +417,8 @@ export const Checkout: React.FC = () => {
                         purchase_units: [
                           {
                             amount: {
-                              currency_code: "USD",
-                              value: (cartTotal * 1.08).toFixed(2),
+                              currency_code: config.currency || "USD",
+                              value: orderTotal.toFixed(2),
                             },
                           },
                         ],
@@ -442,7 +481,7 @@ export const Checkout: React.FC = () => {
                     disabled={isProcessing}
                     className="w-full py-3 bg-black text-white rounded-xl font-bold hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    {isProcessing ? <Loader2 className="animate-spin" /> : `Place Order ($${(cartTotal * 1.08).toFixed(2)})`}
+                    {isProcessing ? <Loader2 className="animate-spin" /> : `Place Order ($${orderTotal.toFixed(2)})`}
                   </button>
                 </div>
               )}
@@ -498,13 +537,25 @@ export const Checkout: React.FC = () => {
                 <span>Shipping</span>
                 <span>Free</span>
               </div>
-              <div className="flex justify-between text-sm text-neutral-600">
-                <span>Taxes</span>
-                <span>${(cartTotal * 0.08).toFixed(2)}</span>
-              </div>
+              
+              {/* Tax Breakdown */}
+              {taxBreakdown.length > 0 ? (
+                taxBreakdown.map((tax, idx) => (
+                  <div key={idx} className="flex justify-between text-sm text-neutral-600">
+                    <span>{tax.name} ({tax.rate}%)</span>
+                    <span>${tax.amount.toFixed(2)}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex justify-between text-sm text-neutral-600">
+                  <span>Taxes</span>
+                  <span>${totalTax.toFixed(2)}</span>
+                </div>
+              )}
+
               <div className="flex justify-between text-lg font-bold pt-3 border-t border-neutral-100">
                 <span>Total</span>
-                <span>${(cartTotal * 1.08).toFixed(2)}</span>
+                <span>${orderTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>
