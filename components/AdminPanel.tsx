@@ -13,6 +13,7 @@ import { CampaignManager } from './CampaignManager';
 import { OrderManager } from './OrderManager';
 import { DomainManager } from './DomainManager';
 import { supabase } from '../lib/supabaseClient';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const SCROLLBAR_OPTIONS = [
   { id: 'native', name: 'Native', description: 'Default browser scrollbar' },
@@ -214,7 +215,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [dashboardStats, setDashboardStats] = useState({
     revenue: 0,
     orders: 0,
-    activeUsers: 0
+    activeUsers: 0,
+    salesData: [] as { date: string; sales: number }[]
   });
 
   useEffect(() => {
@@ -225,10 +227,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const fetchDashboardStats = async () => {
     try {
-      // Fetch Orders for Revenue & Count
+      // Fetch Orders for Revenue & Count (Last 30 Days for Chart)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
       let ordersQuery = supabase
         .from('orders')
-        .select('total_amount');
+        .select('total_amount, created_at')
+        .gte('created_at', thirtyDaysAgo.toISOString());
       
       if (storeId) {
         ordersQuery = ordersQuery.eq('store_id', storeId);
@@ -237,13 +243,45 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       const { data: orders, error: ordersError } = await ordersQuery;
       
       if (ordersError) {
-        // If table doesn't exist yet (migration not run), fail gracefully
         console.warn('Could not fetch orders:', ordersError.message);
         return;
       }
 
-      const totalRevenue = orders?.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0) || 0;
-      const totalOrders = orders?.length || 0;
+      // Calculate Totals (Note: This is only for last 30 days now, ideally we'd have a separate query for all-time totals)
+      // For now, let's fetch ALL-TIME totals separately to be accurate
+      let allTimeOrdersQuery = supabase
+        .from('orders')
+        .select('total_amount');
+      
+      if (storeId) {
+        allTimeOrdersQuery = allTimeOrdersQuery.eq('store_id', storeId);
+      }
+      
+      const { data: allOrders } = await allTimeOrdersQuery;
+      const totalRevenue = allOrders?.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0) || 0;
+      const totalOrders = allOrders?.length || 0;
+
+      // Process Sales Data for Chart
+      const salesMap = new Map<string, number>();
+      const today = new Date();
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        salesMap.set(dateStr, 0);
+      }
+
+      orders?.forEach(order => {
+        const dateStr = new Date(order.created_at).toISOString().split('T')[0];
+        if (salesMap.has(dateStr)) {
+          salesMap.set(dateStr, (salesMap.get(dateStr) || 0) + (Number(order.total_amount) || 0));
+        }
+      });
+
+      const salesData = Array.from(salesMap.entries()).map(([date, sales]) => ({
+        date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        sales
+      }));
 
       // Fetch Customers (Active Users)
       let customersQuery = supabase
@@ -259,7 +297,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       setDashboardStats({
         revenue: totalRevenue,
         orders: totalOrders,
-        activeUsers: userCount || 0
+        activeUsers: userCount || 0,
+        salesData
       });
 
     } catch (error) {
@@ -1395,6 +1434,46 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <div><div className="text-neutral-500 text-sm font-bold uppercase">Customers</div><div className="text-2xl font-bold text-white">{dashboardStats.activeUsers}</div></div>
                 </div>
                 <div className="h-2 bg-neutral-800 rounded-full overflow-hidden"><div className="h-full w-[80%] bg-green-600"></div></div>
+              </div>
+            </div>
+
+            {/* ANALYTICS CHART */}
+            <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-lg font-bold text-white">Sales Overview</h3>
+                  <p className="text-sm text-neutral-500">Revenue over the last 30 days</p>
+                </div>
+                <div className="flex gap-2">
+                  <div className="px-3 py-1 bg-neutral-800 rounded-lg text-xs font-bold text-neutral-400">30 Days</div>
+                </div>
+              </div>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dashboardStats.salesData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                    <XAxis 
+                      dataKey="date" 
+                      stroke="#666" 
+                      fontSize={12} 
+                      tickLine={false} 
+                      axisLine={false} 
+                    />
+                    <YAxis 
+                      stroke="#666" 
+                      fontSize={12} 
+                      tickLine={false} 
+                      axisLine={false} 
+                      tickFormatter={(value) => `$${value}`} 
+                    />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#171717', border: '1px solid #333', borderRadius: '8px' }}
+                      itemStyle={{ color: '#fff' }}
+                      cursor={{ fill: '#333', opacity: 0.4 }}
+                    />
+                    <Bar dataKey="sales" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </div>
