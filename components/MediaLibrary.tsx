@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { MediaAsset } from '../types';
-import { Upload, Link, Trash2, Image as ImageIcon, Box, Film, Copy, Check } from 'lucide-react';
+import { Upload, Link, Trash2, Image as ImageIcon, Box, Film, Copy, Check, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
 
 interface MediaLibraryProps {
   assets: MediaAsset[];
@@ -13,27 +14,49 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({ assets, onAddAsset, 
   const [urlInput, setUrlInput] = useState('');
   const [nameInput, setNameInput] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `public/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('media')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('media')
+        .getPublicUrl(filePath);
+
       const type = file.type.startsWith('image/') ? 'image' : file.name.endsWith('.glb') || file.name.endsWith('.gltf') ? 'model' : 'video';
       
       const newAsset: MediaAsset = {
         id: Math.random().toString(36).substr(2, 9),
-        url: reader.result as string,
+        url: publicUrl,
         name: file.name,
         type: type as 'image' | 'model' | 'video',
         size: file.size,
         createdAt: new Date().toISOString()
       };
       onAddAsset(newAsset);
-    };
-    reader.readAsDataURL(file);
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      alert('Failed to upload file: ' + error.message);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   const handleUrlAdd = () => {
@@ -85,9 +108,10 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({ assets, onAddAsset, 
           </button>
           <button 
             onClick={() => fileInputRef.current?.click()}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center gap-2 transition-all"
+            disabled={isUploading}
+            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Upload size={18} /> Upload
+            {isUploading ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />} Upload
           </button>
           <input 
             type="file" 

@@ -87,7 +87,13 @@ const DEFAULT_STORE_CONFIG: StoreConfig = {
   scrollbarStyle: 'native',
   primaryColor: '#3b82f6',
   logoUrl: '',
-  logoHeight: 32
+  logoHeight: 32,
+  supportEmail: '',
+  shippingRates: [],
+  taxRate: 0,
+  policyRefund: '',
+  policyPrivacy: '',
+  policyTerms: ''
 };
 
 interface DataContextType {
@@ -225,7 +231,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               scrollbarStyle: configData.scrollbar_style as any,
               primaryColor: configData.primary_color,
               logoUrl: configData.logo_url,
-              logoHeight: configData.logo_height
+              logoHeight: configData.logo_height,
+              paymentProvider: configData.payment_provider as any,
+              stripePublishableKey: configData.stripe_publishable_key,
+              paypalClientId: configData.paypal_client_id,
+              squareApplicationId: configData.square_application_id,
+              squareLocationId: configData.square_location_id,
+              enableApplePay: configData.enable_apple_pay,
+              enableGooglePay: configData.enable_google_pay,
+              supportEmail: configData.support_email,
+              shippingRates: configData.shipping_rates,
+              taxRate: configData.tax_rate,
+              policyRefund: configData.policy_refund,
+              policyPrivacy: configData.policy_privacy,
+              policyTerms: configData.policy_terms
             });
           } else {
              // Reset config if not found for this store
@@ -374,6 +393,19 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       primary_color: newConfig.primaryColor,
       logo_url: newConfig.logoUrl,
       logo_height: newConfig.logoHeight,
+      payment_provider: newConfig.paymentProvider,
+      stripe_publishable_key: newConfig.stripePublishableKey,
+      paypal_client_id: newConfig.paypalClientId,
+      square_application_id: newConfig.squareApplicationId,
+      square_location_id: newConfig.squareLocationId,
+      enable_apple_pay: newConfig.enableApplePay,
+      enable_google_pay: newConfig.enableGooglePay,
+      support_email: newConfig.supportEmail,
+      shipping_rates: newConfig.shippingRates,
+      tax_rate: newConfig.taxRate,
+      policy_refund: newConfig.policyRefund,
+      policy_privacy: newConfig.policyPrivacy,
+      policy_terms: newConfig.policyTerms,
       updated_at: new Date().toISOString()
     };
     // Upsert config for this store

@@ -101,7 +101,8 @@ import {
   Pencil,
   AlertTriangle,
   Repeat,
-  FolderOpen
+  FolderOpen,
+  CreditCard
 } from 'lucide-react';
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -137,6 +138,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
   const [isCreatingTenant, setIsCreatingTenant] = useState(false);
+
+  // Settings State
+  const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'payments' | 'shipping' | 'taxes' | 'policies' | 'notifications'>('general');
 
   const handleCreateTenant = async () => {
     if (!newTenantName || !newTenantSlug) return;
@@ -303,6 +307,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setIsProductEditorOpen(true);
   };
 
+  // Payment Settings State
+  const [stripeSecretKey, setStripeSecretKey] = useState('');
+  const [paypalSecretKey, setPaypalSecretKey] = useState('');
+  const [squareAccessToken, setSquareAccessToken] = useState('');
+  const [isSavingSecrets, setIsSavingSecrets] = useState(false);
+
+  const handleSaveSecrets = async () => {
+    if (!storeId) return;
+    setIsSavingSecrets(true);
+    try {
+      const { error } = await supabase
+        .from('store_secrets')
+        .upsert({ 
+          store_id: storeId,
+          stripe_secret_key: stripeSecretKey || null,
+          paypal_client_secret: paypalSecretKey || null,
+          square_access_token: squareAccessToken || null
+        });
+
+      if (error) throw error;
+      alert('Payment secrets saved successfully');
+      setStripeSecretKey(''); // Clear for security
+      setPaypalSecretKey('');
+      setSquareAccessToken('');
+    } catch (error: any) {
+      console.error('Error saving secrets:', error);
+      alert('Failed to save secrets: ' + error.message);
+    } finally {
+      setIsSavingSecrets(false);
+    }
+  };
+
 
   // Campaign State
   const [generatedEmail, setGeneratedEmail] = useState('');
@@ -349,6 +385,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Logo Upload State
   const [logoMode, setLogoMode] = useState<'text' | 'image'>(config.logoUrl ? 'image' : 'text');
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   // Live Preview State
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
@@ -577,14 +614,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // ----------------------------------
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onConfigChange({ ...config, logoUrl: reader.result as string });
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    setIsUploadingLogo(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo_${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `public/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('media')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('media')
+        .getPublicUrl(filePath);
+
+      onConfigChange({ ...config, logoUrl: publicUrl });
+    } catch (error: any) {
+      console.error('Error uploading logo:', error);
+      alert('Failed to upload logo: ' + error.message);
+    } finally {
+      setIsUploadingLogo(false);
     }
   };
 
@@ -704,7 +759,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
               {logoMode === 'image' && (
                 <div className="space-y-2">
-                  <label className="flex items-center justify-center gap-2 w-full p-3 border border-dashed border-neutral-700 rounded bg-black cursor-pointer hover:border-blue-500"><Upload size={14} className="text-neutral-400" /><span className="text-xs text-neutral-400">Upload Image</span><input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label>
+                  <label className={`flex items-center justify-center gap-2 w-full p-3 border border-dashed border-neutral-700 rounded bg-black cursor-pointer hover:border-blue-500 ${isUploadingLogo ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    {isUploadingLogo ? <Loader2 size={14} className="animate-spin text-neutral-400" /> : <Upload size={14} className="text-neutral-400" />}
+                    <span className="text-xs text-neutral-400">{isUploadingLogo ? 'Uploading...' : 'Upload Image'}</span>
+                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" disabled={isUploadingLogo} />
+                  </label>
                   <input type="range" min="20" max="120" value={config.logoHeight || 32} onChange={(e) => onConfigChange({ ...config, logoHeight: parseInt(e.target.value) })} className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                 </div>
               )}
@@ -1369,25 +1428,389 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
       case AdminTab.SETTINGS:
         return (
-          <div className="p-8 w-full max-w-3xl mx-auto">
-            <div className="mb-8">
-              <h2 className="text-3xl font-black text-white tracking-tight">Store Settings</h2>
-              <p className="text-neutral-500">Configure your store identity and preferences</p>
+          <div className="flex h-full bg-neutral-950">
+            {/* Settings Sidebar */}
+            <div className="w-64 border-r border-neutral-800 bg-neutral-900/50 p-4 flex flex-col gap-1">
+              <div className="px-4 py-4 mb-2">
+                <h2 className="text-xl font-black text-white tracking-tight">Settings</h2>
+                <p className="text-xs text-neutral-500">Store Configuration</p>
+              </div>
+              {[
+                { id: 'general', label: 'General', icon: Settings },
+                { id: 'payments', label: 'Payments', icon: CreditCard },
+                { id: 'shipping', label: 'Shipping & Delivery', icon: Package },
+                { id: 'taxes', label: 'Taxes and Duties', icon: DollarSign },
+                { id: 'policies', label: 'Legal Policies', icon: FileText },
+                { id: 'notifications', label: 'Notifications', icon: Mail },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveSettingsTab(item.id as any)}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    activeSettingsTab === item.id
+                      ? 'bg-blue-600/10 text-blue-500 border border-blue-600/20'
+                      : 'text-neutral-400 hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <item.icon size={16} />
+                  {item.label}
+                </button>
+              ))}
             </div>
-            <div className="space-y-6">
-              <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
-                <h3 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4">General Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div><label className="text-xs font-bold text-neutral-500 uppercase">Store Name</label><input value={config.name} onChange={e => onConfigChange({ ...config, name: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1" /></div>
-                  <div><label className="text-xs font-bold text-neutral-500 uppercase">Currency</label><input value={config.currency} onChange={e => onConfigChange({ ...config, currency: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1" /></div>
-                </div>
-              </div>
 
-              <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
-                <h3 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4">Contact & Social</h3>
-                <div><label className="text-xs font-bold text-neutral-500 uppercase">Support Email</label><input defaultValue="support@evolv.os" className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1" /></div>
-                <div><label className="text-xs font-bold text-neutral-500 uppercase">Instagram</label><input defaultValue="@evolv_os" className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1" /></div>
-              </div>
+            {/* Settings Content */}
+            <div className="flex-1 overflow-y-auto p-8 max-w-4xl">
+              {activeSettingsTab === 'general' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div>
+                    <h3 className="text-2xl font-bold text-white mb-2">General Settings</h3>
+                    <p className="text-neutral-500">Manage your store's core information.</p>
+                  </div>
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4">Store Details</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div><label className="text-xs font-bold text-neutral-500 uppercase">Store Name</label><input value={config.name} onChange={e => onConfigChange({ ...config, name: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" /></div>
+                      <div><label className="text-xs font-bold text-neutral-500 uppercase">Currency</label><input value={config.currency} onChange={e => onConfigChange({ ...config, currency: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" /></div>
+                    </div>
+                  </div>
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4">Contact Information</h4>
+                    <div><label className="text-xs font-bold text-neutral-500 uppercase">Support Email</label><input value={config.supportEmail || ''} onChange={e => onConfigChange({ ...config, supportEmail: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="support@example.com" /></div>
+                  </div>
+                </div>
+              )}
+
+              {activeSettingsTab === 'payments' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div>
+                    <h3 className="text-2xl font-bold text-white mb-2">Payments</h3>
+                    <p className="text-neutral-500">Manage how your customers pay.</p>
+                  </div>
+                  
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <CreditCard size={20} className="text-blue-500" />
+                      Payment Provider
+                    </h4>
+                    
+                    <div>
+                      <label className="text-xs font-bold text-neutral-500 uppercase">Select Provider</label>
+                      <div className="grid grid-cols-4 gap-2 mt-2">
+                        {['stripe', 'paypal', 'square', 'manual'].map(provider => (
+                          <button
+                            key={provider}
+                            onClick={() => onConfigChange({ ...config, paymentProvider: provider as any })}
+                            className={`py-3 px-4 rounded-xl text-sm font-bold capitalize border transition-all ${
+                              config.paymentProvider === provider 
+                                ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]' 
+                                : 'bg-black border-neutral-800 text-neutral-400 hover:border-neutral-600'
+                            }`}
+                          >
+                            {provider}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {config.paymentProvider === 'stripe' && (
+                      <div className="space-y-4 pt-4 animate-in fade-in slide-in-from-top-2">
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Stripe Publishable Key</label>
+                          <input 
+                            value={config.stripePublishableKey || ''} 
+                            onChange={e => onConfigChange({ ...config, stripePublishableKey: e.target.value })} 
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 font-mono text-xs focus:border-blue-500 outline-none" 
+                            placeholder="pk_test_..."
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Stripe Secret Key</label>
+                          <div className="flex gap-2">
+                            <input 
+                              type="password"
+                              value={stripeSecretKey} 
+                              onChange={e => setStripeSecretKey(e.target.value)} 
+                              className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 font-mono text-xs focus:border-blue-500 outline-none" 
+                              placeholder="sk_test_... (Enter to update)"
+                            />
+                            <button 
+                              onClick={handleSaveSecrets}
+                              disabled={!stripeSecretKey || isSavingSecrets}
+                              className="mt-1 px-4 bg-neutral-800 hover:bg-white text-white hover:text-black rounded-lg font-bold text-xs transition-colors disabled:opacity-50"
+                            >
+                              {isSavingSecrets ? <Loader2 className="animate-spin" /> : 'Save'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {config.paymentProvider === 'square' && (
+                      <div className="space-y-4 pt-4 animate-in fade-in slide-in-from-top-2">
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Square Application ID</label>
+                          <input 
+                            value={config.squareApplicationId || ''} 
+                            onChange={e => onConfigChange({ ...config, squareApplicationId: e.target.value })} 
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 font-mono text-xs focus:border-blue-500 outline-none" 
+                            placeholder="sq0idp-..."
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Square Location ID</label>
+                          <input 
+                            value={config.squareLocationId || ''} 
+                            onChange={e => onConfigChange({ ...config, squareLocationId: e.target.value })} 
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 font-mono text-xs focus:border-blue-500 outline-none" 
+                            placeholder="L..."
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Square Access Token</label>
+                          <div className="flex gap-2">
+                            <input 
+                              type="password"
+                              value={squareAccessToken} 
+                              onChange={e => setSquareAccessToken(e.target.value)} 
+                              className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 font-mono text-xs focus:border-blue-500 outline-none" 
+                              placeholder="EAAA... (Enter to update)"
+                            />
+                            <button 
+                              onClick={handleSaveSecrets}
+                              disabled={!squareAccessToken || isSavingSecrets}
+                              className="mt-1 px-4 bg-neutral-800 hover:bg-white text-white hover:text-black rounded-lg font-bold text-xs transition-colors disabled:opacity-50"
+                            >
+                              {isSavingSecrets ? <Loader2 className="animate-spin" /> : 'Save'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {config.paymentProvider === 'paypal' && (
+                      <div className="space-y-4 pt-4 animate-in fade-in slide-in-from-top-2">
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">PayPal Client ID</label>
+                          <input 
+                            value={config.paypalClientId || ''} 
+                            onChange={e => onConfigChange({ ...config, paypalClientId: e.target.value })} 
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 font-mono text-xs focus:border-blue-500 outline-none" 
+                            placeholder="Client ID"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">PayPal Client Secret</label>
+                          <div className="flex gap-2">
+                            <input 
+                              type="password"
+                              value={paypalSecretKey} 
+                              onChange={e => setPaypalSecretKey(e.target.value)} 
+                              className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 font-mono text-xs focus:border-blue-500 outline-none" 
+                              placeholder="Client Secret (Enter to update)"
+                            />
+                            <button 
+                              onClick={handleSaveSecrets}
+                              disabled={!paypalSecretKey || isSavingSecrets}
+                              className="mt-1 px-4 bg-neutral-800 hover:bg-white text-white hover:text-black rounded-lg font-bold text-xs transition-colors disabled:opacity-50"
+                            >
+                              {isSavingSecrets ? <Loader2 className="animate-spin" /> : 'Save'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {(config.paymentProvider === 'stripe' || config.paymentProvider === 'square') && (
+                      <div className="pt-4 border-t border-neutral-800 mt-4">
+                          <h4 className="text-xs font-bold text-white mb-4">Digital Wallets</h4>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between p-3 bg-black border border-neutral-800 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-5 bg-white rounded flex items-center justify-center"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Apple_Pay_logo.svg/2560px-Apple_Pay_logo.svg.png" className="h-3" /></div>
+                                <span className="text-sm font-bold text-white">Apple Pay</span>
+                              </div>
+                              <button 
+                                onClick={() => onConfigChange({ ...config, enableApplePay: !config.enableApplePay })}
+                                className={`w-10 h-5 rounded-full transition-colors relative ${config.enableApplePay ? 'bg-blue-600' : 'bg-neutral-800'}`}
+                              >
+                                <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${config.enableApplePay ? 'translate-x-5' : ''}`}></div>
+                              </button>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-black border border-neutral-800 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-5 bg-white rounded flex items-center justify-center"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/2560px-Google_Pay_Logo.svg.png" className="h-3" /></div>
+                                <span className="text-sm font-bold text-white">Google Pay</span>
+                              </div>
+                              <button 
+                                onClick={() => onConfigChange({ ...config, enableGooglePay: !config.enableGooglePay })}
+                                className={`w-10 h-5 rounded-full transition-colors relative ${config.enableGooglePay ? 'bg-blue-600' : 'bg-neutral-800'}`}
+                              >
+                                <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${config.enableGooglePay ? 'translate-x-5' : ''}`}></div>
+                              </button>
+                            </div>
+                          </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeSettingsTab === 'shipping' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div>
+                    <h3 className="text-2xl font-bold text-white mb-2">Shipping & Delivery</h3>
+                    <p className="text-neutral-500">Manage shipping zones and rates.</p>
+                  </div>
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <h4 className="font-bold text-white">Shipping Rates</h4>
+                      <button 
+                        onClick={() => {
+                          const newRate = { id: Math.random().toString(36).substr(2, 9), name: 'Standard Shipping', price: 0, min_order: 0 };
+                          onConfigChange({ ...config, shippingRates: [...(config.shippingRates || []), newRate] });
+                        }}
+                        className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        + Add Rate
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {config.shippingRates?.map((rate, idx) => (
+                        <div key={rate.id} className="flex items-center gap-4 p-4 bg-black border border-neutral-800 rounded-xl">
+                          <div className="flex-1">
+                            <label className="text-[10px] font-bold text-neutral-500 uppercase">Rate Name</label>
+                            <input 
+                              value={rate.name} 
+                              onChange={(e) => {
+                                const newRates = [...(config.shippingRates || [])];
+                                newRates[idx].name = e.target.value;
+                                onConfigChange({ ...config, shippingRates: newRates });
+                              }}
+                              className="w-full bg-transparent text-white font-bold text-sm focus:outline-none border-b border-transparent focus:border-blue-500" 
+                            />
+                          </div>
+                          <div className="w-24">
+                            <label className="text-[10px] font-bold text-neutral-500 uppercase">Price</label>
+                            <input 
+                              type="number"
+                              value={rate.price} 
+                              onChange={(e) => {
+                                const newRates = [...(config.shippingRates || [])];
+                                newRates[idx].price = parseFloat(e.target.value);
+                                onConfigChange({ ...config, shippingRates: newRates });
+                              }}
+                              className="w-full bg-transparent text-white font-mono text-sm focus:outline-none border-b border-transparent focus:border-blue-500" 
+                            />
+                          </div>
+                          <div className="w-32">
+                            <label className="text-[10px] font-bold text-neutral-500 uppercase">Min Order</label>
+                            <input 
+                              type="number"
+                              value={rate.min_order} 
+                              onChange={(e) => {
+                                const newRates = [...(config.shippingRates || [])];
+                                newRates[idx].min_order = parseFloat(e.target.value);
+                                onConfigChange({ ...config, shippingRates: newRates });
+                              }}
+                              className="w-full bg-transparent text-white font-mono text-sm focus:outline-none border-b border-transparent focus:border-blue-500" 
+                            />
+                          </div>
+                          <button 
+                            onClick={() => {
+                              const newRates = config.shippingRates?.filter((_, i) => i !== idx);
+                              onConfigChange({ ...config, shippingRates: newRates });
+                            }}
+                            className="p-2 text-neutral-600 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                      {(!config.shippingRates || config.shippingRates.length === 0) && (
+                        <div className="text-center py-8 text-neutral-500 text-sm">No shipping rates configured.</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSettingsTab === 'taxes' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div>
+                    <h3 className="text-2xl font-bold text-white mb-2">Taxes and Duties</h3>
+                    <p className="text-neutral-500">Configure how taxes are calculated.</p>
+                  </div>
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4">Tax Configuration</h4>
+                    <div>
+                      <label className="text-xs font-bold text-neutral-500 uppercase">Global Tax Rate (%)</label>
+                      <input 
+                        type="number"
+                        value={config.taxRate || 0} 
+                        onChange={e => onConfigChange({ ...config, taxRate: parseFloat(e.target.value) })} 
+                        className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none font-mono" 
+                      />
+                      <p className="text-xs text-neutral-500 mt-2">This rate will be applied to all taxable products at checkout.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSettingsTab === 'policies' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div>
+                    <h3 className="text-2xl font-bold text-white mb-2">Legal Policies</h3>
+                    <p className="text-neutral-500">Define your store's legal documents.</p>
+                  </div>
+                  
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-6">
+                    <div>
+                      <h4 className="font-bold text-white mb-2">Refund Policy</h4>
+                      <textarea 
+                        value={config.policyRefund || ''} 
+                        onChange={e => onConfigChange({ ...config, policyRefund: e.target.value })} 
+                        className="w-full h-32 bg-black border border-neutral-800 rounded-lg p-3 text-neutral-300 text-sm focus:border-blue-500 outline-none resize-none"
+                        placeholder="Enter your refund policy..."
+                      />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white mb-2">Privacy Policy</h4>
+                      <textarea 
+                        value={config.policyPrivacy || ''} 
+                        onChange={e => onConfigChange({ ...config, policyPrivacy: e.target.value })} 
+                        className="w-full h-32 bg-black border border-neutral-800 rounded-lg p-3 text-neutral-300 text-sm focus:border-blue-500 outline-none resize-none"
+                        placeholder="Enter your privacy policy..."
+                      />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white mb-2">Terms of Service</h4>
+                      <textarea 
+                        value={config.policyTerms || ''} 
+                        onChange={e => onConfigChange({ ...config, policyTerms: e.target.value })} 
+                        className="w-full h-32 bg-black border border-neutral-800 rounded-lg p-3 text-neutral-300 text-sm focus:border-blue-500 outline-none resize-none"
+                        placeholder="Enter your terms of service..."
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSettingsTab === 'notifications' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div>
+                    <h3 className="text-2xl font-bold text-white mb-2">Notifications</h3>
+                    <p className="text-neutral-500">Manage customer emails and alerts.</p>
+                  </div>
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-12 text-center">
+                    <div className="w-16 h-16 bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-4 text-neutral-500">
+                      <Mail size={32} />
+                    </div>
+                    <h4 className="text-xl font-bold text-white mb-2">Coming Soon</h4>
+                    <p className="text-neutral-500 max-w-md mx-auto">Advanced notification templates and automated flows will be available in the next update.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         );

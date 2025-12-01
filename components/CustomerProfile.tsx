@@ -14,10 +14,14 @@ interface Order {
 
 interface OrderItem {
   id: string;
-  product_id: string; // In a real app, we'd join with products table
+  product_id: string;
   quantity: number;
   price_at_purchase: number;
-  // We might need to fetch product details separately if not joined
+  product?: {
+    name: string;
+    image: string;
+    slug?: string;
+  };
 }
 
 export const CustomerProfile: React.FC = () => {
@@ -47,7 +51,13 @@ export const CustomerProfile: React.FC = () => {
             .from('orders')
             .select(`
               *,
-              items:order_items(*)
+              items:order_items(
+                *,
+                product:products(
+                  name,
+                  image
+                )
+              )
             `)
             .eq('customer_id', customerData.id)
             .order('created_at', { ascending: false });
@@ -120,13 +130,29 @@ export const CustomerProfile: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {order.items.map((item) => (
-                    <div key={item.id} className="flex justify-between text-sm">
-                      <span className="text-neutral-600">
-                        Product ID: {item.product_id} x {item.quantity}
-                      </span>
-                      <span>${item.price_at_purchase.toFixed(2)}</span>
+                    <div key={item.id} className="flex items-center gap-4 text-sm">
+                      <div className="w-12 h-12 bg-neutral-100 rounded-lg overflow-hidden shrink-0">
+                        {item.product?.image ? (
+                          <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-neutral-300">
+                            <Package size={20} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-neutral-900">
+                          {item.product?.name || 'Unknown Product'}
+                        </div>
+                        <div className="text-neutral-500">
+                          Qty: {item.quantity}
+                        </div>
+                      </div>
+                      <div className="font-medium">
+                        ${item.price_at_purchase.toFixed(2)}
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -1,19 +1,77 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CreditCard, Truck, ShieldCheck, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, CreditCard, Truck, ShieldCheck, ShoppingBag, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useData } from '../context/DataContext';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { PaymentForm, CreditCard as SquareCreditCard, ApplePay, GooglePay } from 'react-square-web-payments-sdk';
+
+// Stripe Form Component
+const StripePaymentForm = ({ amount, onProcessPayment, isProcessing }: { amount: number, onProcessPayment: () => void, isProcessing: boolean }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!stripe || !elements) {
+      return;
+    }
+
+    // In a real app, we would create a PaymentIntent on the server here
+    // and confirm it with stripe.confirmCardPayment
+    // For now, we'll simulate the process and trigger the order creation
+    
+    // const cardElement = elements.getElement(CardElement);
+    
+    // Simulate processing delay
+    onProcessPayment();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="p-4 border border-neutral-200 rounded-lg bg-white">
+        <CardElement options={{
+          style: {
+            base: {
+              fontSize: '16px',
+              color: '#424770',
+              '::placeholder': {
+                color: '#aab7c4',
+              },
+            },
+            invalid: {
+              color: '#9e2146',
+            },
+          },
+        }} />
+      </div>
+      <button 
+        type="submit" 
+        disabled={!stripe || isProcessing}
+        className="w-full py-3 bg-black text-white rounded-xl font-bold hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+      >
+        {isProcessing ? <Loader2 className="animate-spin" /> : `Pay $${amount.toFixed(2)}`}
+      </button>
+    </form>
+  );
+};
 
 export const Checkout: React.FC = () => {
   const { cart: items, cartTotal, clearCart } = useCart();
-  const { storeId } = useData();
+  const { storeId, config } = useData();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<'shipping' | 'payment' | 'confirmation'>('shipping');
   const [orderId, setOrderId] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [existingCustomerId, setExistingCustomerId] = useState<string | null>(null);
+  
+  // Stripe State
+  const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
 
   const [customerDetails, setCustomerDetails] = useState({
     firstName: '',
@@ -23,6 +81,12 @@ export const Checkout: React.FC = () => {
     city: '',
     postalCode: ''
   });
+
+  useEffect(() => {
+    if (config.paymentProvider === 'stripe' && config.stripePublishableKey) {
+      setStripePromise(loadStripe(config.stripePublishableKey));
+    }
+  }, [config.paymentProvider, config.stripePublishableKey]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -293,48 +357,103 @@ export const Checkout: React.FC = () => {
               <h2 className="text-lg font-bold">Payment Method</h2>
             </div>
             <div className="p-6 space-y-4">
-              <div className="flex gap-4">
-                <div className="flex-1 border-2 border-black bg-neutral-50 rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer">
-                  <CreditCard size={24} />
-                  <span className="text-sm font-bold">Credit Card</span>
-                </div>
-                <div className="flex-1 border border-neutral-200 rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-neutral-300">
-                  <span className="text-xl font-black italic">Pay<span className="text-blue-500">Pal</span></span>
-                  <span className="text-sm font-medium text-neutral-500">PayPal</span>
-                </div>
-              </div>
+              
+              {config.paymentProvider === 'stripe' && stripePromise && (
+                <Elements stripe={stripePromise}>
+                  <StripePaymentForm 
+                    amount={cartTotal * 1.08} 
+                    onProcessPayment={handlePlaceOrder} 
+                    isProcessing={isProcessing} 
+                  />
+                </Elements>
+              )}
 
-              <div className="space-y-4 pt-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">Card Number</label>
-                  <input type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="0000 0000 0000 0000" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">Expiry Date</label>
-                    <input type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="MM/YY" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-neutral-500 mb-1">CVC</label>
-                    <input type="text" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black transition-colors" placeholder="123" />
-                  </div>
-                </div>
-              </div>
+              {config.paymentProvider === 'paypal' && config.paypalClientId && (
+                <PayPalScriptProvider options={{ clientId: config.paypalClientId }}>
+                  <PayPalButtons 
+                    style={{ layout: "vertical" }}
+                    createOrder={(data, actions) => {
+                      return actions.order.create({
+                        intent: "CAPTURE",
+                        purchase_units: [
+                          {
+                            amount: {
+                              currency_code: "USD",
+                              value: (cartTotal * 1.08).toFixed(2),
+                            },
+                          },
+                        ],
+                      });
+                    }}
+                    onApprove={async (data, actions) => {
+                      if (actions.order) {
+                        await actions.order.capture();
+                        handlePlaceOrder();
+                      }
+                    }}
+                  />
+                </PayPalScriptProvider>
+              )}
 
-              {step === 'payment' && (
-                <div className="pt-4 flex gap-4">
-                  <button 
-                    onClick={() => setStep('shipping')}
-                    className="px-6 py-3 border border-neutral-200 rounded-xl font-bold hover:bg-neutral-50 transition-colors"
-                  >
-                    Back
-                  </button>
+              {config.paymentProvider === 'square' && config.squareApplicationId && config.squareLocationId && (
+                 <div className="p-4 border border-neutral-200 rounded-lg bg-white">
+                    <PaymentForm
+                      applicationId={config.squareApplicationId}
+                      locationId={config.squareLocationId}
+                      cardTokenizeResponseReceived={async (token, verifiedBuyer) => {
+                        console.log('Square Token:', token);
+                        // In a real app, send token to backend to charge
+                        await handlePlaceOrder();
+                      }}
+                    >
+                      <SquareCreditCard 
+                        buttonProps={{
+                          css: {
+                            backgroundColor: '#000000',
+                            fontSize: '16px',
+                            color: '#ffffff',
+                            '&:hover': {
+                              backgroundColor: '#333333',
+                            },
+                          }
+                        }}
+                      />
+                      
+                      {(config.enableApplePay || config.enableGooglePay) && (
+                        <div className="mt-4 pt-4 border-t border-neutral-100">
+                          <p className="text-xs font-bold text-neutral-500 uppercase mb-2">Digital Wallets</p>
+                          <div className="grid grid-cols-2 gap-2">
+                             {config.enableApplePay && <ApplePay />}
+                             {config.enableGooglePay && <GooglePay />}
+                          </div>
+                        </div>
+                      )}
+                    </PaymentForm>
+                 </div>
+              )}
+
+              {(!config.paymentProvider || config.paymentProvider === 'manual') && (
+                <div className="space-y-4">
+                  <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-lg text-sm text-neutral-600">
+                    This store is configured for manual payments. Please proceed to place your order.
+                  </div>
                   <button 
                     onClick={handlePlaceOrder}
                     disabled={isProcessing}
-                    className="flex-1 py-3 bg-black text-white rounded-xl font-bold hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full py-3 bg-black text-white rounded-xl font-bold hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    {isProcessing ? 'Processing...' : `Pay $${cartTotal.toFixed(2)}`}
+                    {isProcessing ? <Loader2 className="animate-spin" /> : `Place Order ($${(cartTotal * 1.08).toFixed(2)})`}
+                  </button>
+                </div>
+              )}
+
+              {step === 'payment' && (
+                <div className="pt-4">
+                  <button 
+                    onClick={() => setStep('shipping')}
+                    className="text-sm text-neutral-500 hover:text-black font-bold"
+                  >
+                    &larr; Back to Shipping
                   </button>
                 </div>
               )}

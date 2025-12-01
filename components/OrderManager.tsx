@@ -26,7 +26,10 @@ export const OrderManager: React.FC<OrderManagerProps> = ({ storeId }) => {
         .select(`
           *,
           customer:customers(email, first_name, last_name),
-          items:order_items(*)
+          items:order_items(
+            *,
+            product:products(name, image)
+          )
         `)
         .order('created_at', { ascending: false });
 
@@ -208,9 +211,14 @@ export const OrderManager: React.FC<OrderManagerProps> = ({ storeId }) => {
                 <div className="space-y-2">
                   {(selectedOrder as any).items?.map((item: any) => (
                     <div key={item.id} className="flex justify-between items-center bg-neutral-800/50 p-3 rounded-lg">
-                      <div>
-                        <div className="text-white text-sm font-medium">Product ID: {item.product_id}</div>
-                        <div className="text-neutral-500 text-xs">Qty: {item.quantity}</div>
+                      <div className="flex items-center gap-3">
+                        {item.product?.image && (
+                          <img src={item.product.image} alt={item.product.name} className="w-8 h-8 rounded object-cover bg-neutral-700" />
+                        )}
+                        <div>
+                          <div className="text-white text-sm font-medium">{item.product?.name || 'Unknown Product'}</div>
+                          <div className="text-neutral-500 text-xs">Qty: {item.quantity}</div>
+                        </div>
                       </div>
                       <div className="text-white font-mono">${item.price_at_purchase?.toFixed(2)}</div>
                     </div>

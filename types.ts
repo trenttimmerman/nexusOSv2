@@ -100,6 +100,23 @@ export interface StoreConfig {
   primaryColor: string;
   logoUrl?: string;
   logoHeight?: number;
+  
+  // Payment Config
+  paymentProvider?: 'stripe' | 'paypal' | 'square' | 'manual';
+  stripePublishableKey?: string;
+  paypalClientId?: string;
+  squareApplicationId?: string;
+  squareLocationId?: string;
+  enableApplePay?: boolean;
+  enableGooglePay?: boolean;
+
+  // Extended Settings
+  supportEmail?: string;
+  shippingRates?: { id: string; name: string; price: number; min_order: number }[];
+  taxRate?: number;
+  policyRefund?: string;
+  policyPrivacy?: string;
+  policyTerms?: string;
 }
 
 export interface ProductImage {

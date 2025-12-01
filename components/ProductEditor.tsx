@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Product, ProductImage, ProductVariantOption, ProductVariant, ProductPageStyleId } from '../types';
-import { X, Upload, Plus, Trash2, Image as ImageIcon, Sparkles, Box, Search, Save, ArrowLeft, MoreHorizontal, ShoppingBag, Star, ChevronRight, Monitor, LayoutTemplate } from 'lucide-react';
+import { X, Upload, Plus, Trash2, Image as ImageIcon, Sparkles, Box, Search, Save, ArrowLeft, MoreHorizontal, ShoppingBag, Star, ChevronRight, Monitor, LayoutTemplate, Loader2 } from 'lucide-react';
 import { PRODUCT_PAGE_COMPONENTS, PRODUCT_PAGE_OPTIONS } from './ProductPageLibrary';
+import { supabase } from '../lib/supabaseClient';
 
 interface ProductEditorProps {
     product?: Product | null;
@@ -38,6 +39,7 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
 
     // AI Generation State
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     const handleInputChange = (field: keyof Product, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -58,23 +60,41 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
         }, 1500);
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const newImage: ProductImage = {
-                    id: Math.random().toString(36).substr(2, 9),
-                    url: reader.result as string,
-                    isPrimary: formData.images.length === 0
-                };
-                setFormData(prev => ({
-                    ...prev,
-                    images: [...prev.images, newImage],
-                    image: prev.images.length === 0 ? (reader.result as string) : prev.image
-                }));
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+            const filePath = `products/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('media')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('media')
+                .getPublicUrl(filePath);
+
+            const newImage: ProductImage = {
+                id: Math.random().toString(36).substr(2, 9),
+                url: publicUrl,
+                isPrimary: formData.images.length === 0
             };
-            reader.readAsDataURL(file);
+            setFormData(prev => ({
+                ...prev,
+                images: [...prev.images, newImage],
+                image: prev.images.length === 0 ? publicUrl : prev.image
+            }));
+        } catch (error: any) {
+            console.error('Error uploading image:', error);
+            alert('Failed to upload image: ' + error.message);
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -266,9 +286,10 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                     <div className="flex justify-between items-center">
                                         <h3 className="font-bold text-white">Media Gallery</h3>
-                                        <label className="px-4 py-2 bg-white text-black rounded-lg font-bold text-sm cursor-pointer hover:bg-neutral-200 transition-colors flex items-center gap-2">
-                                            <Upload size={16} /> Upload
-                                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                                        <label className={`px-4 py-2 bg-white text-black rounded-lg font-bold text-sm cursor-pointer hover:bg-neutral-200 transition-colors flex items-center gap-2 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                            {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} 
+                                            {isUploading ? 'Uploading...' : 'Upload'}
+                                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploading} />
                                         </label>
                                     </div>
 
