@@ -105,7 +105,7 @@ export const EditableText: React.FC<{
 
   if (isEditing && isEditable) {
     return (
-      <div ref={containerRef} className="relative inline-block w-full group/editor">
+      <div ref={containerRef} className="relative inline-block w-full group/editor z-50">
         <textarea
             id={elementId}
             ref={textareaRef}
@@ -113,7 +113,7 @@ export const EditableText: React.FC<{
             value={tempValue}
             onChange={(e) => setTempValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            className={`${className} bg-transparent outline-none resize-none overflow-hidden min-h-[1.2em] w-full selection:bg-blue-500/30 ring-4 ring-blue-500/50 rounded px-1 -mx-1`}
+            className={`${className} bg-transparent outline-none resize-none overflow-hidden min-h-[1.2em] w-full selection:bg-blue-500/30 shadow-[0_0_0_4px_rgba(59,130,246,0.5),0_0_30px_rgba(59,130,246,0.6)] rounded px-1 -mx-1 relative z-50`}
             style={{ 
               height: 'auto',
               fontSize: style?.fontSize,
@@ -144,7 +144,7 @@ export const EditableText: React.FC<{
             setIsEditing(true);
         }
       }}
-      className={`${className} ${isEditable ? 'cursor-text hover:outline-dashed hover:outline-2 hover:outline-blue-500/50 focus:outline-none focus:ring-4 focus:ring-blue-500/50 rounded px-1 -mx-1 transition-all relative group/edit' : ''}`}
+      className={`${className} ${isEditable ? 'cursor-text hover:outline-dashed hover:outline-2 hover:outline-blue-500/50 focus:outline-none focus:shadow-[0_0_0_4px_rgba(59,130,246,0.5),0_0_30px_rgba(59,130,246,0.6)] focus:z-50 rounded px-1 -mx-1 transition-all relative group/edit' : ''}`}
       style={{
         fontSize: style?.fontSize,
         fontWeight: style?.fontWeight,
@@ -174,7 +174,7 @@ export const EditableImage: React.FC<{
     <div 
       id={elementId} 
       tabIndex={isEditable ? 0 : undefined}
-      className={`relative group ${className} ${isEditable ? 'focus:outline-none focus:ring-4 focus:ring-blue-500/50 rounded-lg transition-shadow duration-300' : ''}`}
+      className={`relative group ${className} ${isEditable ? 'focus:outline-none focus:shadow-[0_0_0_4px_rgba(59,130,246,0.5),0_0_30px_rgba(59,130,246,0.6)] focus:z-50 rounded-lg transition-all duration-300' : ''}`}
     >
       {src ? (
         <>
