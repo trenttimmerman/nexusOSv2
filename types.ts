@@ -417,5 +417,6 @@ export interface StorefrontProps {
   previewBlock?: PageBlock | null;
   activeBlockId?: string | null;
   onUpdateBlock?: (blockId: string, data: any) => void;
+  onEditBlock?: (blockId: string) => void;
   showCartDrawer?: boolean;
 }
