@@ -2,16 +2,16 @@
 import React, { useState } from 'react';
 import { StorefrontProps, Product, PageBlock, HeroStyleId, ProductCardStyleId } from '../types';
 import { HEADER_COMPONENTS } from './HeaderLibrary';
-import { HERO_COMPONENTS } from './HeroLibrary';
-import { PRODUCT_CARD_COMPONENTS } from './ProductCardLibrary';
+import { HERO_COMPONENTS, HERO_OPTIONS } from './HeroLibrary';
+import { PRODUCT_CARD_COMPONENTS, PRODUCT_CARD_OPTIONS } from './ProductCardLibrary';
 import { PRODUCT_PAGE_COMPONENTS } from './ProductPageLibrary';
 import { FOOTER_COMPONENTS } from './FooterLibrary';
-import { SCROLL_COMPONENTS } from './ScrollLibrary';
-import { Plus } from 'lucide-react';
+import { SCROLL_COMPONENTS, SCROLL_OPTIONS } from './ScrollLibrary';
+import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 
-export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, showCartDrawer = true }) => {
+export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true }) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
 
   const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
@@ -97,13 +97,76 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
   const renderBlock = (block: PageBlock) => {
     const isEditable = activeBlockId === block.id;
 
+    const handleCycleVariant = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (!onUpdateBlock) return;
+
+      let options: { id: string }[] = [];
+      if (block.type === 'system-hero') options = HERO_OPTIONS;
+      else if (block.type === 'system-grid') options = PRODUCT_CARD_OPTIONS;
+      else if (block.type === 'system-scroll') options = SCROLL_OPTIONS;
+
+      if (options.length > 0) {
+        const currentIndex = options.findIndex(o => o.id === block.variant);
+        const nextIndex = (currentIndex + 1) % options.length;
+        onUpdateBlock(block.id, { variant: options[nextIndex].id });
+      }
+    };
+
+    const BlockToolbar = () => (
+      <div className="absolute -top-12 right-0 flex items-center gap-1 bg-black text-white rounded-lg shadow-xl p-1 z-[100] animate-in fade-in slide-in-from-bottom-2">
+        {(block.type === 'system-hero' || block.type === 'system-grid' || block.type === 'system-scroll') && (
+          <>
+            <button 
+              onClick={handleCycleVariant}
+              className="p-2 hover:bg-white/20 rounded transition-colors flex items-center gap-2 px-3"
+              title="Switch Layout"
+            >
+              <Layout size={14} />
+              <span className="text-xs font-bold">Switch Layout</span>
+            </button>
+            <div className="w-px h-4 bg-white/20 mx-1" />
+          </>
+        )}
+        <button 
+          onClick={(e) => { e.stopPropagation(); onMoveBlock && onMoveBlock(block.id, 'up'); }}
+          className="p-2 hover:bg-white/20 rounded transition-colors"
+          title="Move Up"
+        >
+          <ArrowUp size={14} />
+        </button>
+        <button 
+          onClick={(e) => { e.stopPropagation(); onMoveBlock && onMoveBlock(block.id, 'down'); }}
+          className="p-2 hover:bg-white/20 rounded transition-colors"
+          title="Move Down"
+        >
+          <ArrowDown size={14} />
+        </button>
+        <div className="w-px h-4 bg-white/20 mx-1" />
+        <button 
+          onClick={(e) => { e.stopPropagation(); onDuplicateBlock && onDuplicateBlock(block.id); }}
+          className="p-2 hover:bg-white/20 rounded transition-colors"
+          title="Duplicate Section"
+        >
+          <Copy size={14} />
+        </button>
+        <button 
+          onClick={(e) => { e.stopPropagation(); onDeleteBlock && onDeleteBlock(block.id); }}
+          className="p-2 hover:bg-red-500/50 rounded transition-colors text-red-200 hover:text-white"
+          title="Delete Section"
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
+    );
+
     switch (block.type) {
       case 'system-hero':
         const heroStyle = (block.variant as HeroStyleId) || config.heroStyle || 'impact';
         const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
         return HeroComponent ? (
           <div 
-            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
+            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`}
             onClick={(e) => {
               if (onEditBlock) {
                 e.stopPropagation();
@@ -111,6 +174,7 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
               }
             }}
           >
+            {isEditable && <BlockToolbar />}
             <HeroComponent
               key={block.id}
               storeName={config.name}
@@ -122,18 +186,57 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
           </div>
         ) : null;
       case 'system-grid':
-        return <div key={block.id}>{renderProductGrid(block.variant, block.data)}</div>;
+        return (
+          <div 
+            key={block.id}
+            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`}
+            onClick={(e) => {
+              if (onEditBlock) {
+                e.stopPropagation();
+                onEditBlock(block.id);
+              }
+            }}
+          >
+            {isEditable && <BlockToolbar />}
+            {renderProductGrid(block.variant, block.data)}
+          </div>
+        );
       case 'system-scroll':
         const ScrollComponent = SCROLL_COMPONENTS[block.variant || 'logo-marquee'];
-        return ScrollComponent ? <ScrollComponent key={block.id} data={block.data} /> : null;
+        return ScrollComponent ? (
+          <div 
+            key={block.id}
+            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`}
+            onClick={(e) => {
+              if (onEditBlock) {
+                e.stopPropagation();
+                onEditBlock(block.id);
+              }
+            }}
+          >
+            {isEditable && <BlockToolbar />}
+            <ScrollComponent data={block.data} />
+          </div>
+        ) : null;
       case 'section':
       default:
         return (
           <div
             key={block.id}
-            dangerouslySetInnerHTML={{ __html: block.content }}
-            className="w-full prose prose-xl prose-neutral max-w-none text-neutral-600 font-serif leading-relaxed prose-img:rounded-2xl prose-headings:font-sans prose-headings:font-bold prose-headings:tracking-tight"
-          />
+            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`}
+            onClick={(e) => {
+              if (onEditBlock) {
+                e.stopPropagation();
+                onEditBlock(block.id);
+              }
+            }}
+          >
+            {isEditable && <BlockToolbar />}
+            <div
+              dangerouslySetInnerHTML={{ __html: block.content }}
+              className="w-full prose prose-xl prose-neutral max-w-none text-neutral-600 font-serif leading-relaxed prose-img:rounded-2xl prose-headings:font-sans prose-headings:font-bold prose-headings:tracking-tight"
+            />
+          </div>
         );
     }
   };

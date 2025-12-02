@@ -710,9 +710,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const updateActiveBlockData = (blockId: string, data: any) => {
     if (!blockId) return;
-    const updatedBlocks = activePage.blocks.map(b =>
-      b.id === blockId ? { ...b, data: { ...b.data, ...data } } : b
-    );
+    const updatedBlocks = activePage.blocks.map(b => {
+      if (b.id !== blockId) return b;
+      
+      // Handle top-level properties vs data properties
+      const { variant, ...restData } = data;
+      const newBlock = { ...b };
+      
+      if (variant) newBlock.variant = variant;
+      if (Object.keys(restData).length > 0) {
+          newBlock.data = { ...b.data, ...restData };
+      }
+      return newBlock;
+    });
     onUpdatePage(activePageId, { blocks: updatedBlocks });
   }
 
@@ -1415,6 +1425,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       onUpdateBlock={updateActiveBlockData}
                       onEditBlock={(blockId) => {
                         setSelectedBlockId(blockId);
+                      }}
+                      onMoveBlock={(blockId, direction) => {
+                        const index = activePage.blocks.findIndex(b => b.id === blockId);
+                        if (index !== -1) moveBlock(index, direction === 'up' ? -1 : 1);
+                      }}
+                      onDeleteBlock={(blockId) => deleteBlock(blockId)}
+                      onDuplicateBlock={(blockId) => {
+                        const block = activePage.blocks.find(b => b.id === blockId);
+                        if (block) {
+                          const newBlock = { ...block, id: crypto.randomUUID() };
+                          const index = activePage.blocks.findIndex(b => b.id === blockId);
+                          const newBlocks = [...activePage.blocks];
+                          newBlocks.splice(index + 1, 0, newBlock);
+                          onUpdatePage(activePageId, { blocks: newBlocks });
+                        }
                       }}
                       showCartDrawer={false}
                     />

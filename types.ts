@@ -418,5 +418,8 @@ export interface StorefrontProps {
   activeBlockId?: string | null;
   onUpdateBlock?: (blockId: string, data: any) => void;
   onEditBlock?: (blockId: string) => void;
+  onMoveBlock?: (blockId: string, direction: 'up' | 'down') => void;
+  onDeleteBlock?: (blockId: string) => void;
+  onDuplicateBlock?: (blockId: string) => void;
   showCartDrawer?: boolean;
 }
