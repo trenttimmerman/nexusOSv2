@@ -1,6 +1,6 @@
 # Handoff Document - Commerce OS Features
 
-**Date:** December 1, 2025
+**Date:** December 2, 2025
 **Branch:** `feature/superuser-setup`
 **Status:** Ready for Review / Deployment
 
@@ -33,7 +33,7 @@ We have successfully implemented the core "Commerce OS" features requested, tran
     *   New Component: `ShippingManager.tsx`.
     *   Features: Create zones (e.g., "North America", "Europe"), assign countries, and define rates (Flat Rate, Price-Based, Weight-Based).
 *   **Checkout Integration**:
-    *   Checkout automatically detects the customer's country.
+    *   Checkout automatically detects the customers country.
     *   Fetches and displays relevant shipping options.
     *   Adds selected shipping cost to the total.
 
@@ -48,34 +48,29 @@ We have successfully implemented the core "Commerce OS" features requested, tran
 *   **Features**:
     *   **Text Styling**: Users can now style text directly on the canvas without leaving the preview.
     *   **Image Overlays**: Users can adjust the opacity of image overlays directly.
-    *   **Full Coverage**: Every text and image element in the Hero blocks is now editable.
 
-## 🛠️ Technical Changes
+### 6. Design Studio & Sidebar Editor
+*   **Architecture Pivot**: Shifted from floating inline toolbars to a dedicated "Remote Control" Sidebar (`EditorPanel`).
+*   **Visual Feedback**: Implemented a high-visibility "Glow" effect (`box-shadow` + `z-index`) that highlights both the active element on the canvas and its corresponding control card in the sidebar.
+*   **Interaction**:
+    *   Clicking a sidebar card focuses the canvas element.
+    *   Clicking a canvas element opens the sidebar (if not open).
+    *   Sidebar cards are now fully clickable touch targets.
+*   **Content Editing**: Added text input fields in the sidebar for direct content editing, with auto-save on blur.
 
-*   **Modified Files**:
-    *   `components/AdminPanel.tsx`: Added navigation tabs and routing for new managers.
-    *   `components/Checkout.tsx`: Major logic update for discounts and shipping calculation.
-    *   `components/HeroLibrary.tsx`: Major refactor for `EditableText` and `EditableImage` and all Hero components.
-    *   `components/Storefront.tsx`: Updated block rendering to pass editing props and use new editable components.
-    *   `components/ScrollLibrary.tsx`: Updated to use `EditableText`.
-    *   `types.ts`: Added TypeScript interfaces for `Discount`, `ShippingZone`, `ShippingRate`.
-    *   `components/DiscountManager.tsx` (New)
-    *   `components/ShippingManager.tsx` (New)
-    *   `components/CampaignManager.tsx` (Refactored)
+### 7. Draft Mode & Persistence
+*   **Problem**: Users were losing progress when navigating between pages or tabs.
+*   **Solution**: Implemented a local "Draft Mode" in `AdminPanel`.
+    *   Changes are stored in local state (`localPages`) first.
+    *   **Save Button**: Added a "Save Changes" button in the Live Preview header. It lights up blue when there are unsaved changes.
+    *   **Database Sync**: Changes are only committed to Supabase when the user explicitly clicks "Save".
 
-## 📋 Action Items for Deployment
+### 8. Multi-Tenant Security Confirmation
+*   **Verification**: Confirmed that the database schema (`20250101000001_multi_tenant.sql`) correctly isolates data.
+*   **RLS Policies**: Row Level Security is active for `pages`, `products`, `store_config`, `media_assets`, and `campaigns`.
+*   **Safety**: Tenants can only access their own data based on their `store_id`.
 
-1.  **Apply Database Migrations**:
-    You must run the following SQL files in your Supabase SQL Editor to create the new tables:
-    *   `supabase/migrations/20250101000025_discounts.sql`
-    *   `supabase/migrations/20250101000026_shipping_zones.sql`
-
-2.  **Environment Variables**:
-    Ensure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set in your deployment environment.
-
-3.  **Verification**:
-    *   Log in as a store owner.
-    *   Go to **Discounts** and create a code (e.g., `SAVE10`).
-    *   Go to **Shipping** and create a zone (e.g., `US`) with a rate.
-    *   Go to the **Storefront**, add items to cart, and proceed to checkout.
-    *   Verify that entering `SAVE10` works and that shipping rates appear after entering an address.
+## 🛠️ Next Steps
+1.  **Testing**: Perform end-to-end testing of the checkout flow with various shipping and discount combinations.
+2.  **Mobile Optimization**: Ensure the new Admin Panel layouts (especially the 3-column Design Studio) work well on smaller screens or have appropriate fallbacks.
+3.  **AI Integration**: Connect the "AI Gen" buttons to a real image generation API (e.g., OpenAI DALL-E or Midjourney).
