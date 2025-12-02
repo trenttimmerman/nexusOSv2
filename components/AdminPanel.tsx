@@ -115,7 +115,8 @@ import {
   Clock,
   Truck,
   ChevronRight,
-  Tag
+  Tag,
+  Save
 } from 'lucide-react';
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -151,6 +152,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
   const [isCreatingTenant, setIsCreatingTenant] = useState(false);
+
+  // Local State for Draft Mode
+  const [localPages, setLocalPages] = useState<Page[]>(pages);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  useEffect(() => {
+      if (!hasUnsavedChanges) {
+          setLocalPages(pages);
+      }
+  }, [pages, hasUnsavedChanges]);
   
   // Settings State
   const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'payments' | 'shipping' | 'taxes' | 'policies' | 'notifications' | 'domains'>('general');
@@ -560,7 +571,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   }, [isResizing]);
 
   // Current Active Page Data
-  const activePage = pages.find(p => p.id === activePageId) || pages[0];
+  const activePage = localPages.find(p => p.id === activePageId) || localPages[0];
   const activeBlock = activePage.blocks?.find(b => b.id === selectedBlockId);
 
   // --- ARCHITECT GENERATOR ---
@@ -703,37 +714,46 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const updateActiveBlock = (content: string) => {
     if (!selectedBlockId) return;
-    const updatedBlocks = activePage.blocks.map(b =>
-      b.id === selectedBlockId ? { ...b, content } : b
-    );
-    onUpdatePage(activePageId, { blocks: updatedBlocks });
+    setLocalPages(prev => prev.map(p => {
+        if (p.id !== activePageId) return p;
+        return {
+            ...p,
+            blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, content } : b)
+        };
+    }));
+    setHasUnsavedChanges(true);
   };
 
   const updateActiveBlockData = (blockId: string, data: any) => {
     if (!blockId) return;
-    const updatedBlocks = activePage.blocks.map(b => {
-      if (b.id !== blockId) return b;
+    setLocalPages(prev => prev.map(p => {
+      if (p.id !== activePageId) return p;
       
-      // Handle top-level properties vs data properties
-      const { variant, ...restData } = data;
-      const newBlock = { ...b };
-      
-      if (variant) newBlock.variant = variant;
-      if (Object.keys(restData).length > 0) {
-          // Deep merge for style object to prevent overwriting
-          if (restData.style && b.data?.style) {
-             newBlock.data = { 
-               ...b.data, 
-               ...restData, 
-               style: { ...b.data.style, ...restData.style } 
-             };
-          } else {
-             newBlock.data = { ...b.data, ...restData };
-          }
-      }
-      return newBlock;
-    });
-    onUpdatePage(activePageId, { blocks: updatedBlocks });
+      const updatedBlocks = p.blocks.map(b => {
+        if (b.id !== blockId) return b;
+        
+        // Handle top-level properties vs data properties
+        const { variant, ...restData } = data;
+        const newBlock = { ...b };
+        
+        if (variant) newBlock.variant = variant;
+        if (Object.keys(restData).length > 0) {
+            // Deep merge for style object to prevent overwriting
+            if (restData.style && b.data?.style) {
+               newBlock.data = { 
+                 ...b.data, 
+                 ...restData, 
+                 style: { ...b.data.style, ...restData.style } 
+               };
+            } else {
+               newBlock.data = { ...b.data, ...restData };
+            }
+        }
+        return newBlock;
+      });
+      return { ...p, blocks: updatedBlocks };
+    }));
+    setHasUnsavedChanges(true);
   }
 
   const moveBlock = (index: number, direction: -1 | 1) => {
@@ -743,13 +763,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const temp = blocks[index];
     blocks[index] = blocks[index + direction];
     blocks[index + direction] = temp;
-    onUpdatePage(activePageId, { blocks });
+    
+    setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks } : p));
+    setHasUnsavedChanges(true);
   };
 
   const deleteBlock = (id: string) => {
     const updatedBlocks = activePage.blocks.filter(b => b.id !== id);
-    onUpdatePage(activePageId, { blocks: updatedBlocks });
+    setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks: updatedBlocks } : p));
+    setHasUnsavedChanges(true);
     if (selectedBlockId === id) setSelectedBlockId(null);
+  };
+
+  const handleSaveChanges = async () => {
+      const pageToSave = localPages.find(p => p.id === activePageId);
+      if (pageToSave) {
+          await onUpdatePage(activePageId, { blocks: pageToSave.blocks });
+          setHasUnsavedChanges(false);
+      }
   };
 
   const handlePreviewBlock = (type: PageBlock['type'], name: string, html: string = '', variant?: string) => {
@@ -1433,7 +1464,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <button onClick={() => setPreviewDevice('desktop')} className={`p-1.5 rounded ${previewDevice === 'desktop' ? 'bg-neutral-800 text-white' : 'text-neutral-500 hover:text-white'}`}><Monitor size={14} /></button>
                   <button onClick={() => setPreviewDevice('mobile')} className={`p-1.5 rounded ${previewDevice === 'mobile' ? 'bg-neutral-800 text-white' : 'text-neutral-500 hover:text-white'}`}><Smartphone size={14} /></button>
                 </div>
-                <div className="text-xs text-neutral-500 font-mono">Live Preview: 12ms</div>
+                <div className="flex items-center gap-4">
+                  <div className="text-xs text-neutral-500 font-mono">Live Preview: 12ms</div>
+                  <button 
+                      onClick={handleSaveChanges}
+                      disabled={!hasUnsavedChanges}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${hasUnsavedChanges ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'}`}
+                  >
+                      <Save size={14} />
+                      {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
+                  </button>
+                </div>
               </div>
               <div className="flex-1 overflow-hidden flex items-center justify-center p-8 bg-[radial-gradient(#222_1px,transparent_1px)] [background-size:16px_16px]">
                 <div className={`bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shadow-2xl overflow-hidden relative ${previewDevice === 'mobile' ? 'w-[375px] h-[812px] rounded-[40px] border-[8px] border-neutral-900' : 'w-full h-full max-w-[1400px] rounded-lg border border-neutral-800'}`}>
@@ -1441,7 +1482,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <Storefront
                       config={config}
                       products={products}
-                      pages={pages}
+                      pages={localPages}
                       activePageId={activePageId}
                       previewBlock={previewBlock}
                       activeBlockId={selectedBlockId}
