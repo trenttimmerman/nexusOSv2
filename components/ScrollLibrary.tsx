@@ -1,4 +1,5 @@
 import React from 'react';
+import { EditableText } from './HeroLibrary';
 
 export type ScrollStyleId = 'logo-marquee' | 'text-ticker';
 
@@ -50,13 +51,22 @@ const LogoMarquee: React.FC<ScrollSectionProps> = ({ data }) => {
     );
 };
 
-const TextTicker: React.FC<ScrollSectionProps> = ({ data }) => {
+const TextTicker: React.FC<ScrollSectionProps> = ({ data, isEditable, onUpdate }) => {
     const text = data?.text || "LIMITED TIME OFFER • FREE SHIPPING WORLDWIDE • NEW COLLECTION DROPPING SOON •";
 
     return (
         <div className="bg-neutral-900 text-white py-4 overflow-hidden">
             <div className="animate-marquee whitespace-nowrap flex gap-8">
-                <span className="text-sm font-bold tracking-widest uppercase">{text}</span>
+                <span className="text-sm font-bold tracking-widest uppercase">
+                    <EditableText 
+                        tagName="span" 
+                        value={text} 
+                        onChange={(val) => onUpdate && onUpdate({ text: val })} 
+                        onStyleChange={(style) => onUpdate && onUpdate({ text_style: style })}
+                        style={data?.text_style}
+                        isEditable={isEditable} 
+                    />
+                </span>
                 <span className="text-sm font-bold tracking-widest uppercase">{text}</span>
                 <span className="text-sm font-bold tracking-widest uppercase">{text}</span>
                 <span className="text-sm font-bold tracking-widest uppercase">{text}</span>

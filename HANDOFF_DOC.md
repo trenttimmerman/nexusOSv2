@@ -37,17 +37,27 @@ We have successfully implemented the core "Commerce OS" features requested, tran
     *   Fetches and displays relevant shipping options.
     *   Adds selected shipping cost to the total.
 
-### 4. Campaigns System
-*   **Refactor**:
-    *   Updated `CampaignManager.tsx` to be fully persistent (previously mock-only).
-    *   Now reads/writes directly to the `campaigns` table in Supabase.
-*   **Features**: Create email/SMS/social campaigns, track status (draft/sent), and view mock performance stats.
+### 5. Inline Editor Refinement (WYSIWYG)
+*   **Goal**: "Best in Industry" inline editing experience.
+*   **Components**:
+    *   `HeroLibrary.tsx`: Updated all Hero variants (`Impact`, `Split`, `Kinetik`, `Grid`, `Typographic`) to support granular inline editing.
+    *   `EditableText`: Added a floating style menu for Typography, Size, Weight, Spacing, Case, and Color.
+    *   `EditableImage`: Added an "Overlay Opacity" slider and AI generation placeholder.
+    *   `Storefront.tsx`: Integrated `EditableText` into the "System Grid" (Product List) block.
+    *   `ScrollLibrary.tsx`: Integrated `EditableText` into the "Text Ticker" block.
+*   **Features**:
+    *   **Text Styling**: Users can now style text directly on the canvas without leaving the preview.
+    *   **Image Overlays**: Users can adjust the opacity of image overlays directly.
+    *   **Full Coverage**: Every text and image element in the Hero blocks is now editable.
 
 ## 🛠️ Technical Changes
 
 *   **Modified Files**:
     *   `components/AdminPanel.tsx`: Added navigation tabs and routing for new managers.
     *   `components/Checkout.tsx`: Major logic update for discounts and shipping calculation.
+    *   `components/HeroLibrary.tsx`: Major refactor for `EditableText` and `EditableImage` and all Hero components.
+    *   `components/Storefront.tsx`: Updated block rendering to pass editing props and use new editable components.
+    *   `components/ScrollLibrary.tsx`: Updated to use `EditableText`.
     *   `types.ts`: Added TypeScript interfaces for `Discount`, `ShippingZone`, `ShippingRate`.
     *   `components/DiscountManager.tsx` (New)
     *   `components/ShippingManager.tsx` (New)

@@ -8,6 +8,9 @@ interface TextStyles {
   color?: string;
   textAlign?: 'left' | 'center' | 'right';
   fontFamily?: string;
+  textTransform?: 'uppercase' | 'lowercase' | 'capitalize' | 'none';
+  letterSpacing?: string;
+  lineHeight?: string;
 }
 
 interface HeroProps {
@@ -44,7 +47,7 @@ export const HERO_FIELDS: Record<string, string[]> = {
 
 // --- EDITABLE HELPERS ---
 
-const EditableText: React.FC<{
+export const EditableText: React.FC<{
   value: string;
   onChange: (val: string) => void;
   onStyleChange?: (style: TextStyles) => void;
@@ -128,52 +131,100 @@ const EditableText: React.FC<{
               fontWeight: style?.fontWeight,
               color: style?.color,
               textAlign: style?.textAlign,
-              fontFamily: style?.fontFamily
+              fontFamily: style?.fontFamily,
+              textTransform: style?.textTransform,
+              letterSpacing: style?.letterSpacing,
+              lineHeight: style?.lineHeight
             }}
             rows={tagName === 'p' ? 3 : 1}
         />
-        <div className="absolute -top-10 right-0 flex gap-1 z-50">
+        <div className="absolute -top-12 left-0 flex gap-1 z-50 bg-black text-white p-1 rounded-lg shadow-xl animate-in fade-in slide-in-from-bottom-2">
           <button 
             onMouseDown={handleAiGenerate} 
-            className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 hover:bg-blue-700 transition-colors shadow-lg"
+            className="px-2 py-1 rounded hover:bg-white/20 flex items-center gap-1 text-xs font-bold transition-colors"
+            title="AI Rewrite"
           >
-            {isGenerating ? <Loader2 size={10} className="animate-spin" /> : <Wand2 size={10} />}
-            AI Rewrite
+            {isGenerating ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
+            <span className="hidden sm:inline">Magic</span>
           </button>
+          <div className="w-px h-4 bg-white/20 my-auto" />
           <button 
             onMouseDown={toggleStyleMenu} 
-            className="bg-neutral-800 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 hover:bg-neutral-700 transition-colors shadow-lg"
+            className={`px-2 py-1 rounded hover:bg-white/20 flex items-center gap-1 text-xs font-bold transition-colors ${showStyleMenu ? 'bg-white/20' : ''}`}
+            title="Text Styles"
           >
-            <Palette size={10} /> Style
+            <Palette size={12} />
+            <span className="hidden sm:inline">Style</span>
           </button>
         </div>
 
         {showStyleMenu && (
-          <div className="absolute top-full left-0 mt-2 bg-white text-black p-3 rounded-xl shadow-2xl border border-neutral-200 z-[60] w-64" onMouseDown={(e) => e.stopPropagation()}>
-             <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                   <span className="text-[10px] font-bold uppercase text-neutral-400">Size</span>
-                   <div className="flex gap-1">
-                      <button onMouseDown={() => updateStyle('fontSize', '1rem')} className="p-1 hover:bg-neutral-100 rounded"><Minus size={12} /></button>
-                      <span className="text-xs font-mono w-8 text-center">{style?.fontSize || 'auto'}</span>
-                      <button onMouseDown={() => updateStyle('fontSize', '3rem')} className="p-1 hover:bg-neutral-100 rounded"><Plus size={12} /></button>
+          <div className="absolute top-full left-0 mt-2 bg-neutral-900 text-white p-4 rounded-xl shadow-2xl border border-neutral-800 z-[60] w-72" onMouseDown={(e) => e.stopPropagation()}>
+             <div className="space-y-4">
+                {/* Typography */}
+                <div className="space-y-2">
+                   <label className="text-[10px] font-bold uppercase text-neutral-500">Typography</label>
+                   <div className="grid grid-cols-3 gap-1">
+                      {['sans', 'serif', 'mono'].map(font => (
+                        <button 
+                          key={font}
+                          onMouseDown={() => updateStyle('fontFamily', font === 'sans' ? 'ui-sans-serif, system-ui' : font === 'serif' ? 'ui-serif, Georgia' : 'ui-monospace, SFMono-Regular')}
+                          className={`p-1.5 rounded text-xs border border-neutral-700 hover:bg-neutral-800 ${style?.fontFamily?.includes(font) ? 'bg-neutral-800 border-white/50' : ''}`}
+                        >
+                          {font.charAt(0).toUpperCase() + font.slice(1)}
+                        </button>
+                      ))}
                    </div>
                 </div>
-                <div className="flex items-center justify-between">
-                   <span className="text-[10px] font-bold uppercase text-neutral-400">Weight</span>
-                   <div className="flex gap-1 bg-neutral-100 rounded p-0.5">
-                      <button onMouseDown={() => updateStyle('fontWeight', 'normal')} className={`p-1 rounded ${style?.fontWeight === 'normal' ? 'bg-white shadow-sm' : ''}`}><Type size={12} /></button>
-                      <button onMouseDown={() => updateStyle('fontWeight', 'bold')} className={`p-1 rounded ${style?.fontWeight === 'bold' ? 'bg-white shadow-sm' : ''}`}><Bold size={12} /></button>
+
+                {/* Size & Weight */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold uppercase text-neutral-500">Size</label>
+                     <div className="flex items-center gap-2 bg-neutral-800 rounded p-1">
+                        <button onMouseDown={() => updateStyle('fontSize', '0.875rem')} className="p-1 hover:bg-neutral-700 rounded"><Minus size={12} /></button>
+                        <span className="text-xs font-mono flex-1 text-center">{style?.fontSize || 'Auto'}</span>
+                        <button onMouseDown={() => updateStyle('fontSize', '4rem')} className="p-1 hover:bg-neutral-700 rounded"><Plus size={12} /></button>
+                     </div>
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold uppercase text-neutral-500">Weight</label>
+                     <div className="flex bg-neutral-800 rounded p-1">
+                        <button onMouseDown={() => updateStyle('fontWeight', 'normal')} className={`flex-1 p-1 rounded hover:bg-neutral-700 ${style?.fontWeight === 'normal' ? 'bg-neutral-600' : ''}`}><Type size={12} className="mx-auto" /></button>
+                        <button onMouseDown={() => updateStyle('fontWeight', 'bold')} className={`flex-1 p-1 rounded hover:bg-neutral-700 ${style?.fontWeight === 'bold' ? 'bg-neutral-600' : ''}`}><Bold size={12} className="mx-auto" /></button>
+                     </div>
+                  </div>
+                </div>
+
+                {/* Spacing & Transform */}
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase text-neutral-500">Spacing</label>
+                      <div className="flex bg-neutral-800 rounded p-1">
+                         <button onMouseDown={() => updateStyle('letterSpacing', '-0.05em')} className="flex-1 p-1 text-[10px] hover:bg-neutral-700 rounded">-</button>
+                         <button onMouseDown={() => updateStyle('letterSpacing', '0em')} className="flex-1 p-1 text-[10px] hover:bg-neutral-700 rounded">0</button>
+                         <button onMouseDown={() => updateStyle('letterSpacing', '0.1em')} className="flex-1 p-1 text-[10px] hover:bg-neutral-700 rounded">+</button>
+                      </div>
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase text-neutral-500">Case</label>
+                      <div className="flex bg-neutral-800 rounded p-1">
+                         <button onMouseDown={() => updateStyle('textTransform', 'none')} className="flex-1 p-1 text-[10px] hover:bg-neutral-700 rounded">Aa</button>
+                         <button onMouseDown={() => updateStyle('textTransform', 'uppercase')} className="flex-1 p-1 text-[10px] hover:bg-neutral-700 rounded">AA</button>
+                         <button onMouseDown={() => updateStyle('textTransform', 'lowercase')} className="flex-1 p-1 text-[10px] hover:bg-neutral-700 rounded">aa</button>
+                      </div>
                    </div>
                 </div>
-                <div className="flex items-center justify-between">
-                   <span className="text-[10px] font-bold uppercase text-neutral-400">Color</span>
-                   <div className="flex gap-1">
-                      {['#000000', '#ffffff', '#ef4444', '#3b82f6', '#22c55e'].map(c => (
+
+                {/* Color */}
+                <div className="space-y-2">
+                   <label className="text-[10px] font-bold uppercase text-neutral-500">Color</label>
+                   <div className="flex flex-wrap gap-2">
+                      {['#000000', '#ffffff', '#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7'].map(c => (
                         <button 
                           key={c}
                           onMouseDown={() => updateStyle('color', c)}
-                          className="w-4 h-4 rounded-full border border-neutral-200"
+                          className="w-6 h-6 rounded-full border border-neutral-700 hover:scale-110 transition-transform"
                           style={{ backgroundColor: c }}
                         />
                       ))}
@@ -202,7 +253,10 @@ const EditableText: React.FC<{
         fontWeight: style?.fontWeight,
         color: style?.color,
         textAlign: style?.textAlign,
-        fontFamily: style?.fontFamily
+        fontFamily: style?.fontFamily,
+        textTransform: style?.textTransform,
+        letterSpacing: style?.letterSpacing,
+        lineHeight: style?.lineHeight
       }}
     >
       {value || <span className="opacity-50 italic">{placeholder}</span>}
@@ -215,13 +269,15 @@ const EditableText: React.FC<{
   );
 };
 
-const EditableImage: React.FC<{
+export const EditableImage: React.FC<{
   src: string;
   onChange: (src: string) => void;
   isEditable?: boolean;
   className?: string;
   alt?: string;
-}> = ({ src, onChange, isEditable, className, alt }) => {
+  overlayOpacity?: number;
+  onOverlayOpacityChange?: (val: number) => void;
+}> = ({ src, onChange, isEditable, className, alt, overlayOpacity = 0, onOverlayOpacityChange }) => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -247,25 +303,53 @@ const EditableImage: React.FC<{
   return (
     <div className={`relative group ${className}`}>
       {src ? (
-        <img src={src} className="w-full h-full object-cover" alt={alt} />
+        <>
+          <img src={src} className="w-full h-full object-cover" alt={alt} />
+          {overlayOpacity > 0 && (
+            <div 
+              className="absolute inset-0 bg-black pointer-events-none transition-opacity duration-300"
+              style={{ opacity: overlayOpacity }}
+            />
+          )}
+        </>
       ) : (
         <div className="w-full h-full bg-neutral-200 flex items-center justify-center text-neutral-400">
           <ImageIcon size={24} />
         </div>
       )}
       {isEditable && (
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-           <label className="cursor-pointer bg-white text-black px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-neutral-200 transition-colors shadow-lg transform hover:scale-105">
-              <Upload size={14} /> Upload
-              <input type="file" className="hidden" accept="image/*" onChange={handleUpload} />
-           </label>
-           <button 
-             onClick={handleAiGenerate}
-             className="cursor-pointer bg-purple-600 text-white px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-purple-700 transition-colors shadow-lg transform hover:scale-105"
-           >
-              {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-              AI Generate
-           </button>
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-4">
+           <div className="flex items-center gap-2">
+             <label className="cursor-pointer bg-white text-black px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-neutral-200 transition-colors shadow-lg transform hover:scale-105">
+                <Upload size={14} /> Upload
+                <input type="file" className="hidden" accept="image/*" onChange={handleUpload} />
+             </label>
+             <button 
+               onClick={handleAiGenerate}
+               className="cursor-pointer bg-purple-600 text-white px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-purple-700 transition-colors shadow-lg transform hover:scale-105"
+             >
+                {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                AI Generate
+             </button>
+           </div>
+           
+           {onOverlayOpacityChange && (
+             <div className="bg-black/80 backdrop-blur p-3 rounded-xl flex flex-col gap-2 w-48">
+                <div className="flex justify-between text-white text-[10px] font-bold uppercase">
+                  <span>Overlay</span>
+                  <span>{Math.round(overlayOpacity * 100)}%</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="0.9" 
+                  step="0.1" 
+                  value={overlayOpacity}
+                  onChange={(e) => onOverlayOpacityChange(parseFloat(e.target.value))}
+                  className="w-full h-1 bg-neutral-600 rounded-lg appearance-none cursor-pointer accent-white"
+                />
+             </div>
+           )}
         </div>
       )}
     </div>
@@ -281,12 +365,13 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
   const buttonText = data?.buttonText || "Shop The Drop";
   const badge = data?.badge || "New Collection 2024";
   const secondaryButtonText = data?.secondaryButtonText || "View Lookbook";
-
+  
   const style = data?.style || {};
   const bgColor = style.backgroundColor || 'black';
   const textColor = style.textColor || 'white';
   const alignment = style.alignment || 'center';
   const padding = style.padding === 'none' ? 'py-0' : style.padding === 's' ? 'py-12' : style.padding === 'l' ? 'py-32' : 'py-24';
+  const overlayOpacity = data?.overlayOpacity !== undefined ? data.overlayOpacity : 0.3;
 
   return (
     <section 
@@ -299,8 +384,10 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
             onChange={(val) => onUpdate && onUpdate({ image: val })} 
             isEditable={isEditable}
             className="w-full h-full"
+            overlayOpacity={overlayOpacity}
+            onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30 pointer-events-none"></div>
+        {/* Removed hardcoded gradient to allow user controlled overlay */}
       </div>
       
       <div className={`relative z-10 px-6 max-w-4xl mx-auto flex flex-col ${alignment === 'left' ? 'items-start text-left' : alignment === 'right' ? 'items-end text-right' : 'items-center text-center'}`}>
@@ -310,6 +397,8 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
                tagName="span" 
                value={badge} 
                onChange={(val) => onUpdate && onUpdate({ badge: val })} 
+               onStyleChange={(style) => onUpdate && onUpdate({ badge_style: style })}
+               style={data?.badge_style}
                isEditable={isEditable} 
                placeholder="Badge Text"
             />
@@ -332,6 +421,8 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
                  tagName="span"
                  value={buttonText}
                  onChange={(val) => onUpdate && onUpdate({ buttonText: val })}
+                 onStyleChange={(style) => onUpdate && onUpdate({ button_style: style })}
+                 style={data?.button_style}
                  isEditable={isEditable}
                  placeholder="Button Text"
              />
@@ -342,6 +433,8 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
                  tagName="span"
                  value={secondaryButtonText}
                  onChange={(val) => onUpdate && onUpdate({ secondaryButtonText: val })}
+                 onStyleChange={(style) => onUpdate && onUpdate({ secondary_button_style: style })}
+                 style={data?.secondary_button_style}
                  isEditable={isEditable}
                  placeholder="Secondary Button"
              />
@@ -350,9 +443,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
       </div>
     </section>
   );
-};
-
-// 2. Split (Modern, Editorial, 50/50)
+};// 2. Split (Modern, Editorial, 50/50)
 export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEditable, onUpdate }) => {
   const heading = data?.heading || "Essential gear for the modern era.";
   const subheading = data?.subheading || "Crafted with precision, designed for utility. Explore our latest arrival of technical apparel and accessories.";
@@ -361,6 +452,7 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
   const topLabel = data?.topLabel || `Est. 2024 — ${storeName}`;
   const floatingCardTitle = data?.floatingCardTitle || "Cyber Shell Jacket";
   const floatingCardPrice = data?.floatingCardPrice || "$185.00 — In Stock";
+  const overlayOpacity = data?.overlayOpacity !== undefined ? data.overlayOpacity : 0;
 
   return (
     <section className="relative w-full min-h-[90vh] bg-white flex flex-col md:flex-row">
@@ -371,6 +463,8 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
                  tagName="span"
                  value={topLabel}
                  onChange={(val) => onUpdate && onUpdate({ topLabel: val })}
+                 onStyleChange={(style) => onUpdate && onUpdate({ topLabel_style: style })}
+                 style={data?.topLabel_style}
                  isEditable={isEditable}
              />
            </span>
@@ -381,6 +475,8 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
              tagName="h1" 
              value={heading} 
              onChange={(val) => onUpdate && onUpdate({ heading: val })} 
+             onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
+             style={data?.heading_style}
              isEditable={isEditable}
              className="block"
            />
@@ -390,6 +486,8 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
              tagName="p" 
              value={subheading} 
              onChange={(val) => onUpdate && onUpdate({ subheading: val })} 
+             onStyleChange={(style) => onUpdate && onUpdate({ subheading_style: style })}
+             style={data?.subheading_style}
              isEditable={isEditable}
            />
         </div>
@@ -403,6 +501,8 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
                  tagName="span"
                  value={buttonText}
                  onChange={(val) => onUpdate && onUpdate({ buttonText: val })}
+                 onStyleChange={(style) => onUpdate && onUpdate({ button_style: style })}
+                 style={data?.button_style}
                  isEditable={isEditable}
                  placeholder="Button Text"
              />
@@ -425,6 +525,8 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
             onChange={(val) => onUpdate && onUpdate({ image: val })} 
             isEditable={isEditable}
             className="absolute inset-0 w-full h-full"
+            overlayOpacity={overlayOpacity}
+            onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
          />
          <div className="absolute bottom-8 right-8 bg-white/90 backdrop-blur p-4 rounded-xl shadow-xl max-w-xs pointer-events-none md:pointer-events-auto">
             <p className="font-bold text-sm mb-1">
@@ -432,6 +534,8 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
                  tagName="span"
                  value={floatingCardTitle}
                  onChange={(val) => onUpdate && onUpdate({ floatingCardTitle: val })}
+                 onStyleChange={(style) => onUpdate && onUpdate({ floatingCardTitle_style: style })}
+                 style={data?.floatingCardTitle_style}
                  isEditable={isEditable}
              />
             </p>
@@ -440,6 +544,8 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
                  tagName="span"
                  value={floatingCardPrice}
                  onChange={(val) => onUpdate && onUpdate({ floatingCardPrice: val })}
+                 onStyleChange={(style) => onUpdate && onUpdate({ floatingCardPrice_style: style })}
+                 style={data?.floatingCardPrice_style}
                  isEditable={isEditable}
              />
             </p>
@@ -455,6 +561,7 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
   const image = data?.image || "https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=2000&auto=format&fit=crop";
   const buttonText = data?.buttonText || "Shop Collection 01";
   const marqueeText = data?.marqueeText || "LIMITED DROP • DO NOT SLEEP • WORLDWIDE SHIPPING • SECURE CHECKOUT • NEXUS OS • LIMITED DROP • DO NOT SLEEP •";
+  const overlayOpacity = data?.overlayOpacity !== undefined ? data.overlayOpacity : 0;
 
   return (
     <section className="relative w-full h-[85vh] bg-[#ccff00] overflow-hidden flex flex-col border-b-4 border-black">
@@ -471,6 +578,8 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
                  tagName="span"
                  value={marqueeText}
                  onChange={(val) => onUpdate && onUpdate({ marqueeText: val })}
+                 onStyleChange={(style) => onUpdate && onUpdate({ marqueeText_style: style })}
+                 style={data?.marqueeText_style}
                  isEditable={isEditable}
              />
          </div>
@@ -482,6 +591,8 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
              tagName="h1" 
              value={heading} 
              onChange={(val) => onUpdate && onUpdate({ heading: val })} 
+             onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
+             style={data?.heading_style}
              isEditable={isEditable} 
              className="block"
            />
@@ -492,6 +603,8 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
                 onChange={(val) => onUpdate && onUpdate({ image: val })} 
                 isEditable={isEditable}
                 className="w-full h-full"
+                overlayOpacity={overlayOpacity}
+                onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
             />
          </div>
       </div>
@@ -502,6 +615,8 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
                  tagName="span"
                  value={buttonText}
                  onChange={(val) => onUpdate && onUpdate({ buttonText: val })}
+                 onStyleChange={(style) => onUpdate && onUpdate({ button_style: style })}
+                 style={data?.button_style}
                  isEditable={isEditable}
              />
          </button>
@@ -520,6 +635,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
   const imageBadge = data?.imageBadge || "FW24 Lookbook";
   const featureCardTitle = data?.featureCardTitle || "-20%";
   const featureCardSubtitle = data?.featureCardSubtitle || "On all Accessories";
+  const overlayOpacity = data?.overlayOpacity !== undefined ? data.overlayOpacity : 0;
 
   return (
     <section className="w-full min-h-screen bg-neutral-50 p-4 pt-8">
@@ -535,6 +651,8 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      tagName="h1" 
                      value={heading} 
                      onChange={(val) => onUpdate && onUpdate({ heading: val })} 
+                     onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
+                     style={data?.heading_style}
                      isEditable={isEditable} 
                    />
                 </div>
@@ -543,6 +661,8 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      tagName="p" 
                      value={subheading} 
                      onChange={(val) => onUpdate && onUpdate({ subheading: val })} 
+                     onStyleChange={(style) => onUpdate && onUpdate({ subheading_style: style })}
+                     style={data?.subheading_style}
                      isEditable={isEditable} 
                    />
                 </div>
@@ -553,6 +673,8 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      tagName="span"
                      value={buttonText}
                      onChange={(val) => onUpdate && onUpdate({ buttonText: val })}
+                     onStyleChange={(style) => onUpdate && onUpdate({ button_style: style })}
+                     style={data?.button_style}
                      isEditable={isEditable}
                    />
                 </button>
@@ -561,6 +683,8 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      tagName="span"
                      value={secondaryButtonText}
                      onChange={(val) => onUpdate && onUpdate({ secondaryButtonText: val })}
+                     onStyleChange={(style) => onUpdate && onUpdate({ secondary_button_style: style })}
+                     style={data?.secondary_button_style}
                      isEditable={isEditable}
                    />
                 </button>
@@ -574,12 +698,16 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                 onChange={(val) => onUpdate && onUpdate({ image: val })} 
                 isEditable={isEditable}
                 className="w-full h-full"
+                overlayOpacity={overlayOpacity}
+                onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
             />
              <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur px-4 py-2 rounded-lg text-xs font-bold pointer-events-none md:pointer-events-auto">
                 <EditableText 
                      tagName="span"
                      value={imageBadge}
                      onChange={(val) => onUpdate && onUpdate({ imageBadge: val })}
+                     onStyleChange={(style) => onUpdate && onUpdate({ imageBadge_style: style })}
+                     style={data?.imageBadge_style}
                      isEditable={isEditable}
                    />
              </div>
@@ -588,11 +716,13 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
           {/* Stacked Images */}
           <div className="md:col-span-3 flex flex-col gap-4">
              <div className="flex-1 relative rounded-3xl overflow-hidden group">
-                <img 
-                   src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop" 
-                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                <EditableImage 
+                   src={data?.sideImage || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop"}
+                   onChange={(val) => onUpdate && onUpdate({ sideImage: val })}
+                   isEditable={isEditable}
+                   className="w-full h-full"
                 />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors pointer-events-none"></div>
              </div>
              <div className="h-48 bg-[#FF5F56] rounded-3xl p-6 text-white flex flex-col justify-center relative overflow-hidden group cursor-pointer">
                 <div className="relative z-10 text-4xl font-black mb-1">
@@ -600,6 +730,8 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      tagName="span"
                      value={featureCardTitle}
                      onChange={(val) => onUpdate && onUpdate({ featureCardTitle: val })}
+                     onStyleChange={(style) => onUpdate && onUpdate({ featureCardTitle_style: style })}
+                     style={data?.featureCardTitle_style}
                      isEditable={isEditable}
                    />
                 </div>
@@ -608,6 +740,8 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      tagName="span"
                      value={featureCardSubtitle}
                      onChange={(val) => onUpdate && onUpdate({ featureCardSubtitle: val })}
+                     onStyleChange={(style) => onUpdate && onUpdate({ featureCardSubtitle_style: style })}
+                     style={data?.featureCardSubtitle_style}
                      isEditable={isEditable}
                    />
                 </div>
@@ -639,6 +773,8 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      tagName="span"
                      value={topBadge}
                      onChange={(val) => onUpdate && onUpdate({ topBadge: val })}
+                     onStyleChange={(style) => onUpdate && onUpdate({ topBadge_style: style })}
+                     style={data?.topBadge_style}
                      isEditable={isEditable}
                    />
              </span>
@@ -650,6 +786,8 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                  tagName="h1" 
                  value={heading} 
                  onChange={(val) => onUpdate && onUpdate({ heading: val })} 
+                 onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
+                 style={data?.heading_style}
                  isEditable={isEditable} 
              />
           </div>
@@ -659,6 +797,8 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                  tagName="p" 
                  value={subheading} 
                  onChange={(val) => onUpdate && onUpdate({ subheading: val })} 
+                 onStyleChange={(style) => onUpdate && onUpdate({ subheading_style: style })}
+                 style={data?.subheading_style}
                  isEditable={isEditable} 
              />
           </div>
@@ -666,40 +806,61 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
           <div className="flex justify-center gap-6">
              <a href="#" className="group flex flex-col items-center gap-2">
                 <div className="w-48 h-64 bg-neutral-100 rounded-lg overflow-hidden mb-2 relative">
-                   <img src="https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=1000&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                   <EditableImage 
+                      src={data?.link1Image || "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=1000&auto=format&fit=crop"}
+                      onChange={(val) => onUpdate && onUpdate({ link1Image: val })}
+                      isEditable={isEditable}
+                      className="w-full h-full"
+                   />
+                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
                 </div>
                 <div className="text-sm font-bold border-b border-black pb-0.5">
                     <EditableText 
                      tagName="span"
                      value={link1Label}
                      onChange={(val) => onUpdate && onUpdate({ link1Label: val })}
+                     onStyleChange={(style) => onUpdate && onUpdate({ link1Label_style: style })}
+                     style={data?.link1Label_style}
                      isEditable={isEditable}
                    />
                 </div>
              </a>
              <a href="#" className="group flex flex-col items-center gap-2 mt-12 md:mt-24">
                 <div className="w-48 h-64 bg-neutral-100 rounded-lg overflow-hidden mb-2 relative">
-                   <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                   <EditableImage 
+                      src={data?.link2Image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop"}
+                      onChange={(val) => onUpdate && onUpdate({ link2Image: val })}
+                      isEditable={isEditable}
+                      className="w-full h-full"
+                   />
                 </div>
                 <div className="text-sm font-bold border-b border-black pb-0.5">
                     <EditableText 
                      tagName="span"
                      value={link2Label}
                      onChange={(val) => onUpdate && onUpdate({ link2Label: val })}
+                     onStyleChange={(style) => onUpdate && onUpdate({ link2Label_style: style })}
+                     style={data?.link2Label_style}
                      isEditable={isEditable}
                    />
                 </div>
              </a>
              <a href="#" className="group flex flex-col items-center gap-2">
                 <div className="w-48 h-64 bg-neutral-100 rounded-lg overflow-hidden mb-2 relative">
-                   <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                   <EditableImage 
+                      src={data?.link3Image || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop"}
+                      onChange={(val) => onUpdate && onUpdate({ link3Image: val })}
+                      isEditable={isEditable}
+                      className="w-full h-full"
+                   />
                 </div>
                 <div className="text-sm font-bold border-b border-black pb-0.5">
                     <EditableText 
                      tagName="span"
                      value={link3Label}
                      onChange={(val) => onUpdate && onUpdate({ link3Label: val })}
+                     onStyleChange={(style) => onUpdate && onUpdate({ link3Label_style: style })}
+                     style={data?.link3Label_style}
                      isEditable={isEditable}
                    />
                 </div>

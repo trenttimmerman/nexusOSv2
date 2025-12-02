@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { StorefrontProps, Product, PageBlock, HeroStyleId, ProductCardStyleId } from '../types';
 import { HEADER_COMPONENTS } from './HeaderLibrary';
-import { HERO_COMPONENTS, HERO_OPTIONS } from './HeroLibrary';
+import { HERO_COMPONENTS, HERO_OPTIONS, EditableText, EditableImage } from './HeroLibrary';
 import { PRODUCT_CARD_COMPONENTS, PRODUCT_CARD_OPTIONS } from './ProductCardLibrary';
 import { PRODUCT_PAGE_COMPONENTS } from './ProductPageLibrary';
 import { FOOTER_COMPONENTS } from './FooterLibrary';
@@ -62,7 +62,7 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
   }
 
   // Render System Product Grid
-  const renderProductGrid = (variant?: string, data?: any) => {
+  const renderProductGrid = (variant?: string, data?: any, blockId?: string, isEditable?: boolean) => {
     const styleId = (variant as ProductCardStyleId) || config.productCardStyle || 'classic';
     const CardComponent = PRODUCT_CARD_COMPONENTS[styleId] || PRODUCT_CARD_COMPONENTS['classic'];
     const heading = data?.heading || "Latest Drops.";
@@ -72,8 +72,26 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
       <section className="py-24 px-6 max-w-7xl mx-auto">
         <div className="flex items-end justify-between mb-12">
           <div>
-            <h2 className="text-3xl font-bold mb-2">{heading}</h2>
-            <p className="text-neutral-500">{subheading}</p>
+            <h2 className="text-3xl font-bold mb-2">
+               <EditableText 
+                 tagName="span" 
+                 value={heading} 
+                 onChange={(val) => onUpdateBlock && blockId && onUpdateBlock(blockId, { heading: val })} 
+                 onStyleChange={(style) => onUpdateBlock && blockId && onUpdateBlock(blockId, { heading_style: style })}
+                 style={data?.heading_style}
+                 isEditable={isEditable} 
+               />
+            </h2>
+            <p className="text-neutral-500">
+               <EditableText 
+                 tagName="span" 
+                 value={subheading} 
+                 onChange={(val) => onUpdateBlock && blockId && onUpdateBlock(blockId, { subheading: val })} 
+                 onStyleChange={(style) => onUpdateBlock && blockId && onUpdateBlock(blockId, { subheading_style: style })}
+                 style={data?.subheading_style}
+                 isEditable={isEditable} 
+               />
+            </p>
           </div>
           <a href="#" className="text-sm font-bold underline underline-offset-4">View All</a>
         </div>
@@ -200,7 +218,7 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
             }}
           >
             {isEditable && <BlockToolbar />}
-            {renderProductGrid(block.variant, block.data)}
+            {renderProductGrid(block.variant, block.data, block.id, isEditable)}
           </div>
         );
       case 'system-scroll':
@@ -217,7 +235,11 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
             }}
           >
             {isEditable && <BlockToolbar />}
-            <ScrollComponent data={block.data} />
+            <ScrollComponent 
+              data={block.data} 
+              isEditable={isEditable}
+              onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
+            />
           </div>
         ) : null;
       case 'section':
