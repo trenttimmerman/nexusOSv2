@@ -7,6 +7,7 @@ import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS } from './ProductCardLibr
 import { FOOTER_OPTIONS } from './FooterLibrary';
 import { SCROLL_OPTIONS } from './ScrollLibrary';
 import { Storefront } from './Storefront';
+import { EditorPanel } from './EditorPanel';
 import { CartDrawer } from './CartDrawer';
 import { MediaLibrary } from './MediaLibrary';
 import { CampaignManager } from './CampaignManager';
@@ -1410,6 +1411,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* EDITOR PANEL COLUMN */}
+            {selectedBlockId && activeBlock && activeBlock.type === 'system-hero' && (
+               <EditorPanel 
+                  isOpen={true}
+                  onClose={() => setSelectedBlockId(null)}
+                  blockId={activeBlock.id}
+                  blockType="Hero Section"
+                  data={activeBlock.data || {}}
+                  onUpdate={(newData) => updateActiveBlockData(activeBlock.id, newData)}
+                  fields={HERO_FIELDS[activeBlock.variant as HeroStyleId || 'impact'] || []}
+               />
+            )}
 
             {/* RIGHT COLUMN: LIVE CANVAS */}
             <div className={`flex-1 bg-[#111] flex flex-col relative transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${isAnyModalOpen ? 'pl-96' : ''}`}>

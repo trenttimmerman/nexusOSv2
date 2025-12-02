@@ -10,7 +10,6 @@ import { SCROLL_COMPONENTS, SCROLL_OPTIONS } from './ScrollLibrary';
 import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
-import { EditorPanel } from './EditorPanel';
 
 export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true }) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
@@ -196,17 +195,6 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
             }}
           >
             {isEditable && <BlockToolbar />}
-            {isEditable && (
-              <EditorPanel 
-                isOpen={true}
-                onClose={() => onEditBlock && onEditBlock('')}
-                blockId={block.id}
-                blockType="Hero Section"
-                data={block.data || {}}
-                onUpdate={(newData) => onUpdateBlock && onUpdateBlock(block.id, newData)}
-                fields={HERO_FIELDS[heroStyle] || []}
-              />
-            )}
             <HeroComponent
               key={block.id}
               storeName={config.name}
