@@ -7,7 +7,7 @@ import { PRODUCT_CARD_COMPONENTS } from './ProductCardLibrary';
 import { PRODUCT_PAGE_COMPONENTS } from './ProductPageLibrary';
 import { FOOTER_COMPONENTS } from './FooterLibrary';
 import { SCROLL_COMPONENTS } from './ScrollLibrary';
-import { Plus, Edit3 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 
@@ -102,7 +102,15 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
         const heroStyle = (block.variant as HeroStyleId) || config.heroStyle || 'impact';
         const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
         return HeroComponent ? (
-          <div className="relative group">
+          <div 
+            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
+            onClick={(e) => {
+              if (onEditBlock) {
+                e.stopPropagation();
+                onEditBlock(block.id);
+              }
+            }}
+          >
             <HeroComponent
               key={block.id}
               storeName={config.name}
@@ -111,15 +119,6 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
               isEditable={isEditable}
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
             />
-            {onEditBlock && (
-              <button 
-                onClick={(e) => { e.stopPropagation(); onEditBlock(block.id); }}
-                className="absolute top-4 right-4 z-50 p-3 bg-white text-black rounded-full shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-blue-600 hover:text-white hover:scale-110"
-                title="Edit Section Content"
-              >
-                <Edit3 size={18} />
-              </button>
-            )}
           </div>
         ) : null;
       case 'system-grid':

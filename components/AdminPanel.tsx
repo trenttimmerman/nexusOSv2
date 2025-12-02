@@ -14,7 +14,6 @@ import { OrderManager } from './OrderManager';
 import { DomainManager } from './DomainManager';
 import { DiscountManager } from './DiscountManager';
 import { ShippingManager } from './ShippingManager';
-import { SectionEditorModal } from './SectionEditorModal';
 import { supabase } from '../lib/supabaseClient';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -152,10 +151,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [newTenantSlug, setNewTenantSlug] = useState('');
   const [isCreatingTenant, setIsCreatingTenant] = useState(false);
   
-  // Section Editor State
-  const [isSectionEditorOpen, setIsSectionEditorOpen] = useState(false);
-  const [editingSectionBlockId, setEditingSectionBlockId] = useState<string | null>(null);
-
   // Settings State
   const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'payments' | 'shipping' | 'taxes' | 'policies' | 'notifications' | 'domains'>('general');
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
@@ -1419,8 +1414,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       activeBlockId={selectedBlockId}
                       onUpdateBlock={updateActiveBlockData}
                       onEditBlock={(blockId) => {
-                        setEditingSectionBlockId(blockId);
-                        setIsSectionEditorOpen(true);
+                        setSelectedBlockId(blockId);
                       }}
                       showCartDrawer={false}
                     />
@@ -2649,19 +2643,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       {renderSystemBlockModal()}
       {renderAddSectionLibrary()}
       
-      <SectionEditorModal 
-        isOpen={isSectionEditorOpen}
-        onClose={() => {
-          setIsSectionEditorOpen(false);
-          setEditingSectionBlockId(null);
-        }}
-        block={activePage.blocks.find(b => b.id === editingSectionBlockId) || null}
-        onUpdate={(blockId, data) => {
-          const updatedBlocks = activePage.blocks.map(b => b.id === blockId ? { ...b, data } : b);
-          onUpdatePage(activePageId, { blocks: updatedBlocks });
-        }}
-      />
-
       <main className="flex-1 overflow-y-auto relative flex flex-col">{renderContent()}</main>
     </div>
   );

@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowRight, Play, Star, Upload, Image as ImageIcon } from 'lucide-react';
+import { ArrowRight, Play, Star, Upload, Image as ImageIcon, Wand2, Loader2, Sparkles } from 'lucide-react';
 
 interface HeroProps {
   storeName: string;
@@ -36,14 +36,18 @@ const EditableText: React.FC<{
 }> = ({ value, onChange, isEditable, className, tagName = 'p', placeholder }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     setTempValue(value);
   }, [value]);
 
   const handleBlur = () => {
-    setIsEditing(false);
-    onChange(tempValue);
+    // Delay hiding to allow clicking the AI button
+    setTimeout(() => {
+      setIsEditing(false);
+      onChange(tempValue);
+    }, 200);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -53,18 +57,47 @@ const EditableText: React.FC<{
     }
   };
 
+  const handleAiGenerate = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsGenerating(true);
+    
+    // Simulate AI
+    setTimeout(() => {
+      const suggestions = [
+        "Elevate Your Digital Presence",
+        "Crafted for the Modern Creator",
+        "Unleash Your Potential",
+        "Future-Ready Design",
+        "Experience the Extraordinary"
+      ];
+      const random = suggestions[Math.floor(Math.random() * suggestions.length)];
+      setTempValue(random);
+      setIsGenerating(false);
+    }, 1000);
+  };
+
   if (isEditing && isEditable) {
     return (
+      <div className="relative inline-block w-full">
         <textarea
             autoFocus
             value={tempValue}
             onChange={(e) => setTempValue(e.target.value)}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            className={`${className} bg-white/20 outline-none ring-2 ring-blue-500 rounded px-1 resize-none overflow-hidden min-h-[1.2em]`}
+            className={`${className} bg-white/20 outline-none ring-2 ring-blue-500 rounded px-1 resize-none overflow-hidden min-h-[1.2em] w-full`}
             style={{ height: 'auto' }}
             rows={tagName === 'p' ? 3 : 1}
         />
+        <button 
+          onMouseDown={handleAiGenerate} // Use onMouseDown to prevent blur
+          className="absolute -top-8 right-0 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 hover:bg-blue-700 transition-colors shadow-lg z-50"
+        >
+          {isGenerating ? <Loader2 size={10} className="animate-spin" /> : <Wand2 size={10} />}
+          AI Rewrite
+        </button>
+      </div>
     );
   }
 
@@ -78,9 +111,14 @@ const EditableText: React.FC<{
             setIsEditing(true);
         }
       }}
-      className={`${className} ${isEditable ? 'cursor-text hover:outline-dashed hover:outline-2 hover:outline-blue-500/50 rounded px-1 -mx-1 transition-all' : ''}`}
+      className={`${className} ${isEditable ? 'cursor-text hover:outline-dashed hover:outline-2 hover:outline-blue-500/50 rounded px-1 -mx-1 transition-all relative group/edit' : ''}`}
     >
       {value || <span className="opacity-50 italic">{placeholder}</span>}
+      {isEditable && !value && (
+        <span className="absolute -top-6 left-0 bg-blue-500 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover/edit:opacity-100 transition-opacity pointer-events-none">
+          Edit Text
+        </span>
+      )}
     </Tag>
   );
 };
@@ -92,6 +130,8 @@ const EditableImage: React.FC<{
   className?: string;
   alt?: string;
 }> = ({ src, onChange, isEditable, className, alt }) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -101,6 +141,15 @@ const EditableImage: React.FC<{
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleAiGenerate = () => {
+    setIsGenerating(true);
+    setTimeout(() => {
+      const randomId = Math.floor(Math.random() * 1000);
+      onChange(`https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop&random=${randomId}`);
+      setIsGenerating(false);
+    }, 1500);
   };
 
   return (
@@ -113,11 +162,18 @@ const EditableImage: React.FC<{
         </div>
       )}
       {isEditable && (
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-           <label className="pointer-events-auto cursor-pointer bg-white text-black px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-neutral-200 transition-colors">
-              <ImageIcon size={14} /> Change Image
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+           <label className="cursor-pointer bg-white text-black px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-neutral-200 transition-colors shadow-lg transform hover:scale-105">
+              <Upload size={14} /> Upload
               <input type="file" className="hidden" accept="image/*" onChange={handleUpload} />
            </label>
+           <button 
+             onClick={handleAiGenerate}
+             className="cursor-pointer bg-purple-600 text-white px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-purple-700 transition-colors shadow-lg transform hover:scale-105"
+           >
+              {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              AI Generate
+           </button>
         </div>
       )}
     </div>
