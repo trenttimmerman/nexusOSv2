@@ -113,7 +113,7 @@ export const EditableText: React.FC<{
             value={tempValue}
             onChange={(e) => setTempValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            className={`${className} bg-transparent outline-none resize-none overflow-hidden min-h-[1.2em] w-full selection:bg-blue-500/30`}
+            className={`${className} bg-transparent outline-none resize-none overflow-hidden min-h-[1.2em] w-full selection:bg-blue-500/30 ring-4 ring-blue-500/50 rounded px-1 -mx-1`}
             style={{ 
               height: 'auto',
               fontSize: style?.fontSize,
@@ -137,13 +137,14 @@ export const EditableText: React.FC<{
   return (
     <Tag 
       id={elementId}
+      tabIndex={isEditable ? 0 : undefined}
       onClick={(e: React.MouseEvent) => {
         if (isEditable) {
             e.stopPropagation();
             setIsEditing(true);
         }
       }}
-      className={`${className} ${isEditable ? 'cursor-text hover:outline-dashed hover:outline-2 hover:outline-blue-500/50 rounded px-1 -mx-1 transition-all relative group/edit' : ''}`}
+      className={`${className} ${isEditable ? 'cursor-text hover:outline-dashed hover:outline-2 hover:outline-blue-500/50 focus:outline-none focus:ring-4 focus:ring-blue-500/50 rounded px-1 -mx-1 transition-all relative group/edit' : ''}`}
       style={{
         fontSize: style?.fontSize,
         fontWeight: style?.fontWeight,
@@ -170,7 +171,11 @@ export const EditableImage: React.FC<{
   elementId?: string;
 }> = ({ src, onChange, isEditable, className, alt, overlayOpacity = 0, onOverlayOpacityChange, elementId }) => {
   return (
-    <div id={elementId} className={`relative group ${className}`}>
+    <div 
+      id={elementId} 
+      tabIndex={isEditable ? 0 : undefined}
+      className={`relative group ${className} ${isEditable ? 'focus:outline-none focus:ring-4 focus:ring-blue-500/50 rounded-lg transition-shadow duration-300' : ''}`}
+    >
       {src ? (
         <>
           <img src={src} className="w-full h-full object-cover" alt={alt} />
