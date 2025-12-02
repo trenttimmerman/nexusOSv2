@@ -1,15 +1,26 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowRight, Play, Star, Upload, Image as ImageIcon, Wand2, Loader2, Sparkles } from 'lucide-react';
+import { ArrowRight, Play, Star, Upload, Image as ImageIcon, Wand2, Loader2, Sparkles, Type, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Palette, Minus, Plus } from 'lucide-react';
+
+interface TextStyles {
+  fontSize?: string;
+  fontWeight?: string;
+  color?: string;
+  textAlign?: 'left' | 'center' | 'right';
+  fontFamily?: string;
+}
 
 interface HeroProps {
   storeName: string;
   primaryColor: string;
   data?: {
     heading?: string;
+    heading_style?: TextStyles;
     subheading?: string;
+    subheading_style?: TextStyles;
     image?: string;
     buttonText?: string;
+    button_style?: TextStyles;
     style?: {
       backgroundColor?: string;
       textColor?: string;
@@ -36,24 +47,29 @@ export const HERO_FIELDS: Record<string, string[]> = {
 const EditableText: React.FC<{
   value: string;
   onChange: (val: string) => void;
+  onStyleChange?: (style: TextStyles) => void;
+  style?: TextStyles;
   isEditable?: boolean;
   className?: string;
   tagName?: 'h1' | 'h2' | 'p' | 'span' | 'div';
   placeholder?: string;
-}> = ({ value, onChange, isEditable, className, tagName = 'p', placeholder }) => {
+}> = ({ value, onChange, onStyleChange, style, isEditable, className, tagName = 'p', placeholder }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showStyleMenu, setShowStyleMenu] = useState(false);
 
   useEffect(() => {
     setTempValue(value);
   }, [value]);
 
   const handleBlur = () => {
-    // Delay hiding to allow clicking the AI button
+    // Delay hiding to allow clicking the AI button or style menu
     setTimeout(() => {
-      setIsEditing(false);
-      onChange(tempValue);
+      if (!showStyleMenu) {
+        setIsEditing(false);
+        onChange(tempValue);
+      }
     }, 200);
   };
 
@@ -84,6 +100,18 @@ const EditableText: React.FC<{
     }, 1000);
   };
 
+  const toggleStyleMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowStyleMenu(!showStyleMenu);
+  };
+
+  const updateStyle = (key: keyof TextStyles, val: any) => {
+    if (onStyleChange) {
+      onStyleChange({ ...style, [key]: val });
+    }
+  };
+
   if (isEditing && isEditable) {
     return (
       <div className="relative inline-block w-full">
@@ -94,16 +122,66 @@ const EditableText: React.FC<{
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             className={`${className} bg-white/20 outline-none ring-2 ring-blue-500 rounded px-1 resize-none overflow-hidden min-h-[1.2em] w-full`}
-            style={{ height: 'auto' }}
+            style={{ 
+              height: 'auto',
+              fontSize: style?.fontSize,
+              fontWeight: style?.fontWeight,
+              color: style?.color,
+              textAlign: style?.textAlign,
+              fontFamily: style?.fontFamily
+            }}
             rows={tagName === 'p' ? 3 : 1}
         />
-        <button 
-          onMouseDown={handleAiGenerate} // Use onMouseDown to prevent blur
-          className="absolute -top-8 right-0 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 hover:bg-blue-700 transition-colors shadow-lg z-50"
-        >
-          {isGenerating ? <Loader2 size={10} className="animate-spin" /> : <Wand2 size={10} />}
-          AI Rewrite
-        </button>
+        <div className="absolute -top-10 right-0 flex gap-1 z-50">
+          <button 
+            onMouseDown={handleAiGenerate} 
+            className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 hover:bg-blue-700 transition-colors shadow-lg"
+          >
+            {isGenerating ? <Loader2 size={10} className="animate-spin" /> : <Wand2 size={10} />}
+            AI Rewrite
+          </button>
+          <button 
+            onMouseDown={toggleStyleMenu} 
+            className="bg-neutral-800 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 hover:bg-neutral-700 transition-colors shadow-lg"
+          >
+            <Palette size={10} /> Style
+          </button>
+        </div>
+
+        {showStyleMenu && (
+          <div className="absolute top-full left-0 mt-2 bg-white text-black p-3 rounded-xl shadow-2xl border border-neutral-200 z-[60] w-64" onMouseDown={(e) => e.stopPropagation()}>
+             <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                   <span className="text-[10px] font-bold uppercase text-neutral-400">Size</span>
+                   <div className="flex gap-1">
+                      <button onMouseDown={() => updateStyle('fontSize', '1rem')} className="p-1 hover:bg-neutral-100 rounded"><Minus size={12} /></button>
+                      <span className="text-xs font-mono w-8 text-center">{style?.fontSize || 'auto'}</span>
+                      <button onMouseDown={() => updateStyle('fontSize', '3rem')} className="p-1 hover:bg-neutral-100 rounded"><Plus size={12} /></button>
+                   </div>
+                </div>
+                <div className="flex items-center justify-between">
+                   <span className="text-[10px] font-bold uppercase text-neutral-400">Weight</span>
+                   <div className="flex gap-1 bg-neutral-100 rounded p-0.5">
+                      <button onMouseDown={() => updateStyle('fontWeight', 'normal')} className={`p-1 rounded ${style?.fontWeight === 'normal' ? 'bg-white shadow-sm' : ''}`}><Type size={12} /></button>
+                      <button onMouseDown={() => updateStyle('fontWeight', 'bold')} className={`p-1 rounded ${style?.fontWeight === 'bold' ? 'bg-white shadow-sm' : ''}`}><Bold size={12} /></button>
+                   </div>
+                </div>
+                <div className="flex items-center justify-between">
+                   <span className="text-[10px] font-bold uppercase text-neutral-400">Color</span>
+                   <div className="flex gap-1">
+                      {['#000000', '#ffffff', '#ef4444', '#3b82f6', '#22c55e'].map(c => (
+                        <button 
+                          key={c}
+                          onMouseDown={() => updateStyle('color', c)}
+                          className="w-4 h-4 rounded-full border border-neutral-200"
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                   </div>
+                </div>
+             </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -119,6 +197,13 @@ const EditableText: React.FC<{
         }
       }}
       className={`${className} ${isEditable ? 'cursor-text hover:outline-dashed hover:outline-2 hover:outline-blue-500/50 rounded px-1 -mx-1 transition-all relative group/edit' : ''}`}
+      style={{
+        fontSize: style?.fontSize,
+        fontWeight: style?.fontWeight,
+        color: style?.color,
+        textAlign: style?.textAlign,
+        fontFamily: style?.fontFamily
+      }}
     >
       {value || <span className="opacity-50 italic">{placeholder}</span>}
       {isEditable && !value && (
@@ -235,6 +320,8 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
              tagName="h1" 
              value={heading} 
              onChange={(val) => onUpdate && onUpdate({ heading: val })} 
+             onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
+             style={data?.heading_style}
              isEditable={isEditable} 
              placeholder="Enter Headline"
           />

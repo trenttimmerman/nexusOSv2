@@ -113,8 +113,6 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
       }
     };
 
-    const [showSettings, setShowSettings] = useState(false);
-
     const BlockToolbar = () => (
       <div className="absolute -top-12 right-0 flex flex-col items-end z-[100]">
         <div className="flex items-center gap-1 bg-black text-white rounded-lg shadow-xl p-1 animate-in fade-in slide-in-from-bottom-2">
@@ -127,14 +125,6 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
             >
               <Layout size={14} />
               <span className="text-xs font-bold">Switch Layout</span>
-            </button>
-            <div className="w-px h-4 bg-white/20 mx-1" />
-            <button 
-              onClick={(e) => { e.stopPropagation(); setShowSettings(!showSettings); }}
-              className={`p-2 hover:bg-white/20 rounded transition-colors ${showSettings ? 'bg-white/20' : ''}`}
-              title="Section Settings"
-            >
-              <Settings size={14} />
             </button>
             <div className="w-px h-4 bg-white/20 mx-1" />
           </>
@@ -169,56 +159,6 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
           <Trash2 size={14} />
         </button>
         </div>
-
-        {showSettings && (
-          <div className="mt-2 bg-white text-black rounded-xl shadow-2xl p-4 w-64 border border-neutral-200 animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
-             <div className="space-y-4">
-                <div>
-                   <label className="text-[10px] font-bold uppercase text-neutral-400 mb-2 block">Alignment</label>
-                   <div className="flex bg-neutral-100 rounded-lg p-1">
-                      {['left', 'center', 'right'].map((align) => (
-                        <button
-                          key={align}
-                          onClick={() => onUpdateBlock && onUpdateBlock(block.id, { style: { ...block.data?.style, alignment: align } })}
-                          className={`flex-1 p-1.5 rounded flex justify-center ${block.data?.style?.alignment === align ? 'bg-white shadow-sm' : 'hover:bg-neutral-200'}`}
-                        >
-                           {align === 'left' ? <AlignLeft size={14} /> : align === 'center' ? <AlignCenter size={14} /> : <AlignRight size={14} />}
-                        </button>
-                      ))}
-                   </div>
-                </div>
-                
-                <div>
-                   <label className="text-[10px] font-bold uppercase text-neutral-400 mb-2 block">Padding</label>
-                   <div className="flex bg-neutral-100 rounded-lg p-1">
-                      {['none', 's', 'm', 'l'].map((pad) => (
-                        <button
-                          key={pad}
-                          onClick={() => onUpdateBlock && onUpdateBlock(block.id, { style: { ...block.data?.style, padding: pad } })}
-                          className={`flex-1 p-1.5 rounded text-[10px] font-bold uppercase ${block.data?.style?.padding === pad ? 'bg-white shadow-sm' : 'hover:bg-neutral-200'}`}
-                        >
-                           {pad}
-                        </button>
-                      ))}
-                   </div>
-                </div>
-
-                <div>
-                   <label className="text-[10px] font-bold uppercase text-neutral-400 mb-2 block">Colors</label>
-                   <div className="grid grid-cols-5 gap-2">
-                      {['#000000', '#ffffff', '#f5f5f5', '#1a1a1a', config.primaryColor].map((color) => (
-                        <button
-                          key={color}
-                          onClick={() => onUpdateBlock && onUpdateBlock(block.id, { style: { ...block.data?.style, backgroundColor: color, textColor: color === '#ffffff' || color === '#f5f5f5' ? '#000000' : '#ffffff' } })}
-                          className="w-8 h-8 rounded-full border border-neutral-200 shadow-sm hover:scale-110 transition-transform"
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
-                   </div>
-                </div>
-             </div>
-          </div>
-        )}
       </div>
     );
 
