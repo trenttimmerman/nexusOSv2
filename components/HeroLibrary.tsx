@@ -60,26 +60,36 @@ export const EditableText: React.FC<{
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showStyleMenu, setShowStyleMenu] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setTempValue(value);
   }, [value]);
 
-  const handleBlur = () => {
-    // Delay hiding to allow clicking the AI button or style menu
-    setTimeout(() => {
-      if (!showStyleMenu) {
-        setIsEditing(false);
-        onChange(tempValue);
+  // Handle clicking outside to close
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        if (isEditing) {
+          setIsEditing(false);
+          onChange(tempValue);
+        }
       }
-    }, 200);
-  };
+    };
+
+    if (isEditing) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isEditing, tempValue, onChange]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleBlur();
+      setIsEditing(false);
+      onChange(tempValue);
     }
   };
 
@@ -103,12 +113,6 @@ export const EditableText: React.FC<{
     }, 1000);
   };
 
-  const toggleStyleMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setShowStyleMenu(!showStyleMenu);
-  };
-
   const updateStyle = (key: keyof TextStyles, val: any) => {
     if (onStyleChange) {
       onStyleChange({ ...style, [key]: val });
@@ -117,14 +121,13 @@ export const EditableText: React.FC<{
 
   if (isEditing && isEditable) {
     return (
-      <div className="relative inline-block w-full">
+      <div ref={containerRef} className="relative inline-block w-full group/editor">
         <textarea
             autoFocus
             value={tempValue}
             onChange={(e) => setTempValue(e.target.value)}
-            onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            className={`${className} bg-white/20 outline-none ring-2 ring-blue-500 rounded px-1 resize-none overflow-hidden min-h-[1.2em] w-full`}
+            className={`${className} bg-transparent outline-none resize-none overflow-hidden min-h-[1.2em] w-full selection:bg-blue-500/30`}
             style={{ 
               height: 'auto',
               fontSize: style?.fontSize,
@@ -138,101 +141,62 @@ export const EditableText: React.FC<{
             }}
             rows={tagName === 'p' ? 3 : 1}
         />
-        <div className="absolute -top-12 left-0 flex gap-1 z-50 bg-black text-white p-1 rounded-lg shadow-xl animate-in fade-in slide-in-from-bottom-2">
-          <button 
-            onMouseDown={handleAiGenerate} 
-            className="px-2 py-1 rounded hover:bg-white/20 flex items-center gap-1 text-xs font-bold transition-colors"
-            title="AI Rewrite"
-          >
-            {isGenerating ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
-            <span className="hidden sm:inline">Magic</span>
-          </button>
-          <div className="w-px h-4 bg-white/20 my-auto" />
-          <button 
-            onMouseDown={toggleStyleMenu} 
-            className={`px-2 py-1 rounded hover:bg-white/20 flex items-center gap-1 text-xs font-bold transition-colors ${showStyleMenu ? 'bg-white/20' : ''}`}
-            title="Text Styles"
-          >
-            <Palette size={12} />
-            <span className="hidden sm:inline">Style</span>
-          </button>
-        </div>
+        
+        {/* Unified Floating Toolbar */}
+        <div className="absolute -top-14 left-0 z-[100] flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2">
+          <div className="flex items-center gap-1 bg-neutral-900 text-white p-1.5 rounded-lg shadow-2xl border border-neutral-800">
+            {/* AI Magic */}
+            <button 
+              onMouseDown={handleAiGenerate} 
+              className="p-1.5 rounded hover:bg-white/20 text-purple-400 transition-colors"
+              title="AI Rewrite"
+            >
+              {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+            </button>
+            
+            <div className="w-px h-4 bg-white/20 mx-1" />
 
-        {showStyleMenu && (
-          <div className="absolute top-full left-0 mt-2 bg-neutral-900 text-white p-4 rounded-xl shadow-2xl border border-neutral-800 z-[60] w-72" onMouseDown={(e) => e.stopPropagation()}>
-             <div className="space-y-4">
-                {/* Typography */}
-                <div className="space-y-2">
-                   <label className="text-[10px] font-bold uppercase text-neutral-500">Typography</label>
-                   <div className="grid grid-cols-3 gap-1">
-                      {['sans', 'serif', 'mono'].map(font => (
-                        <button 
-                          key={font}
-                          onMouseDown={() => updateStyle('fontFamily', font === 'sans' ? 'ui-sans-serif, system-ui' : font === 'serif' ? 'ui-serif, Georgia' : 'ui-monospace, SFMono-Regular')}
-                          className={`p-1.5 rounded text-xs border border-neutral-700 hover:bg-neutral-800 ${style?.fontFamily?.includes(font) ? 'bg-neutral-800 border-white/50' : ''}`}
-                        >
-                          {font.charAt(0).toUpperCase() + font.slice(1)}
-                        </button>
-                      ))}
-                   </div>
-                </div>
+            {/* Font Family */}
+            <div className="flex bg-neutral-800 rounded overflow-hidden">
+               <button onMouseDown={() => updateStyle('fontFamily', 'ui-sans-serif, system-ui')} className={`px-2 py-1 text-[10px] font-sans hover:bg-neutral-700 ${style?.fontFamily?.includes('sans') ? 'bg-neutral-600 text-white' : 'text-neutral-400'}`}>Sans</button>
+               <button onMouseDown={() => updateStyle('fontFamily', 'ui-serif, Georgia')} className={`px-2 py-1 text-[10px] font-serif hover:bg-neutral-700 ${style?.fontFamily?.includes('serif') ? 'bg-neutral-600 text-white' : 'text-neutral-400'}`}>Serif</button>
+               <button onMouseDown={() => updateStyle('fontFamily', 'ui-monospace, SFMono-Regular')} className={`px-2 py-1 text-[10px] font-mono hover:bg-neutral-700 ${style?.fontFamily?.includes('mono') ? 'bg-neutral-600 text-white' : 'text-neutral-400'}`}>Mono</button>
+            </div>
 
-                {/* Size & Weight */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                     <label className="text-[10px] font-bold uppercase text-neutral-500">Size</label>
-                     <div className="flex items-center gap-2 bg-neutral-800 rounded p-1">
-                        <button onMouseDown={() => updateStyle('fontSize', '0.875rem')} className="p-1 hover:bg-neutral-700 rounded"><Minus size={12} /></button>
-                        <span className="text-xs font-mono flex-1 text-center">{style?.fontSize || 'Auto'}</span>
-                        <button onMouseDown={() => updateStyle('fontSize', '4rem')} className="p-1 hover:bg-neutral-700 rounded"><Plus size={12} /></button>
-                     </div>
-                  </div>
-                  <div className="space-y-2">
-                     <label className="text-[10px] font-bold uppercase text-neutral-500">Weight</label>
-                     <div className="flex bg-neutral-800 rounded p-1">
-                        <button onMouseDown={() => updateStyle('fontWeight', 'normal')} className={`flex-1 p-1 rounded hover:bg-neutral-700 ${style?.fontWeight === 'normal' ? 'bg-neutral-600' : ''}`}><Type size={12} className="mx-auto" /></button>
-                        <button onMouseDown={() => updateStyle('fontWeight', 'bold')} className={`flex-1 p-1 rounded hover:bg-neutral-700 ${style?.fontWeight === 'bold' ? 'bg-neutral-600' : ''}`}><Bold size={12} className="mx-auto" /></button>
-                     </div>
-                  </div>
-                </div>
+            <div className="w-px h-4 bg-white/20 mx-1" />
 
-                {/* Spacing & Transform */}
-                <div className="grid grid-cols-2 gap-4">
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase text-neutral-500">Spacing</label>
-                      <div className="flex bg-neutral-800 rounded p-1">
-                         <button onMouseDown={() => updateStyle('letterSpacing', '-0.05em')} className="flex-1 p-1 text-[10px] hover:bg-neutral-700 rounded">-</button>
-                         <button onMouseDown={() => updateStyle('letterSpacing', '0em')} className="flex-1 p-1 text-[10px] hover:bg-neutral-700 rounded">0</button>
-                         <button onMouseDown={() => updateStyle('letterSpacing', '0.1em')} className="flex-1 p-1 text-[10px] hover:bg-neutral-700 rounded">+</button>
-                      </div>
-                   </div>
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase text-neutral-500">Case</label>
-                      <div className="flex bg-neutral-800 rounded p-1">
-                         <button onMouseDown={() => updateStyle('textTransform', 'none')} className="flex-1 p-1 text-[10px] hover:bg-neutral-700 rounded">Aa</button>
-                         <button onMouseDown={() => updateStyle('textTransform', 'uppercase')} className="flex-1 p-1 text-[10px] hover:bg-neutral-700 rounded">AA</button>
-                         <button onMouseDown={() => updateStyle('textTransform', 'lowercase')} className="flex-1 p-1 text-[10px] hover:bg-neutral-700 rounded">aa</button>
-                      </div>
-                   </div>
-                </div>
+            {/* Size Controls */}
+            <div className="flex items-center gap-1">
+               <button onMouseDown={() => updateStyle('fontSize', '0.875rem')} className="p-1 hover:bg-neutral-700 rounded text-neutral-400 hover:text-white"><Minus size={12} /></button>
+               <Type size={12} className="text-neutral-500" />
+               <button onMouseDown={() => updateStyle('fontSize', '4rem')} className="p-1 hover:bg-neutral-700 rounded text-neutral-400 hover:text-white"><Plus size={12} /></button>
+            </div>
 
-                {/* Color */}
-                <div className="space-y-2">
-                   <label className="text-[10px] font-bold uppercase text-neutral-500">Color</label>
-                   <div className="flex flex-wrap gap-2">
-                      {['#000000', '#ffffff', '#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7'].map(c => (
-                        <button 
-                          key={c}
-                          onMouseDown={() => updateStyle('color', c)}
-                          className="w-6 h-6 rounded-full border border-neutral-700 hover:scale-110 transition-transform"
-                          style={{ backgroundColor: c }}
-                        />
-                      ))}
-                   </div>
-                </div>
-             </div>
+            <div className="w-px h-4 bg-white/20 mx-1" />
+
+            {/* Weight & Case */}
+            <button onMouseDown={() => updateStyle('fontWeight', style?.fontWeight === 'bold' ? 'normal' : 'bold')} className={`p-1.5 rounded hover:bg-neutral-700 ${style?.fontWeight === 'bold' ? 'bg-neutral-600 text-white' : 'text-neutral-400'}`}>
+               <Bold size={12} />
+            </button>
+            <button onMouseDown={() => updateStyle('textTransform', style?.textTransform === 'uppercase' ? 'none' : 'uppercase')} className={`p-1.5 rounded hover:bg-neutral-700 ${style?.textTransform === 'uppercase' ? 'bg-neutral-600 text-white' : 'text-neutral-400'}`}>
+               <span className="text-[10px] font-bold">AA</span>
+            </button>
+
+            <div className="w-px h-4 bg-white/20 mx-1" />
+
+            {/* Colors */}
+            <div className="flex gap-1">
+               {['#000000', '#ffffff', '#ef4444', '#3b82f6'].map(c => (
+                  <button 
+                    key={c}
+                    onMouseDown={() => updateStyle('color', c)}
+                    className={`w-3 h-3 rounded-full border border-neutral-600 hover:scale-125 transition-transform ${style?.color === c ? 'ring-1 ring-white' : ''}`}
+                    style={{ backgroundColor: c }}
+                  />
+               ))}
+            </div>
           </div>
-        )}
+        </div>
       </div>
     );
   }
@@ -260,11 +224,6 @@ export const EditableText: React.FC<{
       }}
     >
       {value || <span className="opacity-50 italic">{placeholder}</span>}
-      {isEditable && !value && (
-        <span className="absolute -top-6 left-0 bg-blue-500 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover/edit:opacity-100 transition-opacity pointer-events-none">
-          Edit Text
-        </span>
-      )}
     </Tag>
   );
 };
