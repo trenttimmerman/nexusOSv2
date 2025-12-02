@@ -384,6 +384,7 @@ export interface Discount {
   usage_limit?: number;
   usage_count: number;
   is_active: boolean;
+  specific_customer_ids?: string[] | null;
   created_at: string;
 }
 

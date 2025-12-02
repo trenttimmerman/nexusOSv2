@@ -161,7 +161,8 @@ export const Checkout: React.FC = () => {
     try {
       const { data, error } = await supabase.rpc('validate_discount', {
         p_code: discountCode.toUpperCase(),
-        p_store_id: storeId
+        p_store_id: storeId,
+        p_customer_id: customerDetails.id || null
       });
 
       if (error) throw error;

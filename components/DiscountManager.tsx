@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Discount } from '../types';
-import { Plus, Trash2, Tag, Calendar, DollarSign, Percent, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Plus, Trash2, Tag, Calendar, DollarSign, Percent, Loader2, CheckCircle2, XCircle, Users } from 'lucide-react';
 
 interface DiscountManagerProps {
   storeId: string | null;
 }
 
+interface Customer {
+  id: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+}
+
 export const DiscountManager: React.FC<DiscountManagerProps> = ({ storeId }) => {
   const [discounts, setDiscounts] = useState<Discount[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   
@@ -19,10 +27,12 @@ export const DiscountManager: React.FC<DiscountManagerProps> = ({ storeId }) => 
   const [minOrder, setMinOrder] = useState(0);
   const [usageLimit, setUsageLimit] = useState<number | ''>('');
   const [endsAt, setEndsAt] = useState('');
+  const [selectedCustomerIds, setSelectedCustomerIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (storeId) {
       fetchDiscounts();
+      fetchCustomers();
     }
   }, [storeId]);
 
@@ -44,6 +54,20 @@ export const DiscountManager: React.FC<DiscountManagerProps> = ({ storeId }) => 
     }
   };
 
+  const fetchCustomers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, email, first_name, last_name')
+        .eq('store_id', storeId);
+
+      if (error) throw error;
+      setCustomers(data || []);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    }
+  };
+
   const handleCreate = async () => {
     if (!storeId || !code) return;
 
@@ -57,7 +81,8 @@ export const DiscountManager: React.FC<DiscountManagerProps> = ({ storeId }) => 
           value,
           min_order_amount: minOrder,
           usage_limit: usageLimit === '' ? null : Number(usageLimit),
-          ends_at: endsAt || null
+          ends_at: endsAt || null,
+          specific_customer_ids: selectedCustomerIds.length > 0 ? selectedCustomerIds : null
         })
         .select()
         .single();
@@ -95,6 +120,15 @@ export const DiscountManager: React.FC<DiscountManagerProps> = ({ storeId }) => 
     setMinOrder(0);
     setUsageLimit('');
     setEndsAt('');
+    setSelectedCustomerIds([]);
+  };
+
+  const toggleCustomerSelection = (customerId: string) => {
+    if (selectedCustomerIds.includes(customerId)) {
+      setSelectedCustomerIds(selectedCustomerIds.filter(id => id !== customerId));
+    } else {
+      setSelectedCustomerIds([...selectedCustomerIds, customerId]);
+    }
   };
 
   if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin text-neutral-500" /></div>;
@@ -185,6 +219,46 @@ export const DiscountManager: React.FC<DiscountManagerProps> = ({ storeId }) => 
                 className="w-full bg-neutral-950 border border-neutral-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-600"
               />
             </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Limit to Specific Customers (Optional)</label>
+              <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 max-h-48 overflow-y-auto">
+                {customers.length === 0 ? (
+                  <p className="text-neutral-500 text-sm">No customers found.</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {customers.map(customer => (
+                      <div 
+                        key={customer.id}
+                        onClick={() => toggleCustomerSelection(customer.id)}
+                        className={`p-2 rounded-lg cursor-pointer border flex items-center gap-3 transition-colors ${
+                          selectedCustomerIds.includes(customer.id) 
+                            ? 'bg-blue-900/20 border-blue-600/50' 
+                            : 'bg-neutral-900/50 border-transparent hover:bg-neutral-900'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center ${
+                          selectedCustomerIds.includes(customer.id) ? 'bg-blue-600 border-blue-600' : 'border-neutral-600'
+                        }`}>
+                          {selectedCustomerIds.includes(customer.id) && <CheckCircle2 size={12} className="text-white" />}
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className="text-sm font-bold text-white truncate">
+                            {customer.first_name} {customer.last_name}
+                          </p>
+                          <p className="text-xs text-neutral-500 truncate">{customer.email}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-neutral-500 mt-2">
+                {selectedCustomerIds.length === 0 
+                  ? "Available to all customers" 
+                  : `Restricted to ${selectedCustomerIds.length} customer${selectedCustomerIds.length === 1 ? '' : 's'}`
+                }
+              </p>
+            </div>
           </div>
           <div className="flex justify-end gap-4">
             <button onClick={() => setIsCreating(false)} className="px-6 py-3 text-neutral-400 hover:text-white font-bold">Cancel</button>
@@ -215,6 +289,15 @@ export const DiscountManager: React.FC<DiscountManagerProps> = ({ storeId }) => 
                     <>
                       <span className="w-1 h-1 bg-neutral-700 rounded-full"></span>
                       <span>Limit: {discount.usage_limit}</span>
+                    </>
+                  )}
+                  {discount.specific_customer_ids && discount.specific_customer_ids.length > 0 && (
+                    <>
+                      <span className="w-1 h-1 bg-neutral-700 rounded-full"></span>
+                      <span className="flex items-center gap-1 text-blue-400">
+                        <Users size={12} />
+                        {discount.specific_customer_ids.length} Customers
+                      </span>
                     </>
                   )}
                 </div>
