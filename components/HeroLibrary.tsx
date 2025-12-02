@@ -10,6 +10,13 @@ interface HeroProps {
     subheading?: string;
     image?: string;
     buttonText?: string;
+    style?: {
+      backgroundColor?: string;
+      textColor?: string;
+      padding?: 's' | 'm' | 'l' | 'xl' | 'none';
+      alignment?: 'left' | 'center' | 'right';
+      fullWidth?: boolean;
+    };
     [key: string]: any;
   };
   isEditable?: boolean;
@@ -190,8 +197,17 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
   const badge = data?.badge || "New Collection 2024";
   const secondaryButtonText = data?.secondaryButtonText || "View Lookbook";
 
+  const style = data?.style || {};
+  const bgColor = style.backgroundColor || 'black';
+  const textColor = style.textColor || 'white';
+  const alignment = style.alignment || 'center';
+  const padding = style.padding === 'none' ? 'py-0' : style.padding === 's' ? 'py-12' : style.padding === 'l' ? 'py-32' : 'py-24';
+
   return (
-    <section className="relative w-full h-[90vh] bg-black overflow-hidden flex items-center justify-center group/hero">
+    <section 
+      className={`relative w-full min-h-[90vh] overflow-hidden flex items-center justify-center group/hero ${padding}`}
+      style={{ backgroundColor: bgColor, color: textColor }}
+    >
       <div className="absolute inset-0">
         <EditableImage 
             src={image} 
@@ -202,9 +218,9 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30 pointer-events-none"></div>
       </div>
       
-      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto flex flex-col items-center">
+      <div className={`relative z-10 px-6 max-w-4xl mx-auto flex flex-col ${alignment === 'left' ? 'items-start text-left' : alignment === 'right' ? 'items-end text-right' : 'items-center text-center'}`}>
         <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-           <span className="inline-block px-4 py-1.5 text-xs font-bold tracking-[0.2em] uppercase text-white border border-white/30 backdrop-blur-md rounded-full">
+           <span className="inline-block px-4 py-1.5 text-xs font-bold tracking-[0.2em] uppercase border border-white/30 backdrop-blur-md rounded-full" style={{ color: textColor, borderColor: textColor }}>
             <EditableText 
                tagName="span" 
                value={badge} 
@@ -214,7 +230,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
             />
           </span>
         </div>
-        <div className="text-6xl md:text-9xl font-black text-white mb-8 leading-none tracking-tighter animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150 uppercase">
+        <div className="text-6xl md:text-9xl font-black mb-8 leading-none tracking-tighter animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150 uppercase" style={{ color: textColor }}>
           <EditableText 
              tagName="h1" 
              value={heading} 
@@ -223,7 +239,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
              placeholder="Enter Headline"
           />
         </div>
-        <div className="flex flex-col md:flex-row gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+        <div className={`flex flex-col md:flex-row gap-4 ${alignment === 'left' ? 'justify-start' : alignment === 'right' ? 'justify-end' : 'justify-center'} items-center animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300`}>
           <button className="px-8 py-4 bg-white text-black font-bold tracking-wide rounded-full hover:scale-105 transition-transform flex items-center gap-2">
              <EditableText 
                  tagName="span"
@@ -234,7 +250,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
              />
              <ArrowRight size={18} />
           </button>
-          <button className="px-8 py-4 bg-transparent text-white border border-white/30 hover:bg-white/10 font-bold tracking-wide rounded-full transition-colors backdrop-blur-sm">
+          <button className="px-8 py-4 bg-transparent border border-white/30 hover:bg-white/10 font-bold tracking-wide rounded-full transition-colors backdrop-blur-sm" style={{ color: textColor, borderColor: textColor }}>
              <EditableText 
                  tagName="span"
                  value={secondaryButtonText}

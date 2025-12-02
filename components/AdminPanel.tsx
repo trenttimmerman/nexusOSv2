@@ -719,7 +719,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       
       if (variant) newBlock.variant = variant;
       if (Object.keys(restData).length > 0) {
-          newBlock.data = { ...b.data, ...restData };
+          // Deep merge for style object to prevent overwriting
+          if (restData.style && b.data?.style) {
+             newBlock.data = { 
+               ...b.data, 
+               ...restData, 
+               style: { ...b.data.style, ...restData.style } 
+             };
+          } else {
+             newBlock.data = { ...b.data, ...restData };
+          }
       }
       return newBlock;
     });

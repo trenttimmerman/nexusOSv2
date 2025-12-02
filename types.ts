@@ -263,6 +263,13 @@ export interface PageBlock {
     subheading?: string;
     image?: string;
     buttonText?: string;
+    style?: {
+      backgroundColor?: string;
+      textColor?: string;
+      padding?: 's' | 'm' | 'l' | 'xl' | 'none';
+      alignment?: 'left' | 'center' | 'right';
+      fullWidth?: boolean;
+    };
     [key: string]: any;
   };
 }
