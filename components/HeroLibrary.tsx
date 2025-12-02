@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowRight, Play, Star, Upload, Image as ImageIcon, Wand2, Loader2, Sparkles, Type, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Palette, Minus, Plus } from 'lucide-react';
+import { ArrowRight, Play, Star, Upload, Image as ImageIcon, Wand2, Loader2, Sparkles, Type, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Palette, Minus, Plus, Check } from 'lucide-react';
 
 interface TextStyles {
   fontSize?: string;
@@ -35,6 +35,7 @@ interface HeroProps {
   };
   isEditable?: boolean;
   onUpdate?: (data: any) => void;
+  blockId?: string;
 }
 
 export const HERO_FIELDS: Record<string, string[]> = {
@@ -56,15 +57,24 @@ export const EditableText: React.FC<{
   className?: string;
   tagName?: 'h1' | 'h2' | 'p' | 'span' | 'div';
   placeholder?: string;
-}> = ({ value, onChange, onStyleChange, style, isEditable, className, tagName = 'p', placeholder }) => {
+  elementId?: string;
+}> = ({ value, onChange, onStyleChange, style, isEditable, className, tagName = 'p', placeholder, elementId }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
-  const [isGenerating, setIsGenerating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setTempValue(value);
   }, [value]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (isEditing && textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [tempValue, isEditing]);
 
   // Handle clicking outside to close
   useEffect(() => {
@@ -93,36 +103,12 @@ export const EditableText: React.FC<{
     }
   };
 
-  const handleAiGenerate = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsGenerating(true);
-    
-    // Simulate AI
-    setTimeout(() => {
-      const suggestions = [
-        "Elevate Your Digital Presence",
-        "Crafted for the Modern Creator",
-        "Unleash Your Potential",
-        "Future-Ready Design",
-        "Experience the Extraordinary"
-      ];
-      const random = suggestions[Math.floor(Math.random() * suggestions.length)];
-      setTempValue(random);
-      setIsGenerating(false);
-    }, 1000);
-  };
-
-  const updateStyle = (key: keyof TextStyles, val: any) => {
-    if (onStyleChange) {
-      onStyleChange({ ...style, [key]: val });
-    }
-  };
-
   if (isEditing && isEditable) {
     return (
       <div ref={containerRef} className="relative inline-block w-full group/editor">
         <textarea
+            id={elementId}
+            ref={textareaRef}
             autoFocus
             value={tempValue}
             onChange={(e) => setTempValue(e.target.value)}
@@ -137,66 +123,11 @@ export const EditableText: React.FC<{
               fontFamily: style?.fontFamily,
               textTransform: style?.textTransform,
               letterSpacing: style?.letterSpacing,
-              lineHeight: style?.lineHeight
+              lineHeight: style?.lineHeight,
+              whiteSpace: 'pre-wrap'
             }}
-            rows={tagName === 'p' ? 3 : 1}
+            rows={1}
         />
-        
-        {/* Unified Floating Toolbar */}
-        <div className="absolute -top-14 left-0 z-[100] flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2">
-          <div className="flex items-center gap-1 bg-neutral-900 text-white p-1.5 rounded-lg shadow-2xl border border-neutral-800">
-            {/* AI Magic */}
-            <button 
-              onMouseDown={handleAiGenerate} 
-              className="p-1.5 rounded hover:bg-white/20 text-purple-400 transition-colors"
-              title="AI Rewrite"
-            >
-              {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-            </button>
-            
-            <div className="w-px h-4 bg-white/20 mx-1" />
-
-            {/* Font Family */}
-            <div className="flex bg-neutral-800 rounded overflow-hidden">
-               <button onMouseDown={() => updateStyle('fontFamily', 'ui-sans-serif, system-ui')} className={`px-2 py-1 text-[10px] font-sans hover:bg-neutral-700 ${style?.fontFamily?.includes('sans') ? 'bg-neutral-600 text-white' : 'text-neutral-400'}`}>Sans</button>
-               <button onMouseDown={() => updateStyle('fontFamily', 'ui-serif, Georgia')} className={`px-2 py-1 text-[10px] font-serif hover:bg-neutral-700 ${style?.fontFamily?.includes('serif') ? 'bg-neutral-600 text-white' : 'text-neutral-400'}`}>Serif</button>
-               <button onMouseDown={() => updateStyle('fontFamily', 'ui-monospace, SFMono-Regular')} className={`px-2 py-1 text-[10px] font-mono hover:bg-neutral-700 ${style?.fontFamily?.includes('mono') ? 'bg-neutral-600 text-white' : 'text-neutral-400'}`}>Mono</button>
-            </div>
-
-            <div className="w-px h-4 bg-white/20 mx-1" />
-
-            {/* Size Controls */}
-            <div className="flex items-center gap-1">
-               <button onMouseDown={() => updateStyle('fontSize', '0.875rem')} className="p-1 hover:bg-neutral-700 rounded text-neutral-400 hover:text-white"><Minus size={12} /></button>
-               <Type size={12} className="text-neutral-500" />
-               <button onMouseDown={() => updateStyle('fontSize', '4rem')} className="p-1 hover:bg-neutral-700 rounded text-neutral-400 hover:text-white"><Plus size={12} /></button>
-            </div>
-
-            <div className="w-px h-4 bg-white/20 mx-1" />
-
-            {/* Weight & Case */}
-            <button onMouseDown={() => updateStyle('fontWeight', style?.fontWeight === 'bold' ? 'normal' : 'bold')} className={`p-1.5 rounded hover:bg-neutral-700 ${style?.fontWeight === 'bold' ? 'bg-neutral-600 text-white' : 'text-neutral-400'}`}>
-               <Bold size={12} />
-            </button>
-            <button onMouseDown={() => updateStyle('textTransform', style?.textTransform === 'uppercase' ? 'none' : 'uppercase')} className={`p-1.5 rounded hover:bg-neutral-700 ${style?.textTransform === 'uppercase' ? 'bg-neutral-600 text-white' : 'text-neutral-400'}`}>
-               <span className="text-[10px] font-bold">AA</span>
-            </button>
-
-            <div className="w-px h-4 bg-white/20 mx-1" />
-
-            {/* Colors */}
-            <div className="flex gap-1">
-               {['#000000', '#ffffff', '#ef4444', '#3b82f6'].map(c => (
-                  <button 
-                    key={c}
-                    onMouseDown={() => updateStyle('color', c)}
-                    className={`w-3 h-3 rounded-full border border-neutral-600 hover:scale-125 transition-transform ${style?.color === c ? 'ring-1 ring-white' : ''}`}
-                    style={{ backgroundColor: c }}
-                  />
-               ))}
-            </div>
-          </div>
-        </div>
       </div>
     );
   }
@@ -205,6 +136,7 @@ export const EditableText: React.FC<{
   
   return (
     <Tag 
+      id={elementId}
       onClick={(e: React.MouseEvent) => {
         if (isEditable) {
             e.stopPropagation();
@@ -227,7 +159,6 @@ export const EditableText: React.FC<{
     </Tag>
   );
 };
-
 export const EditableImage: React.FC<{
   src: string;
   onChange: (src: string) => void;
@@ -236,31 +167,10 @@ export const EditableImage: React.FC<{
   alt?: string;
   overlayOpacity?: number;
   onOverlayOpacityChange?: (val: number) => void;
-}> = ({ src, onChange, isEditable, className, alt, overlayOpacity = 0, onOverlayOpacityChange }) => {
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onChange(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleAiGenerate = () => {
-    setIsGenerating(true);
-    setTimeout(() => {
-      const randomId = Math.floor(Math.random() * 1000);
-      onChange(`https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop&random=${randomId}`);
-      setIsGenerating(false);
-    }, 1500);
-  };
-
+  elementId?: string;
+}> = ({ src, onChange, isEditable, className, alt, overlayOpacity = 0, onOverlayOpacityChange, elementId }) => {
   return (
-    <div className={`relative group ${className}`}>
+    <div id={elementId} className={`relative group ${className}`}>
       {src ? (
         <>
           <img src={src} className="w-full h-full object-cover" alt={alt} />
@@ -276,41 +186,6 @@ export const EditableImage: React.FC<{
           <ImageIcon size={24} />
         </div>
       )}
-      {isEditable && (
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-4">
-           <div className="flex items-center gap-2">
-             <label className="cursor-pointer bg-white text-black px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-neutral-200 transition-colors shadow-lg transform hover:scale-105">
-                <Upload size={14} /> Upload
-                <input type="file" className="hidden" accept="image/*" onChange={handleUpload} />
-             </label>
-             <button 
-               onClick={handleAiGenerate}
-               className="cursor-pointer bg-purple-600 text-white px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-purple-700 transition-colors shadow-lg transform hover:scale-105"
-             >
-                {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                AI Generate
-             </button>
-           </div>
-           
-           {onOverlayOpacityChange && (
-             <div className="bg-black/80 backdrop-blur p-3 rounded-xl flex flex-col gap-2 w-48">
-                <div className="flex justify-between text-white text-[10px] font-bold uppercase">
-                  <span>Overlay</span>
-                  <span>{Math.round(overlayOpacity * 100)}%</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="0.9" 
-                  step="0.1" 
-                  value={overlayOpacity}
-                  onChange={(e) => onOverlayOpacityChange(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-neutral-600 rounded-lg appearance-none cursor-pointer accent-white"
-                />
-             </div>
-           )}
-        </div>
-      )}
     </div>
   );
 }
@@ -318,7 +193,7 @@ export const EditableImage: React.FC<{
 // ------------------------
 
 // 1. Impact (Classic, Full Screen, Centered)
-export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate }) => {
+export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId }) => {
   const heading = data?.heading || "REDEFINE REALITY";
   const image = data?.image || "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2940&auto=format&fit=crop";
   const buttonText = data?.buttonText || "Shop The Drop";
@@ -339,6 +214,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
     >
       <div className="absolute inset-0">
         <EditableImage 
+            elementId={`editable-${blockId}-image`}
             src={image} 
             onChange={(val) => onUpdate && onUpdate({ image: val })} 
             isEditable={isEditable}
@@ -353,6 +229,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
         <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
            <span className="inline-block px-4 py-1.5 text-xs font-bold tracking-[0.2em] uppercase border border-white/30 backdrop-blur-md rounded-full" style={{ color: textColor, borderColor: textColor }}>
             <EditableText 
+               elementId={`editable-${blockId}-badge`}
                tagName="span" 
                value={badge} 
                onChange={(val) => onUpdate && onUpdate({ badge: val })} 
@@ -365,6 +242,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
         </div>
         <div className="text-6xl md:text-9xl font-black mb-8 leading-none tracking-tighter animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150 uppercase" style={{ color: textColor }}>
           <EditableText 
+             elementId={`editable-${blockId}-heading`}
              tagName="h1" 
              value={heading} 
              onChange={(val) => onUpdate && onUpdate({ heading: val })} 
@@ -377,6 +255,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
         <div className={`flex flex-col md:flex-row gap-4 ${alignment === 'left' ? 'justify-start' : alignment === 'right' ? 'justify-end' : 'justify-center'} items-center animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300`}>
           <button className="px-8 py-4 bg-white text-black font-bold tracking-wide rounded-full hover:scale-105 transition-transform flex items-center gap-2">
              <EditableText 
+                 elementId={`editable-${blockId}-buttonText`}
                  tagName="span"
                  value={buttonText}
                  onChange={(val) => onUpdate && onUpdate({ buttonText: val })}
@@ -389,6 +268,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
           </button>
           <button className="px-8 py-4 bg-transparent border border-white/30 hover:bg-white/10 font-bold tracking-wide rounded-full transition-colors backdrop-blur-sm" style={{ color: textColor, borderColor: textColor }}>
              <EditableText 
+                 elementId={`editable-${blockId}-secondaryButtonText`}
                  tagName="span"
                  value={secondaryButtonText}
                  onChange={(val) => onUpdate && onUpdate({ secondaryButtonText: val })}
@@ -402,121 +282,73 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
       </div>
     </section>
   );
-};// 2. Split (Modern, Editorial, 50/50)
-export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEditable, onUpdate }) => {
-  const heading = data?.heading || "Essential gear for the modern era.";
-  const subheading = data?.subheading || "Crafted with precision, designed for utility. Explore our latest arrival of technical apparel and accessories.";
-  const image = data?.image || "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=2000&auto=format&fit=crop";
+};// 2. Split (Modern 50/50)
+export const HeroSplit: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId }) => {
+  const heading = data?.heading || storeName;
+  const subheading = data?.subheading || "Elevating the standard of modern living through curated design.";
+  const image = data?.image || "https://images.unsplash.com/photo-1529139574466-a302c27e3844?q=80&w=2070&auto=format&fit=crop";
   const buttonText = data?.buttonText || "Explore Collection";
-  const topLabel = data?.topLabel || `Est. 2024 — ${storeName}`;
-  const floatingCardTitle = data?.floatingCardTitle || "Cyber Shell Jacket";
-  const floatingCardPrice = data?.floatingCardPrice || "$185.00 — In Stock";
   const overlayOpacity = data?.overlayOpacity !== undefined ? data.overlayOpacity : 0;
 
   return (
-    <section className="relative w-full min-h-[90vh] bg-white flex flex-col md:flex-row">
-      <div className="w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center order-2 md:order-1">
-        <div className="mb-auto">
-           <span className="font-bold text-sm tracking-widest uppercase text-neutral-500">
+    <section className="w-full min-h-[80vh] flex flex-col md:flex-row bg-white">
+       <div className="w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center items-start border-b md:border-b-0 md:border-r border-neutral-200">
+          <div className="mb-8">
+             <div className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-6 text-neutral-900">
+                <EditableText 
+                 tagName="h1" 
+                 value={heading} 
+                 onChange={(val) => onUpdate && onUpdate({ heading: val })} 
+                 onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
+                 style={data?.heading_style}
+                 isEditable={isEditable} 
+                 elementId={blockId ? `editable-${blockId}-heading` : undefined}
+               />
+             </div>
+             <div className="text-xl text-neutral-500 max-w-md leading-relaxed">
+                <EditableText 
+                 tagName="p" 
+                 value={subheading} 
+                 onChange={(val) => onUpdate && onUpdate({ subheading: val })} 
+                 onStyleChange={(style) => onUpdate && onUpdate({ subheading_style: style })}
+                 style={data?.subheading_style}
+                 isEditable={isEditable} 
+                 elementId={blockId ? `editable-${blockId}-subheading` : undefined}
+               />
+             </div>
+          </div>
+          <button className="group flex items-center gap-3 text-lg font-medium text-black border-b-2 border-black pb-1 hover:gap-5 transition-all">
              <EditableText 
-                 tagName="span"
-                 value={topLabel}
-                 onChange={(val) => onUpdate && onUpdate({ topLabel: val })}
-                 onStyleChange={(style) => onUpdate && onUpdate({ topLabel_style: style })}
-                 style={data?.topLabel_style}
-                 isEditable={isEditable}
-             />
-           </span>
-        </div>
-        
-        <div className="text-5xl md:text-7xl font-serif italic mb-8 leading-[1.1]">
-           <EditableText 
-             tagName="h1" 
-             value={heading} 
-             onChange={(val) => onUpdate && onUpdate({ heading: val })} 
-             onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
-             style={data?.heading_style}
-             isEditable={isEditable}
-             className="block"
-           />
-        </div>
-        <div className="text-lg text-neutral-600 mb-12 max-w-md leading-relaxed">
-            <EditableText 
-             tagName="p" 
-             value={subheading} 
-             onChange={(val) => onUpdate && onUpdate({ subheading: val })} 
-             onStyleChange={(style) => onUpdate && onUpdate({ subheading_style: style })}
-             style={data?.subheading_style}
-             isEditable={isEditable}
-           />
-        </div>
-        
-        <div className="flex items-center gap-4 mb-auto">
-          <button 
-            className="px-8 py-4 text-white font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2"
-            style={{ backgroundColor: primaryColor }}
-          >
-            <EditableText 
                  tagName="span"
                  value={buttonText}
                  onChange={(val) => onUpdate && onUpdate({ buttonText: val })}
                  onStyleChange={(style) => onUpdate && onUpdate({ button_style: style })}
                  style={data?.button_style}
                  isEditable={isEditable}
-                 placeholder="Button Text"
+                 elementId={blockId ? `editable-${blockId}-buttonText` : undefined}
              />
+             <ArrowRight size={20} />
           </button>
-          <div className="flex -space-x-4">
-             {[1,2,3].map(i => (
-               <div key={i} className="w-10 h-10 rounded-full bg-neutral-200 border-2 border-white flex items-center justify-center text-xs font-bold text-neutral-500">
-                 <img src={`https://picsum.photos/100?random=${i}`} className="w-full h-full rounded-full object-cover" />
-               </div>
-             ))}
-             <div className="w-10 h-10 rounded-full bg-black text-white border-2 border-white flex items-center justify-center text-[10px] font-bold">
-               +2k
-             </div>
-          </div>
-        </div>
-      </div>
-      <div className="w-full md:w-1/2 h-[50vh] md:h-auto relative order-1 md:order-2">
-         <EditableImage 
-            src={image} 
-            onChange={(val) => onUpdate && onUpdate({ image: val })} 
-            isEditable={isEditable}
-            className="absolute inset-0 w-full h-full"
-            overlayOpacity={overlayOpacity}
-            onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
-         />
-         <div className="absolute bottom-8 right-8 bg-white/90 backdrop-blur p-4 rounded-xl shadow-xl max-w-xs pointer-events-none md:pointer-events-auto">
-            <p className="font-bold text-sm mb-1">
-              <EditableText 
-                 tagName="span"
-                 value={floatingCardTitle}
-                 onChange={(val) => onUpdate && onUpdate({ floatingCardTitle: val })}
-                 onStyleChange={(style) => onUpdate && onUpdate({ floatingCardTitle_style: style })}
-                 style={data?.floatingCardTitle_style}
-                 isEditable={isEditable}
-             />
-            </p>
-            <p className="text-xs text-neutral-500">
-              <EditableText 
-                 tagName="span"
-                 value={floatingCardPrice}
-                 onChange={(val) => onUpdate && onUpdate({ floatingCardPrice: val })}
-                 onStyleChange={(style) => onUpdate && onUpdate({ floatingCardPrice_style: style })}
-                 style={data?.floatingCardPrice_style}
-                 isEditable={isEditable}
-             />
-            </p>
-         </div>
-      </div>
+       </div>
+       <div className="w-full md:w-1/2 relative overflow-hidden group">
+          <EditableImage 
+             src={image} 
+             onChange={(val) => onUpdate && onUpdate({ image: val })} 
+             isEditable={isEditable}
+             className="w-full h-full"
+             overlayOpacity={overlayOpacity}
+             onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
+             elementId={blockId ? `editable-${blockId}-image` : undefined}
+          />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none"></div>
+       </div>
     </section>
   );
 };
 
-// 3. Kinetik (Hypebeast, Marquee, High Energy)
-export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate }) => {
-  const heading = data?.heading || "FUTURE WEAR";
+// 3. Kinetik (High Energy, Streetwear)
+export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId }) => {
+  const heading = data?.heading || "NEXUS";
   const image = data?.image || "https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=2000&auto=format&fit=crop";
   const buttonText = data?.buttonText || "Shop Collection 01";
   const marqueeText = data?.marqueeText || "LIMITED DROP • DO NOT SLEEP • WORLDWIDE SHIPPING • SECURE CHECKOUT • NEXUS OS • LIMITED DROP • DO NOT SLEEP •";
@@ -540,6 +372,7 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
                  onStyleChange={(style) => onUpdate && onUpdate({ marqueeText_style: style })}
                  style={data?.marqueeText_style}
                  isEditable={isEditable}
+                 elementId={blockId ? `editable-${blockId}-marqueeText` : undefined}
              />
          </div>
       </div>
@@ -554,6 +387,7 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
              style={data?.heading_style}
              isEditable={isEditable} 
              className="block"
+             elementId={blockId ? `editable-${blockId}-heading` : undefined}
            />
          </div>
          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[500px] h-[450px] md:h-[600px] border-4 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] rotate-[-4deg] hover:rotate-0 transition-transform duration-500 z-10">
@@ -564,6 +398,7 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
                 className="w-full h-full"
                 overlayOpacity={overlayOpacity}
                 onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
+                elementId={blockId ? `editable-${blockId}-image` : undefined}
             />
          </div>
       </div>
@@ -577,6 +412,7 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
                  onStyleChange={(style) => onUpdate && onUpdate({ button_style: style })}
                  style={data?.button_style}
                  isEditable={isEditable}
+                 elementId={blockId ? `editable-${blockId}-buttonText` : undefined}
              />
          </button>
       </div>
@@ -585,7 +421,7 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
 };
 
 // 4. Grid (Masonry, Lifestyle, Collage)
-export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate }) => {
+export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId }) => {
   const heading = data?.heading || storeName;
   const subheading = data?.subheading || "Curating the finest digital and physical goods for the forward-thinking creator.";
   const image = data?.image || "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop";
@@ -613,6 +449,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
                      style={data?.heading_style}
                      isEditable={isEditable} 
+                     elementId={blockId ? `editable-${blockId}-heading` : undefined}
                    />
                 </div>
                 <div className="text-neutral-500 font-medium">
@@ -623,6 +460,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      onStyleChange={(style) => onUpdate && onUpdate({ subheading_style: style })}
                      style={data?.subheading_style}
                      isEditable={isEditable} 
+                     elementId={blockId ? `editable-${blockId}-subheading` : undefined}
                    />
                 </div>
              </div>
@@ -635,6 +473,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      onStyleChange={(style) => onUpdate && onUpdate({ button_style: style })}
                      style={data?.button_style}
                      isEditable={isEditable}
+                     elementId={blockId ? `editable-${blockId}-buttonText` : undefined}
                    />
                 </button>
                 <button className="w-full py-4 bg-neutral-100 text-black rounded-xl font-bold hover:bg-neutral-200 transition-colors">
@@ -645,6 +484,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      onStyleChange={(style) => onUpdate && onUpdate({ secondary_button_style: style })}
                      style={data?.secondary_button_style}
                      isEditable={isEditable}
+                     elementId={blockId ? `editable-${blockId}-secondaryButtonText` : undefined}
                    />
                 </button>
              </div>
@@ -659,6 +499,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                 className="w-full h-full"
                 overlayOpacity={overlayOpacity}
                 onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
+                elementId={blockId ? `editable-${blockId}-image` : undefined}
             />
              <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur px-4 py-2 rounded-lg text-xs font-bold pointer-events-none md:pointer-events-auto">
                 <EditableText 
@@ -668,6 +509,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      onStyleChange={(style) => onUpdate && onUpdate({ imageBadge_style: style })}
                      style={data?.imageBadge_style}
                      isEditable={isEditable}
+                     elementId={blockId ? `editable-${blockId}-imageBadge` : undefined}
                    />
              </div>
           </div>
@@ -680,6 +522,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                    onChange={(val) => onUpdate && onUpdate({ sideImage: val })}
                    isEditable={isEditable}
                    className="w-full h-full"
+                   elementId={blockId ? `editable-${blockId}-sideImage` : undefined}
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors pointer-events-none"></div>
              </div>
@@ -692,6 +535,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      onStyleChange={(style) => onUpdate && onUpdate({ featureCardTitle_style: style })}
                      style={data?.featureCardTitle_style}
                      isEditable={isEditable}
+                     elementId={blockId ? `editable-${blockId}-featureCardTitle` : undefined}
                    />
                 </div>
                 <div className="relative z-10 font-medium opacity-80">
@@ -702,6 +546,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      onStyleChange={(style) => onUpdate && onUpdate({ featureCardSubtitle_style: style })}
                      style={data?.featureCardSubtitle_style}
                      isEditable={isEditable}
+                     elementId={blockId ? `editable-${blockId}-featureCardSubtitle` : undefined}
                    />
                 </div>
                 <ArrowRight className="absolute bottom-6 right-6 z-10 group-hover:translate-x-2 transition-transform" />
@@ -714,7 +559,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
 };
 
 // 5. Typographic (Text First, Minimal)
-export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate }) => {
+export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId }) => {
   const heading = data?.heading || "We Build The Future Of Commerce";
   const subheading = data?.subheading || "Discover a collection inspired by the intersection of technology, fashion, and utility. Designed in Tokyo, worn worldwide.";
   const topBadge = data?.topBadge || "New Arrivals";
@@ -735,6 +580,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      onStyleChange={(style) => onUpdate && onUpdate({ topBadge_style: style })}
                      style={data?.topBadge_style}
                      isEditable={isEditable}
+                     elementId={blockId ? `editable-${blockId}-topBadge` : undefined}
                    />
              </span>
              <Star size={12} className="text-neutral-400" />
@@ -748,6 +594,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                  onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
                  style={data?.heading_style}
                  isEditable={isEditable} 
+                 elementId={blockId ? `editable-${blockId}-heading` : undefined}
              />
           </div>
 
@@ -759,6 +606,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                  onStyleChange={(style) => onUpdate && onUpdate({ subheading_style: style })}
                  style={data?.subheading_style}
                  isEditable={isEditable} 
+                 elementId={blockId ? `editable-${blockId}-subheading` : undefined}
              />
           </div>
 
@@ -770,6 +618,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                       onChange={(val) => onUpdate && onUpdate({ link1Image: val })}
                       isEditable={isEditable}
                       className="w-full h-full"
+                      elementId={blockId ? `editable-${blockId}-link1Image` : undefined}
                    />
                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
                 </div>
@@ -781,6 +630,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      onStyleChange={(style) => onUpdate && onUpdate({ link1Label_style: style })}
                      style={data?.link1Label_style}
                      isEditable={isEditable}
+                     elementId={blockId ? `editable-${blockId}-link1Label` : undefined}
                    />
                 </div>
              </a>
@@ -791,6 +641,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                       onChange={(val) => onUpdate && onUpdate({ link2Image: val })}
                       isEditable={isEditable}
                       className="w-full h-full"
+                      elementId={blockId ? `editable-${blockId}-link2Image` : undefined}
                    />
                 </div>
                 <div className="text-sm font-bold border-b border-black pb-0.5">
@@ -801,6 +652,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      onStyleChange={(style) => onUpdate && onUpdate({ link2Label_style: style })}
                      style={data?.link2Label_style}
                      isEditable={isEditable}
+                     elementId={blockId ? `editable-${blockId}-link2Label` : undefined}
                    />
                 </div>
              </a>
@@ -811,6 +663,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                       onChange={(val) => onUpdate && onUpdate({ link3Image: val })}
                       isEditable={isEditable}
                       className="w-full h-full"
+                      elementId={blockId ? `editable-${blockId}-link3Image` : undefined}
                    />
                 </div>
                 <div className="text-sm font-bold border-b border-black pb-0.5">
@@ -821,6 +674,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      onStyleChange={(style) => onUpdate && onUpdate({ link3Label_style: style })}
                      style={data?.link3Label_style}
                      isEditable={isEditable}
+                     elementId={blockId ? `editable-${blockId}-link3Label` : undefined}
                    />
                 </div>
              </a>

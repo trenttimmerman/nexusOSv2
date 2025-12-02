@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { StorefrontProps, Product, PageBlock, HeroStyleId, ProductCardStyleId } from '../types';
 import { HEADER_COMPONENTS } from './HeaderLibrary';
-import { HERO_COMPONENTS, HERO_OPTIONS, EditableText, EditableImage } from './HeroLibrary';
+import { HERO_COMPONENTS, HERO_OPTIONS, EditableText, EditableImage, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_COMPONENTS, PRODUCT_CARD_OPTIONS } from './ProductCardLibrary';
 import { PRODUCT_PAGE_COMPONENTS } from './ProductPageLibrary';
 import { FOOTER_COMPONENTS } from './FooterLibrary';
@@ -10,6 +10,7 @@ import { SCROLL_COMPONENTS, SCROLL_OPTIONS } from './ScrollLibrary';
 import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
+import { EditorPanel } from './EditorPanel';
 
 export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true }) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
@@ -195,6 +196,17 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
             }}
           >
             {isEditable && <BlockToolbar />}
+            {isEditable && (
+              <EditorPanel 
+                isOpen={true}
+                onClose={() => onEditBlock && onEditBlock('')}
+                blockId={block.id}
+                blockType="Hero Section"
+                data={block.data || {}}
+                onUpdate={(newData) => onUpdateBlock && onUpdateBlock(block.id, newData)}
+                fields={HERO_FIELDS[heroStyle] || []}
+              />
+            )}
             <HeroComponent
               key={block.id}
               storeName={config.name}
@@ -202,6 +214,7 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
               data={block.data}
               isEditable={isEditable}
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
+              blockId={block.id}
             />
           </div>
         ) : null;
