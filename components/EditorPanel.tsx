@@ -12,9 +12,12 @@ interface EditorPanelProps {
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({ isOpen, onClose, blockId, blockType, data, onUpdate, fields }) => {
+  const [activeField, setActiveField] = useState<string | null>(null);
+
   if (!isOpen) return null;
 
   const handleFocusElement = (fieldName: string) => {
+    setActiveField(fieldName);
     const elementId = `editable-${blockId}-${fieldName}`;
     const element = document.getElementById(elementId);
     if (element) {
@@ -71,26 +74,23 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({ isOpen, onClose, block
           const isImage = field.toLowerCase().includes('image');
           const value = data[field];
           const style = data[`${field}_style`] || {};
+          const isActive = activeField === field;
 
           return (
-            <div key={field} className="space-y-2">
-              <div className="flex items-center justify-between group">
-                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider flex items-center gap-2">
+            <div 
+              key={field} 
+              className={`space-y-2 transition-all duration-300 rounded-xl p-2 -m-2 ${isActive ? 'bg-neutral-800/50 shadow-[0_0_0_2px_rgba(59,130,246,0.5),0_0_20px_rgba(59,130,246,0.3)]' : 'hover:bg-neutral-800/30'}`}
+              onClick={() => handleFocusElement(field)}
+            >
+              <div className="flex items-center justify-between group cursor-pointer">
+                <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer ${isActive ? 'text-blue-400' : 'text-neutral-500 group-hover:text-neutral-300'}`}>
                   {isImage ? <ImageIcon size={12} /> : <Type size={12} />}
                   {field.replace(/([A-Z])/g, ' $1').trim()}
                 </label>
-                {!isImage && (
-                  <button 
-                    onClick={() => handleFocusElement(field)}
-                    className="text-[10px] bg-blue-900/30 text-blue-400 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-900/50"
-                  >
-                    Edit on Canvas
-                  </button>
-                )}
               </div>
 
               {isImage ? (
-                <div className="bg-neutral-800 p-3 rounded-xl border border-neutral-700 space-y-3">
+                <div className={`bg-neutral-800 p-3 rounded-xl border space-y-3 ${isActive ? 'border-blue-500/50' : 'border-neutral-700'}`}>
                   <div className="aspect-video bg-neutral-900 rounded-lg overflow-hidden relative group/img">
                     {value ? (
                       <img src={value} className="w-full h-full object-cover" />
@@ -106,7 +106,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({ isOpen, onClose, block
                       <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(field, e)} />
                     </label>
                     <button 
-                      onClick={() => handleAiGenerate(field)}
+                      onClick={(e) => { e.stopPropagation(); handleAiGenerate(field); }}
                       className="flex items-center justify-center gap-2 bg-purple-900/30 text-purple-400 border border-purple-900/50 py-2 rounded-lg text-xs font-bold hover:bg-purple-900/50 transition-colors"
                     >
                       <Sparkles size={12} /> AI Gen
@@ -132,20 +132,20 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({ isOpen, onClose, block
                   )}
                 </div>
               ) : (
-                <div className="bg-neutral-800 p-3 rounded-xl border border-neutral-700 space-y-3">
+                <div className={`bg-neutral-800 p-3 rounded-xl border space-y-3 ${isActive ? 'border-blue-500/50' : 'border-neutral-700'}`}>
                    {/* Style Controls */}
                    <div className="flex flex-wrap gap-2">
                       {/* Font Family */}
                       <div className="flex bg-neutral-900 rounded-lg border border-neutral-700 overflow-hidden">
-                         <button onClick={() => updateStyle(field, 'fontFamily', 'ui-sans-serif, system-ui')} className={`p-1.5 hover:bg-neutral-800 ${style.fontFamily?.includes('sans') ? 'bg-neutral-800 text-white' : 'text-neutral-500'}`} title="Sans"><Type size={12} /></button>
-                         <button onClick={() => updateStyle(field, 'fontFamily', 'ui-serif, Georgia')} className={`p-1.5 hover:bg-neutral-800 ${style.fontFamily?.includes('serif') ? 'bg-neutral-800 text-white' : 'text-neutral-500'}`} title="Serif"><Type size={12} className="font-serif" /></button>
+                         <button onClick={(e) => { e.stopPropagation(); updateStyle(field, 'fontFamily', 'ui-sans-serif, system-ui'); }} className={`p-1.5 hover:bg-neutral-800 ${style.fontFamily?.includes('sans') ? 'bg-neutral-800 text-white' : 'text-neutral-500'}`} title="Sans"><Type size={12} /></button>
+                         <button onClick={(e) => { e.stopPropagation(); updateStyle(field, 'fontFamily', 'ui-serif, Georgia'); }} className={`p-1.5 hover:bg-neutral-800 ${style.fontFamily?.includes('serif') ? 'bg-neutral-800 text-white' : 'text-neutral-500'}`} title="Serif"><Type size={12} className="font-serif" /></button>
                       </div>
 
                       {/* Weight & Transform */}
-                      <button onClick={() => updateStyle(field, 'fontWeight', style.fontWeight === 'bold' ? 'normal' : 'bold')} className={`p-1.5 rounded-lg border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 ${style.fontWeight === 'bold' ? 'text-white ring-1 ring-white' : 'text-neutral-500'}`}>
+                      <button onClick={(e) => { e.stopPropagation(); updateStyle(field, 'fontWeight', style.fontWeight === 'bold' ? 'normal' : 'bold'); }} className={`p-1.5 rounded-lg border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 ${style.fontWeight === 'bold' ? 'text-white ring-1 ring-white' : 'text-neutral-500'}`}>
                          <Bold size={12} />
                       </button>
-                      <button onClick={() => updateStyle(field, 'textTransform', style.textTransform === 'uppercase' ? 'none' : 'uppercase')} className={`p-1.5 rounded-lg border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 ${style.textTransform === 'uppercase' ? 'text-white ring-1 ring-white' : 'text-neutral-500'}`}>
+                      <button onClick={(e) => { e.stopPropagation(); updateStyle(field, 'textTransform', style.textTransform === 'uppercase' ? 'none' : 'uppercase'); }} className={`p-1.5 rounded-lg border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 ${style.textTransform === 'uppercase' ? 'text-white ring-1 ring-white' : 'text-neutral-500'}`}>
                          <span className="text-[10px] font-bold">AA</span>
                       </button>
 
@@ -154,7 +154,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({ isOpen, onClose, block
                          {['#000000', '#ffffff', '#ef4444', '#3b82f6'].map(c => (
                             <button 
                               key={c}
-                              onClick={() => updateStyle(field, 'color', c)}
+                              onClick={(e) => { e.stopPropagation(); updateStyle(field, 'color', c); }}
                               className={`w-4 h-4 rounded-full border border-neutral-600 ${style.color === c ? 'ring-2 ring-offset-1 ring-offset-neutral-900 ring-white' : ''}`}
                               style={{ backgroundColor: c }}
                             />
@@ -164,9 +164,9 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({ isOpen, onClose, block
                    
                    {/* Size */}
                    <div className="flex items-center gap-2 bg-neutral-900 p-1 rounded-lg border border-neutral-700">
-                      <button onClick={() => updateStyle(field, 'fontSize', '0.875rem')} className="p-1 hover:bg-neutral-800 rounded text-neutral-400 hover:text-white"><Minus size={10} /></button>
+                      <button onClick={(e) => { e.stopPropagation(); updateStyle(field, 'fontSize', '0.875rem'); }} className="p-1 hover:bg-neutral-800 rounded text-neutral-400 hover:text-white"><Minus size={10} /></button>
                       <span className="text-[10px] font-mono flex-1 text-center text-neutral-500">Size</span>
-                      <button onClick={() => updateStyle(field, 'fontSize', '4rem')} className="p-1 hover:bg-neutral-800 rounded text-neutral-400 hover:text-white"><Plus size={10} /></button>
+                      <button onClick={(e) => { e.stopPropagation(); updateStyle(field, 'fontSize', '4rem'); }} className="p-1 hover:bg-neutral-800 rounded text-neutral-400 hover:text-white"><Plus size={10} /></button>
                    </div>
                 </div>
               )}
