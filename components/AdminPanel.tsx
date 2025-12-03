@@ -117,6 +117,7 @@ import {
   Clock,
   Truck,
   ChevronRight,
+  ChevronLeft,
   Tag,
   Save
 } from 'lucide-react';
@@ -888,7 +889,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           className="text-neutral-500 hover:text-white transition-colors"
         >
-          {isSidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={20} />}
+          {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
       </div>
       <nav className="flex-1 p-4 space-y-2">
