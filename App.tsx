@@ -9,6 +9,7 @@ import { SignUp } from './components/SignUp';
 import { AccountPage } from './components/AccountPage';
 import { Checkout } from './components/Checkout';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import Dashboard from './components/Dashboard';
 import { DataProvider, useData } from './context/DataContext';
 import { CartProvider } from './context/CartContext';
 import { Loader2 } from 'lucide-react';
@@ -91,6 +92,25 @@ const AdminWrapper = () => {
   );
 };
 
+const DashboardWrapper = () => {
+  const [route, setRoute] = React.useState(window.location.hash || '#/dashboard');
+
+  React.useEffect(() => {
+    const handleHashChange = () => {
+      setRoute(window.location.hash || '#/dashboard');
+    };
+    
+    if (!window.location.hash) {
+        window.location.hash = '#/dashboard';
+    }
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  return <Dashboard route={route} />;
+};
+
 const LoadingScreen = () => (
   <div className="w-full h-screen flex items-center justify-center bg-neutral-900 text-white">
     <div className="flex flex-col items-center gap-4">
@@ -114,7 +134,7 @@ export default function App() {
 
             {/* Core Application (Admin Panel) */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/admin" element={<AdminWrapper />} />
+              <Route path="/admin" element={<DashboardWrapper />} />
             </Route>
 
             {/* Public Storefront (Preview) */}
