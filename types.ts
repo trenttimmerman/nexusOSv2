@@ -75,6 +75,13 @@ export type SocialStyleId =
   | 'ticker-tape'
   | 'glass-cards';
 
+export type RichTextStyleId = 'rt-centered' | 'rt-left' | 'rt-bordered' | 'rt-wide';
+export type EmailSignupStyleId = 'email-minimal' | 'email-split' | 'email-card';
+export type CollapsibleStyleId = 'col-simple' | 'col-faq';
+export type LogoListStyleId = 'logo-grid' | 'logo-ticker';
+export type PromoBannerStyleId = 'promo-top' | 'promo-hero';
+export type GalleryStyleId = 'gal-grid' | 'gal-masonry' | 'gal-slider' | 'gal-featured';
+
 export type ScrollbarStyleId =
   | 'native'
   | 'minimal'

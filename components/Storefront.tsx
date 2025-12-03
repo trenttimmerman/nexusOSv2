@@ -8,6 +8,8 @@ import { PRODUCT_PAGE_COMPONENTS } from './ProductPageLibrary';
 import { FOOTER_COMPONENTS } from './FooterLibrary';
 import { SCROLL_COMPONENTS, SCROLL_OPTIONS } from './ScrollLibrary';
 import { SOCIAL_COMPONENTS, SOCIAL_OPTIONS } from './SocialLibrary';
+import { RICH_TEXT_COMPONENTS, EMAIL_SIGNUP_COMPONENTS, COLLAPSIBLE_COMPONENTS, LOGO_LIST_COMPONENTS, PROMO_BANNER_COMPONENTS } from './SectionLibrary';
+import { GALLERY_COMPONENTS } from './GalleryLibrary';
 import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
@@ -267,6 +269,60 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
             />
           </div>
         ) : null;
+      case 'system-rich-text':
+        const RichTextComponent = RICH_TEXT_COMPONENTS[block.variant || 'rt-centered'];
+        return RichTextComponent ? (
+          <div key={block.id} className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`} onClick={(e) => { if (onEditBlock) { e.stopPropagation(); onEditBlock(block.id); } }}>
+            {isEditable && <BlockToolbar />}
+            <RichTextComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          </div>
+        ) : null;
+
+      case 'system-email':
+        const EmailComponent = EMAIL_SIGNUP_COMPONENTS[block.variant || 'email-minimal'];
+        return EmailComponent ? (
+          <div key={block.id} className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`} onClick={(e) => { if (onEditBlock) { e.stopPropagation(); onEditBlock(block.id); } }}>
+            {isEditable && <BlockToolbar />}
+            <EmailComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          </div>
+        ) : null;
+
+      case 'system-collapsible':
+        const CollapsibleComponent = COLLAPSIBLE_COMPONENTS[block.variant || 'col-simple'];
+        return CollapsibleComponent ? (
+          <div key={block.id} className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`} onClick={(e) => { if (onEditBlock) { e.stopPropagation(); onEditBlock(block.id); } }}>
+            {isEditable && <BlockToolbar />}
+            <CollapsibleComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          </div>
+        ) : null;
+
+      case 'system-logo-list':
+        const LogoListComponent = LOGO_LIST_COMPONENTS[block.variant || 'logo-grid'];
+        return LogoListComponent ? (
+          <div key={block.id} className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`} onClick={(e) => { if (onEditBlock) { e.stopPropagation(); onEditBlock(block.id); } }}>
+            {isEditable && <BlockToolbar />}
+            <LogoListComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          </div>
+        ) : null;
+
+      case 'system-promo':
+        const PromoComponent = PROMO_BANNER_COMPONENTS[block.variant || 'promo-top'];
+        return PromoComponent ? (
+          <div key={block.id} className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`} onClick={(e) => { if (onEditBlock) { e.stopPropagation(); onEditBlock(block.id); } }}>
+            {isEditable && <BlockToolbar />}
+            <PromoComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          </div>
+        ) : null;
+
+      case 'system-gallery':
+        const GalleryComponent = GALLERY_COMPONENTS[block.variant || 'gal-grid'];
+        return GalleryComponent ? (
+          <div key={block.id} className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`} onClick={(e) => { if (onEditBlock) { e.stopPropagation(); onEditBlock(block.id); } }}>
+            {isEditable && <BlockToolbar />}
+            <GalleryComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          </div>
+        ) : null;
+
       case 'section':
       default:
         return (

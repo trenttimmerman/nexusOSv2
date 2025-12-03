@@ -7,6 +7,8 @@ import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS } from './ProductCardLibr
 import { FOOTER_OPTIONS } from './FooterLibrary';
 import { SOCIAL_OPTIONS, SOCIAL_COMPONENTS } from './SocialLibrary';
 import { SCROLL_OPTIONS } from './ScrollLibrary';
+import { RICH_TEXT_OPTIONS, EMAIL_SIGNUP_OPTIONS, COLLAPSIBLE_OPTIONS, LOGO_LIST_OPTIONS, PROMO_BANNER_OPTIONS } from './SectionLibrary';
+import { GALLERY_OPTIONS } from './GalleryLibrary';
 import { Storefront } from './Storefront';
 import { EditorPanel } from './EditorPanel';
 import { CartDrawer } from './CartDrawer';
@@ -121,6 +123,11 @@ import {
   ChevronLeft,
   Tag,
   Share2,
+  Type,
+  Mail,
+  List,
+  Image as ImageIcon,
+  Megaphone,
   Save
 } from 'lucide-react';
 
@@ -1276,6 +1283,39 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
                 <ChevronDown className="-rotate-90 text-neutral-600" />
               </button>
+
+              <button onClick={() => { setSelectedCategory('content'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-blue-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-blue-900/20 text-blue-500 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition-colors"><Type size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Rich Content</span>
+                    <span className="text-xs text-neutral-500">Text, Collapsibles, HTML</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
+              <button onClick={() => { setSelectedCategory('marketing'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-yellow-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-yellow-900/20 text-yellow-500 rounded-lg group-hover:bg-yellow-500 group-hover:text-white transition-colors"><Megaphone size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Marketing</span>
+                    <span className="text-xs text-neutral-500">Email, Promos, Logos</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
+              <button onClick={() => { setSelectedCategory('media'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-indigo-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-indigo-900/20 text-indigo-500 rounded-lg group-hover:bg-indigo-500 group-hover:text-white transition-colors"><ImageIcon size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Media Gallery</span>
+                    <span className="text-xs text-neutral-500">Grids, Sliders, Showcases</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -1318,6 +1358,82 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="grid grid-cols-1 gap-2">
                   {SOCIAL_OPTIONS.map(opt => (
                     <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-social', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-pink-600/20 border-pink-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {selectedCategory === 'content' && (
+                <div className="space-y-4">
+                  <div>
+                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Rich Text</h5>
+                    <div className="grid grid-cols-1 gap-2">
+                      {RICH_TEXT_OPTIONS.map(opt => (
+                        <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-rich-text', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                          <div className="font-bold text-sm">{opt.name}</div>
+                          <div className="text-[10px] opacity-60">{opt.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Collapsible</h5>
+                    <div className="grid grid-cols-1 gap-2">
+                      {COLLAPSIBLE_OPTIONS.map(opt => (
+                        <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-collapsible', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                          <div className="font-bold text-sm">{opt.name}</div>
+                          <div className="text-[10px] opacity-60">{opt.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedCategory === 'marketing' && (
+                <div className="space-y-4">
+                  <div>
+                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Email Signup</h5>
+                    <div className="grid grid-cols-1 gap-2">
+                      {EMAIL_SIGNUP_OPTIONS.map(opt => (
+                        <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-email', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                          <div className="font-bold text-sm">{opt.name}</div>
+                          <div className="text-[10px] opacity-60">{opt.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Promotions</h5>
+                    <div className="grid grid-cols-1 gap-2">
+                      {PROMO_BANNER_OPTIONS.map(opt => (
+                        <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-promo', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                          <div className="font-bold text-sm">{opt.name}</div>
+                          <div className="text-[10px] opacity-60">{opt.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Trust Indicators</h5>
+                    <div className="grid grid-cols-1 gap-2">
+                      {LOGO_LIST_OPTIONS.map(opt => (
+                        <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-logo-list', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                          <div className="font-bold text-sm">{opt.name}</div>
+                          <div className="text-[10px] opacity-60">{opt.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedCategory === 'media' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {GALLERY_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-gallery', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-indigo-600/20 border-indigo-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
                       <div className="font-bold text-sm">{opt.name}</div>
                       <div className="text-[10px] opacity-60">{opt.description}</div>
                     </button>
