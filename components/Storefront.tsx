@@ -7,6 +7,7 @@ import { PRODUCT_CARD_COMPONENTS, PRODUCT_CARD_OPTIONS } from './ProductCardLibr
 import { PRODUCT_PAGE_COMPONENTS } from './ProductPageLibrary';
 import { FOOTER_COMPONENTS } from './FooterLibrary';
 import { SCROLL_COMPONENTS, SCROLL_OPTIONS } from './ScrollLibrary';
+import { SOCIAL_COMPONENTS, SOCIAL_OPTIONS } from './SocialLibrary';
 import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
@@ -237,6 +238,29 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
           >
             {isEditable && <BlockToolbar />}
             <ScrollComponent 
+              data={block.data} 
+              isEditable={isEditable}
+              onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
+            />
+          </div>
+        ) : null;
+      case 'system-social':
+        const SocialComponent = SOCIAL_COMPONENTS[block.variant || 'grid-classic'];
+        return SocialComponent ? (
+          <div 
+            key={block.id}
+            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`}
+            onClick={(e) => {
+              if (onEditBlock) {
+                e.stopPropagation();
+                onEditBlock(block.id);
+              }
+            }}
+          >
+            {isEditable && <BlockToolbar />}
+            <SocialComponent 
+              storeName={config.name}
+              primaryColor={config.primaryColor}
               data={block.data} 
               isEditable={isEditable}
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}

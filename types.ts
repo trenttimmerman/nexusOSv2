@@ -63,6 +63,18 @@ export type FooterStyleId =
   | 'brand'
   | 'sitemap';
 
+export type SocialStyleId =
+  | 'grid-classic'
+  | 'masonry-wall'
+  | 'carousel-reel'
+  | 'polaroid-scatter'
+  | 'minimal-feed'
+  | 'dark-mode-glitch'
+  | 'story-circles'
+  | 'featured-hero'
+  | 'ticker-tape'
+  | 'glass-cards';
+
 export type ScrollbarStyleId =
   | 'native'
   | 'minimal'

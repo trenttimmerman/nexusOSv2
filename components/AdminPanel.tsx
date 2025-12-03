@@ -5,6 +5,7 @@ import { HEADER_OPTIONS, HEADER_COMPONENTS } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS } from './FooterLibrary';
+import { SOCIAL_OPTIONS, SOCIAL_COMPONENTS } from './SocialLibrary';
 import { SCROLL_OPTIONS } from './ScrollLibrary';
 import { Storefront } from './Storefront';
 import { EditorPanel } from './EditorPanel';
@@ -119,6 +120,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Tag,
+  Share2,
   Save
 } from 'lucide-react';
 
@@ -1263,6 +1265,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
                 <ChevronDown className="-rotate-90 text-neutral-600" />
               </button>
+
+              <button onClick={() => { setSelectedCategory('social'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-pink-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-pink-900/20 text-pink-500 rounded-lg group-hover:bg-pink-500 group-hover:text-white transition-colors"><Share2 size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Social Feed</span>
+                    <span className="text-xs text-neutral-500">Instagram & TikTok integration</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -1294,6 +1307,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="grid grid-cols-1 gap-2">
                   {SCROLL_OPTIONS.map(opt => (
                     <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-scroll', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-orange-600/20 border-orange-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {selectedCategory === 'social' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {SOCIAL_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-social', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-pink-600/20 border-pink-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
                       <div className="font-bold text-sm">{opt.name}</div>
                       <div className="text-[10px] opacity-60">{opt.description}</div>
                     </button>
