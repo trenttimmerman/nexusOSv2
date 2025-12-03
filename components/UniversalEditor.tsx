@@ -35,6 +35,7 @@ interface UniversalEditorProps {
   blockType: string;
   variant: string;
   data: UniversalSectionData;
+  activeField?: string | null;
   onUpdate: (data: UniversalSectionData) => void;
   onSwitchLayout: (newVariant: string) => void;
 }
@@ -44,12 +45,27 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   blockType,
   variant,
   data,
+  activeField,
   onUpdate,
   onSwitchLayout
 }) => {
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [showLayoutPicker, setShowLayoutPicker] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Auto-scroll to active field
+  React.useEffect(() => {
+    if (activeField) {
+      const element = document.getElementById(`editor-field-${activeField}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.focus();
+        // Add a temporary highlight effect
+        element.classList.add('ring-2', 'ring-blue-500');
+        setTimeout(() => element.classList.remove('ring-2', 'ring-blue-500'), 2000);
+      }
+    }
+  }, [activeField]);
 
   const options = ALL_OPTIONS[blockType] || [];
   const currentOption = options.find(o => o.id === variant);
@@ -117,8 +133,8 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
 
   // --- COMPONENTS ---
 
-  const ImagePicker = ({ label, value, onChange, onUpload }: { label: string, value: string, onChange: (val: string) => void, onUpload: (e: any) => void }) => (
-    <div className="space-y-2">
+  const ImagePicker = ({ id, label, value, onChange, onUpload }: { id?: string, label: string, value: string, onChange: (val: string) => void, onUpload: (e: any) => void }) => (
+    <div className="space-y-2" id={id}>
       <label className="text-xs font-bold uppercase text-neutral-500 flex items-center justify-between">
         {label}
         {value && <button onClick={() => onChange('')} className="text-red-500 hover:text-red-400 text-[10px]">Remove</button>}
@@ -161,8 +177,8 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     </div>
   );
 
-  const RichText = ({ label, value, onChange, rows = 3 }: { label: string, value: string, onChange: (val: string) => void, rows?: number }) => (
-    <div className="space-y-2">
+    const RichText = ({ id, label, value, onChange, rows = 3 }: { id?: string, label: string, value: string, onChange: (val: string) => void, rows?: number }) => (
+    <div className="space-y-2" id={id}>
       <div className="flex items-center justify-between">
         <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
         <div className="flex items-center gap-1 bg-neutral-950 border border-neutral-800 rounded p-0.5">
@@ -181,10 +197,11 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     </div>
   );
 
-  const Input = ({ label, value, onChange }: { label: string, value: string, onChange: (val: string) => void }) => (
+  const Input = ({ label, value, onChange, id }: { label: string, value: string, onChange: (val: string) => void, id?: string }) => (
     <div className="space-y-2">
       <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
       <input
+        id={id}
         type="text"
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
@@ -298,18 +315,21 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
           </h4>
           
           <Input 
+            id="editor-field-heading"
             label="Heading" 
             value={data.heading || ''} 
             onChange={(val) => updateField('heading', val)} 
           />
           
           <RichText 
+            id="editor-field-subheading"
             label="Subheading" 
             value={data.subheading || ''} 
             onChange={(val) => updateField('subheading', val)} 
           />
 
           <ImagePicker 
+            id="editor-field-image"
             label="Main Image" 
             value={data.image || ''} 
             onChange={(val) => updateField('image', val)}
@@ -318,16 +338,77 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
 
           <div className="grid grid-cols-2 gap-4">
             <Input 
+              id="editor-field-buttonText"
               label="Button Text" 
               value={data.buttonText || ''} 
               onChange={(val) => updateField('buttonText', val)} 
             />
             <Input 
+              id="editor-field-buttonLink"
               label="Button Link" 
               value={data.buttonLink || ''} 
               onChange={(val) => updateField('buttonLink', val)} 
             />
           </div>
+
+          <Input 
+            id="editor-field-secondaryButtonText"
+            label="Secondary Button" 
+            value={data.secondaryButtonText || ''} 
+            onChange={(val) => updateField('secondaryButtonText', val)} 
+          />
+
+          <Input 
+            id="editor-field-badge"
+            label="Badge Text" 
+            value={data.badge || ''} 
+            onChange={(val) => updateField('badge', val)} 
+          />
+
+          <Input 
+            id="editor-field-marqueeText"
+            label="Marquee Text" 
+            value={data.marqueeText || ''} 
+            onChange={(val) => updateField('marqueeText', val)} 
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input 
+              id="editor-field-topBadge"
+              label="Top Badge" 
+              value={data.topBadge || ''} 
+              onChange={(val) => updateField('topBadge', val)} 
+            />
+            <Input 
+              id="editor-field-imageBadge"
+              label="Image Badge" 
+              value={data.imageBadge || ''} 
+              onChange={(val) => updateField('imageBadge', val)} 
+            />
+          </div>
+
+          {variant === 'typographic' && (
+            <div className="space-y-4 pt-4 border-t border-neutral-800">
+              <h5 className="font-bold text-xs uppercase text-neutral-500">Link Cards</h5>
+              {[1, 2, 3].map(num => (
+                <div key={num} className="space-y-2">
+                  <Input 
+                    id={`editor-field-link${num}Label`}
+                    label={`Link ${num} Label`} 
+                    value={data[`link${num}Label`] || ''} 
+                    onChange={(val) => updateField(`link${num}Label`, val)} 
+                  />
+                  <ImagePicker 
+                    id={`editor-field-link${num}Image`}
+                    label={`Link ${num} Image`} 
+                    value={data[`link${num}Image`] || ''} 
+                    onChange={(val) => updateField(`link${num}Image`, val)}
+                    onUpload={(e) => handleImageUpload(e, `link${num}Image`)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Items List (Drill Down) */}

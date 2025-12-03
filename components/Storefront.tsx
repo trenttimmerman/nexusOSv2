@@ -20,7 +20,7 @@ import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, Al
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 
-export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true }) => {
+export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: string) => void }> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true, onSelectField }) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
 
   const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
@@ -137,6 +137,7 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
               data={block.data}
               isEditable={isEditable}
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
+              onSelectField={onSelectField}
               blockId={block.id}
             />
           ) : null;

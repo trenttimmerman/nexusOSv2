@@ -520,6 +520,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const [isRewriting, setIsRewriting] = useState(false);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+  const [activeField, setActiveField] = useState<string | null>(null);
   const [showPageProperties, setShowPageProperties] = useState(false);
 
   // MODAL STATES
@@ -1735,6 +1736,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     blockType={activeBlock.type}
                     variant={activeBlock.variant || 'default'}
                     data={activeBlock.data || {}}
+                    activeField={activeField}
                     onUpdate={(newData) => updateActiveBlockData(activeBlock.id, newData)}
                     onSwitchLayout={(newVariant) => {
                       const newData = mapDataToLayout(activeBlock.data || {}, newVariant);
@@ -1778,6 +1780,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       onEditBlock={(blockId) => {
                         setSelectedBlockId(blockId);
                       }}
+                      onSelectField={(field) => setActiveField(field)}
                       onMoveBlock={(blockId, direction) => {
                         const index = activePage.blocks.findIndex(b => b.id === blockId);
                         if (index !== -1) moveBlock(index, direction === 'up' ? -1 : 1);
