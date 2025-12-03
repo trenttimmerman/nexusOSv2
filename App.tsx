@@ -9,7 +9,6 @@ import { SignUp } from './components/SignUp';
 import { AccountPage } from './components/AccountPage';
 import { Checkout } from './components/Checkout';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import Dashboard from './components/Dashboard';
 import { DataProvider, useData } from './context/DataContext';
 import { CartProvider } from './context/CartContext';
 import { Loader2 } from 'lucide-react';
@@ -92,23 +91,47 @@ const AdminWrapper = () => {
   );
 };
 
-const DashboardWrapper = () => {
-  const [route, setRoute] = React.useState(window.location.hash || '#/dashboard');
+// Wrapper for Admin
+const AdminWrapper = () => {
+  const { 
+    storeConfig, products, pages, mediaAssets, campaigns, loading,
+    updateConfig, addProduct, addPage, updatePage, deletePage, 
+    addAsset, deleteAsset, addCampaign, updateCampaign, deleteCampaign,
+    signOut, userRole, switchStore, storeId
+  } = useData();
 
-  React.useEffect(() => {
-    const handleHashChange = () => {
-      setRoute(window.location.hash || '#/dashboard');
-    };
-    
-    if (!window.location.hash) {
-        window.location.hash = '#/dashboard';
-    }
+  const [activeTab, setActiveTab] = React.useState<AdminTab>(AdminTab.DASHBOARD);
+  const [activePageId, setActivePageId] = React.useState('home');
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  if (loading) return <LoadingScreen />;
 
-  return <Dashboard route={route} />;
+  return (
+    <AdminPanel
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      config={storeConfig}
+      onConfigChange={updateConfig}
+      products={products}
+      onAddProduct={addProduct}
+      pages={pages}
+      activePageId={activePageId}
+      onAddPage={addPage}
+      onUpdatePage={updatePage}
+      onSetActivePage={setActivePageId}
+      onDeletePage={deletePage}
+      mediaAssets={mediaAssets}
+      onAddAsset={addAsset}
+      onDeleteAsset={deleteAsset}
+      campaigns={campaigns}
+      onAddCampaign={addCampaign}
+      onUpdateCampaign={updateCampaign}
+      onDeleteCampaign={deleteCampaign}
+      onLogout={signOut}
+      userRole={userRole}
+      storeId={storeId}
+      onSwitchStore={switchStore}
+    />
+  );
 };
 
 const LoadingScreen = () => (
@@ -134,7 +157,7 @@ export default function App() {
 
             {/* Core Application (Admin Panel) */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/admin" element={<DashboardWrapper />} />
+              <Route path="/admin" element={<AdminWrapper />} />
             </Route>
 
             {/* Public Storefront (Preview) */}

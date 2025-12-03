@@ -35,7 +35,7 @@ const generateNewOrder = (): Order => {
     };
 };
 
-const DashboardHome: React.FC = () => {
+export const DashboardHome: React.FC = () => {
     const salesChartRef = useRef<HTMLCanvasElement>(null);
     const trafficChartRef = useRef<HTMLCanvasElement>(null);
     const salesChartInstance = useRef<any>(null);

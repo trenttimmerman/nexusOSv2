@@ -26,7 +26,7 @@ import { DomainManager } from './DomainManager';
 import { DiscountManager } from './DiscountManager';
 import { ShippingManager } from './ShippingManager';
 import { supabase } from '../lib/supabaseClient';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { DashboardHome } from './Dashboard';
 
 const SCROLLBAR_OPTIONS = [
   { id: 'native', name: 'Native', description: 'Default browser scrollbar' },
@@ -251,100 +251,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   };
 
-  // Dashboard State
-  const [dashboardStats, setDashboardStats] = useState({
-    revenue: 0,
-    orders: 0,
-    activeUsers: 0,
-    salesData: [] as { date: string; sales: number }[]
-  });
 
-  useEffect(() => {
-    if (activeTab === AdminTab.DASHBOARD) {
-      fetchDashboardStats();
-    }
-  }, [activeTab, storeId]);
-
-  const fetchDashboardStats = async () => {
-    try {
-      // Fetch Orders for Revenue & Count (Last 30 Days for Chart)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-      let ordersQuery = supabase
-        .from('orders')
-        .select('total_amount, created_at')
-        .gte('created_at', thirtyDaysAgo.toISOString());
-      
-      if (storeId) {
-        ordersQuery = ordersQuery.eq('store_id', storeId);
-      }
-
-      const { data: orders, error: ordersError } = await ordersQuery;
-      
-      if (ordersError) {
-        console.warn('Could not fetch orders:', ordersError.message);
-        return;
-      }
-
-      // Calculate Totals (Note: This is only for last 30 days now, ideally we'd have a separate query for all-time totals)
-      // For now, let's fetch ALL-TIME totals separately to be accurate
-      let allTimeOrdersQuery = supabase
-        .from('orders')
-        .select('total_amount');
-      
-      if (storeId) {
-        allTimeOrdersQuery = allTimeOrdersQuery.eq('store_id', storeId);
-      }
-      
-      const { data: allOrders } = await allTimeOrdersQuery;
-      const totalRevenue = allOrders?.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0) || 0;
-      const totalOrders = allOrders?.length || 0;
-
-      // Process Sales Data for Chart
-      const salesMap = new Map<string, number>();
-      const today = new Date();
-      for (let i = 29; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
-        salesMap.set(dateStr, 0);
-      }
-
-      orders?.forEach(order => {
-        const dateStr = new Date(order.created_at).toISOString().split('T')[0];
-        if (salesMap.has(dateStr)) {
-          salesMap.set(dateStr, (salesMap.get(dateStr) || 0) + (Number(order.total_amount) || 0));
-        }
-      });
-
-      const salesData = Array.from(salesMap.entries()).map(([date, sales]) => ({
-        date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        sales
-      }));
-
-      // Fetch Customers (Active Users)
-      let customersQuery = supabase
-        .from('customers')
-        .select('*', { count: 'exact', head: true });
-
-      if (storeId) {
-        customersQuery = customersQuery.eq('store_id', storeId);
-      }
-
-      const { count: userCount, error: usersError } = await customersQuery;
-
-      setDashboardStats({
-        revenue: totalRevenue,
-        orders: totalOrders,
-        activeUsers: userCount || 0,
-        salesData
-      });
-
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-    }
-  };
 
   useEffect(() => {
     if (activeTab === AdminTab.PLATFORM && userRole === 'superuser') {
@@ -1806,73 +1713,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         );
       case AdminTab.DASHBOARD:
-        return (
-          <div className="p-8 w-full max-w-7xl mx-auto space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-blue-900/20 text-blue-500 rounded-xl"><DollarSign size={24} /></div>
-                  <div><div className="text-neutral-500 text-sm font-bold uppercase">Total Revenue</div><div className="text-2xl font-bold text-white">${dashboardStats.revenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div></div>
-                </div>
-                <div className="h-2 bg-neutral-800 rounded-full overflow-hidden"><div className="h-full w-[70%] bg-blue-600"></div></div>
-              </div>
-              <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-purple-900/20 text-purple-500 rounded-xl"><ShoppingBag size={24} /></div>
-                  <div><div className="text-neutral-500 text-sm font-bold uppercase">Orders</div><div className="text-2xl font-bold text-white">{dashboardStats.orders}</div></div>
-                </div>
-                <div className="h-2 bg-neutral-800 rounded-full overflow-hidden"><div className="h-full w-[45%] bg-purple-600"></div></div>
-              </div>
-              <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-green-900/20 text-green-500 rounded-xl"><Users size={24} /></div>
-                  <div><div className="text-neutral-500 text-sm font-bold uppercase">Customers</div><div className="text-2xl font-bold text-white">{dashboardStats.activeUsers}</div></div>
-                </div>
-                <div className="h-2 bg-neutral-800 rounded-full overflow-hidden"><div className="h-full w-[80%] bg-green-600"></div></div>
-              </div>
-            </div>
-
-            {/* ANALYTICS CHART */}
-            <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="text-lg font-bold text-white">Sales Overview</h3>
-                  <p className="text-sm text-neutral-500">Revenue over the last 30 days</p>
-                </div>
-                <div className="flex gap-2">
-                  <div className="px-3 py-1 bg-neutral-800 rounded-lg text-xs font-bold text-neutral-400">30 Days</div>
-                </div>
-              </div>
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dashboardStats.salesData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                    <XAxis 
-                      dataKey="date" 
-                      stroke="#666" 
-                      fontSize={12} 
-                      tickLine={false} 
-                      axisLine={false} 
-                    />
-                    <YAxis 
-                      stroke="#666" 
-                      fontSize={12} 
-                      tickLine={false} 
-                      axisLine={false} 
-                      tickFormatter={(value) => `$${value}`} 
-                    />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#171717', border: '1px solid #333', borderRadius: '8px' }}
-                      itemStyle={{ color: '#fff' }}
-                      cursor={{ fill: '#333', opacity: 0.4 }}
-                    />
-                    <Bar dataKey="sales" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        );
+        return <DashboardHome />;
 
       case AdminTab.ORDERS:
         return <OrderManager storeId={storeId || null} />;
