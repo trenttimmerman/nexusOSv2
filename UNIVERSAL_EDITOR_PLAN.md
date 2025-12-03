@@ -35,17 +35,17 @@ A utility function that runs whenever a user switches layouts.
 
 ## 3. User Experience (UX) Features
 
-### 1. Visual Layout Switcher
+### 1. Visual Layout Switcher [IMPLEMENTED]
 *   **Problem:** Dropdown names like `blog-alternating` are abstract.
 *   **Solution:** A modal or drawer showing **SVG Wireframes** or **Thumbnails** of the 10 variations.
 *   **Interaction:** One-click switch that instantly updates the canvas using `SmartMapper`.
 
-### 2. Click-to-Focus (Hybrid Editing)
+### 2. Click-to-Focus (Hybrid Editing) [IMPLEMENTED]
 *   **Problem:** Inline typing breaks layouts; Sidebar hunting is tedious.
 *   **Solution:** Clicking "Heading" on the Canvas automatically scrolls the Sidebar to the "Heading" input and focuses it.
 *   **Benefit:** Connects the visual to the control without technical fragility.
 
-### 3. Drill-Down Editing
+### 3. Drill-Down Editing [IMPLEMENTED]
 *   **Problem:** Editing a grid of 6 features creates a wall of 18 inputs.
 *   **Solution:** The Sidebar shows a list of items. Clicking an item slides the view to a dedicated "Edit Item" panel.
 *   **Benefit:** Reduces cognitive load; keeps the interface clean.
