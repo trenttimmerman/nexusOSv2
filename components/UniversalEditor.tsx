@@ -297,30 +297,37 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
             <Type size={12} /> Content
           </h4>
           
-          {data.heading !== undefined && (
-            <Input 
-              label="Heading" 
-              value={data.heading} 
-              onChange={(val) => updateField('heading', val)} 
-            />
-          )}
+          <Input 
+            label="Heading" 
+            value={data.heading || ''} 
+            onChange={(val) => updateField('heading', val)} 
+          />
           
-          {data.subheading !== undefined && (
-            <RichText 
-              label="Subheading" 
-              value={data.subheading} 
-              onChange={(val) => updateField('subheading', val)} 
-            />
-          )}
+          <RichText 
+            label="Subheading" 
+            value={data.subheading || ''} 
+            onChange={(val) => updateField('subheading', val)} 
+          />
 
-          {data.image !== undefined && (
-            <ImagePicker 
-              label="Main Image" 
-              value={data.image} 
-              onChange={(val) => updateField('image', val)}
-              onUpload={(e) => handleImageUpload(e, 'image')}
+          <ImagePicker 
+            label="Main Image" 
+            value={data.image || ''} 
+            onChange={(val) => updateField('image', val)}
+            onUpload={(e) => handleImageUpload(e, 'image')}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input 
+              label="Button Text" 
+              value={data.buttonText || ''} 
+              onChange={(val) => updateField('buttonText', val)} 
             />
-          )}
+            <Input 
+              label="Button Link" 
+              value={data.buttonLink || ''} 
+              onChange={(val) => updateField('buttonLink', val)} 
+            />
+          </div>
         </div>
 
         {/* Items List (Drill Down) */}
