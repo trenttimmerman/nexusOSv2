@@ -48,48 +48,6 @@ const StorefrontWrapper = () => {
   );
 };
 
-// Wrapper for Admin
-const AdminWrapper = () => {
-  const { 
-    storeConfig, products, pages, mediaAssets, campaigns, loading,
-    updateConfig, addProduct, addPage, updatePage, deletePage, 
-    addAsset, deleteAsset, addCampaign, updateCampaign, deleteCampaign,
-    signOut, userRole, switchStore, storeId
-  } = useData();
-
-  const [activeTab, setActiveTab] = React.useState<AdminTab>(AdminTab.DASHBOARD);
-  const [activePageId, setActivePageId] = React.useState('home');
-
-  if (loading) return <LoadingScreen />;
-
-  return (
-    <AdminPanel
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
-      config={storeConfig}
-      onConfigChange={updateConfig}
-      products={products}
-      onAddProduct={addProduct}
-      pages={pages}
-      activePageId={activePageId}
-      onAddPage={addPage}
-      onUpdatePage={updatePage}
-      onSetActivePage={setActivePageId}
-      onDeletePage={deletePage}
-      mediaAssets={mediaAssets}
-      onAddAsset={addAsset}
-      onDeleteAsset={deleteAsset}
-      campaigns={campaigns}
-      onAddCampaign={addCampaign}
-      onUpdateCampaign={updateCampaign}
-      onDeleteCampaign={deleteCampaign}
-      onLogout={signOut}
-      userRole={userRole}
-      storeId={storeId}
-      onSwitchStore={switchStore}
-    />
-  );
-};
 
 // Wrapper for Admin
 const AdminWrapper = () => {
