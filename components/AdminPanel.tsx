@@ -703,8 +703,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       variant: variant,
       data: {}
     };
-    const updatedBlocks = [...(activePage.blocks || []), newBlock];
-    onUpdatePage(activePageId, { blocks: updatedBlocks });
+    
+    // Update Local State (Draft Mode)
+    setLocalPages(prev => prev.map(p => {
+        if (p.id !== activePageId) return p;
+        return {
+            ...p,
+            blocks: [...(p.blocks || []), newBlock]
+        };
+    }));
+    setHasUnsavedChanges(true);
+
     setSelectedBlockId(newBlock.id);
     setIsAddSectionOpen(false);
     setPreviewBlock(null);
