@@ -9,6 +9,13 @@ import { SOCIAL_OPTIONS, SOCIAL_COMPONENTS } from './SocialLibrary';
 import { SCROLL_OPTIONS } from './ScrollLibrary';
 import { RICH_TEXT_OPTIONS, EMAIL_SIGNUP_OPTIONS, COLLAPSIBLE_OPTIONS, LOGO_LIST_OPTIONS, PROMO_BANNER_OPTIONS } from './SectionLibrary';
 import { GALLERY_OPTIONS } from './GalleryLibrary';
+import { BLOG_OPTIONS } from './BlogLibrary';
+import { VIDEO_OPTIONS } from './VideoLibrary';
+import { CONTACT_OPTIONS } from './ContactLibrary';
+import { LAYOUT_OPTIONS } from './LayoutLibrary';
+import { COLLECTION_OPTIONS } from './CollectionLibrary';
+import { UniversalEditor } from './UniversalEditor';
+import { mapDataToLayout } from '../lib/smartMapper';
 import { Storefront } from './Storefront';
 import { EditorPanel } from './EditorPanel';
 import { CartDrawer } from './CartDrawer';
@@ -128,7 +135,11 @@ import {
   List,
   Image as ImageIcon,
   Megaphone,
-  Save
+  Save,
+  FileText,
+  Video,
+  Layout,
+  ShoppingBag
 } from 'lucide-react';
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -1262,6 +1273,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <ChevronDown className="-rotate-90 text-neutral-600" />
               </button>
 
+              <button onClick={() => { setSelectedCategory('collection'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-emerald-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-emerald-900/20 text-emerald-500 rounded-lg group-hover:bg-emerald-500 group-hover:text-white transition-colors"><ShoppingBag size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Collections</span>
+                    <span className="text-xs text-neutral-500">Featured products & lists</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
+              <button onClick={() => { setSelectedCategory('layout'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-cyan-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-cyan-900/20 text-cyan-500 rounded-lg group-hover:bg-cyan-500 group-hover:text-white transition-colors"><Layout size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Layouts</span>
+                    <span className="text-xs text-neutral-500">Multi-column & banners</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
               <button onClick={() => { setSelectedCategory('scroll'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-orange-500 rounded-xl flex items-center justify-between group transition-all">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-orange-900/20 text-orange-500 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors"><Repeat size={24} /></div>
@@ -1279,6 +1312,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <div className="text-left">
                     <span className="block text-sm font-bold text-white">Social Feed</span>
                     <span className="text-xs text-neutral-500">Instagram & TikTok integration</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
+              <button onClick={() => { setSelectedCategory('blog'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-rose-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-rose-900/20 text-rose-500 rounded-lg group-hover:bg-rose-500 group-hover:text-white transition-colors"><FileText size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Blog Posts</span>
+                    <span className="text-xs text-neutral-500">News and articles</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
+              <button onClick={() => { setSelectedCategory('video'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-red-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-red-900/20 text-red-500 rounded-lg group-hover:bg-red-500 group-hover:text-white transition-colors"><Video size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Video</span>
+                    <span className="text-xs text-neutral-500">Players and backgrounds</span>
                   </div>
                 </div>
                 <ChevronDown className="-rotate-90 text-neutral-600" />
@@ -1316,6 +1371,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
                 <ChevronDown className="-rotate-90 text-neutral-600" />
               </button>
+
+              <button onClick={() => { setSelectedCategory('contact'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-teal-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-teal-900/20 text-teal-500 rounded-lg group-hover:bg-teal-500 group-hover:text-white transition-colors"><Mail size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Contact</span>
+                    <span className="text-xs text-neutral-500">Forms and maps</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -1343,6 +1409,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               )}
 
+              {selectedCategory === 'collection' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {COLLECTION_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-collection', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-emerald-600/20 border-emerald-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {selectedCategory === 'layout' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {LAYOUT_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-layout', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-cyan-600/20 border-cyan-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {selectedCategory === 'scroll' && (
                 <div className="grid grid-cols-1 gap-2">
                   {SCROLL_OPTIONS.map(opt => (
@@ -1358,6 +1446,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="grid grid-cols-1 gap-2">
                   {SOCIAL_OPTIONS.map(opt => (
                     <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-social', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-pink-600/20 border-pink-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {selectedCategory === 'blog' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {BLOG_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-blog', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-rose-600/20 border-rose-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {selectedCategory === 'video' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {VIDEO_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-video', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-red-600/20 border-red-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
                       <div className="font-bold text-sm">{opt.name}</div>
                       <div className="text-[10px] opacity-60">{opt.description}</div>
                     </button>
@@ -1440,9 +1550,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   ))}
                 </div>
               )}
+
+              {selectedCategory === 'contact' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {CONTACT_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-contact', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-teal-600/20 border-teal-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
+
       </div>
     );
   };
@@ -1605,17 +1727,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
             </div>
 
-            {/* EDITOR PANEL COLUMN */}
-            {selectedBlockId && activeBlock && activeBlock.type === 'system-hero' && (
-               <EditorPanel 
-                  isOpen={true}
-                  onClose={() => setSelectedBlockId(null)}
-                  blockId={activeBlock.id}
-                  blockType="Hero Section"
-                  data={activeBlock.data || {}}
-                  onUpdate={(newData) => updateActiveBlockData(activeBlock.id, newData)}
-                  fields={HERO_FIELDS[activeBlock.variant as HeroStyleId || 'impact'] || []}
-               />
+            {/* UNIVERSAL EDITOR SIDEBAR */}
+            {selectedBlockId && activeBlock && activeBlock.type.startsWith('system-') && (
+               <div className="w-80 border-r border-neutral-800 bg-white h-full overflow-hidden flex flex-col z-20">
+                 <UniversalEditor
+                    blockId={activeBlock.id}
+                    blockType={activeBlock.type}
+                    variant={activeBlock.variant || 'default'}
+                    data={activeBlock.data || {}}
+                    onUpdate={(newData) => updateActiveBlockData(activeBlock.id, newData)}
+                    onSwitchLayout={(newVariant) => {
+                      const newData = mapDataToLayout(activeBlock.data || {}, newVariant);
+                      updateActiveBlockData(activeBlock.id, { ...newData, variant: newVariant });
+                    }}
+                 />
+               </div>
             )}
 
             {/* RIGHT COLUMN: LIVE CANVAS */}

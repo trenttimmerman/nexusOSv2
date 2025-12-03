@@ -10,6 +10,12 @@ import { SCROLL_COMPONENTS, SCROLL_OPTIONS } from './ScrollLibrary';
 import { SOCIAL_COMPONENTS, SOCIAL_OPTIONS } from './SocialLibrary';
 import { RICH_TEXT_COMPONENTS, EMAIL_SIGNUP_COMPONENTS, COLLAPSIBLE_COMPONENTS, LOGO_LIST_COMPONENTS, PROMO_BANNER_COMPONENTS } from './SectionLibrary';
 import { GALLERY_COMPONENTS } from './GalleryLibrary';
+import { BLOG_COMPONENTS } from './BlogLibrary';
+import { VIDEO_COMPONENTS } from './VideoLibrary';
+import { CONTACT_COMPONENTS } from './ContactLibrary';
+import { LAYOUT_COMPONENTS } from './LayoutLibrary';
+import { COLLECTION_COMPONENTS } from './CollectionLibrary';
+import { SectionWrapper } from './SectionWrapper';
 import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
@@ -116,88 +122,14 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
 
   // Dynamic Block Renderer
   const renderBlock = (block: PageBlock) => {
-    const isEditable = activeBlockId === block.id;
+    const isEditable = !!onUpdateBlock;
 
-    const handleCycleVariant = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (!onUpdateBlock) return;
-
-      let options: { id: string }[] = [];
-      if (block.type === 'system-hero') options = HERO_OPTIONS;
-      else if (block.type === 'system-grid') options = PRODUCT_CARD_OPTIONS;
-      else if (block.type === 'system-scroll') options = SCROLL_OPTIONS;
-
-      if (options.length > 0) {
-        const currentIndex = options.findIndex(o => o.id === block.variant);
-        const nextIndex = (currentIndex + 1) % options.length;
-        onUpdateBlock(block.id, { variant: options[nextIndex].id });
-      }
-    };
-
-    const BlockToolbar = () => (
-      <div className="absolute -top-12 right-0 flex flex-col items-end z-[100]">
-        <div className="flex items-center gap-1 bg-black text-white rounded-lg shadow-xl p-1 animate-in fade-in slide-in-from-bottom-2">
-        {(block.type === 'system-hero' || block.type === 'system-grid' || block.type === 'system-scroll') && (
-          <>
-            <button 
-              onClick={handleCycleVariant}
-              className="p-2 hover:bg-white/20 rounded transition-colors flex items-center gap-2 px-3"
-              title="Switch Layout"
-            >
-              <Layout size={14} />
-              <span className="text-xs font-bold">Switch Layout</span>
-            </button>
-            <div className="w-px h-4 bg-white/20 mx-1" />
-          </>
-        )}
-        <button 
-          onClick={(e) => { e.stopPropagation(); onMoveBlock && onMoveBlock(block.id, 'up'); }}
-          className="p-2 hover:bg-white/20 rounded transition-colors"
-          title="Move Up"
-        >
-          <ArrowUp size={14} />
-        </button>
-        <button 
-          onClick={(e) => { e.stopPropagation(); onMoveBlock && onMoveBlock(block.id, 'down'); }}
-          className="p-2 hover:bg-white/20 rounded transition-colors"
-          title="Move Down"
-        >
-          <ArrowDown size={14} />
-        </button>
-        <div className="w-px h-4 bg-white/20 mx-1" />
-        <button 
-          onClick={(e) => { e.stopPropagation(); onDuplicateBlock && onDuplicateBlock(block.id); }}
-          className="p-2 hover:bg-white/20 rounded transition-colors"
-          title="Duplicate Section"
-        >
-          <Copy size={14} />
-        </button>
-        <button 
-          onClick={(e) => { e.stopPropagation(); onDeleteBlock && onDeleteBlock(block.id); }}
-          className="p-2 hover:bg-red-500/50 rounded transition-colors text-red-200 hover:text-white"
-          title="Delete Section"
-        >
-          <Trash2 size={14} />
-        </button>
-        </div>
-      </div>
-    );
-
-    switch (block.type) {
-      case 'system-hero':
-        const heroStyle = (block.variant as HeroStyleId) || config.heroStyle || 'impact';
-        const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
-        return HeroComponent ? (
-          <div 
-            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`}
-            onClick={(e) => {
-              if (onEditBlock) {
-                e.stopPropagation();
-                onEditBlock(block.id);
-              }
-            }}
-          >
-            {isEditable && <BlockToolbar />}
+    const renderContent = () => {
+      switch (block.type) {
+        case 'system-hero':
+          const heroStyle = (block.variant as HeroStyleId) || config.heroStyle || 'impact';
+          const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
+          return HeroComponent ? (
             <HeroComponent
               key={block.id}
               storeName={config.name}
@@ -207,59 +139,21 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
               blockId={block.id}
             />
-          </div>
-        ) : null;
-      case 'system-grid':
-        return (
-          <div 
-            key={block.id}
-            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`}
-            onClick={(e) => {
-              if (onEditBlock) {
-                e.stopPropagation();
-                onEditBlock(block.id);
-              }
-            }}
-          >
-            {isEditable && <BlockToolbar />}
-            {renderProductGrid(block.variant, block.data, block.id, isEditable)}
-          </div>
-        );
-      case 'system-scroll':
-        const ScrollComponent = SCROLL_COMPONENTS[block.variant || 'logo-marquee'];
-        return ScrollComponent ? (
-          <div 
-            key={block.id}
-            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`}
-            onClick={(e) => {
-              if (onEditBlock) {
-                e.stopPropagation();
-                onEditBlock(block.id);
-              }
-            }}
-          >
-            {isEditable && <BlockToolbar />}
+          ) : null;
+        case 'system-grid':
+          return renderProductGrid(block.variant, block.data, block.id, isEditable);
+        case 'system-scroll':
+          const ScrollComponent = SCROLL_COMPONENTS[block.variant || 'logo-marquee'];
+          return ScrollComponent ? (
             <ScrollComponent 
               data={block.data} 
               isEditable={isEditable}
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
             />
-          </div>
-        ) : null;
-      case 'system-social':
-        const SocialComponent = SOCIAL_COMPONENTS[block.variant || 'grid-classic'];
-        return SocialComponent ? (
-          <div 
-            key={block.id}
-            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`}
-            onClick={(e) => {
-              if (onEditBlock) {
-                e.stopPropagation();
-                onEditBlock(block.id);
-              }
-            }}
-          >
-            {isEditable && <BlockToolbar />}
+          ) : null;
+        case 'system-social':
+          const SocialComponent = SOCIAL_COMPONENTS[block.variant || 'grid-classic'];
+          return SocialComponent ? (
             <SocialComponent 
               storeName={config.name}
               primaryColor={config.primaryColor}
@@ -267,83 +161,91 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
               isEditable={isEditable}
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
             />
-          </div>
-        ) : null;
-      case 'system-rich-text':
-        const RichTextComponent = RICH_TEXT_COMPONENTS[block.variant || 'rt-centered'];
-        return RichTextComponent ? (
-          <div key={block.id} className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`} onClick={(e) => { if (onEditBlock) { e.stopPropagation(); onEditBlock(block.id); } }}>
-            {isEditable && <BlockToolbar />}
+          ) : null;
+        case 'system-rich-text':
+          const RichTextComponent = RICH_TEXT_COMPONENTS[block.variant || 'rt-centered'];
+          return RichTextComponent ? (
             <RichTextComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          </div>
-        ) : null;
-
-      case 'system-email':
-        const EmailComponent = EMAIL_SIGNUP_COMPONENTS[block.variant || 'email-minimal'];
-        return EmailComponent ? (
-          <div key={block.id} className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`} onClick={(e) => { if (onEditBlock) { e.stopPropagation(); onEditBlock(block.id); } }}>
-            {isEditable && <BlockToolbar />}
+          ) : null;
+        case 'system-email':
+          const EmailComponent = EMAIL_SIGNUP_COMPONENTS[block.variant || 'email-minimal'];
+          return EmailComponent ? (
             <EmailComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          </div>
-        ) : null;
-
-      case 'system-collapsible':
-        const CollapsibleComponent = COLLAPSIBLE_COMPONENTS[block.variant || 'col-simple'];
-        return CollapsibleComponent ? (
-          <div key={block.id} className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`} onClick={(e) => { if (onEditBlock) { e.stopPropagation(); onEditBlock(block.id); } }}>
-            {isEditable && <BlockToolbar />}
+          ) : null;
+        case 'system-collapsible':
+          const CollapsibleComponent = COLLAPSIBLE_COMPONENTS[block.variant || 'col-simple'];
+          return CollapsibleComponent ? (
             <CollapsibleComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          </div>
-        ) : null;
-
-      case 'system-logo-list':
-        const LogoListComponent = LOGO_LIST_COMPONENTS[block.variant || 'logo-grid'];
-        return LogoListComponent ? (
-          <div key={block.id} className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`} onClick={(e) => { if (onEditBlock) { e.stopPropagation(); onEditBlock(block.id); } }}>
-            {isEditable && <BlockToolbar />}
+          ) : null;
+        case 'system-logo-list':
+          const LogoListComponent = LOGO_LIST_COMPONENTS[block.variant || 'logo-grid'];
+          return LogoListComponent ? (
             <LogoListComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          </div>
-        ) : null;
-
-      case 'system-promo':
-        const PromoComponent = PROMO_BANNER_COMPONENTS[block.variant || 'promo-top'];
-        return PromoComponent ? (
-          <div key={block.id} className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`} onClick={(e) => { if (onEditBlock) { e.stopPropagation(); onEditBlock(block.id); } }}>
-            {isEditable && <BlockToolbar />}
+          ) : null;
+        case 'system-promo':
+          const PromoComponent = PROMO_BANNER_COMPONENTS[block.variant || 'promo-top'];
+          return PromoComponent ? (
             <PromoComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          </div>
-        ) : null;
-
-      case 'system-gallery':
-        const GalleryComponent = GALLERY_COMPONENTS[block.variant || 'gal-grid'];
-        return GalleryComponent ? (
-          <div key={block.id} className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`} onClick={(e) => { if (onEditBlock) { e.stopPropagation(); onEditBlock(block.id); } }}>
-            {isEditable && <BlockToolbar />}
+          ) : null;
+        case 'system-gallery':
+          const GalleryComponent = GALLERY_COMPONENTS[block.variant || 'gal-grid'];
+          return GalleryComponent ? (
             <GalleryComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          </div>
-        ) : null;
-
-      case 'section':
-      default:
-        return (
-          <div
-            key={block.id}
-            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''}`}
-            onClick={(e) => {
-              if (onEditBlock) {
-                e.stopPropagation();
-                onEditBlock(block.id);
-              }
-            }}
-          >
-            {isEditable && <BlockToolbar />}
+          ) : null;
+        case 'system-blog':
+          const BlogComponent = BLOG_COMPONENTS[block.variant || 'blog-grid'];
+          return BlogComponent ? (
+            <BlogComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-video':
+          const VideoComponent = VIDEO_COMPONENTS[block.variant || 'vid-full'];
+          return VideoComponent ? (
+            <VideoComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-contact':
+          const ContactComponent = CONTACT_COMPONENTS[block.variant || 'contact-simple'];
+          return ContactComponent ? (
+            <ContactComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-layout':
+          const LayoutComponent = LAYOUT_COMPONENTS[block.variant || 'layout-image-text'];
+          return LayoutComponent ? (
+            <LayoutComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-collection':
+          const CollectionComponent = COLLECTION_COMPONENTS[block.variant || 'collection-list'];
+          return CollectionComponent ? (
+            <CollectionComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'section':
+        default:
+          return (
             <div
               dangerouslySetInnerHTML={{ __html: block.content }}
               className="w-full prose prose-xl prose-neutral max-w-none text-neutral-600 font-serif leading-relaxed prose-img:rounded-2xl prose-headings:font-sans prose-headings:font-bold prose-headings:tracking-tight"
             />
-          </div>
-        );
+          );
+      }
+    };
+
+    if (!isEditable) {
+      return <div key={block.id}>{renderContent()}</div>;
     }
+
+    return (
+      <SectionWrapper
+        key={block.id}
+        blockId={block.id}
+        isSelected={activeBlockId === block.id}
+        onSelect={() => onEditBlock && onEditBlock(block.id)}
+        onMoveUp={() => onMoveBlock && onMoveBlock(block.id, 'up')}
+        onMoveDown={() => onMoveBlock && onMoveBlock(block.id, 'down')}
+        onDelete={() => onDeleteBlock && onDeleteBlock(block.id)}
+        onDuplicate={() => onDuplicateBlock && onDuplicateBlock(block.id)}
+      >
+        {renderContent()}
+      </SectionWrapper>
+    );
   };
 
   return (
