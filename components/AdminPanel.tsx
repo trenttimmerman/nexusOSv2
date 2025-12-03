@@ -47,6 +47,8 @@ const SCROLLBAR_OPTIONS = [
 ];
 import {
   LayoutDashboard,
+  PanelLeftClose,
+  PanelLeftOpen,
   Package,
   Palette,
   Megaphone,
@@ -148,6 +150,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Platform Admin State
   const [tenants, setTenants] = useState<any[]>([]);
   const [isLoadingTenants, setIsLoadingTenants] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isCreateTenantOpen, setIsCreateTenantOpen] = useState(false);
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
@@ -544,7 +547,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
       // Resize relative to the left sidebar (256px / 16rem)
-      const newWidth = Math.max(260, Math.min(800, e.clientX - 256));
+      const sidebarWidth = isSidebarCollapsed ? 80 : 256;
+      const newWidth = Math.max(260, Math.min(800, e.clientX - sidebarWidth));
       setEditorWidth(newWidth);
     };
 
@@ -874,12 +878,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   );
 
   const renderSidebar = () => (
-    <div className="w-64 bg-nexus-black border-r border-nexus-gray flex flex-col h-full text-neutral-400 shrink-0 z-20">
-      <div className="p-6 border-b border-nexus-gray">
-        <div className="flex items-center gap-2 text-white">
+    <div className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-nexus-black border-r border-nexus-gray flex flex-col h-full text-neutral-400 shrink-0 z-20 transition-all duration-300 ease-in-out`}>
+      <div className={`p-6 border-b border-nexus-gray flex items-center ${isSidebarCollapsed ? 'justify-center flex-col gap-4' : 'justify-between'}`}>
+        <div className={`flex items-center gap-2 text-white ${isSidebarCollapsed ? 'justify-center' : ''}`}>
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">E</div>
-          <span className="font-display font-bold text-xl tracking-tight">Evolv</span>
+          {!isSidebarCollapsed && <span className="font-display font-bold text-xl tracking-tight">Evolv</span>}
         </div>
+        <button
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          className="text-neutral-500 hover:text-white transition-colors"
+        >
+          {isSidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={20} />}
+        </button>
       </div>
       <nav className="flex-1 p-4 space-y-2">
         {[
@@ -897,6 +907,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         ].map((item) => (
           <button
             key={item.id}
+            title={isSidebarCollapsed ? item.label : ''}
             onClick={() => {
               onTabChange(item.id);
               setIsHeaderModalOpen(false);
@@ -906,23 +917,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               setIsArchitectOpen(false);
               setIsProductEditorOpen(false);
             }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === item.id
+            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-4'} py-3 rounded-lg transition-all ${activeTab === item.id
               ? 'bg-blue-600/10 text-blue-500 border border-blue-600/20'
               : 'hover:bg-white/5 hover:text-white'
               }`}
           >
             <item.icon size={18} />
-            <span className="font-medium text-sm">{item.label}</span>
+            {!isSidebarCollapsed && <span className="font-medium text-sm">{item.label}</span>}
           </button>
         ))}
       </nav>
       <div className="p-4 border-t border-nexus-gray">
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-500/10 transition-all"
+          title={isSidebarCollapsed ? 'Sign Out' : ''}
+          className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-4'} py-3 rounded-lg text-red-500 hover:bg-red-500/10 transition-all`}
         >
           <div className="w-4 h-4"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></div>
-          <span className="font-medium text-sm">Sign Out</span>
+          {!isSidebarCollapsed && <span className="font-medium text-sm">Sign Out</span>}
         </button>
       </div>
     </div>
@@ -931,7 +943,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // --- HEADER CONFIG MODAL ---
   const renderHeaderModal = () => {
     if (!isHeaderModalOpen) return null;
-    const style = { left: editorWidth + 256 }; // 256 is sidebar width
+    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) }; // 256 is sidebar width
     return (
       <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
         <div className="p-6 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 sticky top-0 backdrop-blur z-20">
@@ -1056,7 +1068,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       color = 'orange';
     }
 
-    const style = { left: editorWidth + 256 }; // 256 is sidebar width
+    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) }; // 256 is sidebar width
 
     return (
       <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
@@ -1106,7 +1118,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // ... rest of the file
   const renderInterfaceModal = () => {
     if (!isInterfaceModalOpen) return null;
-    const style = { left: editorWidth + 256 };
+    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) };
     return (
       <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
         <div className="p-6 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 sticky top-0 backdrop-blur z-20">
@@ -1136,7 +1148,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const renderBlockArchitect = () => {
     if (!isArchitectOpen) return null;
 
-    const style = { left: editorWidth + 256 }; // 256 is sidebar width
+    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) }; // 256 is sidebar width
 
     return (
       <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
@@ -1200,7 +1212,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const renderAddSectionLibrary = () => {
     if (!isAddSectionOpen) return null;
 
-    const style = { left: editorWidth + 256 }; // 256 is sidebar width
+    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) }; // 256 is sidebar width
 
     return (
       <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
