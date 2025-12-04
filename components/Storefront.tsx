@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StorefrontProps, Product, PageBlock, HeroStyleId, ProductCardStyleId } from '../types';
 import { HEADER_COMPONENTS } from './HeaderLibrary';
 import { HERO_COMPONENTS, HERO_OPTIONS, EditableText, EditableImage, HERO_FIELDS } from './HeroLibrary';
@@ -13,6 +13,16 @@ import { CartDrawer } from './CartDrawer';
 
 export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true }) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
+
+  // Scroll to active block when selected
+  useEffect(() => {
+    if (activeBlockId) {
+      const element = document.getElementById(`block-${activeBlockId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [activeBlockId]);
 
   const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
   // Hero, Card, Footer components are now determined dynamically in renderBlock to allow for variants
@@ -205,6 +215,7 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
         const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
         return HeroComponent ? (
           <div 
+            id={`block-${block.id}`}
             className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''} ${getAnimationClass(block.data?._animation)}`}
             style={getBlockStyles(block.data)}
             onClick={(e) => {
@@ -230,6 +241,7 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
         return (
           <div 
             key={block.id}
+            id={`block-${block.id}`}
             className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''} ${getAnimationClass(block.data?._animation)}`}
             style={getBlockStyles(block.data)}
             onClick={(e) => {
@@ -248,6 +260,7 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
         return ScrollComponent ? (
           <div 
             key={block.id}
+            id={`block-${block.id}`}
             className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''} ${getAnimationClass(block.data?._animation)}`}
             style={getBlockStyles(block.data)}
             onClick={(e) => {
@@ -270,6 +283,7 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
         return (
           <div
             key={block.id}
+            id={`block-${block.id}`}
             className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''} ${getAnimationClass(block.data?._animation)}`}
             style={getBlockStyles(block.data)}
             onClick={(e) => {
