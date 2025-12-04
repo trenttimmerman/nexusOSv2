@@ -228,5 +228,13 @@ export const FOOTER_OPTIONS = [
   { id: 'columns', name: 'Columns', description: 'Standard Ecommerce', date: '2024-02-15', popularity: 95 },
   { id: 'newsletter', name: 'Newsletter', description: 'Conversion Focused', date: '2024-05-20', popularity: 85 },
   { id: 'brand', name: 'Brand', description: 'Big Typography', date: '2024-08-10', popularity: 70 },
-  { id: 'sitemap', name: 'Sitemap', description: 'Information Dense', date: '2024-04-05', popularity: 60 },
+  sitemap: 'Sitemap', description: 'Information Dense', date: '2024-04-05', popularity: 60 },
 ];
+
+export const FOOTER_FIELDS: Record<string, string[]> = {
+  minimal: [],
+  columns: [],
+  newsletter: [],
+  brand: [],
+  sitemap: [],
+};

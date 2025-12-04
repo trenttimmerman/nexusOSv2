@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
-import { HEADER_OPTIONS, HEADER_COMPONENTS } from './HeaderLibrary';
+import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
-import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS } from './ProductCardLibrary';
-import { FOOTER_OPTIONS } from './FooterLibrary';
-import { SCROLL_OPTIONS } from './ScrollLibrary';
+import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
+import { FOOTER_OPTIONS, FOOTER_FIELDS } from './FooterLibrary';
+import { SCROLL_OPTIONS, SCROLL_FIELDS } from './ScrollLibrary';
 import { Storefront } from './Storefront';
 import { EditorPanel } from './EditorPanel';
 import { CartDrawer } from './CartDrawer';
@@ -1535,9 +1535,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         blockType="Product Grid"
                         data={activeBlock.data || {}}
                         onUpdate={(newData) => updateActiveBlockData(activeBlock.id, newData)}
-                        fields={[]}
+                        fields={PRODUCT_GRID_FIELDS[activeBlock.variant as ProductCardStyleId || 'classic'] || []}
                         variants={PRODUCT_CARD_OPTIONS}
-                        currentVariant={activeBlock.variant || 'simple'}
+                        currentVariant={activeBlock.variant || 'classic'}
+                        onVariantChange={(newVariant) => {
+                            const updatedBlocks = activePage.blocks.map(b => b.id === activeBlock.id ? { ...b, variant: newVariant } : b);
+                            onUpdatePage(activePageId, { blocks: updatedBlocks });
+                        }}
+                    />
+                   );
+                }
+                // 3. SCROLL SECTION
+                if (activeBlock && activeBlock.type === 'system-scroll') {
+                   return (
+                    <EditorPanel 
+                        isOpen={true}
+                        onClose={() => setSelectedBlockId(null)}
+                        blockId={activeBlock.id}
+                        blockType="Scroll Section"
+                        data={activeBlock.data || {}}
+                        onUpdate={(newData) => updateActiveBlockData(activeBlock.id, newData)}
+                        fields={SCROLL_FIELDS[activeBlock.variant || 'logo-marquee'] || []}
+                        variants={SCROLL_OPTIONS}
+                        currentVariant={activeBlock.variant || 'logo-marquee'}
                         onVariantChange={(newVariant) => {
                             const updatedBlocks = activePage.blocks.map(b => b.id === activeBlock.id ? { ...b, variant: newVariant } : b);
                             onUpdatePage(activePageId, { blocks: updatedBlocks });
@@ -1555,7 +1575,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         blockType="Global Footer"
                         data={{}}
                         onUpdate={() => {}}
-                        fields={[]}
+                        fields={FOOTER_FIELDS[config.footerStyle] || []}
                         variants={FOOTER_OPTIONS}
                         currentVariant={config.footerStyle}
                         onVariantChange={(newVariant) => onConfigChange({ ...config, footerStyle: newVariant as FooterStyleId })}
@@ -1573,7 +1593,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         blockType="Global Header"
                         data={{}}
                         onUpdate={() => {}}
-                        fields={[]}
+                        fields={HEADER_FIELDS[config.headerStyle] || []}
                         variants={HEADER_OPTIONS}
                         currentVariant={config.headerStyle}
                         onVariantChange={(newVariant) => onConfigChange({ ...config, headerStyle: newVariant as HeaderStyleId })}

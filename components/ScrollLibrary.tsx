@@ -83,3 +83,8 @@ export const SCROLL_COMPONENTS: Record<string, React.FC<ScrollSectionProps>> = {
     'logo-marquee': LogoMarquee,
     'text-ticker': TextTicker,
 };
+
+export const SCROLL_FIELDS: Record<string, string[]> = {
+    'logo-marquee': ['logos'],
+    'text-ticker': ['text'],
+};

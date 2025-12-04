@@ -224,5 +224,14 @@ export const PRODUCT_CARD_OPTIONS = [
   { id: 'focus', name: 'Focus', description: 'Minimalist Hover', date: '2024-03-20', popularity: 88 },
   { id: 'hype', name: 'Hype', description: 'Streetwear Energy', date: '2024-09-01', popularity: 82 },
   { id: 'magazine', name: 'Magazine', description: 'Editorial Serif', date: '2024-04-10', popularity: 70 },
-  { id: 'glass', name: 'Glass', description: 'Modern Blur UI', date: '2024-10-01', popularity: 92 },
+  glass: 'Glass', description: 'Modern Blur UI', date: '2024-10-01', popularity: 92 },
 ];
+
+export const PRODUCT_GRID_FIELDS: Record<string, string[]> = {
+  classic: ['heading', 'subheading'],
+  industrial: ['heading', 'subheading'],
+  focus: ['heading', 'subheading'],
+  hype: ['heading', 'subheading'],
+  magazine: ['heading', 'subheading'],
+  glass: ['heading', 'subheading'],
+};
