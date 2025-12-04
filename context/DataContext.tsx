@@ -104,14 +104,14 @@ const DEFAULT_STORE_CONFIG: StoreConfig = {
   notificationSettings: {}
 };
 
-interface DataContextType {
+  interface DataContextType {
   products: Product[];
   pages: Page[];
   mediaAssets: MediaAsset[];
   campaigns: Campaign[];
   storeConfig: StoreConfig;
   loading: boolean;
-  refreshData: () => Promise<void>;
+  refreshData: (overrideStoreId?: string, silent?: boolean) => Promise<void>;
   
   // Actions
   addProduct: (product: Product) => Promise<void>;
@@ -142,8 +142,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [storeId, setStoreId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
 
-  const fetchAllData = async (overrideStoreId?: string) => {
-    setLoading(true);
+  const fetchAllData = async (overrideStoreId?: string, silent: boolean = false) => {
+    if (!silent) setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       let targetStoreId = overrideStoreId;
@@ -318,8 +318,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setProducts([]);
           setPages([]);
           setStoreConfig(DEFAULT_STORE_CONFIG);
+          fetchAllData(undefined, false);
+        } else if (event === 'TOKEN_REFRESHED') {
+           // Silent refresh to avoid UI flickering/reset
+           fetchAllData(undefined, true);
+        } else {
+           fetchAllData(undefined, false);
         }
-        fetchAllData();
       }
     });
 
