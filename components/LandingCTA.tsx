@@ -13,7 +13,7 @@ const CallToAction: React.FC = () => {
                     <p className="text-lg md:text-xl text-purple-100 max-w-2xl mx-auto mb-8">
                         Start building your commerce empire today. Join thousands of founders who trust Evolv to power their vision. Start free, no credit card required.
                     </p>
-                    <Link to="/dashboard" className="bg-white text-gray-950 font-semibold px-8 py-3 rounded-lg hover:bg-gray-200 transition-colors shadow-lg text-lg">
+                    <Link to="/signup" className="bg-white text-gray-950 font-semibold px-8 py-3 rounded-lg hover:bg-gray-200 transition-colors shadow-lg text-lg">
                         Start Your 14-Day Free Trial
                     </Link>
                 </div>

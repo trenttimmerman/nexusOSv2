@@ -16,7 +16,7 @@ const Header: React.FC = () => {
                         <a href="#" className="text-gray-300 hover:text-white transition-colors">Blog</a>
                     </div>
                     
-                    <a href="#/dashboard" className="hidden md:inline-block bg-white text-gray-950 font-semibold px-5 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                    <a href="/signup" className="hidden md:inline-block bg-white text-gray-950 font-semibold px-5 py-2 rounded-lg hover:bg-gray-200 transition-colors">
                         Start Free Trial
                     </a>
                     

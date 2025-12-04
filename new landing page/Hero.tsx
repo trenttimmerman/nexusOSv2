@@ -14,7 +14,7 @@ const Hero: React.FC = () => {
                         The next-generation platform for visionaries. Launch, scale, and manage your e-commerce empire with AI-powered tools and limitless customization.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                        <a href="#/dashboard" className="bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-semibold px-8 py-3 rounded-lg hover:from-purple-700 hover:to-cyan-600 transition-all shadow-lg">
+                        <a href="/signup" className="bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-semibold px-8 py-3 rounded-lg hover:from-purple-700 hover:to-cyan-600 transition-all shadow-lg">
                             Get Started Free
                         </a>
                         <a href="/store" className="bg-gray-800 text-white font-semibold px-8 py-3 rounded-lg hover:bg-gray-700 transition-colors">
