@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import Hero3DCanvas from './Hero3DCanvas';
 import { 
   Zap, 
   Shield, 
@@ -26,103 +27,66 @@ export const MarketingLanding = () => {
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-blue-500/30">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 border-b border-white/10 bg-black/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white">E</div>
-            <span className="font-bold text-xl tracking-tight">Evolv</span>
-          </div>
-          
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-400">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#comparison" className="hover:text-white transition-colors">Compare</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
-          </div>
-
-          <div className="hidden md:flex items-center gap-4">
-            <Link to="/login" className="text-sm font-bold text-white hover:text-blue-400 transition-colors">
-              Log In
-            </Link>
-            <Link to="/signup" className="px-5 py-2.5 bg-white text-black text-sm font-bold rounded-full hover:bg-neutral-200 transition-colors">
-              Start Building
-            </Link>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <button className="md:hidden text-white" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X /> : <Menu />}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden absolute top-20 left-0 w-full bg-black border-b border-white/10 p-6 flex flex-col gap-4">
-            <a href="#features" className="text-lg font-medium text-neutral-400 hover:text-white" onClick={() => setMobileMenuOpen(false)}>Features</a>
-            <a href="#comparison" className="text-lg font-medium text-neutral-400 hover:text-white" onClick={() => setMobileMenuOpen(false)}>Compare</a>
-            <a href="#pricing" className="text-lg font-medium text-neutral-400 hover:text-white" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
-            <Link to="/login" className="text-lg font-medium text-neutral-400 hover:text-white">Log In</Link>
-            <Link to="/signup" className="w-full py-3 bg-white text-black text-center font-bold rounded-full">Start Building</Link>
-          </div>
-        )}
-      </nav>
+      <header className="sticky top-0 z-50">
+          <nav className="container mx-auto max-w-7xl px-6 py-4">
+              <div className="flex items-center justify-between glass-card rounded-xl px-6 py-3">
+                  <a href="#" className="text-2xl font-bold">
+                      Evolv<span className="text-cyan-400">.</span>
+                  </a>
+                  
+                  <div className="hidden md:flex items-center space-x-6">
+                      <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
+                      <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</a>
+                      <a href="#" className="text-gray-300 hover:text-white transition-colors">Docs</a>
+                      <a href="#" className="text-gray-300 hover:text-white transition-colors">Blog</a>
+                  </div>
+                  
+                  <Link to="/signup" className="hidden md:inline-block bg-white text-gray-950 font-semibold px-5 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                      Start Free Trial
+                  </Link>
+                  
+                  <button className="md:hidden text-white" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                      </svg>
+                  </button>
+              </div>
+          </nav>
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden absolute top-24 left-0 w-full bg-black border-b border-white/10 p-6 flex flex-col gap-4 z-40">
+              <a href="#features" className="text-lg font-medium text-neutral-400 hover:text-white" onClick={() => setMobileMenuOpen(false)}>Features</a>
+              <a href="#pricing" className="text-lg font-medium text-neutral-400 hover:text-white" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+              <Link to="/login" className="text-lg font-medium text-neutral-400 hover:text-white">Log In</Link>
+              <Link to="/signup" className="w-full py-3 bg-white text-black text-center font-bold rounded-full">Start Free Trial</Link>
+            </div>
+          )}
+      </header>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black"></div>
-        <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/30 border border-blue-500/30 text-blue-400 text-xs font-bold uppercase tracking-widest mb-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-            v2.0 Now Available
-          </div>
-          <h1 className="text-5xl md:text-8xl font-black tracking-tighter mb-8 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/50 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
-            Commerce,<br />
-            <span className="text-blue-600">Evolved.</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-neutral-400 max-w-2xl mx-auto mb-12 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-            Stop fighting with Shopify themes and Wix plugins. Build, scale, and dominate with the world's first true Commerce OS.
-          </p>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-            <Link to="/signup" className="w-full md:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full flex items-center justify-center gap-2 transition-all hover:scale-105 shadow-lg shadow-blue-900/50">
-              Start Free Trial <ArrowRight size={18} />
-            </Link>
-            <Link to="/store" className="w-full md:w-auto px-8 py-4 bg-neutral-900 hover:bg-neutral-800 text-white border border-neutral-800 font-bold rounded-full flex items-center justify-center gap-2 transition-all">
-              View Demo Store
-            </Link>
-          </div>
-          <div className="mt-8 text-sm text-neutral-500 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-400">
-            No credit card required • 14-day free trial • Cancel anytime
-          </div>
-        </div>
-        
-        {/* Hero Visual */}
-        <div className="mt-20 max-w-6xl mx-auto px-6 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-500">
-          <div className="relative rounded-2xl border border-white/10 bg-neutral-900/50 backdrop-blur-xl overflow-hidden shadow-2xl shadow-blue-900/20 group">
-            <div className="absolute top-0 left-0 right-0 h-12 bg-black/50 border-b border-white/5 flex items-center px-4 gap-2 z-20">
-              <div className="w-3 h-3 rounded-full bg-red-500/20"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-500/20"></div>
-              <div className="w-3 h-3 rounded-full bg-green-500/20"></div>
-              <div className="ml-4 px-3 py-1 bg-black/50 rounded-full text-[10px] text-neutral-500 font-mono border border-white/5">
-                evolv.app/dashboard
+      <section className="container mx-auto max-w-7xl px-6 py-24 md:py-40">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+              <div className="text-center md:text-left">
+                  <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-6">
+                      Build Your <span className="text-gradient">Commerce-Verse</span>
+                  </h1>
+                  <p className="text-lg md:text-xl text-gray-300 max-w-lg mx-auto md:mx-0 mb-8">
+                      The next-generation platform for visionaries. Launch, scale, and manage your e-commerce empire with AI-powered tools and limitless customization.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                      <Link to="/signup" className="bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-semibold px-8 py-3 rounded-lg hover:from-purple-700 hover:to-cyan-600 transition-all shadow-lg">
+                          Get Started Free
+                      </Link>
+                      <a href="#" className="bg-gray-800 text-white font-semibold px-8 py-3 rounded-lg hover:bg-gray-700 transition-colors">
+                          Book a Demo
+                      </a>
+                  </div>
               </div>
-            </div>
-            <img 
-              src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop" 
-              alt="Dashboard Preview" 
-              className="w-full opacity-80 pt-12 transition-transform duration-700 group-hover:scale-[1.01]"
-            />
-            {/* Floating UI Elements */}
-            <div className="absolute bottom-10 left-10 p-4 bg-black/80 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl transform transition-all duration-500 hover:-translate-y-2 hidden md:block">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="text-xs font-bold text-green-400">Live Sales</span>
+              
+              <div className="w-full h-80 md:h-full min-h-[300px]">
+                  <Hero3DCanvas />
               </div>
-              <div className="text-2xl font-bold text-white">$12,450.00</div>
-              <div className="text-xs text-neutral-400">+15% vs last hour</div>
-            </div>
           </div>
-        </div>
       </section>
 
       {/* Social Proof */}
