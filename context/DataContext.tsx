@@ -306,18 +306,36 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Track initialization to prevent reload loops
+  const isInitialized = React.useRef(false);
+
   useEffect(() => {
-    fetchAllData();
+    fetchAllData().then(() => { isInitialized.current = true; });
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_OUT') {
         // Reset state on sign out
         if (event === 'SIGNED_OUT') {
+          isInitialized.current = false;
           setStoreId(null);
           setUserRole(null);
           setProducts([]);
           setPages([]);
           setStoreConfig(DEFAULT_STORE_CONFIG);
+          fetchAllData(undefined, false);
+        } else if (event === 'TOKEN_REFRESHED') {
+           // Silent refresh to avoid UI flickering/reset
+           fetchAllData(undefined, true);
+        } else if (event === 'SIGNED_IN') {
+           // If already initialized, treat SIGNED_IN as a silent refresh (e.g. tab focus)
+           if (isInitialized.current) {
+              fetchAllData(undefined, true);
+           } else {
+              fetchAllData(undefined, false);
+           }
+        }
+      }
+    });
           fetchAllData(undefined, false);
         } else if (event === 'TOKEN_REFRESHED') {
            // Silent refresh to avoid UI flickering/reset
