@@ -188,12 +188,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // If no store ID yet (Public Visitor or Guest), try to fetch the first store
-      // Only do this if we are NOT authenticated, to avoid leaking master store to new users with pending profiles
+      // If no store ID yet (Public Visitor or Guest), try to fetch the 'demo-store'
       if (!targetStoreId && !session) {
-        const { data: stores } = await supabase.from('stores').select('id').limit(1);
-        if (stores && stores.length > 0) {
-          targetStoreId = stores[0].id;
+        const { data: demoStore } = await supabase.from('stores').select('id').eq('slug', 'demo-store').maybeSingle();
+        if (demoStore) {
+            targetStoreId = demoStore.id;
+        } else {
+            // Fallback to first store if demo-store not found
+            const { data: stores } = await supabase.from('stores').select('id').limit(1);
+            if (stores && stores.length > 0) {
+              targetStoreId = stores[0].id;
+            }
         }
       }
 
