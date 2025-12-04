@@ -336,15 +336,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     });
-          fetchAllData(undefined, false);
-        } else if (event === 'TOKEN_REFRESHED') {
-           // Silent refresh to avoid UI flickering/reset
-           fetchAllData(undefined, true);
-        } else {
-           fetchAllData(undefined, false);
-        }
-      }
-    });
 
     return () => {
       authListener.subscription.unsubscribe();
