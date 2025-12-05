@@ -115,6 +115,8 @@ const DEFAULT_STORE_CONFIG: StoreConfig = {
   
   // Actions
   addProduct: (product: Product) => Promise<void>;
+  updateProduct: (productId: string, updates: Partial<Product>) => Promise<void>;
+  deleteProduct: (productId: string) => Promise<void>;
   addPage: (page: Page) => Promise<void>;
   updatePage: (pageId: string, updates: Partial<Page>) => Promise<void>;
   deletePage: (pageId: string) => Promise<void>;
@@ -171,14 +173,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // 1. If authenticated and no domain override, load tenant data from profile
       if (session) {
-        // HARDCODE OVERRIDE FOR OWNER
-        const isOwner = session.user.email === 'trent@3thirty3.ca';
-
         // Get Profile & Store ID
         const { data: profile } = await supabase.from('profiles').select('store_id, role').eq('id', session.user.id).single();
         
         if (profile && profile.store_id) {
-          setUserRole(isOwner ? 'superuser' : profile.role);
+          setUserRole(profile.role);
           // If we found a profile with a store, use this store_id unless explicitly overridden
           if (!targetStoreId) {
              targetStoreId = profile.store_id;
@@ -189,8 +188,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUserRole(profile.role);
           if (!silent) setLoading(false);
           return; // Exit early - user needs to set up their store
-        } else if (isOwner) {
-           setUserRole('superuser');
         }
       }
 
@@ -388,6 +385,42 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.from('products').upsert(dbProduct);
   };
 
+  const updateProduct = async (productId: string, updates: Partial<Product>) => {
+    setProducts(prev => prev.map(p => p.id === productId ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p));
+    if (!storeId) return;
+    
+    const dbUpdates: any = {
+      updated_at: new Date().toISOString()
+    };
+    
+    // Map camelCase to snake_case for DB
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.description !== undefined) dbUpdates.description = updates.description;
+    if (updates.price !== undefined) dbUpdates.price = updates.price;
+    if (updates.compareAtPrice !== undefined) dbUpdates.compare_at_price = updates.compareAtPrice;
+    if (updates.image !== undefined) dbUpdates.image = updates.image;
+    if (updates.images !== undefined) dbUpdates.images = updates.images;
+    if (updates.category !== undefined) dbUpdates.category = updates.category;
+    if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
+    if (updates.sku !== undefined) dbUpdates.sku = updates.sku;
+    if (updates.stock !== undefined) dbUpdates.stock = updates.stock;
+    if (updates.trackInventory !== undefined) dbUpdates.track_inventory = updates.trackInventory;
+    if (updates.hasVariants !== undefined) dbUpdates.has_variants = updates.hasVariants;
+    if (updates.variantOptions !== undefined) dbUpdates.variant_options = updates.variantOptions;
+    if (updates.variants !== undefined) dbUpdates.variants = updates.variants;
+    if (updates.seo !== undefined) dbUpdates.seo = updates.seo;
+    if (updates.status !== undefined) dbUpdates.status = updates.status;
+    if (updates.template !== undefined) dbUpdates.template = updates.template;
+    if (updates.allowCustomization !== undefined) dbUpdates.allow_customization = updates.allowCustomization;
+    
+    await supabase.from('products').update(dbUpdates).eq('id', productId);
+  };
+
+  const deleteProduct = async (productId: string) => {
+    setProducts(prev => prev.filter(p => p.id !== productId));
+    await supabase.from('products').delete().eq('id', productId);
+  };
+
   const addPage = async (page: Page) => {
     setPages(prev => [...prev, page]);
     if (!storeId) return;
@@ -504,7 +537,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <DataContext.Provider value={{
       products, pages, mediaAssets, campaigns, storeConfig, loading, refreshData: fetchAllData,
-      addProduct, addPage, updatePage, deletePage, addAsset, deleteAsset, addCampaign, updateCampaign, deleteCampaign, updateConfig, signOut, userRole, storeId, switchStore
+      addProduct, updateProduct, deleteProduct, addPage, updatePage, deletePage, addAsset, deleteAsset, addCampaign, updateCampaign, deleteCampaign, updateConfig, signOut, userRole, storeId, switchStore
     }}>
       {children}
     </DataContext.Provider>

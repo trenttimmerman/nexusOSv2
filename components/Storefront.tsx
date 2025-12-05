@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { StorefrontProps, Product, PageBlock, HeroStyleId, ProductCardStyleId } from '../types';
 import { HEADER_COMPONENTS } from './HeaderLibrary';
 import { HERO_COMPONENTS, HERO_OPTIONS, EditableText, EditableImage, HERO_FIELDS } from './HeroLibrary';
@@ -7,12 +7,62 @@ import { PRODUCT_CARD_COMPONENTS, PRODUCT_CARD_OPTIONS } from './ProductCardLibr
 import { PRODUCT_PAGE_COMPONENTS } from './ProductPageLibrary';
 import { FOOTER_COMPONENTS } from './FooterLibrary';
 import { SCROLL_COMPONENTS, SCROLL_OPTIONS } from './ScrollLibrary';
-import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
+import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2, Search, SlidersHorizontal, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 
 export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true }) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
+  
+  // Product search/filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'name'>('default');
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Get unique categories from products
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    products.forEach(p => {
+      if (p.category) cats.add(p.category);
+    });
+    return Array.from(cats);
+  }, [products]);
+  
+  // Filter and sort products
+  const filteredProducts = useMemo(() => {
+    let result = [...products];
+    
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(p => 
+        p.name.toLowerCase().includes(query) ||
+        (p.description && p.description.toLowerCase().includes(query)) ||
+        (p.category && p.category.toLowerCase().includes(query))
+      );
+    }
+    
+    // Category filter
+    if (selectedCategory) {
+      result = result.filter(p => p.category === selectedCategory);
+    }
+    
+    // Sort
+    switch (sortBy) {
+      case 'price-asc':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case 'name':
+        result.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+    }
+    
+    return result;
+  }, [products, searchQuery, selectedCategory, sortBy]);
 
   // Scroll to active block when selected
   useEffect(() => {
@@ -96,10 +146,11 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
     const CardComponent = PRODUCT_CARD_COMPONENTS[styleId] || PRODUCT_CARD_COMPONENTS['classic'];
     const heading = data?.heading || "Latest Drops.";
     const subheading = data?.subheading || "Curated essentials for the modern digital nomad.";
+    const showSearch = data?.showSearch !== false; // Default to true
 
     return (
       <section className="py-24 px-6 max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-12">
+        <div className="flex items-end justify-between mb-8">
           <div>
             <h2 className="text-3xl font-bold mb-2">
                <EditableText 
@@ -125,17 +176,114 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
           <a href="#" className="text-sm font-bold underline underline-offset-4">View All</a>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
-          {products.map((product) => (
-            <CardComponent
-              key={product.id}
-              product={product}
-              onAddToCart={addToCart}
-              onNavigate={() => onNavigate && onNavigate(`/store/products/${product.seo.slug || product.id}`)}
-              primaryColor={config.primaryColor}
-            />
-          ))}
-        </div>
+        {/* Search & Filter Bar */}
+        {showSearch && (
+          <div className="mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              {/* Search Input */}
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-neutral-100 border-0 rounded-lg py-2.5 pl-10 pr-10 text-neutral-900 placeholder-neutral-500 focus:ring-2 focus:ring-black outline-none transition-all"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              
+              {/* Filter Toggle */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-colors ${
+                  showFilters || selectedCategory ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                }`}
+              >
+                <SlidersHorizontal size={16} />
+                Filters
+                {selectedCategory && <span className="w-2 h-2 rounded-full bg-white" />}
+              </button>
+              
+              {/* Sort Dropdown */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="px-4 py-2.5 bg-neutral-100 border-0 rounded-lg text-neutral-700 font-medium focus:ring-2 focus:ring-black outline-none cursor-pointer"
+              >
+                <option value="default">Sort: Featured</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="name">Name: A-Z</option>
+              </select>
+            </div>
+            
+            {/* Category Filter Pills */}
+            {showFilters && categories.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSelectedCategory(null)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    !selectedCategory ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                  }`}
+                >
+                  All
+                </button>
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                      selectedCategory === cat ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {/* Results count */}
+            {(searchQuery || selectedCategory) && (
+              <p className="mt-4 text-sm text-neutral-500">
+                {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
+                {selectedCategory && <span> in {selectedCategory}</span>}
+                {searchQuery && <span> for "{searchQuery}"</span>}
+              </p>
+            )}
+          </div>
+        )}
+
+        {filteredProducts.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-neutral-500 text-lg mb-4">No products found matching your criteria.</p>
+            <button
+              onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
+              className="text-black font-bold underline underline-offset-4"
+            >
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+            {filteredProducts.map((product) => (
+              <CardComponent
+                key={product.id}
+                product={product}
+                onAddToCart={addToCart}
+                onNavigate={() => onNavigate && onNavigate(`/store/products/${product.seo.slug || product.id}`)}
+                primaryColor={config.primaryColor}
+              />
+            ))}
+          </div>
+        )}
       </section>
     );
   };
