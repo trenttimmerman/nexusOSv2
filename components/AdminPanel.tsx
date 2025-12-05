@@ -5,7 +5,17 @@ import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS } from './HeaderLibrar
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS } from './FooterLibrary';
+import { SOCIAL_OPTIONS, SOCIAL_COMPONENTS } from './SocialLibrary';
 import { SCROLL_OPTIONS, SCROLL_FIELDS } from './ScrollLibrary';
+import { RICH_TEXT_OPTIONS, EMAIL_SIGNUP_OPTIONS, COLLAPSIBLE_OPTIONS, LOGO_LIST_OPTIONS, PROMO_BANNER_OPTIONS } from './SectionLibrary';
+import { GALLERY_OPTIONS } from './GalleryLibrary';
+import { BLOG_OPTIONS } from './BlogLibrary';
+import { VIDEO_OPTIONS } from './VideoLibrary';
+import { CONTACT_OPTIONS } from './ContactLibrary';
+import { LAYOUT_OPTIONS } from './LayoutLibrary';
+import { COLLECTION_OPTIONS } from './CollectionLibrary';
+import { UniversalEditor } from './UniversalEditor';
+import { mapDataToLayout } from '../lib/smartMapper';
 import { Storefront } from './Storefront';
 import { EditorPanel } from './EditorPanel';
 import { CartDrawer } from './CartDrawer';
@@ -16,7 +26,7 @@ import { DomainManager } from './DomainManager';
 import { DiscountManager } from './DiscountManager';
 import { ShippingManager } from './ShippingManager';
 import { supabase } from '../lib/supabaseClient';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { DashboardHome } from './Dashboard';
 
 const SCROLLBAR_OPTIONS = [
   { id: 'native', name: 'Native', description: 'Default browser scrollbar' },
@@ -47,6 +57,8 @@ const SCROLLBAR_OPTIONS = [
 ];
 import {
   LayoutDashboard,
+  PanelLeftClose,
+  PanelLeftOpen,
   Package,
   Palette,
   Megaphone,
@@ -115,8 +127,19 @@ import {
   Clock,
   Truck,
   ChevronRight,
+  ChevronLeft,
   Tag,
-  Save
+  Share2,
+  Type,
+  Mail,
+  List,
+  Image as ImageIcon,
+  Megaphone,
+  Save,
+  FileText,
+  Video,
+  Layout,
+  ShoppingBag
 } from 'lucide-react';
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -148,6 +171,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Platform Admin State
   const [tenants, setTenants] = useState<any[]>([]);
   const [isLoadingTenants, setIsLoadingTenants] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isCreateTenantOpen, setIsCreateTenantOpen] = useState(false);
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
@@ -227,100 +251,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   };
 
-  // Dashboard State
-  const [dashboardStats, setDashboardStats] = useState({
-    revenue: 0,
-    orders: 0,
-    activeUsers: 0,
-    salesData: [] as { date: string; sales: number }[]
-  });
 
-  useEffect(() => {
-    if (activeTab === AdminTab.DASHBOARD) {
-      fetchDashboardStats();
-    }
-  }, [activeTab, storeId]);
-
-  const fetchDashboardStats = async () => {
-    try {
-      // Fetch Orders for Revenue & Count (Last 30 Days for Chart)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-      let ordersQuery = supabase
-        .from('orders')
-        .select('total_amount, created_at')
-        .gte('created_at', thirtyDaysAgo.toISOString());
-      
-      if (storeId) {
-        ordersQuery = ordersQuery.eq('store_id', storeId);
-      }
-
-      const { data: orders, error: ordersError } = await ordersQuery;
-      
-      if (ordersError) {
-        console.warn('Could not fetch orders:', ordersError.message);
-        return;
-      }
-
-      // Calculate Totals (Note: This is only for last 30 days now, ideally we'd have a separate query for all-time totals)
-      // For now, let's fetch ALL-TIME totals separately to be accurate
-      let allTimeOrdersQuery = supabase
-        .from('orders')
-        .select('total_amount');
-      
-      if (storeId) {
-        allTimeOrdersQuery = allTimeOrdersQuery.eq('store_id', storeId);
-      }
-      
-      const { data: allOrders } = await allTimeOrdersQuery;
-      const totalRevenue = allOrders?.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0) || 0;
-      const totalOrders = allOrders?.length || 0;
-
-      // Process Sales Data for Chart
-      const salesMap = new Map<string, number>();
-      const today = new Date();
-      for (let i = 29; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
-        salesMap.set(dateStr, 0);
-      }
-
-      orders?.forEach(order => {
-        const dateStr = new Date(order.created_at).toISOString().split('T')[0];
-        if (salesMap.has(dateStr)) {
-          salesMap.set(dateStr, (salesMap.get(dateStr) || 0) + (Number(order.total_amount) || 0));
-        }
-      });
-
-      const salesData = Array.from(salesMap.entries()).map(([date, sales]) => ({
-        date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        sales
-      }));
-
-      // Fetch Customers (Active Users)
-      let customersQuery = supabase
-        .from('customers')
-        .select('*', { count: 'exact', head: true });
-
-      if (storeId) {
-        customersQuery = customersQuery.eq('store_id', storeId);
-      }
-
-      const { count: userCount, error: usersError } = await customersQuery;
-
-      setDashboardStats({
-        revenue: totalRevenue,
-        orders: totalOrders,
-        activeUsers: userCount || 0,
-        salesData
-      });
-
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-    }
-  };
 
   useEffect(() => {
     if (activeTab === AdminTab.PLATFORM && userRole === 'superuser') {
@@ -496,6 +427,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const [isRewriting, setIsRewriting] = useState(false);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+  const [activeField, setActiveField] = useState<string | null>(null);
   const [showPageProperties, setShowPageProperties] = useState(false);
 
   // MODAL STATES
@@ -544,7 +476,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
       // Resize relative to the left sidebar (256px / 16rem)
-      const newWidth = Math.max(260, Math.min(800, e.clientX - 256));
+      const sidebarWidth = isSidebarCollapsed ? 80 : 256;
+      const newWidth = Math.max(260, Math.min(800, e.clientX - sidebarWidth));
       setEditorWidth(newWidth);
     };
 
@@ -703,8 +636,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       variant: variant,
       data: {}
     };
-    const updatedBlocks = [...(activePage.blocks || []), newBlock];
-    onUpdatePage(activePageId, { blocks: updatedBlocks });
+    
+    // Update Local State (Draft Mode)
+    setLocalPages(prev => prev.map(p => {
+        if (p.id !== activePageId) return p;
+        return {
+            ...p,
+            blocks: [...(p.blocks || []), newBlock]
+        };
+    }));
+    setHasUnsavedChanges(true);
+
     setSelectedBlockId(newBlock.id);
     setIsAddSectionOpen(false);
     setPreviewBlock(null);
@@ -865,12 +807,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   );
 
   const renderSidebar = () => (
-    <div className="w-64 bg-nexus-black border-r border-nexus-gray flex flex-col h-full text-neutral-400 shrink-0 z-20">
-      <div className="p-6 border-b border-nexus-gray">
-        <div className="flex items-center gap-2 text-white">
+    <div className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-nexus-black border-r border-nexus-gray flex flex-col h-full text-neutral-400 shrink-0 z-20 transition-all duration-300 ease-in-out`}>
+      <div className={`p-6 border-b border-nexus-gray flex items-center ${isSidebarCollapsed ? 'justify-center flex-col gap-4' : 'justify-between'}`}>
+        <div className={`flex items-center gap-2 text-white ${isSidebarCollapsed ? 'justify-center' : ''}`}>
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">E</div>
-          <span className="font-display font-bold text-xl tracking-tight">Evolv</span>
+          {!isSidebarCollapsed && <span className="font-display font-bold text-xl tracking-tight">Evolv</span>}
         </div>
+        <button
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          className="text-neutral-500 hover:text-white transition-colors"
+        >
+          {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        </button>
       </div>
       <nav className="flex-1 p-4 space-y-2">
         {[
@@ -888,6 +836,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         ].map((item) => (
           <button
             key={item.id}
+            title={isSidebarCollapsed ? item.label : ''}
             onClick={() => {
               onTabChange(item.id);
               setIsHeaderModalOpen(false);
@@ -897,23 +846,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               setIsArchitectOpen(false);
               setIsProductEditorOpen(false);
             }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === item.id
+            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-4'} py-3 rounded-lg transition-all ${activeTab === item.id
               ? 'bg-blue-600/10 text-blue-500 border border-blue-600/20'
               : 'hover:bg-white/5 hover:text-white'
               }`}
           >
             <item.icon size={18} />
-            <span className="font-medium text-sm">{item.label}</span>
+            {!isSidebarCollapsed && <span className="font-medium text-sm">{item.label}</span>}
           </button>
         ))}
       </nav>
       <div className="p-4 border-t border-nexus-gray">
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-500/10 transition-all"
+          title={isSidebarCollapsed ? 'Sign Out' : ''}
+          className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-4'} py-3 rounded-lg text-red-500 hover:bg-red-500/10 transition-all`}
         >
           <div className="w-4 h-4"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></div>
-          <span className="font-medium text-sm">Sign Out</span>
+          {!isSidebarCollapsed && <span className="font-medium text-sm">Sign Out</span>}
         </button>
       </div>
     </div>
@@ -922,7 +872,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // --- HEADER CONFIG MODAL ---
   const renderHeaderModal = () => {
     if (!isHeaderModalOpen) return null;
-    const style = { left: editorWidth + 256 }; // 256 is sidebar width
+    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) }; // 256 is sidebar width
     return (
       <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
         <div className="p-6 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 sticky top-0 backdrop-blur z-20">
@@ -1047,7 +997,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       color = 'orange';
     }
 
-    const style = { left: editorWidth + 256 }; // 256 is sidebar width
+    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) }; // 256 is sidebar width
 
     return (
       <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
@@ -1097,7 +1047,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // ... rest of the file
   const renderInterfaceModal = () => {
     if (!isInterfaceModalOpen) return null;
-    const style = { left: editorWidth + 256 };
+    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) };
     return (
       <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
         <div className="p-6 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 sticky top-0 backdrop-blur z-20">
@@ -1127,7 +1077,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const renderBlockArchitect = () => {
     if (!isArchitectOpen) return null;
 
-    const style = { left: editorWidth + 256 }; // 256 is sidebar width
+    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) }; // 256 is sidebar width
 
     return (
       <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
@@ -1191,7 +1141,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const renderAddSectionLibrary = () => {
     if (!isAddSectionOpen) return null;
 
-    const style = { left: editorWidth + 256 }; // 256 is sidebar width
+    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) }; // 256 is sidebar width
 
     return (
       <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
@@ -1231,12 +1181,111 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <ChevronDown className="-rotate-90 text-neutral-600" />
               </button>
 
+              <button onClick={() => { setSelectedCategory('collection'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-emerald-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-emerald-900/20 text-emerald-500 rounded-lg group-hover:bg-emerald-500 group-hover:text-white transition-colors"><ShoppingBag size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Collections</span>
+                    <span className="text-xs text-neutral-500">Featured products & lists</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
+              <button onClick={() => { setSelectedCategory('layout'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-cyan-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-cyan-900/20 text-cyan-500 rounded-lg group-hover:bg-cyan-500 group-hover:text-white transition-colors"><Layout size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Layouts</span>
+                    <span className="text-xs text-neutral-500">Multi-column & banners</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
               <button onClick={() => { setSelectedCategory('scroll'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-orange-500 rounded-xl flex items-center justify-between group transition-all">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-orange-900/20 text-orange-500 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors"><Repeat size={24} /></div>
                   <div className="text-left">
                     <span className="block text-sm font-bold text-white">Scroll Sections</span>
                     <span className="text-xs text-neutral-500">Marquees and tickers</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
+              <button onClick={() => { setSelectedCategory('social'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-pink-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-pink-900/20 text-pink-500 rounded-lg group-hover:bg-pink-500 group-hover:text-white transition-colors"><Share2 size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Social Feed</span>
+                    <span className="text-xs text-neutral-500">Instagram & TikTok integration</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
+              <button onClick={() => { setSelectedCategory('blog'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-rose-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-rose-900/20 text-rose-500 rounded-lg group-hover:bg-rose-500 group-hover:text-white transition-colors"><FileText size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Blog Posts</span>
+                    <span className="text-xs text-neutral-500">News and articles</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
+              <button onClick={() => { setSelectedCategory('video'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-red-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-red-900/20 text-red-500 rounded-lg group-hover:bg-red-500 group-hover:text-white transition-colors"><Video size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Video</span>
+                    <span className="text-xs text-neutral-500">Players and backgrounds</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
+              <button onClick={() => { setSelectedCategory('content'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-blue-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-blue-900/20 text-blue-500 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition-colors"><Type size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Rich Content</span>
+                    <span className="text-xs text-neutral-500">Text, Collapsibles, HTML</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
+              <button onClick={() => { setSelectedCategory('marketing'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-yellow-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-yellow-900/20 text-yellow-500 rounded-lg group-hover:bg-yellow-500 group-hover:text-white transition-colors"><Megaphone size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Marketing</span>
+                    <span className="text-xs text-neutral-500">Email, Promos, Logos</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
+              <button onClick={() => { setSelectedCategory('media'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-indigo-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-indigo-900/20 text-indigo-500 rounded-lg group-hover:bg-indigo-500 group-hover:text-white transition-colors"><ImageIcon size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Media Gallery</span>
+                    <span className="text-xs text-neutral-500">Grids, Sliders, Showcases</span>
+                  </div>
+                </div>
+                <ChevronDown className="-rotate-90 text-neutral-600" />
+              </button>
+
+              <button onClick={() => { setSelectedCategory('contact'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-teal-500 rounded-xl flex items-center justify-between group transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-teal-900/20 text-teal-500 rounded-lg group-hover:bg-teal-500 group-hover:text-white transition-colors"><Mail size={24} /></div>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold text-white">Contact</span>
+                    <span className="text-xs text-neutral-500">Forms and maps</span>
                   </div>
                 </div>
                 <ChevronDown className="-rotate-90 text-neutral-600" />
@@ -1268,6 +1317,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               )}
 
+              {selectedCategory === 'collection' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {COLLECTION_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-collection', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-emerald-600/20 border-emerald-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {selectedCategory === 'layout' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {LAYOUT_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-layout', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-cyan-600/20 border-cyan-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {selectedCategory === 'scroll' && (
                 <div className="grid grid-cols-1 gap-2">
                   {SCROLL_OPTIONS.map(opt => (
@@ -1278,9 +1349,130 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   ))}
                 </div>
               )}
+
+              {selectedCategory === 'social' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {SOCIAL_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-social', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-pink-600/20 border-pink-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {selectedCategory === 'blog' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {BLOG_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-blog', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-rose-600/20 border-rose-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {selectedCategory === 'video' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {VIDEO_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-video', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-red-600/20 border-red-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {selectedCategory === 'content' && (
+                <div className="space-y-4">
+                  <div>
+                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Rich Text</h5>
+                    <div className="grid grid-cols-1 gap-2">
+                      {RICH_TEXT_OPTIONS.map(opt => (
+                        <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-rich-text', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                          <div className="font-bold text-sm">{opt.name}</div>
+                          <div className="text-[10px] opacity-60">{opt.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Collapsible</h5>
+                    <div className="grid grid-cols-1 gap-2">
+                      {COLLAPSIBLE_OPTIONS.map(opt => (
+                        <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-collapsible', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                          <div className="font-bold text-sm">{opt.name}</div>
+                          <div className="text-[10px] opacity-60">{opt.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedCategory === 'marketing' && (
+                <div className="space-y-4">
+                  <div>
+                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Email Signup</h5>
+                    <div className="grid grid-cols-1 gap-2">
+                      {EMAIL_SIGNUP_OPTIONS.map(opt => (
+                        <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-email', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                          <div className="font-bold text-sm">{opt.name}</div>
+                          <div className="text-[10px] opacity-60">{opt.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Promotions</h5>
+                    <div className="grid grid-cols-1 gap-2">
+                      {PROMO_BANNER_OPTIONS.map(opt => (
+                        <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-promo', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                          <div className="font-bold text-sm">{opt.name}</div>
+                          <div className="text-[10px] opacity-60">{opt.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Trust Indicators</h5>
+                    <div className="grid grid-cols-1 gap-2">
+                      {LOGO_LIST_OPTIONS.map(opt => (
+                        <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-logo-list', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                          <div className="font-bold text-sm">{opt.name}</div>
+                          <div className="text-[10px] opacity-60">{opt.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedCategory === 'media' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {GALLERY_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-gallery', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-indigo-600/20 border-indigo-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {selectedCategory === 'contact' && (
+                <div className="grid grid-cols-1 gap-2">
+                  {CONTACT_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-contact', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-teal-600/20 border-teal-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
+
       </div>
     );
   };
@@ -1361,7 +1553,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                 <span className="text-[10px] text-neutral-500">{HEADER_OPTIONS.find(h => h.id === config.headerStyle)?.name}</span>
                               </div>
                             </div>
-                            <button onClick={() => setSelectedBlockId('header')} className="px-3 py-1.5 bg-neutral-800 hover:bg-blue-600 text-neutral-400 hover:text-white rounded text-xs font-bold transition-all">Edit</button>
+                            <button onClick={() => setIsHeaderModalOpen(true)} className="px-3 py-1.5 bg-neutral-800 hover:bg-blue-600 text-neutral-400 hover:text-white rounded text-xs font-bold transition-all">Edit</button>
                           </div>
 
                           {/* 2. DYNAMIC BLOCKS */}
@@ -1377,9 +1569,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => {
-                                    if (block.type === 'system-hero') { setSelectedBlockId(block.id); }
-                                    else if (block.type === 'system-grid') { setSelectedBlockId(block.id); }
-                                    else if (block.type === 'system-footer') { setSelectedBlockId('footer'); }
+                                    if (block.type === 'system-hero') { setSelectedBlockId(block.id); setSystemModalType('hero'); setIsSystemModalOpen(true); }
+                                    else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setSystemModalType('grid'); setIsSystemModalOpen(true); }
+                                    else if (block.type === 'system-footer') { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }
                                     else { handleOpenArchitect(block.id); }
                                   }}
                                   className="p-1.5 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="Edit Section"
@@ -1404,7 +1596,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                 <span className="text-[10px] text-neutral-500">{FOOTER_OPTIONS.find(f => f.id === config.footerStyle)?.name}</span>
                               </div>
                             </div>
-                            <button onClick={() => { setSelectedBlockId('footer'); }} className="px-3 py-1.5 bg-neutral-800 hover:bg-orange-600 text-neutral-400 hover:text-white rounded text-xs font-bold transition-all">Edit</button>
+                            <button onClick={() => { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }} className="px-3 py-1.5 bg-neutral-800 hover:bg-orange-600 text-neutral-400 hover:text-white rounded text-xs font-bold transition-all">Edit</button>
                           </div>
 
                           {/* ADD SECTION BUTTON */}
@@ -1443,7 +1635,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
             </div>
 
-
+            {/* UNIVERSAL EDITOR SIDEBAR */}
+            {selectedBlockId && activeBlock && activeBlock.type.startsWith('system-') && (
+               <div className="w-80 border-r border-neutral-800 bg-white h-full overflow-hidden flex flex-col z-20">
+                 <UniversalEditor
+                    blockId={activeBlock.id}
+                    blockType={activeBlock.type}
+                    variant={activeBlock.variant || 'default'}
+                    data={activeBlock.data || {}}
+                    activeField={activeField}
+                    onUpdate={(newData) => updateActiveBlockData(activeBlock.id, newData)}
+                    onSwitchLayout={(newVariant) => {
+                      const newData = mapDataToLayout(activeBlock.data || {}, newVariant);
+                      updateActiveBlockData(activeBlock.id, { ...newData, variant: newVariant });
+                    }}
+                 />
+               </div>
+            )}
 
             {/* RIGHT COLUMN: LIVE CANVAS */}
             <div className={`flex-1 bg-[#111] flex flex-col relative transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${isAnyModalOpen ? 'pl-96' : ''}`}>
@@ -1479,6 +1687,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       onEditBlock={(blockId) => {
                         setSelectedBlockId(blockId);
                       }}
+                      onSelectField={(field) => setActiveField(field)}
                       onMoveBlock={(blockId, direction) => {
                         const index = activePage.blocks.findIndex(b => b.id === blockId);
                         if (index !== -1) moveBlock(index, direction === 'up' ? -1 : 1);
@@ -1501,179 +1710,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
             </div>
-
-            {/* RIGHT SIDEBAR: PROPERTIES (Framer-style) */}
-            {selectedBlockId && (
-              (() => {
-                // 1. HERO SECTION
-                if (activeBlock && activeBlock.type === 'system-hero') {
-                  return (
-                    <EditorPanel 
-                        isOpen={true}
-                        onClose={() => setSelectedBlockId(null)}
-                        blockId={activeBlock.id}
-                        blockType="Hero Section"
-                        data={activeBlock.data || {}}
-                        onUpdate={(newData) => updateActiveBlockData(activeBlock.id, newData)}
-                        fields={HERO_FIELDS[activeBlock.variant as HeroStyleId || 'impact'] || []}
-                        variants={HERO_OPTIONS}
-                        currentVariant={activeBlock.variant || 'impact'}
-                        onVariantChange={(newVariant) => {
-                            const updatedBlocks = activePage.blocks.map(b => b.id === activeBlock.id ? { ...b, variant: newVariant } : b);
-                            onUpdatePage(activePageId, { blocks: updatedBlocks });
-                        }}
-                    />
-                  );
-                }
-                // 2. PRODUCT GRID
-                if (activeBlock && activeBlock.type === 'system-grid') {
-                   return (
-                    <EditorPanel 
-                        isOpen={true}
-                        onClose={() => setSelectedBlockId(null)}
-                        blockId={activeBlock.id}
-                        blockType="Product Grid"
-                        data={activeBlock.data || {}}
-                        onUpdate={(newData) => updateActiveBlockData(activeBlock.id, newData)}
-                        fields={PRODUCT_GRID_FIELDS[activeBlock.variant as ProductCardStyleId || 'classic'] || []}
-                        variants={PRODUCT_CARD_OPTIONS}
-                        currentVariant={activeBlock.variant || 'classic'}
-                        onVariantChange={(newVariant) => {
-                            const updatedBlocks = activePage.blocks.map(b => b.id === activeBlock.id ? { ...b, variant: newVariant } : b);
-                            onUpdatePage(activePageId, { blocks: updatedBlocks });
-                        }}
-                    />
-                   );
-                }
-                // 3. SCROLL SECTION
-                if (activeBlock && activeBlock.type === 'system-scroll') {
-                   return (
-                    <EditorPanel 
-                        isOpen={true}
-                        onClose={() => setSelectedBlockId(null)}
-                        blockId={activeBlock.id}
-                        blockType="Scroll Section"
-                        data={activeBlock.data || {}}
-                        onUpdate={(newData) => updateActiveBlockData(activeBlock.id, newData)}
-                        fields={SCROLL_FIELDS[activeBlock.variant || 'logo-marquee'] || []}
-                        variants={SCROLL_OPTIONS}
-                        currentVariant={activeBlock.variant || 'logo-marquee'}
-                        onVariantChange={(newVariant) => {
-                            const updatedBlocks = activePage.blocks.map(b => b.id === activeBlock.id ? { ...b, variant: newVariant } : b);
-                            onUpdatePage(activePageId, { blocks: updatedBlocks });
-                        }}
-                    />
-                   );
-                }
-                // 3. FOOTER
-                if (selectedBlockId === 'footer') {
-                   return (
-                    <EditorPanel 
-                        isOpen={true}
-                        onClose={() => setSelectedBlockId(null)}
-                        blockId="footer"
-                        blockType="Global Footer"
-                        data={{}}
-                        onUpdate={() => {}}
-                        fields={FOOTER_FIELDS[config.footerStyle] || []}
-                        variants={FOOTER_OPTIONS}
-                        currentVariant={config.footerStyle}
-                        onVariantChange={(newVariant) => onConfigChange({ ...config, footerStyle: newVariant as FooterStyleId })}
-                        showDesignTabs={false}
-                    />
-                   );
-                }
-                // 4. HEADER
-                if (selectedBlockId === 'header') {
-                   return (
-                    <EditorPanel 
-                        isOpen={true}
-                        onClose={() => setSelectedBlockId(null)}
-                        blockId="header"
-                        blockType="Global Header"
-                        data={{}}
-                        onUpdate={() => {}}
-                        fields={HEADER_FIELDS[config.headerStyle] || []}
-                        variants={HEADER_OPTIONS}
-                        currentVariant={config.headerStyle}
-                        onVariantChange={(newVariant) => onConfigChange({ ...config, headerStyle: newVariant as HeaderStyleId })}
-                        showDesignTabs={false}
-                    />
-                   );
-                }
-                return null;
-              })()
-            )}
           </div>
         );
       case AdminTab.DASHBOARD:
-        return (
-          <div className="p-8 w-full max-w-7xl mx-auto space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-blue-900/20 text-blue-500 rounded-xl"><DollarSign size={24} /></div>
-                  <div><div className="text-neutral-500 text-sm font-bold uppercase">Total Revenue</div><div className="text-2xl font-bold text-white">${dashboardStats.revenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div></div>
-                </div>
-                <div className="h-2 bg-neutral-800 rounded-full overflow-hidden"><div className="h-full w-[70%] bg-blue-600"></div></div>
-              </div>
-              <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-purple-900/20 text-purple-500 rounded-xl"><ShoppingBag size={24} /></div>
-                  <div><div className="text-neutral-500 text-sm font-bold uppercase">Orders</div><div className="text-2xl font-bold text-white">{dashboardStats.orders}</div></div>
-                </div>
-                <div className="h-2 bg-neutral-800 rounded-full overflow-hidden"><div className="h-full w-[45%] bg-purple-600"></div></div>
-              </div>
-              <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-green-900/20 text-green-500 rounded-xl"><Users size={24} /></div>
-                  <div><div className="text-neutral-500 text-sm font-bold uppercase">Customers</div><div className="text-2xl font-bold text-white">{dashboardStats.activeUsers}</div></div>
-                </div>
-                <div className="h-2 bg-neutral-800 rounded-full overflow-hidden"><div className="h-full w-[80%] bg-green-600"></div></div>
-              </div>
-            </div>
-
-            {/* ANALYTICS CHART */}
-            <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="text-lg font-bold text-white">Sales Overview</h3>
-                  <p className="text-sm text-neutral-500">Revenue over the last 30 days</p>
-                </div>
-                <div className="flex gap-2">
-                  <div className="px-3 py-1 bg-neutral-800 rounded-lg text-xs font-bold text-neutral-400">30 Days</div>
-                </div>
-              </div>
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dashboardStats.salesData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                    <XAxis 
-                      dataKey="date" 
-                      stroke="#666" 
-                      fontSize={12} 
-                      tickLine={false} 
-                      axisLine={false} 
-                    />
-                    <YAxis 
-                      stroke="#666" 
-                      fontSize={12} 
-                      tickLine={false} 
-                      axisLine={false} 
-                      tickFormatter={(value) => `$${value}`} 
-                    />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#171717', border: '1px solid #333', borderRadius: '8px' }}
-                      itemStyle={{ color: '#fff' }}
-                      cursor={{ fill: '#333', opacity: 0.4 }}
-                    />
-                    <Bar dataKey="sales" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        );
+        return <DashboardHome />;
 
       case AdminTab.ORDERS:
         return <OrderManager storeId={storeId || null} />;
