@@ -232,9 +232,9 @@ export const FOOTER_OPTIONS = [
 ];
 
 export const FOOTER_FIELDS: Record<string, string[]> = {
-  minimal: ['copyrightText', 'termsLabel', 'privacyLabel', 'contactLabel', 'showInstagram', 'showTwitter'],
-  columns: ['tagline', 'copyrightText', 'shopColumnTitle', 'companyColumnTitle', 'supportColumnTitle'],
-  newsletter: ['heading', 'subheading', 'buttonText', 'copyrightText', 'instagramLabel', 'twitterLabel', 'tiktokLabel', 'youtubeLabel'],
-  brand: ['address', 'email', 'phone', 'basedInLabel', 'shippingLabel'],
-  sitemap: ['regionText', 'copyrightText', 'productsColumnTitle', 'collectionsColumnTitle', 'supportColumnTitle', 'legalColumnTitle'],
+  minimal: [],
+  columns: [],
+  newsletter: [],
+  brand: [],
+  sitemap: [],
 };

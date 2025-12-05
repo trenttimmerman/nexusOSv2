@@ -35,18 +35,33 @@ export const SignUp = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          // Store the pending store info in user metadata for post-confirmation setup
+          data: {
+            pending_store_name: storeName,
+            pending_store_slug: storeSlug
+          }
+        }
       });
 
       if (authError) throw authError;
 
       if (!authData.session) {
-        // Email confirmation required
-        alert('Please check your email to confirm your account before continuing.');
+        // Email confirmation required - store info saved in metadata
+        // User will need to complete setup after confirming email
+        navigate('/signup/confirm', { 
+          state: { 
+            email, 
+            storeName, 
+            storeSlug,
+            message: 'Please check your email to confirm your account. After confirming, log in to complete your store setup.'
+          } 
+        });
         setLoading(false);
         return;
       }
 
-      // 2. Create Tenant (Store)
+      // 2. Create Tenant (Store) - only if session exists (email confirmation disabled)
       const { error: tenantError } = await supabase.rpc('create_tenant', {
         store_name: storeName,
         store_slug: storeSlug
@@ -55,8 +70,6 @@ export const SignUp = () => {
       if (tenantError) throw tenantError;
 
       // 3. Redirect to Admin
-      // Force a reload or re-fetch of data context might be needed, 
-      // but navigating to /admin should trigger the AuthWrapper/DataProvider to load.
       navigate('/admin');
 
     } catch (err: any) {

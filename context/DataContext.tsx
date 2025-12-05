@@ -177,12 +177,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Get Profile & Store ID
         const { data: profile } = await supabase.from('profiles').select('store_id, role').eq('id', session.user.id).single();
         
-        if (profile) {
+        if (profile && profile.store_id) {
           setUserRole(isOwner ? 'superuser' : profile.role);
-          // If we found a profile, we MUST use this store_id unless explicitly overridden
+          // If we found a profile with a store, use this store_id unless explicitly overridden
           if (!targetStoreId) {
              targetStoreId = profile.store_id;
           }
+        } else if (profile && !profile.store_id) {
+          // User has a profile but no store - they need to complete setup
+          // Don't set a store ID, let the UI handle the redirect
+          setUserRole(profile.role);
+          if (!silent) setLoading(false);
+          return; // Exit early - user needs to set up their store
         } else if (isOwner) {
            setUserRole('superuser');
         }

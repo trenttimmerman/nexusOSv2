@@ -35,7 +35,6 @@ interface HeroProps {
   };
   isEditable?: boolean;
   onUpdate?: (data: any) => void;
-  onSelectField?: (field: string) => void;
   blockId?: string;
 }
 
@@ -59,8 +58,7 @@ export const EditableText: React.FC<{
   tagName?: 'h1' | 'h2' | 'p' | 'span' | 'div';
   placeholder?: string;
   elementId?: string;
-  onSelect?: () => void;
-}> = ({ value, onChange, onStyleChange, style, isEditable, className, tagName = 'p', placeholder, elementId, onSelect }) => {
+}> = ({ value, onChange, onStyleChange, style, isEditable, className, tagName = 'p', placeholder, elementId }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -144,7 +142,6 @@ export const EditableText: React.FC<{
         if (isEditable) {
             e.stopPropagation();
             setIsEditing(true);
-            onSelect?.();
         }
       }}
       className={`${className} ${isEditable ? 'cursor-text hover:outline-dashed hover:outline-2 hover:outline-blue-500/50 focus:outline-none focus:shadow-[0_0_0_4px_rgba(59,130,246,0.5),0_0_30px_rgba(59,130,246,0.6)] focus:z-50 rounded px-1 -mx-1 transition-all relative group/edit' : ''}`}
@@ -172,18 +169,11 @@ export const EditableImage: React.FC<{
   overlayOpacity?: number;
   onOverlayOpacityChange?: (val: number) => void;
   elementId?: string;
-  onSelect?: () => void;
-}> = ({ src, onChange, isEditable, className, alt, overlayOpacity = 0, onOverlayOpacityChange, elementId, onSelect }) => {
+}> = ({ src, onChange, isEditable, className, alt, overlayOpacity = 0, onOverlayOpacityChange, elementId }) => {
   return (
     <div 
       id={elementId} 
       tabIndex={isEditable ? 0 : undefined}
-      onClick={(e) => {
-        if (isEditable) {
-          e.stopPropagation();
-          onSelect?.();
-        }
-      }}
       className={`relative group ${className} ${isEditable ? 'focus:outline-none focus:shadow-[0_0_0_4px_rgba(59,130,246,0.5),0_0_30px_rgba(59,130,246,0.6)] focus:z-50 rounded-lg transition-all duration-300' : ''}`}
     >
       {src ? (
@@ -208,7 +198,7 @@ export const EditableImage: React.FC<{
 // ------------------------
 
 // 1. Impact (Classic, Full Screen, Centered)
-export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId, onSelectField }) => {
+export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId }) => {
   const heading = data?.heading || "REDEFINE REALITY";
   const image = data?.image || "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2940&auto=format&fit=crop";
   const buttonText = data?.buttonText || "Shop The Drop";
@@ -236,7 +226,6 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
             className="w-full h-full"
             overlayOpacity={overlayOpacity}
             onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
-            onSelect={() => onSelectField?.('image')}
         />
         {/* Removed hardcoded gradient to allow user controlled overlay */}
       </div>
@@ -253,7 +242,6 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
                style={data?.badge_style}
                isEditable={isEditable} 
                placeholder="Badge Text"
-               onSelect={() => onSelectField?.('badge')}
             />
           </span>
         </div>
@@ -267,7 +255,6 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
              style={data?.heading_style}
              isEditable={isEditable} 
              placeholder="Enter Headline"
-             onSelect={() => onSelectField?.('heading')}
           />
         </div>
         <div className={`flex flex-col md:flex-row gap-4 ${alignment === 'left' ? 'justify-start' : alignment === 'right' ? 'justify-end' : 'justify-center'} items-center animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300`}>
@@ -281,7 +268,6 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
                  style={data?.button_style}
                  isEditable={isEditable}
                  placeholder="Button Text"
-                 onSelect={() => onSelectField?.('buttonText')}
              />
              <ArrowRight size={18} />
           </button>
@@ -295,7 +281,6 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
                  style={data?.secondary_button_style}
                  isEditable={isEditable}
                  placeholder="Secondary Button"
-                 onSelect={() => onSelectField?.('secondaryButtonText')}
              />
           </button>
         </div>
@@ -303,7 +288,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
     </section>
   );
 };// 2. Split (Modern 50/50)
-export const HeroSplit: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId, onSelectField }) => {
+export const HeroSplit: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId }) => {
   const heading = data?.heading || storeName;
   const subheading = data?.subheading || "Elevating the standard of modern living through curated design.";
   const image = data?.image || "https://images.unsplash.com/photo-1529139574466-a302c27e3844?q=80&w=2070&auto=format&fit=crop";
@@ -323,7 +308,6 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, data, isEditable, on
                  style={data?.heading_style}
                  isEditable={isEditable} 
                  elementId={blockId ? `editable-${blockId}-heading` : undefined}
-                 onSelect={() => onSelectField?.('heading')}
                />
              </div>
              <div className="text-xl text-neutral-500 max-w-md leading-relaxed">
@@ -335,7 +319,6 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, data, isEditable, on
                  style={data?.subheading_style}
                  isEditable={isEditable} 
                  elementId={blockId ? `editable-${blockId}-subheading` : undefined}
-                 onSelect={() => onSelectField?.('subheading')}
                />
              </div>
           </div>
@@ -348,7 +331,6 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, data, isEditable, on
                  style={data?.button_style}
                  isEditable={isEditable}
                  elementId={blockId ? `editable-${blockId}-buttonText` : undefined}
-                 onSelect={() => onSelectField?.('buttonText')}
              />
              <ArrowRight size={20} />
           </button>
@@ -362,7 +344,6 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, data, isEditable, on
              overlayOpacity={overlayOpacity}
              onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
              elementId={blockId ? `editable-${blockId}-image` : undefined}
-             onSelect={() => onSelectField?.('image')}
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none"></div>
        </div>
@@ -371,7 +352,7 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, data, isEditable, on
 };
 
 // 3. Kinetik (High Energy, Streetwear)
-export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId, onSelectField }) => {
+export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId }) => {
   const heading = data?.heading || "NEXUS";
   const image = data?.image || "https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=2000&auto=format&fit=crop";
   const buttonText = data?.buttonText || "Shop Collection 01";
@@ -397,7 +378,6 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
                  style={data?.marqueeText_style}
                  isEditable={isEditable}
                  elementId={blockId ? `editable-${blockId}-marqueeText` : undefined}
-                 onSelect={() => onSelectField?.('marqueeText')}
              />
          </div>
       </div>
@@ -413,7 +393,6 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
              isEditable={isEditable} 
              className="block"
              elementId={blockId ? `editable-${blockId}-heading` : undefined}
-             onSelect={() => onSelectField?.('heading')}
            />
          </div>
          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[500px] h-[450px] md:h-[600px] border-4 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] rotate-[-4deg] hover:rotate-0 transition-transform duration-500 z-10">
@@ -425,7 +404,6 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
                 overlayOpacity={overlayOpacity}
                 onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
                 elementId={blockId ? `editable-${blockId}-image` : undefined}
-                onSelect={() => onSelectField?.('image')}
             />
          </div>
       </div>
@@ -440,7 +418,6 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
                  style={data?.button_style}
                  isEditable={isEditable}
                  elementId={blockId ? `editable-${blockId}-buttonText` : undefined}
-                 onSelect={() => onSelectField?.('buttonText')}
              />
          </button>
       </div>
@@ -449,7 +426,7 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
 };
 
 // 4. Grid (Masonry, Lifestyle, Collage)
-export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId, onSelectField }) => {
+export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId }) => {
   const heading = data?.heading || storeName;
   const subheading = data?.subheading || "Curating the finest digital and physical goods for the forward-thinking creator.";
   const image = data?.image || "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop";
@@ -478,7 +455,6 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      style={data?.heading_style}
                      isEditable={isEditable} 
                      elementId={blockId ? `editable-${blockId}-heading` : undefined}
-                     onSelect={() => onSelectField?.('heading')}
                    />
                 </div>
                 <div className="text-neutral-500 font-medium">
@@ -490,7 +466,6 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      style={data?.subheading_style}
                      isEditable={isEditable} 
                      elementId={blockId ? `editable-${blockId}-subheading` : undefined}
-                     onSelect={() => onSelectField?.('subheading')}
                    />
                 </div>
              </div>
@@ -504,7 +479,6 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      style={data?.button_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-buttonText` : undefined}
-                     onSelect={() => onSelectField?.('buttonText')}
                    />
                 </button>
                 <button className="w-full py-4 bg-neutral-100 text-black rounded-xl font-bold hover:bg-neutral-200 transition-colors">
@@ -516,7 +490,6 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      style={data?.secondary_button_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-secondaryButtonText` : undefined}
-                     onSelect={() => onSelectField?.('secondaryButtonText')}
                    />
                 </button>
              </div>
@@ -532,7 +505,6 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                 overlayOpacity={overlayOpacity}
                 onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
                 elementId={blockId ? `editable-${blockId}-image` : undefined}
-                onSelect={() => onSelectField?.('image')}
             />
              <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur px-4 py-2 rounded-lg text-xs font-bold pointer-events-none md:pointer-events-auto">
                 <EditableText 
@@ -556,7 +528,6 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                    isEditable={isEditable}
                    className="w-full h-full"
                    elementId={blockId ? `editable-${blockId}-sideImage` : undefined}
-                   onSelect={() => onSelectField?.('sideImage')}
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors pointer-events-none"></div>
              </div>
@@ -593,7 +564,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
 };
 
 // 5. Typographic (Text First, Minimal)
-export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId, onSelectField }) => {
+export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId }) => {
   const heading = data?.heading || "We Build The Future Of Commerce";
   const subheading = data?.subheading || "Discover a collection inspired by the intersection of technology, fashion, and utility. Designed in Tokyo, worn worldwide.";
   const topBadge = data?.topBadge || "New Arrivals";
@@ -615,7 +586,6 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      style={data?.topBadge_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-topBadge` : undefined}
-                     onSelect={() => onSelectField?.('topBadge')}
                    />
              </span>
              <Star size={12} className="text-neutral-400" />
@@ -630,7 +600,6 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                  style={data?.heading_style}
                  isEditable={isEditable} 
                  elementId={blockId ? `editable-${blockId}-heading` : undefined}
-                 onSelect={() => onSelectField?.('heading')}
              />
           </div>
 
@@ -643,7 +612,6 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                  style={data?.subheading_style}
                  isEditable={isEditable} 
                  elementId={blockId ? `editable-${blockId}-subheading` : undefined}
-                 onSelect={() => onSelectField?.('subheading')}
              />
           </div>
 
@@ -656,7 +624,6 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                       isEditable={isEditable}
                       className="w-full h-full"
                       elementId={blockId ? `editable-${blockId}-link1Image` : undefined}
-                      onSelect={() => onSelectField?.('link1Image')}
                    />
                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
                 </div>
@@ -669,7 +636,6 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      style={data?.link1Label_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-link1Label` : undefined}
-                     onSelect={() => onSelectField?.('link1Label')}
                    />
                 </div>
              </a>
@@ -681,7 +647,6 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                       isEditable={isEditable}
                       className="w-full h-full"
                       elementId={blockId ? `editable-${blockId}-link2Image` : undefined}
-                      onSelect={() => onSelectField?.('link2Image')}
                    />
                 </div>
                 <div className="text-sm font-bold border-b border-black pb-0.5">
@@ -693,7 +658,6 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      style={data?.link2Label_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-link2Label` : undefined}
-                     onSelect={() => onSelectField?.('link2Label')}
                    />
                 </div>
              </a>
@@ -705,7 +669,6 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                       isEditable={isEditable}
                       className="w-full h-full"
                       elementId={blockId ? `editable-${blockId}-link3Image` : undefined}
-                      onSelect={() => onSelectField?.('link3Image')}
                    />
                 </div>
                 <div className="text-sm font-bold border-b border-black pb-0.5">
@@ -717,7 +680,6 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      style={data?.link3Label_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-link3Label` : undefined}
-                     onSelect={() => onSelectField?.('link3Label')}
                    />
                 </div>
              </a>

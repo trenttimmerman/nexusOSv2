@@ -24,7 +24,19 @@ export const Login = () => {
       if (error) throw error;
 
       if (data.session) {
-        navigate('/admin');
+        // Check if user has a store set up
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('store_id')
+          .eq('id', data.session.user.id)
+          .single();
+
+        if (!profile?.store_id) {
+          // User confirmed email but hasn't created a store yet
+          navigate('/setup');
+        } else {
+          navigate('/admin');
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to login');

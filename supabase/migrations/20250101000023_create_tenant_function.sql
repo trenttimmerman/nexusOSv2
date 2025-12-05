@@ -75,3 +75,6 @@ begin
   return new_store_id;
 end;
 $$;
+
+-- Grant execute to authenticated users so they can create their own store after signup
+grant execute on function create_tenant to authenticated;
