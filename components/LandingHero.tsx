@@ -55,8 +55,6 @@ const Hero: React.FC = () => {
                 </div>
                 
                 <div className="relative w-full h-80 md:h-full min-h-[400px]">
-                    {/* Glowing ring around 3D canvas */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600/20 to-cyan-500/20 blur-2xl animate-pulse-slow" />
                     <Hero3DCanvas />
                 </div>
             </div>
