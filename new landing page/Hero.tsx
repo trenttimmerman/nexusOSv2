@@ -17,9 +17,6 @@ const Hero: React.FC = () => {
                         <a href="/signup" className="bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-semibold px-8 py-3 rounded-lg hover:from-purple-700 hover:to-cyan-600 transition-all shadow-lg">
                             Get Started Free
                         </a>
-                        <a href="/store" className="bg-gray-800 text-white font-semibold px-8 py-3 rounded-lg hover:bg-gray-700 transition-colors">
-                            Book a Demo
-                        </a>
                     </div>
                 </div>
                 
