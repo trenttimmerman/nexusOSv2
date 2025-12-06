@@ -1,6 +1,8 @@
 
 import React, { useRef, useEffect } from 'react';
-import * as THREE from 'three';
+
+// Since THREE is loaded from a CDN, we need to tell TypeScript it exists on the window object.
+declare const THREE: any;
 
 const Hero3DCanvas: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);

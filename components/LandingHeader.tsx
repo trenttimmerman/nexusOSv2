@@ -17,14 +17,9 @@ const Header: React.FC = () => {
                         <Link to="#" className="text-gray-300 hover:text-white transition-colors">Blog</Link>
                     </div>
                     
-                    <div className="hidden md:flex items-center gap-4">
-                        <Link to="/login" className="text-sm font-semibold text-gray-300 hover:text-white transition-colors">
-                            Log in
-                        </Link>
-                        <Link to="/signup" className="bg-white text-gray-950 font-semibold px-5 py-2 rounded-lg hover:bg-gray-200 transition-colors">
-                            Start Free Trial
-                        </Link>
-                    </div>
+                    <Link to="/dashboard" className="hidden md:inline-block bg-white text-gray-950 font-semibold px-5 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                        Start Free Trial
+                    </Link>
                     
                     <button className="md:hidden text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">

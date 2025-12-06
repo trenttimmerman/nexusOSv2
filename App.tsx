@@ -6,8 +6,6 @@ import { AdminPanel } from './components/AdminPanel';
 import { Storefront } from './components/Storefront';
 import { Login } from './components/Login';
 import { SignUp } from './components/SignUp';
-import { SignUpConfirm } from './components/SignUpConfirm';
-import { StoreSetup } from './components/StoreSetup';
 import { AccountPage } from './components/AccountPage';
 import { Checkout } from './components/Checkout';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -130,8 +128,6 @@ export default function App() {
             {/* Admin Authentication */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/signup/confirm" element={<SignUpConfirm />} />
-            <Route path="/setup" element={<StoreSetup />} />
             
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

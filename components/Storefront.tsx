@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import { StorefrontProps, Product, PageBlock, HeroStyleId, ProductCardStyleId } from '../types';
 import { HEADER_COMPONENTS } from './HeaderLibrary';
 import { HERO_COMPONENTS, HERO_OPTIONS, EditableText, EditableImage, HERO_FIELDS } from './HeroLibrary';
@@ -7,72 +7,21 @@ import { PRODUCT_CARD_COMPONENTS, PRODUCT_CARD_OPTIONS } from './ProductCardLibr
 import { PRODUCT_PAGE_COMPONENTS } from './ProductPageLibrary';
 import { FOOTER_COMPONENTS } from './FooterLibrary';
 import { SCROLL_COMPONENTS, SCROLL_OPTIONS } from './ScrollLibrary';
-import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2, Search, SlidersHorizontal, X } from 'lucide-react';
+import { SOCIAL_COMPONENTS, SOCIAL_OPTIONS } from './SocialLibrary';
+import { RICH_TEXT_COMPONENTS, EMAIL_SIGNUP_COMPONENTS, COLLAPSIBLE_COMPONENTS, LOGO_LIST_COMPONENTS, PROMO_BANNER_COMPONENTS } from './SectionLibrary';
+import { GALLERY_COMPONENTS } from './GalleryLibrary';
+import { BLOG_COMPONENTS } from './BlogLibrary';
+import { VIDEO_COMPONENTS } from './VideoLibrary';
+import { CONTACT_COMPONENTS } from './ContactLibrary';
+import { LAYOUT_COMPONENTS } from './LayoutLibrary';
+import { COLLECTION_COMPONENTS } from './CollectionLibrary';
+import { SectionWrapper } from './SectionWrapper';
+import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 
-export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true }) => {
+export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: string) => void }> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true, onSelectField }) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
-  
-  // Product search/filter state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'name'>('default');
-  const [showFilters, setShowFilters] = useState(false);
-  
-  // Get unique categories from products
-  const categories = useMemo(() => {
-    const cats = new Set<string>();
-    products.forEach(p => {
-      if (p.category) cats.add(p.category);
-    });
-    return Array.from(cats);
-  }, [products]);
-  
-  // Filter and sort products
-  const filteredProducts = useMemo(() => {
-    let result = [...products];
-    
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(p => 
-        p.name.toLowerCase().includes(query) ||
-        (p.description && p.description.toLowerCase().includes(query)) ||
-        (p.category && p.category.toLowerCase().includes(query))
-      );
-    }
-    
-    // Category filter
-    if (selectedCategory) {
-      result = result.filter(p => p.category === selectedCategory);
-    }
-    
-    // Sort
-    switch (sortBy) {
-      case 'price-asc':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'name':
-        result.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-    }
-    
-    return result;
-  }, [products, searchQuery, selectedCategory, sortBy]);
-
-  // Scroll to active block when selected
-  useEffect(() => {
-    if (activeBlockId) {
-      const element = document.getElementById(`block-${activeBlockId}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  }, [activeBlockId]);
 
   const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
   // Hero, Card, Footer components are now determined dynamically in renderBlock to allow for variants
@@ -80,25 +29,6 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
 
   const activePage = pages.find(p => p.id === activePageId) || pages[0];
   const isSidebar = config.headerStyle === 'studio';
-
-  const getBlockStyles = (data: any) => {
-    const style: React.CSSProperties = {};
-    if (data?._paddingTop !== undefined) style.paddingTop = `${data._paddingTop}px`;
-    if (data?._paddingBottom !== undefined) style.paddingBottom = `${data._paddingBottom}px`;
-    if (data?._backgroundColor) style.backgroundColor = data._backgroundColor;
-    if (data?._animationDuration) style.animationDuration = `${data._animationDuration}s`;
-    return style;
-  };
-
-  const getAnimationClass = (anim: string) => {
-    switch (anim) {
-      case 'fade-in': return 'animate-in fade-in fill-mode-forwards';
-      case 'slide-up': return 'animate-in slide-in-from-bottom-8 fade-in fill-mode-forwards';
-      case 'slide-in-right': return 'animate-in slide-in-from-right-8 fade-in fill-mode-forwards';
-      case 'zoom-in': return 'animate-in zoom-in fade-in fill-mode-forwards';
-      default: return '';
-    }
-  };
 
   // Map Pages to NavLinks
   const navLinks = pages.map(p => {
@@ -146,11 +76,10 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
     const CardComponent = PRODUCT_CARD_COMPONENTS[styleId] || PRODUCT_CARD_COMPONENTS['classic'];
     const heading = data?.heading || "Latest Drops.";
     const subheading = data?.subheading || "Curated essentials for the modern digital nomad.";
-    const showSearch = data?.showSearch !== false; // Default to true
 
     return (
       <section className="py-24 px-6 max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-8">
+        <div className="flex items-end justify-between mb-12">
           <div>
             <h2 className="text-3xl font-bold mb-2">
                <EditableText 
@@ -176,204 +105,31 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
           <a href="#" className="text-sm font-bold underline underline-offset-4">View All</a>
         </div>
 
-        {/* Search & Filter Bar */}
-        {showSearch && (
-          <div className="mb-8">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              {/* Search Input */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-neutral-100 border-0 rounded-lg py-2.5 pl-10 pr-10 text-neutral-900 placeholder-neutral-500 focus:ring-2 focus:ring-black outline-none transition-all"
-                />
-                {searchQuery && (
-                  <button 
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
-              
-              {/* Filter Toggle */}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-colors ${
-                  showFilters || selectedCategory ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                }`}
-              >
-                <SlidersHorizontal size={16} />
-                Filters
-                {selectedCategory && <span className="w-2 h-2 rounded-full bg-white" />}
-              </button>
-              
-              {/* Sort Dropdown */}
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-4 py-2.5 bg-neutral-100 border-0 rounded-lg text-neutral-700 font-medium focus:ring-2 focus:ring-black outline-none cursor-pointer"
-              >
-                <option value="default">Sort: Featured</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="name">Name: A-Z</option>
-              </select>
-            </div>
-            
-            {/* Category Filter Pills */}
-            {showFilters && categories.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  onClick={() => setSelectedCategory(null)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    !selectedCategory ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                  }`}
-                >
-                  All
-                </button>
-                {categories.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      selectedCategory === cat ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            )}
-            
-            {/* Results count */}
-            {(searchQuery || selectedCategory) && (
-              <p className="mt-4 text-sm text-neutral-500">
-                {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
-                {selectedCategory && <span> in {selectedCategory}</span>}
-                {searchQuery && <span> for "{searchQuery}"</span>}
-              </p>
-            )}
-          </div>
-        )}
-
-        {filteredProducts.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-neutral-500 text-lg mb-4">No products found matching your criteria.</p>
-            <button
-              onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
-              className="text-black font-bold underline underline-offset-4"
-            >
-              Clear filters
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
-            {filteredProducts.map((product) => (
-              <CardComponent
-                key={product.id}
-                product={product}
-                onAddToCart={addToCart}
-                onNavigate={() => onNavigate && onNavigate(`/store/products/${product.seo.slug || product.id}`)}
-                primaryColor={config.primaryColor}
-              />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+          {products.map((product) => (
+            <CardComponent
+              key={product.id}
+              product={product}
+              onAddToCart={addToCart}
+              onNavigate={() => onNavigate && onNavigate(`/store/products/${product.seo.slug || product.id}`)}
+              primaryColor={config.primaryColor}
+            />
+          ))}
+        </div>
       </section>
     );
   };
 
   // Dynamic Block Renderer
   const renderBlock = (block: PageBlock) => {
-    const isEditable = activeBlockId === block.id;
+    const isEditable = !!onUpdateBlock;
 
-    const handleCycleVariant = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (!onUpdateBlock) return;
-
-      let options: { id: string }[] = [];
-      if (block.type === 'system-hero') options = HERO_OPTIONS;
-      else if (block.type === 'system-grid') options = PRODUCT_CARD_OPTIONS;
-      else if (block.type === 'system-scroll') options = SCROLL_OPTIONS;
-
-      if (options.length > 0) {
-        const currentIndex = options.findIndex(o => o.id === block.variant);
-        const nextIndex = (currentIndex + 1) % options.length;
-        onUpdateBlock(block.id, { variant: options[nextIndex].id });
-      }
-    };
-
-    const BlockToolbar = () => (
-      <div className="absolute -top-12 right-0 flex flex-col items-end z-[100]">
-        <div className="flex items-center gap-1 bg-black text-white rounded-lg shadow-xl p-1 animate-in fade-in slide-in-from-bottom-2">
-        {(block.type === 'system-hero' || block.type === 'system-grid' || block.type === 'system-scroll') && (
-          <>
-            <button 
-              onClick={handleCycleVariant}
-              className="p-2 hover:bg-white/20 rounded transition-colors flex items-center gap-2 px-3"
-              title="Switch Layout"
-            >
-              <Layout size={14} />
-              <span className="text-xs font-bold">Switch Layout</span>
-            </button>
-            <div className="w-px h-4 bg-white/20 mx-1" />
-          </>
-        )}
-        <button 
-          onClick={(e) => { e.stopPropagation(); onMoveBlock && onMoveBlock(block.id, 'up'); }}
-          className="p-2 hover:bg-white/20 rounded transition-colors"
-          title="Move Up"
-        >
-          <ArrowUp size={14} />
-        </button>
-        <button 
-          onClick={(e) => { e.stopPropagation(); onMoveBlock && onMoveBlock(block.id, 'down'); }}
-          className="p-2 hover:bg-white/20 rounded transition-colors"
-          title="Move Down"
-        >
-          <ArrowDown size={14} />
-        </button>
-        <div className="w-px h-4 bg-white/20 mx-1" />
-        <button 
-          onClick={(e) => { e.stopPropagation(); onDuplicateBlock && onDuplicateBlock(block.id); }}
-          className="p-2 hover:bg-white/20 rounded transition-colors"
-          title="Duplicate Section"
-        >
-          <Copy size={14} />
-        </button>
-        <button 
-          onClick={(e) => { e.stopPropagation(); onDeleteBlock && onDeleteBlock(block.id); }}
-          className="p-2 hover:bg-red-500/50 rounded transition-colors text-red-200 hover:text-white"
-          title="Delete Section"
-        >
-          <Trash2 size={14} />
-        </button>
-        </div>
-      </div>
-    );
-
-    switch (block.type) {
-      case 'system-hero':
-        const heroStyle = (block.variant as HeroStyleId) || config.heroStyle || 'impact';
-        const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
-        return HeroComponent ? (
-          <div 
-            id={`block-${block.id}`}
-            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''} ${getAnimationClass(block.data?._animation)}`}
-            style={getBlockStyles(block.data)}
-            onClick={(e) => {
-              if (onEditBlock) {
-                e.stopPropagation();
-                onEditBlock(block.id);
-              }
-            }}
-          >
-            {isEditable && <BlockToolbar />}
+    const renderContent = () => {
+      switch (block.type) {
+        case 'system-hero':
+          const heroStyle = (block.variant as HeroStyleId) || config.heroStyle || 'impact';
+          const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
+          return HeroComponent ? (
             <HeroComponent
               key={block.id}
               storeName={config.name}
@@ -381,74 +137,116 @@ export const Storefront: React.FC<StorefrontProps> = ({ config, products, pages,
               data={block.data}
               isEditable={isEditable}
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
+              onSelectField={onSelectField}
               blockId={block.id}
             />
-          </div>
-        ) : null;
-      case 'system-grid':
-        return (
-          <div 
-            key={block.id}
-            id={`block-${block.id}`}
-            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''} ${getAnimationClass(block.data?._animation)}`}
-            style={getBlockStyles(block.data)}
-            onClick={(e) => {
-              if (onEditBlock) {
-                e.stopPropagation();
-                onEditBlock(block.id);
-              }
-            }}
-          >
-            {isEditable && <BlockToolbar />}
-            {renderProductGrid(block.variant, block.data, block.id, isEditable)}
-          </div>
-        );
-      case 'system-scroll':
-        const ScrollComponent = SCROLL_COMPONENTS[block.variant || 'logo-marquee'];
-        return ScrollComponent ? (
-          <div 
-            key={block.id}
-            id={`block-${block.id}`}
-            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''} ${getAnimationClass(block.data?._animation)}`}
-            style={getBlockStyles(block.data)}
-            onClick={(e) => {
-              if (onEditBlock) {
-                e.stopPropagation();
-                onEditBlock(block.id);
-              }
-            }}
-          >
-            {isEditable && <BlockToolbar />}
+          ) : null;
+        case 'system-grid':
+          return renderProductGrid(block.variant, block.data, block.id, isEditable);
+        case 'system-scroll':
+          const ScrollComponent = SCROLL_COMPONENTS[block.variant || 'logo-marquee'];
+          return ScrollComponent ? (
             <ScrollComponent 
               data={block.data} 
               isEditable={isEditable}
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
             />
-          </div>
-        ) : null;
-      case 'section':
-      default:
-        return (
-          <div
-            key={block.id}
-            id={`block-${block.id}`}
-            className={`relative group ${isEditable ? 'ring-2 ring-blue-500 ring-offset-2 z-10' : ''} ${getAnimationClass(block.data?._animation)}`}
-            style={getBlockStyles(block.data)}
-            onClick={(e) => {
-              if (onEditBlock) {
-                e.stopPropagation();
-                onEditBlock(block.id);
-              }
-            }}
-          >
-            {isEditable && <BlockToolbar />}
+          ) : null;
+        case 'system-social':
+          const SocialComponent = SOCIAL_COMPONENTS[block.variant || 'grid-classic'];
+          return SocialComponent ? (
+            <SocialComponent 
+              storeName={config.name}
+              primaryColor={config.primaryColor}
+              data={block.data} 
+              isEditable={isEditable}
+              onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
+            />
+          ) : null;
+        case 'system-rich-text':
+          const RichTextComponent = RICH_TEXT_COMPONENTS[block.variant || 'rt-centered'];
+          return RichTextComponent ? (
+            <RichTextComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-email':
+          const EmailComponent = EMAIL_SIGNUP_COMPONENTS[block.variant || 'email-minimal'];
+          return EmailComponent ? (
+            <EmailComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-collapsible':
+          const CollapsibleComponent = COLLAPSIBLE_COMPONENTS[block.variant || 'col-simple'];
+          return CollapsibleComponent ? (
+            <CollapsibleComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-logo-list':
+          const LogoListComponent = LOGO_LIST_COMPONENTS[block.variant || 'logo-grid'];
+          return LogoListComponent ? (
+            <LogoListComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-promo':
+          const PromoComponent = PROMO_BANNER_COMPONENTS[block.variant || 'promo-top'];
+          return PromoComponent ? (
+            <PromoComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-gallery':
+          const GalleryComponent = GALLERY_COMPONENTS[block.variant || 'gal-grid'];
+          return GalleryComponent ? (
+            <GalleryComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-blog':
+          const BlogComponent = BLOG_COMPONENTS[block.variant || 'blog-grid'];
+          return BlogComponent ? (
+            <BlogComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-video':
+          const VideoComponent = VIDEO_COMPONENTS[block.variant || 'vid-full'];
+          return VideoComponent ? (
+            <VideoComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-contact':
+          const ContactComponent = CONTACT_COMPONENTS[block.variant || 'contact-simple'];
+          return ContactComponent ? (
+            <ContactComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-layout':
+          const LayoutComponent = LAYOUT_COMPONENTS[block.variant || 'layout-image-text'];
+          return LayoutComponent ? (
+            <LayoutComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-collection':
+          const CollectionComponent = COLLECTION_COMPONENTS[block.variant || 'collection-list'];
+          return CollectionComponent ? (
+            <CollectionComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'section':
+        default:
+          return (
             <div
               dangerouslySetInnerHTML={{ __html: block.content }}
               className="w-full prose prose-xl prose-neutral max-w-none text-neutral-600 font-serif leading-relaxed prose-img:rounded-2xl prose-headings:font-sans prose-headings:font-bold prose-headings:tracking-tight"
             />
-          </div>
-        );
+          );
+      }
+    };
+
+    if (!isEditable) {
+      return <div key={block.id}>{renderContent()}</div>;
     }
+
+    return (
+      <SectionWrapper
+        key={block.id}
+        blockId={block.id}
+        isSelected={activeBlockId === block.id}
+        onSelect={() => onEditBlock && onEditBlock(block.id)}
+        onMoveUp={() => onMoveBlock && onMoveBlock(block.id, 'up')}
+        onMoveDown={() => onMoveBlock && onMoveBlock(block.id, 'down')}
+        onDelete={() => onDeleteBlock && onDeleteBlock(block.id)}
+        onDuplicate={() => onDuplicateBlock && onDuplicateBlock(block.id)}
+      >
+        {renderContent()}
+      </SectionWrapper>
+    );
   };
 
   return (

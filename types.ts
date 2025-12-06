@@ -63,6 +63,31 @@ export type FooterStyleId =
   | 'brand'
   | 'sitemap';
 
+export type SocialStyleId =
+  | 'grid-classic'
+  | 'masonry-wall'
+  | 'carousel-reel'
+  | 'polaroid-scatter'
+  | 'minimal-feed'
+  | 'dark-mode-glitch'
+  | 'story-circles'
+  | 'featured-hero'
+  | 'ticker-tape'
+  | 'glass-cards';
+
+export type RichTextStyleId = 'rt-centered' | 'rt-left' | 'rt-bordered' | 'rt-wide';
+export type EmailSignupStyleId = 'email-minimal' | 'email-split' | 'email-card';
+export type CollapsibleStyleId = 'col-simple' | 'col-faq';
+export type LogoListStyleId = 'logo-grid' | 'logo-ticker';
+export type PromoBannerStyleId = 'promo-top' | 'promo-hero';
+export type GalleryStyleId = 'gal-grid' | 'gal-masonry' | 'gal-slider' | 'gal-featured';
+
+export type BlogStyleId = 'blog-grid' | 'blog-list' | 'blog-featured' | 'blog-minimal' | 'blog-magazine' | 'blog-slider' | 'blog-cards' | 'blog-sidebar' | 'blog-alternating' | 'blog-overlay';
+export type VideoStyleId = 'vid-full' | 'vid-window' | 'vid-bg' | 'vid-split' | 'vid-popup' | 'vid-slider' | 'vid-grid' | 'vid-hero' | 'vid-interactive' | 'vid-story';
+export type ContactStyleId = 'contact-simple' | 'contact-split' | 'contact-map' | 'contact-minimal' | 'contact-floating' | 'contact-grid' | 'contact-newsletter' | 'contact-faq' | 'contact-social' | 'contact-office';
+export type LayoutStyleId = 'layout-image-text' | 'layout-multirow' | 'layout-multicolumn' | 'layout-collage' | 'layout-banner' | 'layout-stats' | 'layout-timeline' | 'layout-features' | 'layout-accordion' | 'layout-tabs';
+export type CollectionStyleId = 'collection-list' | 'featured-collection' | 'featured-product' | 'slideshow' | 'collection-grid-tight' | 'collection-masonry' | 'collection-carousel' | 'collection-tabs' | 'collection-lookbook' | 'collection-split';
+
 export type ScrollbarStyleId =
   | 'native'
   | 'minimal'
@@ -254,7 +279,7 @@ export interface NavLink {
 
 export interface PageBlock {
   id: string;
-  type: 'section' | 'system-hero' | 'system-grid' | 'system-footer' | 'system-scroll';
+  type: 'section' | 'system-hero' | 'system-grid' | 'system-footer' | 'system-scroll' | 'system-social' | 'system-rich-text' | 'system-email' | 'system-collapsible' | 'system-logo-list' | 'system-promo' | 'system-gallery' | 'system-blog' | 'system-video' | 'system-contact' | 'system-layout' | 'system-collection';
   name: string;
   content: string; // HTML content for 'section', ignored/metadata for system blocks
   variant?: string; // Optional override for system styles (e.g. 'impact', 'minimal')
