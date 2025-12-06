@@ -1,0 +1,71 @@
+/* Custom Scrollbars */
+
+/* Minimal */
+.scrollbar-minimal::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.scrollbar-minimal::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollbar-minimal::-webkit-scrollbar-thumb {
+    background: #e5e5e5;
+    border-radius: 3px;
+}
+
+.scrollbar-minimal::-webkit-scrollbar-thumb:hover {
+    background: #d4d4d4;
+}
+
+/* Hidden */
+.scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Nexus (Dark/Brand) */
+.scrollbar-nexus::-webkit-scrollbar {
+    width: 10px;
+}
+
+.scrollbar-nexus::-webkit-scrollbar-track {
+    background: #111;
+}
+
+.scrollbar-nexus::-webkit-scrollbar-thumb {
+    background: #333;
+    border: 2px solid #111;
+    border-radius: 5px;
+}
+
+.scrollbar-nexus::-webkit-scrollbar-thumb:hover {
+    background: #3b82f6;
+    /* Blue accent */
+}
+
+/* Glow (Neon) */
+.scrollbar-glow::-webkit-scrollbar {
+    width: 12px;
+}
+
+.scrollbar-glow::-webkit-scrollbar-track {
+    background: #000;
+}
+
+.scrollbar-glow::-webkit-scrollbar-thumb {
+    background: #ccff00;
+    /* Neon Lime */
+    border: 3px solid #000;
+    border-radius: 6px;
+    box-shadow: 0 0 10px #ccff00;
+}
+
+.scrollbar-glow::-webkit-scrollbar-thumb:hover {
+    background: #fff;
+}

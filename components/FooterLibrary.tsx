@@ -126,14 +126,14 @@ export const FooterBrand: React.FC<FooterProps> = ({ storeName }) => (
        <div>
           <span className="block text-xs font-bold uppercase tracking-widest text-neutral-400 mb-4">Headquarters</span>
           <p className="text-xl font-medium leading-relaxed">
-             100 Nexus Way<br/>
+             100 Evolv Way<br/>
              Floor 24, Suite 100<br/>
              New York, NY 10012
           </p>
        </div>
        <div className="flex flex-col md:items-end">
           <span className="block text-xs font-bold uppercase tracking-widest text-neutral-400 mb-4">Connect</span>
-          <a href="mailto:hello@nexus.com" className="text-xl font-medium hover:underline mb-2">hello@{storeName.toLowerCase()}.com</a>
+          <a href="mailto:hello@evolv.com" className="text-xl font-medium hover:underline mb-2">hello@{storeName.toLowerCase()}.com</a>
           <p className="text-xl font-medium">+1 (555) 000-0000</p>
        </div>
     </div>
@@ -161,7 +161,7 @@ export const FooterSitemap: React.FC<FooterProps> = ({ storeName }) => (
            </div>
            <div className="flex items-center gap-2 text-xs">
               <ShieldCheck size={14} /> 
-              <span>Secure Checkout via Nexus Pass</span>
+              <span>Secure Checkout via Evolv Pass</span>
            </div>
         </div>
         
@@ -210,7 +210,7 @@ export const FooterSitemap: React.FC<FooterProps> = ({ storeName }) => (
      </div>
      
      <div className="max-w-7xl mx-auto pt-8 border-t border-neutral-800 flex justify-center">
-        <p className="text-xs opacity-50">&copy; 2024 Nexus Commerce Operating System. Powered by React.</p>
+        <p className="text-xs opacity-50">&copy; 2024 Evolv Commerce Operating System. Powered by React.</p>
      </div>
   </footer>
 );
@@ -230,3 +230,11 @@ export const FOOTER_OPTIONS = [
   { id: 'brand', name: 'Brand', description: 'Big Typography', date: '2024-08-10', popularity: 70 },
   { id: 'sitemap', name: 'Sitemap', description: 'Information Dense', date: '2024-04-05', popularity: 60 },
 ];
+
+export const FOOTER_FIELDS: Record<string, string[]> = {
+  minimal: ['copyrightText', 'termsLabel', 'privacyLabel', 'contactLabel', 'showInstagram', 'showTwitter'],
+  columns: ['tagline', 'copyrightText', 'shopColumnTitle', 'companyColumnTitle', 'supportColumnTitle'],
+  newsletter: ['heading', 'subheading', 'buttonText', 'copyrightText', 'instagramLabel', 'twitterLabel', 'tiktokLabel', 'youtubeLabel'],
+  brand: ['address', 'email', 'phone', 'basedInLabel', 'shippingLabel'],
+  sitemap: ['regionText', 'copyrightText', 'productsColumnTitle', 'collectionsColumnTitle', 'supportColumnTitle', 'legalColumnTitle'],
+};

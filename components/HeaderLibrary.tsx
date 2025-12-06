@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { ShoppingBag, Menu, Search, X, User, Globe, Command, ChevronDown, ArrowRight, Hexagon, Grid, Disc, Activity } from 'lucide-react';
 import { NavLink } from '../types';
 
@@ -9,6 +10,7 @@ interface HeaderProps {
   logoHeight?: number;
   links: NavLink[];
   cartCount: number;
+  onOpenCart?: () => void;
 }
 
 // Reusable Logo Helper Component
@@ -20,22 +22,23 @@ const Logo: React.FC<{storeName: string, logoUrl?: string, logoHeight?: number, 
 };
 
 // 1. The Canvas (Minimalist, Clean, Airy)
-export const HeaderCanvas: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderCanvas: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-50">
     <div className="max-w-7xl mx-auto px-6 min-h-[5rem] py-4 flex items-center justify-between">
       <div className="flex items-center gap-8">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-bold tracking-tight" />
         <nav className="hidden md:flex gap-6">
           {links.map(l => (
-            <a key={l.label} href={l.href} className="text-sm font-medium text-gray-500 hover:text-black transition-colors">
+            <Link key={l.label} to={l.href} className="text-sm font-medium text-gray-500 hover:text-black transition-colors">
               {l.label}
-            </a>
+            </Link>
           ))}
         </nav>
       </div>
       <div className="flex items-center gap-4">
         <button className="p-2 hover:bg-gray-50 rounded-full transition-colors"><Search size={20} /></button>
-        <div className="relative p-2 hover:bg-gray-50 rounded-full transition-colors cursor-pointer">
+        <Link to="/account" className="p-2 hover:bg-gray-50 rounded-full transition-colors"><User size={20} /></Link>
+        <div onClick={onOpenCart} className="relative p-2 hover:bg-gray-50 rounded-full transition-colors cursor-pointer">
           <ShoppingBag size={20} />
           {cartCount > 0 && <span className="absolute top-0 right-0 w-4 h-4 bg-black text-white text-[10px] flex items-center justify-center rounded-full">{cartCount}</span>}
         </div>
@@ -45,7 +48,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 2. The Nebula (Glassmorphic, Floating, Blur)
-export const HeaderNebula: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderNebula: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="absolute top-4 left-0 right-0 z-50 flex justify-center px-4">
     <div className="bg-white/60 backdrop-blur-xl border border-white/20 shadow-lg rounded-full px-8 py-3 flex items-center gap-12 max-w-4xl w-full justify-between">
        <div className="flex items-center gap-2">
@@ -61,7 +64,7 @@ export const HeaderNebula: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
        </nav>
        <div className="flex items-center gap-4 text-gray-800">
          <Search size={18} className="cursor-pointer hover:text-blue-600" />
-         <div className="relative cursor-pointer hover:text-blue-600">
+         <div onClick={onOpenCart} className="relative cursor-pointer hover:text-blue-600">
             <ShoppingBag size={18} />
             {cartCount > 0 && <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full"></span>}
          </div>
@@ -71,7 +74,7 @@ export const HeaderNebula: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 3. The Bunker (Brutalist, High Contrast, Bold)
-export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full bg-yellow-400 border-b-4 border-black sticky top-0 z-50 font-mono">
     <div className="w-full bg-black text-yellow-400 text-xs py-1 px-2 overflow-hidden whitespace-nowrap">
        <div className="animate-marquee inline-block">
@@ -94,7 +97,7 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
       </nav>
       <div className="px-6 py-2 flex items-center justify-center gap-6 bg-white">
         <User size={24} className="stroke-[3]" />
-        <div className="relative">
+        <div onClick={onOpenCart} className="relative cursor-pointer">
            <ShoppingBag size={24} className="stroke-[3]" />
            <span className="absolute -top-2 -right-2 bg-black text-yellow-400 text-xs font-bold px-1 border-2 border-black">{cartCount}</span>
         </div>
@@ -104,7 +107,7 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 4. The Orbit (Dynamic Island style, Dark)
-export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => {
+export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -124,7 +127,7 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
              <div className="flex items-center gap-4 text-sm text-neutral-400">
                 <span>Menu</span>
                 <div className="w-px h-4 bg-neutral-700"></div>
-                <span className="flex items-center gap-1 text-white"><ShoppingBag size={14}/> {cartCount}</span>
+                <span onClick={onOpenCart} className="flex items-center gap-1 text-white cursor-pointer"><ShoppingBag size={14}/> {cartCount}</span>
              </div>
            )}
         </div>
@@ -143,7 +146,7 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
                 <a href="#" className="text-sm text-neutral-300 hover:text-white">Wishlist</a>
                 <div className="mt-auto pt-4 border-t border-neutral-800 flex justify-between items-center">
                   <span className="text-sm text-neutral-400">Cart ({cartCount})</span>
-                  <button className="bg-white text-black px-4 py-1.5 rounded-full text-xs font-bold">Checkout</button>
+                  <button onClick={onOpenCart} className="bg-white text-black px-4 py-1.5 rounded-full text-xs font-bold">Checkout</button>
                 </div>
              </div>
           </div>
@@ -153,47 +156,37 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
   );
 }
 
-// 5. The Protocol (Cyberpunk, Glitch, Tech)
-export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
-  <header className="w-full bg-neutral-950 border-b border-neutral-800 text-neutral-300 font-mono sticky top-0 z-50">
-    <div className="h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"></div>
-    <div className="max-w-7xl mx-auto px-4 min-h-[4rem] py-2 flex items-center justify-between">
-      <div className="flex items-center gap-2 group cursor-pointer">
-        {!logoUrl && <Hexagon className="text-cyan-500 group-hover:rotate-180 transition-transform duration-700" size={24} />}
-        {logoUrl ? (
-             <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} />
-        ) : (
-            <span className="text-xl font-bold text-white tracking-tighter">
-            NEXUS<span className="text-cyan-500">_OS</span>
-            </span>
-        )}
-      </div>
-
-      <nav className="hidden md:flex gap-1">
-        {links.map((l, i) => (
-          <a key={l.label} href={l.href} className={`px-4 py-2 border border-transparent hover:border-neutral-700 hover:bg-neutral-900 text-xs uppercase tracking-widest transition-all ${i === 1 ? 'text-cyan-400 border-neutral-800 bg-neutral-900' : ''}`}>
-             <span className="opacity-50 mr-2">0{i+1}</span>
-             {l.label}
-          </a>
-        ))}
-      </nav>
-
-      <div className="flex items-center gap-6">
-        <div className="hidden md:flex text-[10px] text-neutral-600 gap-4 uppercase">
-           <span>Sys: Online</span>
-           <span>Ping: 12ms</span>
+// 5. The Protocol (Cyberpunk/Brutalist)
+export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => {
+  return (
+    <header className="sticky top-0 z-50 bg-yellow-400 border-b-4 border-black font-mono">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-8">
+          <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-black uppercase tracking-tighter" />
+          <nav className="hidden md:flex gap-6">
+            {links.map(l => (
+              <a key={l.label} href={l.href} className="text-sm font-bold uppercase hover:underline decoration-2 underline-offset-4">{l.label}</a>
+            ))}
+          </nav>
         </div>
-        <div className="relative group">
-           <ShoppingBag className="text-neutral-400 group-hover:text-cyan-400 transition-colors" size={20} />
-           <span className="absolute -top-2 -right-2 text-[10px] bg-cyan-900 text-cyan-200 px-1 border border-cyan-500/50">{cartCount}</span>
+        <div className="flex items-center gap-4">
+          <div className="hidden md:block px-2 py-1 bg-black text-yellow-400 text-xs font-bold">
+            SYS.ONLINE
+          </div>
+          <div onClick={onOpenCart} className="relative cursor-pointer border-2 border-black p-1 hover:bg-black hover:text-yellow-400 transition-colors">
+            <ShoppingBag size={20} />
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  </header>
-);
-
-// 6. The Horizon (Double Decker, Editorial)
-export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+    </header>
+  );
+}// 6. The Horizon (Double Decker, Editorial)
+export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full sticky top-0 z-50">
     <div className="bg-neutral-900 text-white py-2 px-6 flex justify-between items-center text-xs font-medium tracking-wide">
       <div className="flex gap-4">
@@ -226,7 +219,7 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
        
        <div className="flex items-center gap-4">
          <Search size={20} />
-         <div className="flex items-center gap-1 font-bold text-sm">
+         <div onClick={onOpenCart} className="flex items-center gap-1 font-bold text-sm cursor-pointer hover:text-neutral-600 transition-colors">
            <ShoppingBag size={20} />
            <span>({cartCount})</span>
          </div>
@@ -236,7 +229,7 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 );
 
 // 7. The Studio (Sidebar Navigation)
-export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 bg-neutral-50 border-r border-neutral-200 flex-col p-8 z-50">
     <div className="mb-12">
       <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight || 48} className="text-2xl font-black tracking-tighter uppercase leading-none" />
@@ -244,9 +237,9 @@ export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
     
     <nav className="flex flex-col gap-6 flex-1">
        {links.map(l => (
-         <a key={l.label} href={l.href} className="text-lg font-medium text-neutral-500 hover:text-black hover:pl-2 transition-all duration-300">
+         <Link key={l.label} to={l.href} className="text-lg font-medium text-neutral-500 hover:text-black hover:pl-2 transition-all duration-300">
            {l.label}
-         </a>
+         </Link>
        ))}
     </nav>
 
@@ -261,7 +254,7 @@ export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
              <span className="text-xs text-neutral-500">Your Bag</span>
              <span className="font-bold text-lg">${(cartCount * 45).toFixed(2)}</span>
           </div>
-          <div className="w-10 h-10 bg-black text-white flex items-center justify-center rounded-full">
+          <div onClick={onOpenCart} className="w-10 h-10 bg-black text-white flex items-center justify-center rounded-full cursor-pointer hover:bg-neutral-800 transition-colors">
              {cartCount}
           </div>
        </div>
@@ -270,7 +263,7 @@ export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 8. The Terminal (Developer focused, command line)
-export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full bg-[#1e1e1e] text-[#d4d4d4] font-mono sticky top-0 z-50 border-b border-[#3c3c3c]">
     <div className="flex items-center h-10 px-4 bg-[#252526] text-xs border-b border-[#1e1e1e]">
        <div className="flex gap-2 mr-4">
@@ -298,7 +291,7 @@ export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
           ))}
        </nav>
 
-       <div className="flex items-center gap-3 text-sm">
+       <div onClick={onOpenCart} className="flex items-center gap-3 text-sm cursor-pointer hover:text-white transition-colors">
           <span className="text-[#6a9955]">// Cart: {cartCount} items</span>
           <div className="w-2 h-4 bg-[#d4d4d4] animate-pulse"></div>
        </div>
@@ -307,7 +300,7 @@ export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
 );
 
 // 9. The Portfolio (Split Screen, Big Typography)
-export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full bg-white sticky top-0 z-50 mix-blend-difference text-white">
      <div className="grid grid-cols-2 md:grid-cols-4 min-h-[5rem] border-b border-white/20">
         <div className="flex items-center px-6 py-2 border-r border-white/20">
@@ -323,7 +316,7 @@ export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, log
               </a>
            ))}
         </div>
-        <div className="flex items-center justify-between px-6 py-2">
+        <div onClick={onOpenCart} className="flex items-center justify-between px-6 py-2 cursor-pointer hover:bg-white hover:text-black transition-colors">
            <span className="text-xs font-bold uppercase">Cart</span>
            <span className="text-4xl font-display">{cartCount.toString().padStart(2, '0')}</span>
         </div>
@@ -332,7 +325,7 @@ export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, log
 );
 
 // 10. The Venture (Utility First, Search Dominant)
-export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full bg-neutral-100 border-b border-neutral-200 sticky top-0 z-50">
     <div className="max-w-[1600px] mx-auto p-2">
        <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-2 flex items-center justify-between gap-4 min-h-[4rem]">
@@ -360,7 +353,7 @@ export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
                   <a key={l.label} href={l.href} className="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-black rounded-lg hover:bg-neutral-50 transition-colors">{l.label}</a>
                 ))}
              </nav>
-             <button className="relative p-2.5 hover:bg-neutral-100 rounded-xl transition-colors text-neutral-700">
+             <button onClick={onOpenCart} className="relative p-2.5 hover:bg-neutral-100 rounded-xl transition-colors text-neutral-700">
                 <ShoppingBag size={20} />
                 {cartCount > 0 && <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>}
              </button>
@@ -374,7 +367,7 @@ export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 );
 
 // 11. Metro (Tiles, Windows Phone Vibe)
-export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full sticky top-0 z-50 bg-white shadow-sm">
     <div className="grid grid-cols-6 md:grid-cols-12 min-h-[4rem] divide-x divide-neutral-100 border-b border-neutral-100">
       <div className="col-span-2 md:col-span-3 flex items-center justify-center bg-blue-600 text-white font-bold text-xl tracking-tighter overflow-hidden py-2 px-4">
@@ -388,7 +381,7 @@ export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
       <div className="col-span-2 md:col-span-1 flex items-center justify-center hover:bg-neutral-50 cursor-pointer py-2">
          <Search size={20} className="text-neutral-600" />
       </div>
-      <div className="col-span-2 flex items-center justify-center bg-black text-white cursor-pointer hover:bg-neutral-800 transition-colors gap-2 py-2">
+      <div onClick={onOpenCart} className="col-span-2 flex items-center justify-center bg-black text-white cursor-pointer hover:bg-neutral-800 transition-colors gap-2 py-2">
          <ShoppingBag size={20} />
          <span className="font-bold">{cartCount}</span>
       </div>
@@ -397,7 +390,7 @@ export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 12. Modul (Swiss Style, Grid)
-export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full border-b border-black sticky top-0 z-50 bg-white font-sans">
     <div className="flex min-h-[3.5rem]">
       <div className="w-48 border-r border-black flex items-center px-4 py-2 font-bold text-lg shrink-0">
@@ -413,7 +406,7 @@ export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
       <div className="w-14 border-r border-black flex items-center justify-center hover:bg-neutral-100 cursor-pointer py-2">
          <User size={18} />
       </div>
-      <div className="w-20 flex items-center justify-center hover:bg-neutral-100 cursor-pointer gap-1 py-2">
+      <div onClick={onOpenCart} className="w-20 flex items-center justify-center hover:bg-neutral-100 cursor-pointer gap-1 py-2">
          <ShoppingBag size={18} />
          <span className="text-xs font-bold">({cartCount})</span>
       </div>
@@ -422,7 +415,7 @@ export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 13. Luxe (Serif, Elegant, Centered)
-export const HeaderLuxe: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderLuxe: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full bg-[#faf9f6] sticky top-0 z-50 border-b border-[#e5e5e5]">
     <div className="max-w-7xl mx-auto px-8">
        <div className="min-h-[6rem] py-4 flex flex-col items-center justify-center relative">
@@ -436,7 +429,7 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
 
           <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-6">
              <span className="text-xs font-serif italic text-neutral-500 hover:text-black cursor-pointer hidden md:block">Account</span>
-             <div className="relative cursor-pointer">
+             <div onClick={onOpenCart} className="relative cursor-pointer">
                 <ShoppingBag size={20} className="text-neutral-800" />
                 {cartCount > 0 && <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#d4af37] rounded-full"></span>}
              </div>
@@ -454,7 +447,7 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
 );
 
 // 14. Gullwing (Symmetrical Split)
-export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full bg-white sticky top-0 z-50 shadow-sm">
     <div className="max-w-7xl mx-auto min-h-[5rem] py-4 px-8 flex items-center justify-between">
        <nav className="flex-1 flex justify-end gap-8 pr-12">
@@ -473,7 +466,7 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
                 <a key={l.label} href={l.href} className="text-sm font-bold text-neutral-600 hover:text-black transition-colors">{l.label}</a>
              ))}
           </nav>
-          <div className="flex items-center gap-4">
+          <div onClick={onOpenCart} className="flex items-center gap-4 cursor-pointer hover:text-neutral-600 transition-colors">
              <ShoppingBag size={20} />
              <span className="font-mono text-sm">[{cartCount}]</span>
           </div>
@@ -483,7 +476,7 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
 );
 
 // 15. Pop (Neo-Brutalist, Soft)
-export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full bg-[#F3F4F6] sticky top-0 z-50 p-4">
      <div className="bg-white border-2 border-black rounded-xl min-h-[4rem] py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center px-4 justify-between">
         <div className="bg-[#FF90E8] border-2 border-black px-4 py-1 rounded-full font-black text-sm uppercase transform -rotate-2">
@@ -502,7 +495,7 @@ export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeigh
            <button className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center hover:bg-neutral-100">
               <Search size={18} />
            </button>
-           <button className="bg-[#FFC900] px-4 py-1.5 rounded-full border-2 border-black font-bold text-sm flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:shadow-none transition-all">
+           <button onClick={onOpenCart} className="bg-[#FFC900] px-4 py-1.5 rounded-full border-2 border-black font-bold text-sm flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:shadow-none transition-all">
               <ShoppingBag size={16} /> Cart ({cartCount})
            </button>
         </div>
@@ -511,7 +504,7 @@ export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeigh
 );
 
 // 16. Stark (High Contrast, Black & White)
-export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full bg-black text-white sticky top-0 z-50">
      <div className="flex flex-col md:flex-row items-center justify-between p-6">
         <div className="mb-4 md:mb-0">
@@ -528,7 +521,7 @@ export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
               <span>/</span>
               <span>LOGIN</span>
               <span>/</span>
-              <span>CART ({cartCount})</span>
+              <span onClick={onOpenCart} className="cursor-pointer hover:text-white transition-colors">CART ({cartCount})</span>
            </div>
         </div>
      </div>
@@ -536,13 +529,13 @@ export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 17. Offset (Asymmetrical)
-export const HeaderOffset: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderOffset: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full bg-white sticky top-0 z-50 pt-4 px-4 pb-0">
      <div className="flex justify-between items-start mb-4">
         <Logo storeName={`${storeName}.`} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-bold" />
         <div className="flex gap-4">
            <Search size={20} />
-           <div className="relative">
+           <div onClick={onOpenCart} className="relative cursor-pointer hover:text-neutral-600 transition-colors">
               <ShoppingBag size={20} />
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
            </div>
@@ -560,7 +553,7 @@ export const HeaderOffset: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 18. Ticker (Stock Market Vibe)
-export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full sticky top-0 z-50 bg-white">
      <div className="bg-blue-600 text-white text-xs font-mono py-1 overflow-hidden whitespace-nowrap">
         <div className="animate-marquee inline-block">
@@ -579,7 +572,7 @@ export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
               </a>
            ))}
         </nav>
-        <button className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-xs font-bold flex items-center gap-1">
+        <button onClick={onOpenCart} className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-xs font-bold flex items-center gap-1 hover:bg-blue-200 transition-colors">
            CART: {cartCount}
         </button>
      </div>
@@ -587,7 +580,7 @@ export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 19. Noir (Dark Mode, Glow)
-export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="w-full bg-[#050505] text-neutral-400 sticky top-0 z-50 border-b border-white/5 shadow-[0_0_15px_rgba(0,0,0,1)]">
      <div className="max-w-7xl mx-auto min-h-[5rem] py-4 px-6 flex items-center justify-between">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-white text-2xl font-light tracking-[0.2em] shadow-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" />
@@ -600,7 +593,7 @@ export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
         </nav>
         <div className="flex items-center gap-6">
            <Search size={18} className="hover:text-white transition-colors" />
-           <div className="relative">
+           <div onClick={onOpenCart} className="relative cursor-pointer">
               <ShoppingBag size={18} className="hover:text-white transition-colors" />
               {cartCount > 0 && <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_5px_rgba(255,255,255,0.8)]"></span>}
            </div>
@@ -610,7 +603,7 @@ export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
 );
 
 // 20. Ghost (Interaction based)
-export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => (
+export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
   <header className="absolute top-0 left-0 right-0 z-50 group hover:bg-white/90 hover:backdrop-blur-md transition-all duration-500 py-6 hover:py-4 px-8 flex justify-between items-center">
      <div className="mix-blend-difference text-white group-hover:text-black transition-colors duration-500">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-xl font-bold" />
@@ -626,7 +619,7 @@ export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 
      <div className="flex items-center gap-4 mix-blend-difference text-white group-hover:text-black transition-colors duration-500">
         <span className="text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">Menu</span>
-        <div className="relative">
+        <div onClick={onOpenCart} className="relative cursor-pointer">
            <Menu size={24} className="group-hover:hidden" />
            <ShoppingBag size={24} className="hidden group-hover:block" />
            {cartCount > 0 && <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>}
@@ -636,7 +629,7 @@ export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 21. Pilot (SaaS, Clean, Corporate)
-export const HeaderPilot: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount }) => {
+export const HeaderPilot: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => {
     return (
         <header className="bg-white shadow-md sticky top-0 z-50 w-full">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -654,15 +647,15 @@ export const HeaderPilot: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
                     {/* Middle section: Navigation Links */}
                     <nav className="hidden md:flex space-x-8">
                         {links.map(l => (
-                             <a key={l.label} href={l.href} className="text-gray-600 hover:text-indigo-600 transition-colors font-medium text-sm">
+                             <Link key={l.label} to={l.href} className="text-gray-600 hover:text-indigo-600 transition-colors font-medium text-sm">
                                 {l.label}
-                             </a>
+                             </Link>
                         ))}
                     </nav>
 
                     {/* Right section: CTA Button */}
                     <div className="hidden md:flex items-center gap-4">
-                         <div className="relative cursor-pointer text-gray-600 hover:text-indigo-600">
+                         <div onClick={onOpenCart} className="relative cursor-pointer text-gray-600 hover:text-indigo-600">
                             <ShoppingBag size={20} />
                             {cartCount > 0 && <span className="absolute -top-2 -right-2 bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{cartCount}</span>}
                         </div>
@@ -673,7 +666,7 @@ export const HeaderPilot: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 
                     {/* Mobile Menu Button */}
                     <div className="md:hidden flex items-center gap-4">
-                        <div className="relative cursor-pointer text-gray-600">
+                        <div onClick={onOpenCart} className="relative cursor-pointer text-gray-600">
                              <ShoppingBag size={20} />
                              {cartCount > 0 && <span className="absolute -top-2 -right-2 bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{cartCount}</span>}
                         </div>
@@ -735,3 +728,27 @@ export const HEADER_OPTIONS = [
   { id: 'noir', name: 'Noir', description: 'Dark Mode Glow', date: '2024-10-15', popularity: 76 },
   { id: 'ghost', name: 'Ghost', description: 'Interaction Reveal', date: '2024-11-01', popularity: 62 },
 ];
+
+export const HEADER_FIELDS: Record<string, string[]> = {
+  pilot: ['ctaButtonText', 'ctaButtonLink'],
+  canvas: [],
+  nebula: [],
+  bunker: ['announcementText'],
+  orbit: ['menuLabel', 'checkoutButtonText'],
+  protocol: ['statusText'],
+  horizon: ['currencyText', 'languageText', 'announcementText', 'supportLabel', 'signInLabel'],
+  studio: ['searchPlaceholder'],
+  terminal: [],
+  portfolio: ['announcementText'],
+  venture: ['searchPlaceholder'],
+  metro: [],
+  modul: [],
+  luxe: ['tagline', 'accountLabel'],
+  gullwing: [],
+  pop: ['cartButtonText'],
+  stark: ['searchLabel', 'loginLabel', 'cartLabel'],
+  offset: [],
+  ticker: ['tickerText'],
+  noir: [],
+  ghost: ['menuLabel'],
+};

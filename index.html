@@ -3,53 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nexus Commerce OS</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Evolv | The Future of Headless Commerce</title>
+    <meta name="description" content="Build, scale, and dominate with Evolv. The world's most advanced headless commerce platform. Better performance, better design, zero plugins." />
+    <meta name="keywords" content="headless commerce, ecommerce platform, online store builder, react ecommerce, shopify alternative" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://evolv.app/" />
+    <meta property="og:title" content="Evolv | The Future of Headless Commerce" />
+    <meta property="og:description" content="Build, scale, and dominate with Evolv. The world's most advanced headless commerce platform." />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://evolv.app/" />
+    <meta property="twitter:title" content="Evolv | The Future of Headless Commerce" />
+    <meta property="twitter:description" content="Build, scale, and dominate with Evolv. The world's most advanced headless commerce platform." />
+    <meta property="twitter:image" content="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop" />
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Space+Grotesk:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              display: ['Space Grotesk', 'sans-serif'],
-              mono: ['JetBrains Mono', 'monospace'],
-            },
-            colors: {
-              nexus: {
-                black: '#0a0a0a',
-                dark: '#111111',
-                gray: '#222222',
-                accent: '#3b82f6',
-                neon: '#ccff00',
-              }
-            },
-            animation: {
-              'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              'marquee': 'marquee 25s linear infinite',
-            },
-            keyframes: {
-              marquee: {
-                '0%': { transform: 'translateX(0%)' },
-                '100%': { transform: 'translateX(-100%)' },
-              }
-            }
-          }
-        }
-      }
-    </script>
-  <script type="importmap">
-{
-  "imports": {
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0"
-  }
-}
-</script>
-</head>
-  <body class="bg-neutral-50 text-neutral-900 overflow-hidden">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  </head>
+  <body class="bg-neutral-50 text-neutral-900">
     <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

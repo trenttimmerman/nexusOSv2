@@ -1,59 +1,26 @@
-# Nexus Commerce OS - Developer Handoff
+# Handoff Notes
+**Date:** December 1, 2025
 
-**Date:** November 24, 2024
-**Status:** 🟢 STABLE MILESTONE (Unified Page Builder)
-**Tech Stack:** React, Tailwind CSS, TypeScript
+## Completed Tasks
+1.  **Analytics Dashboard**:
+    *   Implemented using `recharts`.
+    *   Added Sales Overview chart to the Dashboard tab.
 
-## 🚀 Milestone Overview
-We have successfully consolidated the design workflow into a **Linear, Unified Page Builder**. The complex "Engine" accordions have been replaced by a single **Page Layout** list that treats Headers, Heroes, Product Grids, and Footers as manageable blocks.
+2.  **Discount System**:
+    *   **Database**: Created `discounts` table and `validate_discount` function (Migration `20250101000025_discounts.sql`).
+    *   **UI**: Created `DiscountManager` component for creating and managing discount codes.
+    *   **Integration**: Added "Discounts" tab to Admin Panel.
 
-## ✅ Current Architecture
+3.  **Shipping Configuration**:
+    *   **Database**: Created `shipping_zones` and `shipping_rates` tables (Migration `20250101000026_shipping_zones.sql`).
+    *   **UI**: Created `ShippingManager` component for managing zones and rates (flat, weight-based, price-based).
+    *   **Integration**: Added "Shipping" tab to Admin Panel.
 
-### 1. The Layout Hub (Admin Panel)
-*   **Left-Sidebar Navigation:** Fixed main menu (`w-64`) on the left.
-*   **Resizable Tool Column:** The Design Studio column is resizable and sits immediately to the right of the nav.
-*   **Unified Page Layout:**
-    *   **Header:** Locked at the top. Editing opens the **Header Studio**.
-    *   **Page Sections:** A reorderable list of blocks (Heroes, Grids, Text). Editing opens the context-aware modal (System or Architect).
-    *   **Footer:** Locked at the bottom. Editing opens the **Footer Studio**.
-*   **Add Section Workflow:** A slide-out library allows adding System Blocks (Hero/Grid) or Content Blocks with a **Live Preview** before confirming.
+4.  **Campaigns System**:
+    *   **Refactor**: Updated `CampaignManager` to be fully functional and persistent, fetching data directly from Supabase.
+    *   **Integration**: Connected `CampaignManager` to the Admin Panel with proper `storeId` context.
 
-### 2. The Preview Engine
-*   **Real-Time Resizing:** When a tool panel (Add Section, Architect, etc.) slides out, the Live Canvas automatically adds padding (`pl-96`) to keep the storefront visible and centered.
-*   **Device Toggles:** Switch between Desktop and Mobile views instantly.
-*   **Preview Mode:** New sections show a "Preview" badge on the storefront before they are committed to the state.
-
-### 3. Component Engines (The "Brains")
-*   **Header Engine:** 21 Styles (Canvas, Pilot, Nebula, etc.) with Sort/Filter.
-*   **System Blocks:**
-    *   **Hero Engine:** 5 Styles (Impact, Kinetik, Split, etc.).
-    *   **Product Grid Engine:** 6 Styles (Classic, Hype, Glass, etc.).
-    *   **Footer Engine:** 5 Styles (Minimal, Sitemap, Brand, etc.).
-*   **Block Architect:** A visual builder for custom HTML content (Images, Text, Layouts) with AI simulation.
-
-### 4. Data Structure
-*   **Global Footer:** The footer is no longer a "Block" in the page array; it is rendered globally at the bottom of `Storefront.tsx`.
-*   **System Blocks:** Heroes and Grids are stored as `PageBlock` items with `type: 'system-hero'` or `'system-grid'`, allowing them to be placed anywhere on a page.
-
----
-
-## 📂 Key Files
-
-*   **`components/AdminPanel.tsx`:** The core logic. Contains the state for `activePage`, `selectedBlock`, and the rendering logic for all slide-out modals.
-*   **`components/Storefront.tsx`:** The renderer. Iterates through `activePage.blocks` and switches between `HERO_COMPONENTS`, `PRODUCT_CARD_COMPONENTS`, or raw HTML based on the block type.
-*   **`App.tsx`:** Holds the "Database" (State). Contains the initial block configuration for Home, About, and Journal pages.
-
----
-
-## 🚧 Known Issues / To-Do
-1.  **Persistence:** State resets on refresh. Needs LocalStorage or Backend connection.
-2.  **Image Upload:** The Logo Upload and Magic Product Upload are simulated (Base64/Timeout).
-3.  **Undo/Redo:** Currently, deletions are permanent.
-4.  **Drag & Drop:** We use Up/Down arrows for block reordering. True Drag & Drop (dnd-kit) is the next UX upgrade.
-
----
-
-## 🗺️ Roadmap: Next Phase
-1.  **Content Library Expansion:** Add "Testimonials", "FAQ", and "Logo Cloud" to the *Add Section* library.
-2.  **Theme Presets:** Allow saving the entire configuration (Header + Hero + Colors + Fonts) as a "Theme".
-3.  **Backend Connection:** Wire up Supabase for real data persistence.
+## Next Steps
+*   **Apply Migrations**: Run the new SQL migrations in your Supabase dashboard to create the necessary tables.
+*   **Testing**: Verify that creating discounts, shipping zones, and campaigns works as expected.
+*   **Frontend Integration**: Connect the checkout process to validate discount codes and calculate shipping rates using the new tables.

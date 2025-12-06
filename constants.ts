@@ -3,35 +3,79 @@ import { Product } from './types';
 export const MOCK_PRODUCTS: Product[] = [
   {
     id: '1',
-    name: 'Nexus Core Tee // Black',
+    name: 'Evolv Core Tee // Black',
+    description: '<p>Essential streetwear component. Heavyweight cotton with minimal branding.</p>',
     price: 4500,
     image: 'https://picsum.photos/800/1000?random=1',
+    images: [{ id: 'img1', url: 'https://picsum.photos/800/1000?random=1', isPrimary: true }],
     stock: 120,
-    category: 'Apparel'
+    category: 'Apparel',
+    tags: ['essential', 'black', 'cotton'],
+    trackInventory: true,
+    hasVariants: true,
+    variantOptions: [{ id: 'opt1', name: 'Size', values: ['S', 'M', 'L', 'XL'] }],
+    variants: [],
+    seo: { title: 'Evolv Core Tee', description: 'Premium black cotton tee.', slug: 'evolv-core-tee-black' },
+    status: 'active',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: '2',
     name: 'Cyber Shell Jacket',
+    description: '<p>Weather-resistant outer layer for urban exploration.</p>',
     price: 18500,
     image: 'https://picsum.photos/800/1000?random=2',
+    images: [{ id: 'img2', url: 'https://picsum.photos/800/1000?random=2', isPrimary: true }],
     stock: 4,
-    category: 'Outerwear'
+    category: 'Outerwear',
+    tags: ['jacket', 'techwear', 'waterproof'],
+    trackInventory: true,
+    hasVariants: false,
+    variantOptions: [],
+    variants: [],
+    seo: { title: 'Cyber Shell Jacket', description: 'Advanced techwear jacket.', slug: 'cyber-shell-jacket' },
+    status: 'active',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: '3',
     name: 'Data Runner Sneakers',
+    description: '<p>High-performance footwear for the digital age.</p>',
     price: 12000,
     image: 'https://picsum.photos/800/1000?random=3',
+    images: [{ id: 'img3', url: 'https://picsum.photos/800/1000?random=3', isPrimary: true }],
     stock: 35,
-    category: 'Footwear'
+    category: 'Footwear',
+    tags: ['sneakers', 'running', 'comfort'],
+    trackInventory: true,
+    hasVariants: true,
+    variantOptions: [{ id: 'opt2', name: 'Size', values: ['8', '9', '10', '11'] }],
+    variants: [],
+    seo: { title: 'Data Runner Sneakers', description: 'Comfortable tech sneakers.', slug: 'data-runner-sneakers' },
+    status: 'active',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: '4',
     name: 'Neural Link Cap',
+    description: '<p>Standard issue headwear.</p>',
     price: 3500,
     image: 'https://picsum.photos/800/1000?random=4',
+    images: [{ id: 'img4', url: 'https://picsum.photos/800/1000?random=4', isPrimary: true }],
     stock: 200,
-    category: 'Accessories'
+    category: 'Accessories',
+    tags: ['cap', 'hat', 'accessories'],
+    trackInventory: true,
+    hasVariants: false,
+    variantOptions: [],
+    variants: [],
+    seo: { title: 'Neural Link Cap', description: 'Classic dad hat style.', slug: 'neural-link-cap' },
+    status: 'active',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];
 
