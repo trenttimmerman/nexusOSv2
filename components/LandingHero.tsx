@@ -9,19 +9,17 @@ const Hero: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div className="text-center md:text-left">
                     <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-6">
-                        Build Your <span className="text-gradient">Commerce-Verse</span>
+                        Build Your <span className="text-gradient">Online Store</span>
                     </h1>
                     <p className="text-lg md:text-xl text-gray-300 max-w-lg mx-auto md:mx-0 mb-8">
-                        The next-generation platform for visionaries. Launch, scale, and manage your e-commerce empire with AI-powered tools and limitless customization.
+                        Create a beautiful online store in minutes. No coding required. Sell products, accept payments, and grow your business — all in one place.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                        <Link to="/signup" className="bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-semibold px-8 py-3 rounded-lg hover:from-purple-700 hover:to-cyan-600 transition-all shadow-lg">
-                            Get Started Free
-                        </Link>
-                        <Link to="/signup" className="bg-gray-800 text-white font-semibold px-8 py-3 rounded-lg hover:bg-gray-700 transition-colors">
-                            Start Your Free Trial
+                        <Link to="/signup" className="bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-semibold px-8 py-3 rounded-lg hover:from-purple-700 hover:to-cyan-600 transition-all shadow-lg text-center">
+                            Start Selling Today — It's Free
                         </Link>
                     </div>
+                    <p className="text-sm text-gray-500 mt-4">No credit card required • Set up in 5 minutes</p>
                 </div>
                 
                 <div className="w-full h-80 md:h-full min-h-[300px]">

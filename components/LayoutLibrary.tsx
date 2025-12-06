@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { EditableText } from './HeroLibrary';
-import { ArrowRight, Image as ImageIcon, Layout, Columns, Grid, Check, Plus, Minus, ChevronDown, Star, Shield, Truck, RefreshCw } from 'lucide-react';
+import { ArrowRight, Image as ImageIcon, Layout, Columns, Grid, Check, Plus, Minus, ChevronDown, Star, Shield, Truck, RefreshCw, MessageSquare } from 'lucide-react';
 
 export const LAYOUT_OPTIONS = [
   { id: 'layout-image-text', name: 'Image with Text', description: 'Side-by-side image and text block' },

@@ -1,29 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { Loader2, ArrowRight, Store, Mail, Lock, CheckCircle2 } from 'lucide-react';
+import { Loader2, Mail, Lock, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export const SignUp = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState<'account' | 'store'>('account');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [storeName, setStoreName] = useState('');
-  const [storeSlug, setStoreSlug] = useState('');
-
-  const handleStoreNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.value;
-    setStoreName(name);
-    // Auto-generate slug
-    const slug = name.toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-    setStoreSlug(slug);
-  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,46 +16,27 @@ export const SignUp = () => {
     setLoading(true);
 
     try {
-      // 1. Create Auth User
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          // Store the pending store info in user metadata for post-confirmation setup
-          data: {
-            pending_store_name: storeName,
-            pending_store_slug: storeSlug
-          }
-        }
       });
 
       if (authError) throw authError;
 
       if (!authData.session) {
-        // Email confirmation required - store info saved in metadata
-        // User will need to complete setup after confirming email
+        // Email confirmation required
         navigate('/signup/confirm', { 
           state: { 
-            email, 
-            storeName, 
-            storeSlug,
-            message: 'Please check your email to confirm your account. After confirming, log in to complete your store setup.'
+            email,
+            message: 'Please check your email to confirm your account.'
           } 
         });
         setLoading(false);
         return;
       }
 
-      // 2. Create Tenant (Store) - only if session exists (email confirmation disabled)
-      const { error: tenantError } = await supabase.rpc('create_tenant', {
-        store_name: storeName,
-        store_slug: storeSlug
-      });
-
-      if (tenantError) throw tenantError;
-
-      // 3. Redirect to Admin
-      navigate('/admin');
+      // Session exists - redirect to onboarding wizard
+      navigate('/onboarding');
 
     } catch (err: any) {
       console.error('Sign up error:', err);
@@ -80,25 +46,27 @@ export const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white flex flex-col md:flex-row">
       {/* Left: Visual */}
-      <div className="hidden md:flex w-1/2 bg-neutral-900 relative overflow-hidden items-center justify-center p-12">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black opacity-50"></div>
+      <div className="hidden md:flex w-1/2 bg-gradient-to-br from-purple-900/20 via-gray-900 to-cyan-900/20 relative overflow-hidden items-center justify-center p-12">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent opacity-50"></div>
         <div className="relative z-10 max-w-lg">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center font-bold text-2xl mb-8">E</div>
-          <h1 className="text-5xl font-black tracking-tight mb-6">Build your empire.</h1>
-          <p className="text-xl text-neutral-400 leading-relaxed mb-8">
-            Join thousands of brands using Evolv to scale their commerce operations.
+          <div className="text-4xl font-bold mb-2">
+            Evolv<span className="text-cyan-400">.</span>
+          </div>
+          <h1 className="text-5xl font-black tracking-tight mb-6">Start selling in minutes.</h1>
+          <p className="text-xl text-gray-400 leading-relaxed mb-8">
+            Create your online store for free. No coding required. We'll guide you every step of the way.
           </p>
           <div className="space-y-4">
             {[
-              '14-day free trial',
+              'Free forever for basic stores',
               'No credit card required',
-              'Cancel anytime',
-              'Instant setup'
+              'Set up in 5 minutes',
+              'Beautiful templates included'
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 text-neutral-300">
-                <CheckCircle2 size={20} className="text-blue-500" /> {item}
+              <div key={i} className="flex items-center gap-3 text-gray-300">
+                <CheckCircle2 size={20} className="text-cyan-500" /> {item}
               </div>
             ))}
           </div>
@@ -108,11 +76,15 @@ export const SignUp = () => {
       {/* Right: Form */}
       <div className="flex-1 flex items-center justify-center p-6 md:p-12">
         <div className="w-full max-w-md space-y-8">
-          <div className="md:hidden w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-xl mb-4">E</div>
+          <div className="md:hidden text-2xl font-bold mb-4">
+            Evolv<span className="text-cyan-400">.</span>
+          </div>
           
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Start your free trial</h2>
-            <p className="text-neutral-500 mt-2">Already have an account? <Link to="/login" className="text-blue-500 hover:text-blue-400 font-bold">Log in</Link></p>
+            <h2 className="text-3xl font-bold tracking-tight">Create your account</h2>
+            <p className="text-gray-500 mt-2">
+              Already have an account? <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-semibold">Log in</Link>
+            </p>
           </div>
 
           {error && (
@@ -121,102 +93,56 @@ export const SignUp = () => {
             </div>
           )}
 
-          <form onSubmit={handleSignUp} className="space-y-6">
-            {step === 'account' ? (
-              <div className="space-y-4 animate-in slide-in-from-right duration-300">
-                <div>
-                  <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Email Address</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={18} />
-                    <input 
-                      type="email" 
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-neutral-900 border border-neutral-800 rounded-xl py-3 pl-10 pr-4 text-white focus:border-blue-500 outline-none transition-colors"
-                      placeholder="you@company.com"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={18} />
-                    <input 
-                      type="password" 
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-neutral-900 border border-neutral-800 rounded-xl py-3 pl-10 pr-4 text-white focus:border-blue-500 outline-none transition-colors"
-                      placeholder="••••••••"
-                      minLength={6}
-                    />
-                  </div>
-                </div>
-                <button 
-                  type="button"
-                  onClick={() => {
-                    if (email && password.length >= 6) setStep('store');
-                    else setError('Please enter a valid email and password (min 6 chars)');
-                  }}
-                  className="w-full py-4 bg-white text-black font-bold rounded-xl hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
-                >
-                  Continue <ArrowRight size={18} />
-                </button>
+          <form onSubmit={handleSignUp} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                <input 
+                  type="email" 
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-gray-900 border border-gray-800 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/20 transition-all"
+                  placeholder="you@example.com"
+                />
               </div>
-            ) : (
-              <div className="space-y-4 animate-in slide-in-from-right duration-300">
-                <div>
-                  <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Store Name</label>
-                  <div className="relative">
-                    <Store className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={18} />
-                    <input 
-                      type="text" 
-                      required
-                      value={storeName}
-                      onChange={handleStoreNameChange}
-                      className="w-full bg-neutral-900 border border-neutral-800 rounded-xl py-3 pl-10 pr-4 text-white focus:border-blue-500 outline-none transition-colors"
-                      placeholder="Acme Corp"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Store URL</label>
-                  <div className="flex items-center bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden focus-within:border-blue-500 transition-colors">
-                    <span className="pl-4 pr-2 text-neutral-500 text-sm font-mono">nexusos.app/</span>
-                    <input 
-                      type="text" 
-                      required
-                      value={storeSlug}
-                      onChange={(e) => setStoreSlug(e.target.value)}
-                      className="flex-1 bg-transparent py-3 pr-4 text-white outline-none font-mono text-sm"
-                      placeholder="acme-corp"
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex gap-3">
-                  <button 
-                    type="button"
-                    onClick={() => setStep('account')}
-                    className="px-6 py-4 bg-neutral-900 text-white font-bold rounded-xl hover:bg-neutral-800 transition-colors"
-                  >
-                    Back
-                  </button>
-                  <button 
-                    type="submit"
-                    disabled={loading}
-                    className="flex-1 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {loading ? <Loader2 className="animate-spin" size={20} /> : 'Create Store'}
-                  </button>
-                </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                <input 
+                  type="password" 
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-gray-900 border border-gray-800 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/20 transition-all"
+                  placeholder="••••••••"
+                  minLength={6}
+                />
               </div>
-            )}
+              <p className="text-xs text-gray-500 mt-2">Must be at least 6 characters</p>
+            </div>
+
+            <button 
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                <>
+                  Create Account <ArrowRight size={18} />
+                </>
+              )}
+            </button>
           </form>
           
-          <p className="text-xs text-neutral-600 text-center">
-            By creating an account, you agree to our Terms of Service and Privacy Policy.
+          <p className="text-xs text-gray-600 text-center">
+            By creating an account, you agree to our <a href="#" className="text-gray-400 hover:text-white">Terms of Service</a> and <a href="#" className="text-gray-400 hover:text-white">Privacy Policy</a>.
           </p>
         </div>
       </div>
