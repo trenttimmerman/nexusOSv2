@@ -603,7 +603,7 @@ export const OnboardingWizard = () => {
               </button>
               
               <button
-                onClick={() => window.open(`/store/${storeSlug}`, '_blank')}
+                onClick={() => window.open(`/s/${storeSlug}`, '_blank')}
                 className="w-full px-8 py-4 border border-gray-700 rounded-xl font-semibold text-gray-300 hover:bg-gray-800 transition-colors"
               >
                 Preview My Store

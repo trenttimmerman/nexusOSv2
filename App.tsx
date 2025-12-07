@@ -12,6 +12,7 @@ import { Checkout } from './components/Checkout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { DataProvider, useData } from './context/DataContext';
 import { CartProvider } from './context/CartContext';
+import { supabase } from './lib/supabaseClient';
 import { Loader2 } from 'lucide-react';
 import { ViewMode, AdminTab } from './types';
 
@@ -45,6 +46,110 @@ const StorefrontWrapper = () => {
       activePageId={activePageId}
       activeProductSlug={productSlug}
       onNavigate={(path) => navigate(path)}
+    />
+  );
+};
+
+
+// Public Store Wrapper - loads store by slug for public viewing
+const PublicStoreWrapper = () => {
+  const { storeSlug, slug, productSlug } = useParams();
+  const navigate = useNavigate();
+  const [storeData, setStoreData] = React.useState<any>(null);
+  const [products, setProducts] = React.useState<any[]>([]);
+  const [pages, setPages] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const loadStore = async () => {
+      try {
+        // Look up store by slug
+        const { data: store, error: storeError } = await supabase
+          .from('stores').select('*').eq('slug', storeSlug).single();
+        
+        if (storeError || !store) {
+          setError('Store not found');
+          setLoading(false);
+          return;
+        }
+
+        // Load products
+        const { data: productsData } = await supabase
+          .from('products').select('*').eq('store_id', store.id);
+        
+        // Load pages
+        const { data: pagesData } = await supabase
+          .from('pages').select('*').eq('store_id', store.id);
+
+        // Build store config from store data
+        const config = {
+          name: store.name || 'Store',
+          currency: store.settings?.currency || 'USD',
+          headerStyle: store.settings?.headerStyle || 'canvas',
+          heroStyle: store.settings?.heroStyle || 'impact',
+          productCardStyle: store.settings?.productCardStyle || 'classic',
+          footerStyle: store.settings?.footerStyle || 'columns',
+          scrollbarStyle: store.settings?.scrollbarStyle || 'native',
+          primaryColor: store.settings?.primaryColor || '#3b82f6',
+          logoUrl: store.settings?.logoUrl || '',
+          logoHeight: store.settings?.logoHeight || 32,
+        };
+
+        setStoreData(config);
+        setProducts(productsData || []);
+        setPages(pagesData?.length ? pagesData : [
+          { id: 'home', title: 'Home', slug: '/', type: 'home', blocks: [] }
+        ]);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error loading store:', err);
+        setError('Failed to load store');
+        setLoading(false);
+      }
+    };
+
+    if (storeSlug) loadStore();
+  }, [storeSlug]);
+
+  if (loading) return <LoadingScreen />;
+  
+  if (error) {
+    return (
+      <div className="min-h-screen bg-neutral-900 flex items-center justify-center text-white">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Store Not Found</h1>
+          <p className="text-gray-400 mb-4">The store "{storeSlug}" doesn't exist or is not available.</p>
+          <button 
+            onClick={() => navigate('/')}
+            className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700"
+          >
+            Go Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Resolve Active Page ID from URL Slug
+  let activePageId = 'home';
+  if (slug) {
+    const foundPage = pages.find(p => 
+      p.slug === slug || 
+      p.slug === `/${slug}` || 
+      p.slug === slug.replace(/^\//, '')
+    );
+    if (foundPage) activePageId = foundPage.id;
+  }
+
+  return (
+    <Storefront
+      config={storeData || {}}
+      products={products || []}
+      pages={pages || []}
+      activePageId={activePageId}
+      activeProductSlug={productSlug}
+      onNavigate={(path) => navigate(`/s/${storeSlug}${path}`)}
     />
   );
 };
@@ -119,10 +224,15 @@ export default function App() {
               <Route path="/admin" element={<AdminWrapper />} />
             </Route>
 
-            {/* Public Storefront (Preview) */}
+            {/* Public Storefront (Preview) - User's own store */}
             <Route path="/store" element={<StorefrontWrapper />} />
             <Route path="/store/pages/:slug" element={<StorefrontWrapper />} />
             <Route path="/store/products/:productSlug" element={<StorefrontWrapper />} />
+            
+            {/* Public Store by Slug - for sharing/preview */}
+            <Route path="/s/:storeSlug" element={<PublicStoreWrapper />} />
+            <Route path="/s/:storeSlug/pages/:slug" element={<PublicStoreWrapper />} />
+            <Route path="/s/:storeSlug/products/:productSlug" element={<PublicStoreWrapper />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/account" element={<AccountPage />} />
             
