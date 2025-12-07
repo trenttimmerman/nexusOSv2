@@ -125,21 +125,14 @@ import {
   Globe,
   Scale,
   Clock,
-  Truck,
   ChevronRight,
   ChevronLeft,
   Tag,
   Share2,
-  Type,
-  Mail,
   List,
-  Image as ImageIcon,
-  Megaphone,
   Save,
-  FileText,
   Video,
-  Layout,
-  ShoppingBag
+  Layout
 } from 'lucide-react';
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({

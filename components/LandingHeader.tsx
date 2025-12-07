@@ -11,15 +11,20 @@ const Header: React.FC = () => {
                     </Link>
                     
                     <div className="hidden md:flex items-center space-x-6">
-                        <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
+                        <a href="#features" className="text-gray-300 hover:text-white transition-colors">How It Works</a>
                         <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</a>
-                        <Link to="#" className="text-gray-300 hover:text-white transition-colors">Docs</Link>
-                        <Link to="#" className="text-gray-300 hover:text-white transition-colors">Blog</Link>
+                        <Link to="#" className="text-gray-300 hover:text-white transition-colors">Examples</Link>
+                        <Link to="#" className="text-gray-300 hover:text-white transition-colors">Help</Link>
                     </div>
                     
-                    <Link to="/login" className="hidden md:inline-block bg-white text-gray-950 font-semibold px-5 py-2 rounded-lg hover:bg-gray-200 transition-colors">
-                        Login
-                    </Link>
+                    <div className="hidden md:flex items-center gap-3">
+                        <Link to="/login" className="text-gray-300 hover:text-white transition-colors px-4 py-2">
+                            Sign In
+                        </Link>
+                        <Link to="/signup" className="bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-semibold px-5 py-2 rounded-lg hover:from-purple-700 hover:to-cyan-600 transition-all">
+                            Start Free
+                        </Link>
+                    </div>
                     
                     <button className="md:hidden text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
