@@ -7,6 +7,7 @@ import { Storefront } from './components/Storefront';
 import { Login } from './components/Login';
 import { SignUp } from './components/SignUp';
 import { OnboardingWizard } from './components/OnboardingWizard';
+import { SimpleWizard } from './components/SimpleWizard';
 import { AccountPage } from './components/AccountPage';
 import { Checkout } from './components/Checkout';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -240,6 +241,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/onboarding" element={<OnboardingWizard />} />
+            <Route path="/start" element={<SimpleWizard />} />
             
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

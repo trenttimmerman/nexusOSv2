@@ -35,8 +35,8 @@ export const SignUp = () => {
         return;
       }
 
-      // Session exists - redirect to onboarding wizard
-      navigate('/onboarding');
+      // Session exists - redirect to new simple wizard!
+      navigate('/start');
 
     } catch (err: any) {
       console.error('Sign up error:', err);

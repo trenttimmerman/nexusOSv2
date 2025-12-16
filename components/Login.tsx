@@ -33,7 +33,7 @@ export const Login = () => {
 
         if (!profile?.store_id) {
           // User confirmed email but hasn't created a store yet
-          navigate('/setup');
+          navigate('/start');
         } else {
           navigate('/admin');
         }
