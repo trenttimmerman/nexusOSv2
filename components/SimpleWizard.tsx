@@ -159,11 +159,16 @@ export const SimpleWizard: React.FC = () => {
           })
           .eq('id', storeId);
 
-        // Also update store_config with the primary color
+        // Also update store_config with all design settings
         await supabase
           .from('store_config')
           .update({
             primary_color: selectedPalette?.primary || '#6366F1',
+            secondary_color: selectedPalette?.secondary || '#8B5CF6',
+            background_color: selectedPalette?.bg || '#FFFFFF',
+            store_type: storeType,
+            store_vibe: storeVibe,
+            color_palette: colorPalette,
           })
           .eq('store_id', storeId);
       }

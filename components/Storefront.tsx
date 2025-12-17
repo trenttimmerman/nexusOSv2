@@ -23,6 +23,38 @@ import { CartDrawer } from './CartDrawer';
 export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: string) => void }> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true, onSelectField }) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
 
+  // Extract design settings from config
+  const primaryColor = config.primaryColor || '#6366F1';
+  const secondaryColor = config.secondaryColor || '#8B5CF6';
+  const backgroundColor = config.backgroundColor || '#FFFFFF';
+  const storeVibe = config.storeVibe || 'minimal';
+
+  // Generate vibe-based classes
+  const getVibeClasses = () => {
+    switch (storeVibe) {
+      case 'playful':
+        return 'font-sans';
+      case 'bold':
+        return 'font-sans uppercase tracking-wide';
+      case 'cozy':
+        return 'font-serif';
+      case 'luxury':
+        return 'font-serif tracking-widest';
+      case 'retro':
+        return 'font-mono';
+      case 'minimal':
+      default:
+        return 'font-sans';
+    }
+  };
+
+  // CSS custom properties for design tokens
+  const designTokenStyles = {
+    '--store-primary': primaryColor,
+    '--store-secondary': secondaryColor,
+    '--store-background': backgroundColor,
+  } as React.CSSProperties;
+
   const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
   // Hero, Card, Footer components are now determined dynamically in renderBlock to allow for variants
   const FooterComponent = FOOTER_COMPONENTS[config.footerStyle] || FOOTER_COMPONENTS['columns'];
@@ -51,7 +83,10 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
       if (product) {
           const ProductComponent = PRODUCT_PAGE_COMPONENTS[product.template || 'standard'] || PRODUCT_PAGE_COMPONENTS['standard'];
           return (
-              <div className={`min-h-screen flex flex-col bg-white selection:bg-black selection:text-white ${isSidebar ? 'md:pl-64' : ''}`}>
+              <div 
+                className={`min-h-screen flex flex-col selection:text-white ${isSidebar ? 'md:pl-64' : ''} ${getVibeClasses()}`}
+                style={{ ...designTokenStyles, backgroundColor, color: primaryColor }}
+              >
                   <HeaderComponent
                       storeName={config.name}
                       logoUrl={config.logoUrl}
@@ -250,7 +285,10 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-white selection:bg-black selection:text-white ${isSidebar ? 'md:pl-64' : ''}`}>
+    <div 
+      className={`min-h-screen flex flex-col selection:text-white ${isSidebar ? 'md:pl-64' : ''} ${getVibeClasses()}`}
+      style={{ ...designTokenStyles, backgroundColor }}
+    >
       <HeaderComponent
         storeName={config.name}
         logoUrl={config.logoUrl}
@@ -258,6 +296,8 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         links={navLinks}
         cartCount={cartCount}
         onOpenCart={() => setIsCartOpen(true)}
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
       />
 
       <main className="flex-1">
@@ -299,11 +339,11 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
             <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400 mb-6 shadow-sm">
               <Plus size={32} />
             </div>
-            <h3 className="text-xl font-bold text-neutral-900 mb-2">Start Building</h3>
+            <h3 className="text-xl font-bold mb-2" style={{ color: primaryColor }}>Start Building</h3>
             <p className="text-neutral-500 max-w-xs mx-auto mb-6">This page is currently empty. Add your first section from the sidebar to bring it to life.</p>
             {previewBlock && (
-              <div className="w-full max-w-4xl mx-auto border-2 border-blue-500 relative overflow-hidden animate-pulse bg-white rounded-lg shadow-xl">
-                <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-bold px-2 py-1 z-50">PREVIEW</div>
+              <div className="w-full max-w-4xl mx-auto border-2 relative overflow-hidden animate-pulse rounded-lg shadow-xl" style={{ borderColor: primaryColor, backgroundColor }}>
+                <div className="text-white text-[10px] font-bold px-2 py-1 z-50 absolute top-0 right-0" style={{ backgroundColor: primaryColor }}>PREVIEW</div>
                 {renderBlock(previewBlock)}
               </div>
             )}
@@ -311,8 +351,40 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         )}
       </main>
 
-      <FooterComponent storeName={config.name} primaryColor={config.primaryColor} />
+      <FooterComponent storeName={config.name} primaryColor={primaryColor} secondaryColor={secondaryColor} />
       {showCartDrawer && <CartDrawer />}
+      
+      {/* Dynamic design token styles */}
+      <style>{`
+        :root {
+          --store-primary: ${primaryColor};
+          --store-secondary: ${secondaryColor};
+          --store-background: ${backgroundColor};
+        }
+        
+        /* Apply accent color to buttons and links */
+        .btn-primary, [data-accent="primary"] {
+          background-color: var(--store-primary) !important;
+        }
+        
+        .text-accent {
+          color: var(--store-primary);
+        }
+        
+        .border-accent {
+          border-color: var(--store-primary);
+        }
+        
+        .bg-accent {
+          background-color: var(--store-primary);
+        }
+        
+        /* Selection styling */
+        ::selection {
+          background-color: ${primaryColor};
+          color: white;
+        }
+      `}</style>
     </div>
   );
 };

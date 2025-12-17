@@ -11,6 +11,8 @@ interface HeaderProps {
   links: NavLink[];
   cartCount: number;
   onOpenCart?: () => void;
+  primaryColor?: string;
+  secondaryColor?: string;
 }
 
 // Reusable Logo Helper Component

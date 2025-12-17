@@ -5,6 +5,7 @@ import { Facebook, Twitter, Instagram, ArrowRight, Mail, Send, Globe, ShieldChec
 interface FooterProps {
   storeName: string;
   primaryColor: string;
+  secondaryColor?: string;
 }
 
 // 1. Minimal (Clean, barely there)

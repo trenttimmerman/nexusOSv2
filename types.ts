@@ -125,6 +125,11 @@ export interface StoreConfig {
   footerStyle: FooterStyleId;
   scrollbarStyle: ScrollbarStyleId;
   primaryColor: string;
+  secondaryColor?: string;
+  backgroundColor?: string;
+  storeType?: string;
+  storeVibe?: 'playful' | 'minimal' | 'bold' | 'cozy' | 'luxury' | 'retro';
+  colorPalette?: string;
   logoUrl?: string;
   logoHeight?: number;
   
