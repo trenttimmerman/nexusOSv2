@@ -1,7 +1,7 @@
 
 -- 1. Create Store Secrets Table (For sensitive keys)
 create table if not exists store_secrets (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   store_id uuid references stores(id) on delete cascade unique,
   stripe_secret_key text,
   paypal_client_secret text,
@@ -31,7 +31,7 @@ add column if not exists paypal_client_id text;
 
 -- 3. Create Payment Transactions Table (To track payment attempts)
 create table if not exists payments (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   store_id uuid references stores(id) on delete cascade,
   order_id uuid references orders(id) on delete cascade,
   provider text not null, -- 'stripe', 'paypal'

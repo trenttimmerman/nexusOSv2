@@ -1,6 +1,6 @@
 -- Create Discounts Table
 create table if not exists discounts (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   store_id uuid references stores(id) on delete cascade,
   code text not null,
   type text not null check (type in ('percentage', 'fixed')),

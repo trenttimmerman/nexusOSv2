@@ -3,7 +3,7 @@ create extension if not exists "uuid-ossp";
 
 -- 1. Customers Table
 create table if not exists customers (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   store_id uuid references stores(id) on delete cascade,
   email text not null,
   first_name text,
@@ -14,7 +14,7 @@ create table if not exists customers (
 
 -- 2. Orders Table
 create table if not exists orders (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   store_id uuid references stores(id) on delete cascade,
   customer_id uuid references customers(id) on delete set null,
   total_amount numeric default 0,
@@ -26,7 +26,7 @@ create table if not exists orders (
 
 -- 3. Order Items Table
 create table if not exists order_items (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   order_id uuid references orders(id) on delete cascade,
   product_id text, -- referencing products.id (text)
   quantity integer default 1,
@@ -36,7 +36,7 @@ create table if not exists order_items (
 
 -- 4. Subscriptions Table (SaaS Layer)
 create table if not exists subscriptions (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   store_id uuid references stores(id) on delete cascade unique, -- One active subscription per store
   plan_id text default 'free', -- free, pro, enterprise
   status text default 'active', -- active, past_due, cancelled, trialing

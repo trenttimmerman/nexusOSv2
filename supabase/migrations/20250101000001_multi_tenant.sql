@@ -1,6 +1,9 @@
+-- Enable UUID extension
+create extension if not exists "uuid-ossp" with schema extensions;
+
 -- Create Stores Table
 create table if not exists stores (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   name text not null,
   slug text unique not null,
   created_at timestamptz default now()
