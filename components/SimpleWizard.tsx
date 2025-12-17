@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { Loader2, Sparkles, ArrowRight, ArrowLeft, Check, Rocket, Heart, Star, Zap, Store } from 'lucide-react';
+import { Loader2, Sparkles, ArrowRight, ArrowLeft, Check, Rocket, Heart, Star, Zap, Store, ShoppingBag, Tag, Package } from 'lucide-react';
 
 // =============================================================================
 // SUPER SIMPLE WIZARD - So easy a 5 year old could do it!
@@ -249,16 +249,60 @@ export const SimpleWizard: React.FC = () => {
 
       {/* Encouragement bubble */}
       {step !== 'welcome' && step !== 'done' && step !== 'creating' && (
-        <div className="fixed top-6 right-6 z-50 animate-bounce-slow">
+        <div className="fixed top-6 right-6 z-50 animate-bounce-slow hidden md:block">
           <div className="bg-white/10 backdrop-blur-xl rounded-full px-4 py-2 text-sm font-medium">
             {encouragement}
           </div>
         </div>
       )}
+      
+      {/* Mobile mini preview - shows current choices */}
+      {step !== 'welcome' && step !== 'creating' && step !== 'done' && (
+        <div className="fixed top-4 left-4 right-4 z-40 lg:hidden">
+          <div 
+            className="flex items-center gap-3 p-3 rounded-2xl backdrop-blur-xl transition-all duration-500"
+            style={{ backgroundColor: (currentPalette?.primary || '#6366f1') + '30' }}
+          >
+            <div 
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+              style={{ backgroundColor: currentPalette?.bg || '#ffffff' }}
+            >
+              {STORE_TYPES.find(t => t.id === storeType)?.emoji || '🏪'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p 
+                className="font-bold text-sm truncate"
+                style={{ color: currentPalette?.bg || '#ffffff' }}
+              >
+                {storeName || 'Your Store'}
+              </p>
+              <div className="flex items-center gap-2">
+                {colorPalette && (
+                  <div className="flex -space-x-1">
+                    <div className="w-3 h-3 rounded-full border border-white/50" style={{ backgroundColor: currentPalette?.primary }} />
+                    <div className="w-3 h-3 rounded-full border border-white/50" style={{ backgroundColor: currentPalette?.secondary }} />
+                  </div>
+                )}
+                {storeVibe && (
+                  <span className="text-xs text-white/70">
+                    {STORE_VIBES.find(v => v.id === storeVibe)?.emoji}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="text-xs text-white/50 bg-white/10 px-2 py-1 rounded-full">
+              Live ✨
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Main content */}
-      <main className="relative z-10 min-h-screen flex flex-col items-center justify-center p-6">
-        <div className="w-full max-w-2xl">
+      {/* Main content with Live Preview */}
+      <main className="relative z-10 min-h-screen flex items-center justify-center p-6 pt-20 lg:pt-6">
+        <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-8 items-center lg:items-start">
+          
+          {/* Left side: Wizard steps */}
+          <div className="w-full lg:w-1/2 max-w-xl">
           
           {/* Error message */}
           {error && (
@@ -585,6 +629,159 @@ export const SimpleWizard: React.FC = () => {
             </div>
           )}
 
+          </div>
+          
+          {/* Right side: Live Preview Panel */}
+          {step !== 'welcome' && step !== 'creating' && step !== 'done' && (
+            <div className="hidden lg:block w-full lg:w-1/2 max-w-md sticky top-24">
+              <div className="relative">
+                {/* Phone frame */}
+                <div className="bg-gray-900 rounded-[3rem] p-3 shadow-2xl shadow-black/50">
+                  <div className="bg-black rounded-[2.5rem] overflow-hidden relative">
+                    {/* Phone notch */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-black rounded-b-3xl z-20" />
+                    
+                    {/* Store Preview */}
+                    <div 
+                      className="min-h-[500px] transition-all duration-500"
+                      style={{ 
+                        backgroundColor: currentPalette?.bg || '#ffffff',
+                      }}
+                    >
+                      {/* Header */}
+                      <div 
+                        className="pt-10 pb-4 px-4 border-b transition-all duration-500"
+                        style={{ 
+                          backgroundColor: currentPalette?.primary || '#6366f1',
+                          borderColor: currentPalette?.secondary + '40' || '#a5b4fc40'
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Store className="w-5 h-5 text-white" />
+                            <span className="font-bold text-white text-sm truncate max-w-[120px]">
+                              {storeName || 'Your Store'}
+                            </span>
+                          </div>
+                          <ShoppingBag className="w-5 h-5 text-white/80" />
+                        </div>
+                      </div>
+                      
+                      {/* Hero Section */}
+                      <div 
+                        className="p-4 text-center py-8 transition-all duration-500"
+                        style={{ backgroundColor: currentPalette?.secondary + '20' || '#e0e7ff' }}
+                      >
+                        <div className="text-4xl mb-2">
+                          {STORE_TYPES.find(t => t.id === storeType)?.emoji || '🏪'}
+                        </div>
+                        <h2 
+                          className={`font-bold text-lg transition-all duration-500 ${
+                            storeVibe === 'playful' ? 'font-comic' :
+                            storeVibe === 'minimal' ? 'font-light tracking-wide' :
+                            storeVibe === 'bold' ? 'font-black uppercase text-xl' :
+                            storeVibe === 'cozy' ? 'font-serif italic' :
+                            storeVibe === 'luxury' ? 'font-serif tracking-widest uppercase text-sm' :
+                            storeVibe === 'retro' ? 'font-mono' : ''
+                          }`}
+                          style={{ color: currentPalette?.primary || '#6366f1' }}
+                        >
+                          {storeName || 'Your Store Name'}
+                        </h2>
+                        <p 
+                          className="text-xs mt-1 opacity-70"
+                          style={{ color: currentPalette?.primary || '#6366f1' }}
+                        >
+                          {storeType ? `The best ${storeType} around!` : 'Your tagline here'}
+                        </p>
+                      </div>
+                      
+                      {/* Products Grid */}
+                      <div className="p-4">
+                        <h3 
+                          className={`text-xs font-semibold mb-3 transition-all duration-500 ${
+                            storeVibe === 'luxury' ? 'tracking-widest uppercase' : ''
+                          }`}
+                          style={{ color: currentPalette?.primary || '#6366f1' }}
+                        >
+                          {storeVibe === 'playful' ? '✨ Hot Stuff!' : 
+                           storeVibe === 'luxury' ? 'Featured Collection' : 
+                           'Featured Products'}
+                        </h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[1, 2, 3, 4].map((i) => (
+                            <div 
+                              key={i}
+                              className={`rounded-xl overflow-hidden transition-all duration-500 ${
+                                storeVibe === 'bold' ? 'rounded-none' :
+                                storeVibe === 'playful' ? 'rounded-2xl rotate-1' :
+                                storeVibe === 'luxury' ? 'rounded-sm' : ''
+                              }`}
+                              style={{ backgroundColor: currentPalette?.secondary + '30' || '#e0e7ff' }}
+                            >
+                              <div 
+                                className="aspect-square flex items-center justify-center"
+                                style={{ backgroundColor: currentPalette?.primary + '15' || '#6366f120' }}
+                              >
+                                <Package 
+                                  className="w-8 h-8 opacity-30"
+                                  style={{ color: currentPalette?.primary || '#6366f1' }}
+                                />
+                              </div>
+                              <div className="p-2">
+                                <div 
+                                  className="h-2 rounded-full mb-1 w-3/4"
+                                  style={{ backgroundColor: currentPalette?.primary + '40' || '#6366f140' }}
+                                />
+                                <div 
+                                  className="h-2 rounded-full w-1/2"
+                                  style={{ backgroundColor: currentPalette?.secondary || '#a5b4fc' }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Bottom nav preview */}
+                      <div 
+                        className="absolute bottom-0 left-0 right-0 p-4 border-t flex justify-around"
+                        style={{ 
+                          backgroundColor: currentPalette?.bg || '#ffffff',
+                          borderColor: currentPalette?.primary + '20' || '#6366f120'
+                        }}
+                      >
+                        <div className="flex flex-col items-center gap-1">
+                          <Store className="w-4 h-4" style={{ color: currentPalette?.primary || '#6366f1' }} />
+                          <span className="text-[8px]" style={{ color: currentPalette?.primary || '#6366f1' }}>Shop</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1 opacity-50">
+                          <Heart className="w-4 h-4" style={{ color: currentPalette?.primary || '#6366f1' }} />
+                          <span className="text-[8px]" style={{ color: currentPalette?.primary || '#6366f1' }}>Saved</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1 opacity-50">
+                          <ShoppingBag className="w-4 h-4" style={{ color: currentPalette?.primary || '#6366f1' }} />
+                          <span className="text-[8px]" style={{ color: currentPalette?.primary || '#6366f1' }}>Cart</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* "Live Preview" label */}
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                  Live Preview
+                </div>
+              </div>
+              
+              {/* Preview hints */}
+              <div className="mt-4 text-center text-white/50 text-sm">
+                <p>👆 This updates as you make choices!</p>
+              </div>
+            </div>
+          )}
+          
         </div>
       </main>
 
