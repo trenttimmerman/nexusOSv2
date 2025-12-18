@@ -75,6 +75,10 @@ const PublicStoreWrapper = () => {
           return;
         }
 
+        // Load store_config (this has the wizard design settings)
+        const { data: storeConfig } = await supabase
+          .from('store_config').select('*').eq('store_id', store.id).single();
+
         // Load products
         const { data: productsData } = await supabase
           .from('products').select('*').eq('store_id', store.id);
@@ -83,18 +87,23 @@ const PublicStoreWrapper = () => {
         const { data: pagesData } = await supabase
           .from('pages').select('*').eq('store_id', store.id);
 
-        // Build store config from store data
+        // Build store config - prioritize store_config table, fallback to stores.settings
         const config = {
-          name: store.name || 'Store',
-          currency: store.settings?.currency || 'USD',
-          headerStyle: store.settings?.headerStyle || 'canvas',
-          heroStyle: store.settings?.heroStyle || 'impact',
-          productCardStyle: store.settings?.productCardStyle || 'classic',
-          footerStyle: store.settings?.footerStyle || 'columns',
-          scrollbarStyle: store.settings?.scrollbarStyle || 'native',
-          primaryColor: store.settings?.primaryColor || '#3b82f6',
-          logoUrl: store.settings?.logoUrl || '',
-          logoHeight: store.settings?.logoHeight || 32,
+          name: storeConfig?.name || store.name || 'Store',
+          currency: storeConfig?.currency || store.settings?.currency || 'USD',
+          headerStyle: storeConfig?.header_style || store.settings?.headerStyle || 'canvas',
+          heroStyle: storeConfig?.hero_style || store.settings?.heroStyle || 'impact',
+          productCardStyle: storeConfig?.product_card_style || store.settings?.productCardStyle || 'classic',
+          footerStyle: storeConfig?.footer_style || store.settings?.footerStyle || 'columns',
+          scrollbarStyle: storeConfig?.scrollbar_style || store.settings?.scrollbarStyle || 'native',
+          primaryColor: storeConfig?.primary_color || store.settings?.primary_color || '#6366F1',
+          secondaryColor: storeConfig?.secondary_color || store.settings?.secondary_color || '#8B5CF6',
+          backgroundColor: storeConfig?.background_color || store.settings?.background_color || '#FFFFFF',
+          storeType: storeConfig?.store_type || store.settings?.store_type,
+          storeVibe: storeConfig?.store_vibe || store.settings?.store_vibe || 'minimal',
+          colorPalette: storeConfig?.color_palette || store.settings?.color_palette,
+          logoUrl: storeConfig?.logo_url || store.settings?.logoUrl || '',
+          logoHeight: storeConfig?.logo_height || store.settings?.logoHeight || 32,
         };
 
         setStoreData(config);
