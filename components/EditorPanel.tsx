@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Type, Image as ImageIcon, Palette, Upload, Sparkles, ChevronRight, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Bold, Italic, Minus, Plus } from 'lucide-react';
 
 interface EditorPanelProps {
@@ -10,10 +10,6 @@ interface EditorPanelProps {
   onUpdate: (data: any) => void;
   fields: string[];
 }
-
-import React, { useState, useEffect } from 'react';
-import { X, Type, Image as ImageIcon, Upload, Sparkles, Bold, Minus, Plus } from 'lucide-react';
-import { EditorPanelProps } from '../types';
 
 interface EditorFieldProps {
   field: string;
