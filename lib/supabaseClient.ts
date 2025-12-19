@@ -1,8 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Support both VITE_ and NEXT_PUBLIC_ prefixes for compatibility, and fallback to process.env
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+// Support multiple prefixes and fallbacks for different deployment environments
+const supabaseUrl = 
+  import.meta.env.VITE_SUPABASE_URL || 
+  import.meta.env.NEXT_PUBLIC_SUPABASE_URL ||
+  import.meta.env.SUPABASE_URL ||
+  (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_URL) ||
+  (typeof process !== 'undefined' && process.env?.SUPABASE_URL) ||
+  '';
+
+const supabaseAnonKey = 
+  import.meta.env.VITE_SUPABASE_ANON_KEY || 
+  import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  import.meta.env.SUPABASE_ANON_KEY ||
+  (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_ANON_KEY) ||
+  (typeof process !== 'undefined' && process.env?.SUPABASE_ANON_KEY) ||
+  '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('CRITICAL: Missing Supabase environment variables.');
@@ -10,11 +23,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
     urlPresent: !!supabaseUrl,
     keyPresent: !!supabaseAnonKey,
     envKeys: Object.keys(import.meta.env).filter(k => k.includes('SUPABASE')),
-    mode: import.meta.env.MODE
+    mode: import.meta.env.MODE,
+    allEnvKeys: Object.keys(import.meta.env)
   });
 }
 
 export const supabase = createClient(
-  supabaseUrl || '',
-  supabaseAnonKey || ''
+  supabaseUrl,
+  supabaseAnonKey
 );
