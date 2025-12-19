@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Layout, Image as ImageIcon, Type, AlignLeft, AlignCenter, AlignRight, Palette, Plus, Trash2, ChevronRight, ArrowLeft, Check, Upload, X, Bold, Italic, Link as LinkIcon, List, Loader2, Sparkles, Wand2 } from 'lucide-react';
+import { ChevronLeft, Layout, Image as ImageIcon, Type, AlignLeft, AlignCenter, AlignRight, Palette, Plus, Trash2, ChevronRight, ArrowLeft, Check, Upload, X, Bold, Italic, Link as LinkIcon, List, Loader2, Sparkles, Wand2, Info, ChevronDown, GripVertical, Mail, Phone, MessageSquare, User, FileText, Hash, Calendar, CheckSquare, ToggleLeft, Grid, Columns, Filter, SortAsc, Lightbulb, ExternalLink, Home, ShoppingBag, Users, HelpCircle, Zap, AlertCircle } from 'lucide-react';
 import { UniversalSectionData } from '../lib/smartMapper';
 import { supabase } from '../lib/supabaseClient';
 
@@ -30,6 +30,345 @@ const ALL_OPTIONS: Record<string, any[]> = {
   'system-promo': PROMO_BANNER_OPTIONS,
 };
 
+// ============== SECTION-SPECIFIC FIELD CONFIGURATIONS ==============
+// Each section type gets its own relevant fields instead of generic ones
+
+interface FieldConfig {
+  key: string;
+  label: string;
+  type: 'text' | 'richtext' | 'image' | 'url' | 'select' | 'number' | 'toggle' | 'color' | 'formBuilder' | 'productSelector' | 'linkSelector';
+  placeholder?: string;
+  maxLength?: number;
+  tip?: string;
+  examples?: string[];
+  options?: { value: string; label: string }[];
+  showAI?: boolean;
+  required?: boolean;
+  group?: string;
+  defaultValue?: any;
+}
+
+interface SectionFieldConfig {
+  title: string;
+  description: string;
+  groups: { id: string; label: string; icon?: React.ReactNode }[];
+  fields: FieldConfig[];
+}
+
+const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
+  'system-hero': {
+    title: 'Hero Section',
+    description: 'The first impression visitors see - make it count!',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'buttons', label: 'Buttons', icon: <ExternalLink size={12} /> },
+      { id: 'media', label: 'Media', icon: <ImageIcon size={12} /> },
+      { id: 'extras', label: 'Extras', icon: <Zap size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Headline', type: 'text', group: 'content', maxLength: 60, showAI: true, 
+        placeholder: 'Your main headline (30-60 chars)', 
+        tip: 'Start with action verbs, focus on benefits. Keep under 60 characters.',
+        examples: ['Transform Your Morning Routine', 'Premium Quality, Everyday Prices', 'Join 10,000+ Happy Customers'] },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', maxLength: 160, showAI: true,
+        placeholder: 'Supporting text that expands on your headline',
+        tip: 'Best at 120-160 characters. Explain the value proposition.' },
+      { key: 'image', label: 'Background Image', type: 'image', group: 'media',
+        tip: 'Recommended: 1920x1080px, under 500KB. High contrast works best.' },
+      { key: 'buttonText', label: 'Primary Button', type: 'text', group: 'buttons', showAI: true,
+        placeholder: 'e.g., Shop Now, Get Started',
+        examples: ['Shop Now', 'Get Started', 'Learn More', 'Browse Collection'] },
+      { key: 'buttonLink', label: 'Button Link', type: 'linkSelector', group: 'buttons',
+        placeholder: '/shop or https://...' },
+      { key: 'secondaryButtonText', label: 'Secondary Button', type: 'text', group: 'buttons',
+        placeholder: 'e.g., Learn More (optional)' },
+      { key: 'badge', label: 'Badge/Label', type: 'text', group: 'extras', showAI: true,
+        placeholder: 'e.g., ✨ New Collection, 🔥 Limited Time',
+        examples: ['✨ New Release', '🔥 Best Sellers Inside', '👗 New Season Arrivals'] },
+      { key: 'marqueeText', label: 'Scrolling Marquee', type: 'text', group: 'extras',
+        placeholder: 'Text that scrolls across the section' },
+    ]
+  },
+
+  'system-contact': {
+    title: 'Contact Form',
+    description: 'Let visitors reach out to you',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'form', label: 'Form Settings', icon: <Mail size={12} /> },
+      { id: 'info', label: 'Contact Info', icon: <Phone size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Get in Touch, Contact Us',
+        examples: ['Get in Touch', 'Let\'s Talk', 'How Can We Help?', 'Send Us a Message'] },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
+        placeholder: 'Brief description of what visitors can expect' },
+      { key: 'formFields', label: 'Form Fields', type: 'formBuilder', group: 'form',
+        tip: 'Add, remove, and configure your form fields' },
+      { key: 'submitButtonText', label: 'Submit Button Text', type: 'text', group: 'form',
+        placeholder: 'Send Message', defaultValue: 'Send Message' },
+      { key: 'successMessage', label: 'Success Message', type: 'text', group: 'form', showAI: true,
+        placeholder: 'Thank you! We\'ll respond within 24 hours.',
+        defaultValue: 'Thank you! We\'ll get back to you soon.' },
+      { key: 'recipientEmail', label: 'Send Submissions To', type: 'text', group: 'form',
+        placeholder: 'support@yourdomain.com',
+        tip: 'Email address where form submissions will be sent' },
+      { key: 'contactEmail', label: 'Display Email', type: 'text', group: 'info',
+        placeholder: 'hello@yourdomain.com' },
+      { key: 'contactPhone', label: 'Display Phone', type: 'text', group: 'info',
+        placeholder: '+1 (555) 123-4567' },
+      { key: 'contactAddress', label: 'Display Address', type: 'richtext', group: 'info',
+        placeholder: '123 Main St, City, State 12345' },
+    ]
+  },
+
+  'system-collection': {
+    title: 'Product Grid',
+    description: 'Display products from your store',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'products', label: 'Product Selection', icon: <ShoppingBag size={12} /> },
+      { id: 'layout', label: 'Grid Layout', icon: <Grid size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Our Products, Featured Collection',
+        examples: ['Featured Products', 'New Arrivals', 'Best Sellers', 'Shop the Collection'] },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
+        placeholder: 'Brief description of the products' },
+      { key: 'productDisplay', label: 'Display Mode', type: 'select', group: 'products',
+        options: [
+          { value: 'all', label: 'All Products' },
+          { value: 'featured', label: 'Featured Products Only' },
+          { value: 'category', label: 'Specific Category' },
+          { value: 'manual', label: 'Manual Selection' },
+        ],
+        defaultValue: 'all' },
+      { key: 'productCategory', label: 'Category Filter', type: 'select', group: 'products',
+        options: [{ value: '', label: 'All Categories' }],
+        tip: 'Filter products by category (only when "Specific Category" is selected)' },
+      { key: 'productCount', label: 'Products to Show', type: 'number', group: 'products',
+        placeholder: '8', defaultValue: 8,
+        tip: 'Number of products to display (4-24 recommended)' },
+      { key: 'productSort', label: 'Sort By', type: 'select', group: 'products',
+        options: [
+          { value: 'newest', label: 'Newest First' },
+          { value: 'price-asc', label: 'Price: Low to High' },
+          { value: 'price-desc', label: 'Price: High to Low' },
+          { value: 'name', label: 'Name A-Z' },
+          { value: 'bestselling', label: 'Best Selling' },
+        ],
+        defaultValue: 'newest' },
+      { key: 'gridColumns', label: 'Grid Columns', type: 'select', group: 'layout',
+        options: [
+          { value: '2', label: '2 Columns' },
+          { value: '3', label: '3 Columns' },
+          { value: '4', label: '4 Columns' },
+          { value: '5', label: '5 Columns' },
+        ],
+        defaultValue: '4' },
+      { key: 'showPrices', label: 'Show Prices', type: 'toggle', group: 'layout', defaultValue: true },
+      { key: 'showAddToCart', label: 'Show Add to Cart', type: 'toggle', group: 'layout', defaultValue: true },
+      { key: 'buttonText', label: 'View All Button', type: 'text', group: 'content',
+        placeholder: 'View All Products' },
+      { key: 'buttonLink', label: 'View All Link', type: 'linkSelector', group: 'content',
+        placeholder: '/shop' },
+    ]
+  },
+
+  'system-blog': {
+    title: 'Blog Posts',
+    description: 'Display articles and blog posts',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'posts', label: 'Post Settings', icon: <FileText size={12} /> },
+      { id: 'layout', label: 'Layout', icon: <Grid size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Latest Articles, From Our Blog',
+        examples: ['Latest Articles', 'From the Blog', 'Stories & Updates', 'Read More'] },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
+      { key: 'postsToShow', label: 'Posts to Show', type: 'number', group: 'posts',
+        placeholder: '6', defaultValue: 6 },
+      { key: 'postCategory', label: 'Category', type: 'select', group: 'posts',
+        options: [{ value: '', label: 'All Categories' }] },
+      { key: 'showDate', label: 'Show Date', type: 'toggle', group: 'layout', defaultValue: true },
+      { key: 'showAuthor', label: 'Show Author', type: 'toggle', group: 'layout', defaultValue: true },
+      { key: 'showExcerpt', label: 'Show Excerpt', type: 'toggle', group: 'layout', defaultValue: true },
+      { key: 'gridColumns', label: 'Grid Columns', type: 'select', group: 'layout',
+        options: [
+          { value: '2', label: '2 Columns' },
+          { value: '3', label: '3 Columns' },
+          { value: '4', label: '4 Columns' },
+        ],
+        defaultValue: '3' },
+    ]
+  },
+
+  'system-gallery': {
+    title: 'Image Gallery',
+    description: 'Display a collection of images',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'layout', label: 'Layout', icon: <Grid size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Our Gallery, Photo Collection' },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
+      { key: 'gridColumns', label: 'Grid Columns', type: 'select', group: 'layout',
+        options: [
+          { value: '2', label: '2 Columns' },
+          { value: '3', label: '3 Columns' },
+          { value: '4', label: '4 Columns' },
+          { value: '5', label: '5 Columns' },
+        ],
+        defaultValue: '4' },
+      { key: 'enableLightbox', label: 'Enable Lightbox', type: 'toggle', group: 'layout', defaultValue: true,
+        tip: 'Click images to view full size' },
+      { key: 'aspectRatio', label: 'Image Aspect Ratio', type: 'select', group: 'layout',
+        options: [
+          { value: 'square', label: 'Square (1:1)' },
+          { value: 'landscape', label: 'Landscape (16:9)' },
+          { value: 'portrait', label: 'Portrait (3:4)' },
+          { value: 'auto', label: 'Original Ratio' },
+        ],
+        defaultValue: 'square' },
+    ]
+  },
+
+  'system-video': {
+    title: 'Video Section',
+    description: 'Embed videos from YouTube, Vimeo, or upload your own',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'video', label: 'Video Settings', icon: <ImageIcon size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
+      { key: 'videoUrl', label: 'Video URL', type: 'url', group: 'video',
+        placeholder: 'https://youtube.com/watch?v=... or https://vimeo.com/...',
+        tip: 'Paste a YouTube or Vimeo URL' },
+      { key: 'autoplay', label: 'Autoplay', type: 'toggle', group: 'video', defaultValue: false,
+        tip: 'Video will play automatically (muted)' },
+      { key: 'loop', label: 'Loop Video', type: 'toggle', group: 'video', defaultValue: false },
+      { key: 'showControls', label: 'Show Controls', type: 'toggle', group: 'video', defaultValue: true },
+      { key: 'thumbnail', label: 'Custom Thumbnail', type: 'image', group: 'video',
+        tip: 'Optional custom preview image before video plays' },
+    ]
+  },
+
+  'system-email': {
+    title: 'Email Signup',
+    description: 'Collect email addresses from visitors',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'form', label: 'Form Settings', icon: <Mail size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Join Our Newsletter',
+        examples: ['Join Our Newsletter', 'Stay in the Loop', 'Get 10% Off', 'Subscribe for Updates'] },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
+        placeholder: 'Brief description of what subscribers will receive' },
+      { key: 'buttonText', label: 'Button Text', type: 'text', group: 'form',
+        placeholder: 'Subscribe', defaultValue: 'Subscribe' },
+      { key: 'successMessage', label: 'Success Message', type: 'text', group: 'form', showAI: true,
+        placeholder: 'Thanks for subscribing!', defaultValue: 'Thanks for subscribing!' },
+      { key: 'incentiveText', label: 'Incentive Text', type: 'text', group: 'content',
+        placeholder: 'e.g., Get 10% off your first order',
+        tip: 'Optional incentive to encourage signups' },
+    ]
+  },
+
+  'system-rich-text': {
+    title: 'Rich Text',
+    description: 'A simple text content section',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true,
+        placeholder: 'Section heading' },
+      { key: 'content', label: 'Content', type: 'richtext', group: 'content', showAI: true,
+        placeholder: 'Your main content text...',
+        tip: 'Use formatting tools to style your text' },
+    ]
+  },
+
+  'system-social': {
+    title: 'Social Feed',
+    description: 'Display social media content',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'settings', label: 'Settings', icon: <Users size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Follow Us, #YourBrand',
+        examples: ['Follow Us', 'Join the Community', '#YourBrand', 'See What\'s Trending'] },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
+      { key: 'instagramHandle', label: 'Instagram Handle', type: 'text', group: 'settings',
+        placeholder: '@yourbrand' },
+      { key: 'postsToShow', label: 'Posts to Show', type: 'number', group: 'settings',
+        placeholder: '6', defaultValue: 6 },
+    ]
+  },
+
+  'system-collapsible': {
+    title: 'FAQ / Accordion',
+    description: 'Expandable content sections',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Frequently Asked Questions, Details',
+        examples: ['Frequently Asked Questions', 'Product Details', 'Shipping Info', 'How It Works'] },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
+    ]
+  },
+
+  'system-layout': {
+    title: 'Content Layout',
+    description: 'Multi-column or image-text layouts',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'media', label: 'Media', icon: <ImageIcon size={12} /> },
+      { id: 'buttons', label: 'Buttons', icon: <ExternalLink size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true,
+        placeholder: 'Section heading' },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
+      { key: 'image', label: 'Image', type: 'image', group: 'media' },
+      { key: 'buttonText', label: 'Button Text', type: 'text', group: 'buttons', showAI: true },
+      { key: 'buttonLink', label: 'Button Link', type: 'linkSelector', group: 'buttons' },
+    ]
+  },
+};
+
+// Default config for sections not explicitly defined
+const DEFAULT_FIELD_CONFIG: SectionFieldConfig = {
+  title: 'Section',
+  description: 'Configure your section content',
+  groups: [
+    { id: 'content', label: 'Content', icon: <Type size={12} /> },
+    { id: 'media', label: 'Media', icon: <ImageIcon size={12} /> },
+    { id: 'buttons', label: 'Buttons', icon: <ExternalLink size={12} /> },
+  ],
+  fields: [
+    { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true, maxLength: 60 },
+    { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
+    { key: 'image', label: 'Main Image', type: 'image', group: 'media' },
+    { key: 'buttonText', label: 'Button Text', type: 'text', group: 'buttons', showAI: true },
+    { key: 'buttonLink', label: 'Button Link', type: 'linkSelector', group: 'buttons' },
+  ]
+};
+
 interface UniversalEditorProps {
   blockId: string;
   blockType: string;
@@ -38,7 +377,35 @@ interface UniversalEditorProps {
   activeField?: string | null;
   onUpdate: (data: UniversalSectionData) => void;
   onSwitchLayout: (newVariant: string) => void;
+  pages?: { id: string; name: string; slug: string }[];
 }
+
+// Form field types for the form builder
+interface FormFieldItem {
+  id: string;
+  type: 'text' | 'email' | 'phone' | 'textarea' | 'select' | 'checkbox' | 'number' | 'date';
+  label: string;
+  placeholder?: string;
+  required: boolean;
+  options?: string[];
+}
+
+const DEFAULT_FORM_FIELDS: FormFieldItem[] = [
+  { id: '1', type: 'text', label: 'Name', placeholder: 'Your name', required: true },
+  { id: '2', type: 'email', label: 'Email', placeholder: 'your@email.com', required: true },
+  { id: '3', type: 'textarea', label: 'Message', placeholder: 'Your message...', required: true },
+];
+
+const FORM_FIELD_TYPES = [
+  { value: 'text', label: 'Short Text', icon: <Type size={14} /> },
+  { value: 'email', label: 'Email', icon: <Mail size={14} /> },
+  { value: 'phone', label: 'Phone', icon: <Phone size={14} /> },
+  { value: 'textarea', label: 'Long Text', icon: <MessageSquare size={14} /> },
+  { value: 'number', label: 'Number', icon: <Hash size={14} /> },
+  { value: 'date', label: 'Date', icon: <Calendar size={14} /> },
+  { value: 'select', label: 'Dropdown', icon: <ChevronDown size={14} /> },
+  { value: 'checkbox', label: 'Checkbox', icon: <CheckSquare size={14} /> },
+];
 
 export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   blockId,
@@ -47,7 +414,8 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   data,
   activeField,
   onUpdate,
-  onSwitchLayout
+  onSwitchLayout,
+  pages = []
 }) => {
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [showLayoutPicker, setShowLayoutPicker] = useState(false);
@@ -180,15 +548,36 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
 
   // --- COMPONENTS ---
 
-  const ImagePicker = ({ id, label, value, onChange, onUpload }: { id?: string, label: string, value: string, onChange: (val: string) => void, onUpload: (e: any) => void }) => (
+  // Get section-specific configuration
+  const sectionConfig = SECTION_FIELD_CONFIGS[blockType] || DEFAULT_FIELD_CONFIG;
+  const [activeGroup, setActiveGroup] = useState<string>(sectionConfig.groups[0]?.id || 'content');
+  const [showExamples, setShowExamples] = useState<string | null>(null);
+  const [showLinkPicker, setShowLinkPicker] = useState<string | null>(null);
+  const [editingFormField, setEditingFormField] = useState<string | null>(null);
+
+  // Enhanced Image Picker with preview, dimensions, alt text
+  const ImagePicker = ({ id, label, value, onChange, onUpload, tip }: { 
+    id?: string, 
+    label: string, 
+    value: string, 
+    onChange: (val: string) => void, 
+    onUpload: (e: any) => void,
+    tip?: string 
+  }) => (
     <div className="space-y-2" id={id}>
       <label className="text-xs font-bold uppercase text-neutral-500 flex items-center justify-between">
         {label}
         {value && <button onClick={() => onChange('')} className="text-red-500 hover:text-red-400 text-[10px]">Remove</button>}
       </label>
       
+      {tip && (
+        <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+          <Info size={10} /> {tip}
+        </p>
+      )}
+      
       {!value ? (
-        <div className="border-2 border-dashed border-neutral-800 rounded-lg p-4 hover:bg-neutral-900/50 transition-colors group relative">
+        <div className="border-2 border-dashed border-neutral-800 rounded-lg p-6 hover:bg-neutral-900/50 hover:border-neutral-700 transition-all group relative">
           <input 
             type="file" 
             accept="image/*"
@@ -197,55 +586,174 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
             disabled={isUploading}
           />
           <div className="flex flex-col items-center justify-center text-neutral-500 group-hover:text-neutral-400">
-            {isUploading ? <Loader2 size={20} className="animate-spin mb-2" /> : <Upload size={20} className="mb-2" />}
-            <span className="text-xs font-medium">Upload Image</span>
+            {isUploading ? <Loader2 size={24} className="animate-spin mb-2" /> : <Upload size={24} className="mb-2" />}
+            <span className="text-xs font-medium mb-1">Drop image here or click to upload</span>
+            <span className="text-[10px] text-neutral-600">PNG, JPG up to 5MB</span>
           </div>
         </div>
       ) : (
         <div className="relative group rounded-lg overflow-hidden border border-neutral-800 bg-neutral-950">
           <div className="aspect-video relative">
-            <img src={value} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-               <label className="p-2 bg-white/10 hover:bg-white/20 rounded-lg cursor-pointer text-white backdrop-blur-sm transition-colors">
-                  <Upload size={16} />
+            <img src={value} className="w-full h-full object-cover" alt={label} />
+            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+               <label className="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg cursor-pointer text-white backdrop-blur-sm transition-colors text-xs font-medium flex items-center gap-2">
+                  <Upload size={14} /> Replace
                   <input type="file" accept="image/*" onChange={onUpload} className="hidden" />
                </label>
+               <button 
+                 onClick={() => onChange('')}
+                 className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-red-400 backdrop-blur-sm transition-colors text-xs font-medium"
+               >
+                 Remove
+               </button>
             </div>
           </div>
-          <input 
-            type="text" 
-            value={value} 
-            onChange={(e) => onChange(e.target.value)}
-            className="w-full p-2 bg-neutral-950 text-xs text-neutral-500 border-t border-neutral-800 focus:outline-none"
-            placeholder="https://..."
-          />
+          {/* Alt text input */}
+          <div className="p-2 border-t border-neutral-800">
+            <input 
+              type="text" 
+              value={data[`${id?.replace('editor-field-', '')}Alt`] || ''}
+              onChange={(e) => updateField(`${id?.replace('editor-field-', '')}Alt`, e.target.value)}
+              className="w-full p-2 bg-neutral-900 text-xs text-neutral-400 rounded border border-neutral-800 focus:outline-none focus:border-blue-500"
+              placeholder="Alt text for accessibility (describe the image)"
+            />
+          </div>
         </div>
       )}
     </div>
   );
 
-    const RichText = ({ id, label, value, onChange, rows = 3 }: { id?: string, label: string, value: string, onChange: (val: string) => void, rows?: number }) => (
-    <div className="space-y-2" id={id}>
-      <div className="flex items-center justify-between">
-        <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
-        <div className="flex items-center gap-1 bg-neutral-950 border border-neutral-800 rounded p-0.5">
-          <button className="p-1 hover:bg-neutral-800 rounded text-neutral-500 hover:text-white"><Bold size={10} /></button>
-          <button className="p-1 hover:bg-neutral-800 rounded text-neutral-500 hover:text-white"><Italic size={10} /></button>
-          <button className="p-1 hover:bg-neutral-800 rounded text-neutral-500 hover:text-white"><LinkIcon size={10} /></button>
-        </div>
-      </div>
-      <textarea
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-neutral-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none resize-none transition-all placeholder:text-neutral-700"
-        rows={rows}
-        placeholder={`Enter ${label.toLowerCase()}...`}
-      />
-    </div>
-  );
+  // Enhanced Rich Text with working formatting
+  const RichText = ({ id, label, value, onChange, rows = 3, tip, maxLength, showAI, fieldKey }: { 
+    id?: string, 
+    label: string, 
+    value: string, 
+    onChange: (val: string) => void, 
+    rows?: number,
+    tip?: string,
+    maxLength?: number,
+    showAI?: boolean,
+    fieldKey?: string
+  }) => {
+    const [localValue, setLocalValue] = useState(value || '');
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  // Input with optional AI generate button
-  const Input = ({ label, value, onChange, id, fieldKey, showAI = false, maxLength, placeholder }: { 
+    React.useEffect(() => {
+      setLocalValue(value || '');
+    }, [value]);
+
+    const applyFormat = (format: 'bold' | 'italic' | 'link') => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = localValue.substring(start, end);
+
+      let newText = '';
+      let cursorOffset = 0;
+
+      switch (format) {
+        case 'bold':
+          newText = localValue.substring(0, start) + `**${selectedText}**` + localValue.substring(end);
+          cursorOffset = selectedText ? 0 : 2;
+          break;
+        case 'italic':
+          newText = localValue.substring(0, start) + `*${selectedText}*` + localValue.substring(end);
+          cursorOffset = selectedText ? 0 : 1;
+          break;
+        case 'link':
+          if (selectedText) {
+            newText = localValue.substring(0, start) + `[${selectedText}](url)` + localValue.substring(end);
+          } else {
+            newText = localValue.substring(0, start) + `[link text](url)` + localValue.substring(end);
+          }
+          break;
+      }
+
+      setLocalValue(newText);
+      onChange(newText);
+
+      // Restore focus
+      setTimeout(() => {
+        textarea.focus();
+        if (format === 'link') {
+          textarea.setSelectionRange(start + (selectedText ? selectedText.length + 3 : 12), start + (selectedText ? selectedText.length + 6 : 15));
+        }
+      }, 0);
+    };
+
+    return (
+      <div className="space-y-2" id={id}>
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-0.5 bg-neutral-950 border border-neutral-800 rounded p-0.5">
+              <button 
+                onClick={() => applyFormat('bold')} 
+                className="p-1.5 hover:bg-neutral-800 rounded text-neutral-500 hover:text-white transition-colors"
+                title="Bold (**text**)"
+              >
+                <Bold size={12} />
+              </button>
+              <button 
+                onClick={() => applyFormat('italic')} 
+                className="p-1.5 hover:bg-neutral-800 rounded text-neutral-500 hover:text-white transition-colors"
+                title="Italic (*text*)"
+              >
+                <Italic size={12} />
+              </button>
+              <button 
+                onClick={() => applyFormat('link')} 
+                className="p-1.5 hover:bg-neutral-800 rounded text-neutral-500 hover:text-white transition-colors"
+                title="Link [text](url)"
+              >
+                <LinkIcon size={12} />
+              </button>
+            </div>
+            {showAI && fieldKey && (
+              <button 
+                onClick={() => generateAIContent(fieldKey)}
+                disabled={isGeneratingAI === fieldKey}
+                className="flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300 font-bold transition-colors disabled:opacity-50"
+              >
+                {isGeneratingAI === fieldKey ? (
+                  <><Loader2 size={10} className="animate-spin" /> Generating...</>
+                ) : (
+                  <><Sparkles size={10} /> AI Write</>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+        {tip && (
+          <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+            <Lightbulb size={10} /> {tip}
+          </p>
+        )}
+        <textarea
+          ref={textareaRef}
+          value={localValue}
+          onChange={(e) => {
+            setLocalValue(e.target.value);
+            onChange(e.target.value);
+          }}
+          className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-neutral-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none resize-none transition-all placeholder:text-neutral-700"
+          rows={rows}
+          maxLength={maxLength}
+          placeholder={`Enter ${label.toLowerCase()}...`}
+        />
+        {maxLength && (
+          <div className={`text-[10px] text-right ${(localValue?.length || 0) > maxLength * 0.9 ? 'text-yellow-500' : 'text-neutral-600'}`}>
+            {localValue?.length || 0}/{maxLength} characters
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Enhanced Input with tips, examples, and character count
+  const Input = ({ label, value, onChange, id, fieldKey, showAI = false, maxLength, placeholder, tip, examples }: { 
     label: string, 
     value: string, 
     onChange: (val: string) => void, 
@@ -253,25 +761,42 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     fieldKey?: string,
     showAI?: boolean,
     maxLength?: number,
-    placeholder?: string
+    placeholder?: string,
+    tip?: string,
+    examples?: string[]
   }) => (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
-        {showAI && fieldKey && (
-          <button 
-            onClick={() => generateAIContent(fieldKey)}
-            disabled={isGeneratingAI === fieldKey}
-            className="flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300 font-bold transition-colors disabled:opacity-50"
-          >
-            {isGeneratingAI === fieldKey ? (
-              <><Loader2 size={10} className="animate-spin" /> Generating...</>
-            ) : (
-              <><Sparkles size={10} /> AI Write</>
-            )}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {examples && examples.length > 0 && (
+            <button 
+              onClick={() => setShowExamples(showExamples === fieldKey ? null : fieldKey || null)}
+              className="text-[10px] text-blue-400 hover:text-blue-300 font-medium"
+            >
+              Examples
+            </button>
+          )}
+          {showAI && fieldKey && (
+            <button 
+              onClick={() => generateAIContent(fieldKey)}
+              disabled={isGeneratingAI === fieldKey}
+              className="flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300 font-bold transition-colors disabled:opacity-50"
+            >
+              {isGeneratingAI === fieldKey ? (
+                <><Loader2 size={10} className="animate-spin" /> Generating...</>
+              ) : (
+                <><Sparkles size={10} /> AI Write</>
+              )}
+            </button>
+          )}
+        </div>
       </div>
+      {tip && (
+        <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+          <Lightbulb size={10} /> {tip}
+        </p>
+      )}
       <input
         id={id}
         type="text"
@@ -281,9 +806,328 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700"
         placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
       />
-      {maxLength && (
-        <div className="text-[10px] text-neutral-600 text-right">{(value || '').length}/{maxLength}</div>
+      {/* Examples dropdown */}
+      {showExamples === fieldKey && examples && (
+        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
+          <p className="text-[10px] text-neutral-500 mb-2">Click to use:</p>
+          {examples.map((example, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                onChange(example);
+                setShowExamples(null);
+              }}
+              className="w-full text-left px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
+            >
+              {example}
+            </button>
+          ))}
+        </div>
       )}
+      {maxLength && (
+        <div className={`text-[10px] text-right ${(value?.length || 0) > maxLength * 0.9 ? 'text-yellow-500' : 'text-neutral-600'}`}>
+          {value?.length || 0}/{maxLength}
+        </div>
+      )}
+    </div>
+  );
+
+  // Smart Link Selector with page suggestions
+  const LinkSelector = ({ label, value, onChange, id, placeholder }: {
+    label: string,
+    value: string,
+    onChange: (val: string) => void,
+    id?: string,
+    placeholder?: string
+  }) => (
+    <div className="space-y-2">
+      <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
+      <div className="relative">
+        <input
+          id={id}
+          type="text"
+          value={value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setShowLinkPicker(id || 'link')}
+          className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700 pr-8"
+          placeholder={placeholder || '/page or https://...'}
+        />
+        <button 
+          onClick={() => setShowLinkPicker(showLinkPicker === id ? null : (id || 'link'))}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors"
+        >
+          <ChevronDown size={16} />
+        </button>
+      </div>
+      
+      {showLinkPicker === (id || 'link') && (
+        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
+          <p className="text-[10px] text-neutral-500 px-2 py-1 font-bold uppercase">Internal Pages</p>
+          <button
+            onClick={() => { onChange('/'); setShowLinkPicker(null); }}
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
+          >
+            <Home size={12} /> Home Page
+          </button>
+          <button
+            onClick={() => { onChange('/shop'); setShowLinkPicker(null); }}
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
+          >
+            <ShoppingBag size={12} /> Shop / Products
+          </button>
+          {pages.map(page => (
+            <button
+              key={page.id}
+              onClick={() => { onChange(`/${page.slug}`); setShowLinkPicker(null); }}
+              className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
+            >
+              <FileText size={12} /> {page.name}
+            </button>
+          ))}
+          <div className="border-t border-neutral-800 mt-2 pt-2">
+            <p className="text-[10px] text-neutral-500 px-2 py-1 font-bold uppercase">Scroll To Section</p>
+            <button
+              onClick={() => { onChange('#contact'); setShowLinkPicker(null); }}
+              className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
+            >
+              <Hash size={12} /> Contact Section
+            </button>
+            <button
+              onClick={() => { onChange('#products'); setShowLinkPicker(null); }}
+              className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
+            >
+              <Hash size={12} /> Products Section
+            </button>
+          </div>
+          <div className="border-t border-neutral-800 mt-2 pt-2">
+            <p className="text-[10px] text-neutral-500 px-2 py-1 font-bold uppercase">External Link</p>
+            <p className="text-[10px] text-neutral-600 px-2 py-1">Type full URL above (https://...)</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Form Builder Component
+  const FormBuilder = ({ value, onChange }: { value: FormFieldItem[], onChange: (fields: FormFieldItem[]) => void }) => {
+    const fields: FormFieldItem[] = value || DEFAULT_FORM_FIELDS;
+    const [addingField, setAddingField] = useState(false);
+
+    const addField = (type: string) => {
+      const newField: FormFieldItem = {
+        id: Date.now().toString(),
+        type: type as FormFieldItem['type'],
+        label: FORM_FIELD_TYPES.find(t => t.value === type)?.label || 'Field',
+        placeholder: '',
+        required: false,
+      };
+      onChange([...fields, newField]);
+      setAddingField(false);
+    };
+
+    const updateFormField = (id: string, updates: Partial<FormFieldItem>) => {
+      onChange(fields.map(f => f.id === id ? { ...f, ...updates } : f));
+    };
+
+    const removeFormField = (id: string) => {
+      onChange(fields.filter(f => f.id !== id));
+    };
+
+    const moveField = (index: number, direction: 'up' | 'down') => {
+      const newFields = [...fields];
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= fields.length) return;
+      [newFields[index], newFields[newIndex]] = [newFields[newIndex], newFields[index]];
+      onChange(newFields);
+    };
+
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-bold uppercase text-neutral-500">Form Fields</label>
+          <button
+            onClick={() => setAddingField(!addingField)}
+            className="flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 font-bold"
+          >
+            <Plus size={12} /> Add Field
+          </button>
+        </div>
+
+        {/* Field type selector */}
+        {addingField && (
+          <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            <p className="text-[10px] text-neutral-500 mb-2 font-bold uppercase">Choose field type:</p>
+            <div className="grid grid-cols-2 gap-2">
+              {FORM_FIELD_TYPES.map(type => (
+                <button
+                  key={type.value}
+                  onClick={() => addField(type.value)}
+                  className="flex items-center gap-2 p-2 text-xs text-neutral-300 hover:bg-neutral-800 rounded border border-neutral-800 transition-colors"
+                >
+                  {type.icon} {type.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Field list */}
+        <div className="space-y-2">
+          {fields.map((field, index) => (
+            <div 
+              key={field.id}
+              className="bg-neutral-900 border border-neutral-800 rounded-lg p-3 group"
+            >
+              {editingFormField === field.id ? (
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    value={field.label}
+                    onChange={(e) => updateFormField(field.id, { label: e.target.value })}
+                    className="w-full p-2 bg-neutral-950 border border-neutral-700 rounded text-sm text-white"
+                    placeholder="Field label"
+                  />
+                  <input
+                    type="text"
+                    value={field.placeholder || ''}
+                    onChange={(e) => updateFormField(field.id, { placeholder: e.target.value })}
+                    className="w-full p-2 bg-neutral-950 border border-neutral-700 rounded text-xs text-neutral-400"
+                    placeholder="Placeholder text"
+                  />
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 text-xs text-neutral-400">
+                      <input
+                        type="checkbox"
+                        checked={field.required}
+                        onChange={(e) => updateFormField(field.id, { required: e.target.checked })}
+                        className="rounded border-neutral-700"
+                      />
+                      Required field
+                    </label>
+                    <button
+                      onClick={() => setEditingFormField(null)}
+                      className="text-xs text-blue-400 hover:text-blue-300"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => moveField(index, 'up')}
+                      disabled={index === 0}
+                      className="p-0.5 text-neutral-600 hover:text-neutral-400 disabled:opacity-30"
+                    >
+                      <ChevronLeft size={12} className="rotate-90" />
+                    </button>
+                    <button 
+                      onClick={() => moveField(index, 'down')}
+                      disabled={index === fields.length - 1}
+                      className="p-0.5 text-neutral-600 hover:text-neutral-400 disabled:opacity-30"
+                    >
+                      <ChevronRight size={12} className="rotate-90" />
+                    </button>
+                  </div>
+                  <GripVertical size={14} className="text-neutral-600" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-neutral-300">{field.label}</span>
+                      {field.required && <span className="text-[10px] text-red-400">Required</span>}
+                    </div>
+                    <span className="text-[10px] text-neutral-600">{FORM_FIELD_TYPES.find(t => t.value === field.type)?.label}</span>
+                  </div>
+                  <button
+                    onClick={() => setEditingFormField(field.id)}
+                    className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <Type size={12} />
+                  </button>
+                  <button
+                    onClick={() => removeFormField(field.id)}
+                    className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Toggle Component
+  const Toggle = ({ label, value, onChange, tip }: { label: string, value: boolean, onChange: (val: boolean) => void, tip?: string }) => (
+    <div className="flex items-center justify-between py-2">
+      <div>
+        <label className="text-sm text-neutral-300">{label}</label>
+        {tip && <p className="text-[10px] text-neutral-600">{tip}</p>}
+      </div>
+      <button
+        onClick={() => onChange(!value)}
+        className={`relative w-10 h-5 rounded-full transition-colors ${value ? 'bg-blue-600' : 'bg-neutral-700'}`}
+      >
+        <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${value ? 'translate-x-5' : 'translate-x-0.5'}`} />
+      </button>
+    </div>
+  );
+
+  // Number Input
+  const NumberInput = ({ label, value, onChange, placeholder, tip, min = 1, max = 100 }: {
+    label: string,
+    value: number,
+    onChange: (val: number) => void,
+    placeholder?: string,
+    tip?: string,
+    min?: number,
+    max?: number
+  }) => (
+    <div className="space-y-2">
+      <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
+      {tip && (
+        <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+          <Info size={10} /> {tip}
+        </p>
+      )}
+      <input
+        type="number"
+        value={value || ''}
+        onChange={(e) => onChange(parseInt(e.target.value) || min)}
+        min={min}
+        max={max}
+        className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700"
+        placeholder={placeholder}
+      />
+    </div>
+  );
+
+  // Select Dropdown
+  const Select = ({ label, value, onChange, options, tip }: {
+    label: string,
+    value: string,
+    onChange: (val: string) => void,
+    options: { value: string, label: string }[],
+    tip?: string
+  }) => (
+    <div className="space-y-2">
+      <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
+      {tip && (
+        <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+          <Info size={10} /> {tip}
+        </p>
+      )}
+      <select
+        value={value || ''}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 outline-none appearance-none cursor-pointer"
+      >
+        {options.map(opt => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
     </div>
   );
 
@@ -363,8 +1207,11 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     <div className="h-full flex flex-col bg-neutral-900 border-l border-neutral-800">
       {/* Header */}
       <div className="p-4 border-b border-neutral-800">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500">{blockType.replace('system-', '')}</span>
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h3 className="font-bold text-white text-sm">{sectionConfig.title}</h3>
+            <p className="text-[10px] text-neutral-500">{sectionConfig.description}</p>
+          </div>
           <span className="text-[10px] bg-neutral-800 px-2 py-0.5 rounded text-neutral-400 border border-neutral-700">{variant}</span>
         </div>
         <button 
@@ -381,127 +1228,158 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         </button>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
-        
-        {/* Core Fields */}
-        <div className="space-y-5">
-          <h4 className="font-bold text-xs uppercase tracking-widest text-neutral-500 flex items-center gap-2 mb-4">
-            <Type size={12} /> Content
-          </h4>
-          
-          <Input 
-            id="editor-field-heading"
-            label="Heading" 
-            value={data.heading || ''} 
-            onChange={(val) => updateField('heading', val)}
-            fieldKey="heading"
-            showAI={true}
-            maxLength={60}
-            placeholder="Your main headline (30-60 chars)"
-          />
-          
-          <RichText 
-            id="editor-field-subheading"
-            label="Subheading" 
-            value={data.subheading || ''} 
-            onChange={(val) => updateField('subheading', val)} 
-          />
-
-          <ImagePicker 
-            id="editor-field-image"
-            label="Main Image" 
-            value={data.image || ''} 
-            onChange={(val) => updateField('image', val)}
-            onUpload={(e) => handleImageUpload(e, 'image')}
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <Input 
-              id="editor-field-buttonText"
-              label="Button Text" 
-              value={data.buttonText || ''} 
-              onChange={(val) => updateField('buttonText', val)}
-              fieldKey="buttonText"
-              showAI={true}
-              placeholder="e.g., Shop Now"
-            />
-            <Input 
-              id="editor-field-buttonLink"
-              label="Button Link" 
-              value={data.buttonLink || ''} 
-              onChange={(val) => updateField('buttonLink', val)}
-              placeholder="/shop or https://..."
-            />
-          </div>
-
-          <Input 
-            id="editor-field-secondaryButtonText"
-            label="Secondary Button" 
-            value={data.secondaryButtonText || ''} 
-            onChange={(val) => updateField('secondaryButtonText', val)}
-            placeholder="e.g., Learn More"
-          />
-
-          <Input 
-            id="editor-field-badge"
-            label="Badge Text" 
-            value={data.badge || ''} 
-            onChange={(val) => updateField('badge', val)}
-            fieldKey="badge"
-            showAI={true}
-            placeholder="e.g., ✨ New Collection"
-          />
-
-          <Input 
-            id="editor-field-marqueeText"
-            label="Marquee Text" 
-            value={data.marqueeText || ''} 
-            onChange={(val) => updateField('marqueeText', val)}
-            placeholder="Scrolling text message..."
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <Input 
-              id="editor-field-topBadge"
-              label="Top Badge" 
-              value={data.topBadge || ''} 
-              onChange={(val) => updateField('topBadge', val)} 
-            />
-            <Input 
-              id="editor-field-imageBadge"
-              label="Image Badge" 
-              value={data.imageBadge || ''} 
-              onChange={(val) => updateField('imageBadge', val)} 
-            />
-          </div>
-
-          {variant === 'typographic' && (
-            <div className="space-y-4 pt-4 border-t border-neutral-800">
-              <h5 className="font-bold text-xs uppercase text-neutral-500">Link Cards</h5>
-              {[1, 2, 3].map(num => (
-                <div key={num} className="space-y-2">
-                  <Input 
-                    id={`editor-field-link${num}Label`}
-                    label={`Link ${num} Label`} 
-                    value={data[`link${num}Label`] || ''} 
-                    onChange={(val) => updateField(`link${num}Label`, val)} 
-                  />
-                  <ImagePicker 
-                    id={`editor-field-link${num}Image`}
-                    label={`Link ${num} Image`} 
-                    value={data[`link${num}Image`] || ''} 
-                    onChange={(val) => updateField(`link${num}Image`, val)}
-                    onUpload={(e) => handleImageUpload(e, `link${num}Image`)}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+      {/* Group Tabs */}
+      {sectionConfig.groups.length > 1 && (
+        <div className="flex border-b border-neutral-800 bg-neutral-950/50">
+          {sectionConfig.groups.map(group => (
+            <button
+              key={group.id}
+              onClick={() => setActiveGroup(group.id)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold transition-colors border-b-2 ${
+                activeGroup === group.id 
+                  ? 'text-white border-blue-500 bg-blue-500/5' 
+                  : 'text-neutral-500 border-transparent hover:text-neutral-300'
+              }`}
+            >
+              {group.icon}
+              {group.label}
+            </button>
+          ))}
         </div>
+      )}
 
-        {/* Items List (Drill Down) */}
-        {data.items && (
+      {/* Main Content - Dynamic Fields */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
+        
+        {/* Render section-specific fields for active group */}
+        {sectionConfig.fields
+          .filter(field => field.group === activeGroup)
+          .map(field => {
+            const fieldValue = data[field.key];
+            const fieldId = `editor-field-${field.key}`;
+
+            switch (field.type) {
+              case 'text':
+                return (
+                  <Input
+                    key={field.key}
+                    id={fieldId}
+                    label={field.label}
+                    value={fieldValue || ''}
+                    onChange={(val) => updateField(field.key, val)}
+                    fieldKey={field.key}
+                    showAI={field.showAI}
+                    maxLength={field.maxLength}
+                    placeholder={field.placeholder}
+                    tip={field.tip}
+                    examples={field.examples}
+                  />
+                );
+
+              case 'richtext':
+                return (
+                  <RichText
+                    key={field.key}
+                    id={fieldId}
+                    label={field.label}
+                    value={fieldValue || ''}
+                    onChange={(val) => updateField(field.key, val)}
+                    fieldKey={field.key}
+                    showAI={field.showAI}
+                    maxLength={field.maxLength}
+                    tip={field.tip}
+                  />
+                );
+
+              case 'image':
+                return (
+                  <ImagePicker
+                    key={field.key}
+                    id={fieldId}
+                    label={field.label}
+                    value={fieldValue || ''}
+                    onChange={(val) => updateField(field.key, val)}
+                    onUpload={(e) => handleImageUpload(e, field.key)}
+                    tip={field.tip}
+                  />
+                );
+
+              case 'linkSelector':
+                return (
+                  <LinkSelector
+                    key={field.key}
+                    id={fieldId}
+                    label={field.label}
+                    value={fieldValue || ''}
+                    onChange={(val) => updateField(field.key, val)}
+                    placeholder={field.placeholder}
+                  />
+                );
+
+              case 'select':
+                return (
+                  <Select
+                    key={field.key}
+                    label={field.label}
+                    value={fieldValue || field.defaultValue || ''}
+                    onChange={(val) => updateField(field.key, val)}
+                    options={field.options || []}
+                    tip={field.tip}
+                  />
+                );
+
+              case 'number':
+                return (
+                  <NumberInput
+                    key={field.key}
+                    label={field.label}
+                    value={fieldValue || field.defaultValue || 0}
+                    onChange={(val) => updateField(field.key, val)}
+                    placeholder={field.placeholder}
+                    tip={field.tip}
+                  />
+                );
+
+              case 'toggle':
+                return (
+                  <Toggle
+                    key={field.key}
+                    label={field.label}
+                    value={fieldValue !== undefined ? fieldValue : field.defaultValue}
+                    onChange={(val) => updateField(field.key, val)}
+                    tip={field.tip}
+                  />
+                );
+
+              case 'url':
+                return (
+                  <Input
+                    key={field.key}
+                    id={fieldId}
+                    label={field.label}
+                    value={fieldValue || ''}
+                    onChange={(val) => updateField(field.key, val)}
+                    placeholder={field.placeholder}
+                    tip={field.tip}
+                  />
+                );
+
+              case 'formBuilder':
+                return (
+                  <FormBuilder
+                    key={field.key}
+                    value={fieldValue || DEFAULT_FORM_FIELDS}
+                    onChange={(val) => updateField(field.key, val)}
+                  />
+                );
+
+              default:
+                return null;
+            }
+          })}
+
+        {/* Items List (Drill Down) - for sections with items */}
+        {data.items && activeGroup === 'content' && (
           <div className="space-y-4 pt-6 border-t border-neutral-800">
             <div className="flex items-center justify-between mb-2">
               <h4 className="font-bold text-xs uppercase tracking-widest text-neutral-500 flex items-center gap-2">
@@ -519,7 +1397,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     className="flex-1 flex items-center gap-3 p-2 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 rounded-lg text-left transition-all group-hover:shadow-md"
                   >
                     <div className="w-10 h-10 bg-neutral-900 rounded-md overflow-hidden shrink-0 border border-neutral-800 flex items-center justify-center text-neutral-700">
-                      {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : <ImageIcon size={16} />}
+                      {item.image ? <img src={item.image} className="w-full h-full object-cover" alt="" /> : <ImageIcon size={16} />}
                     </div>
                     <div className="min-w-0">
                       <div className="text-sm font-medium truncate text-neutral-300 group-hover:text-white transition-colors">{item.title || 'Untitled'}</div>
@@ -536,41 +1414,66 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
           </div>
         )}
 
-        {/* Style Overrides */}
-        <div className="space-y-4 pt-6 border-t border-neutral-800">
-          <h4 className="font-bold text-xs uppercase tracking-widest text-neutral-500 flex items-center gap-2 mb-4">
-            <Palette size={12} /> Design
-          </h4>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase text-neutral-500">Background</label>
-              <select 
+        {/* Design Settings - always available */}
+        {activeGroup === sectionConfig.groups[sectionConfig.groups.length - 1]?.id && (
+          <div className="space-y-4 pt-6 border-t border-neutral-800">
+            <h4 className="font-bold text-xs uppercase tracking-widest text-neutral-500 flex items-center gap-2 mb-4">
+              <Palette size={12} /> Design Overrides
+            </h4>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <Select
+                label="Background"
                 value={data.style?.background || 'auto'}
-                onChange={(e) => updateStyle('background', e.target.value)}
-                className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 outline-none appearance-none cursor-pointer hover:border-neutral-700 transition-colors"
-              >
-                <option value="auto">Auto</option>
-                <option value="white">White</option>
-                <option value="black">Black</option>
-                <option value="accent">Accent</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase text-neutral-500">Padding</label>
-              <select 
+                onChange={(val) => updateStyle('background', val)}
+                options={[
+                  { value: 'auto', label: 'Auto' },
+                  { value: 'white', label: 'White' },
+                  { value: 'black', label: 'Black' },
+                  { value: 'accent', label: 'Accent' },
+                  { value: 'gradient', label: 'Gradient' },
+                ]}
+              />
+              <Select
+                label="Padding"
                 value={data.style?.padding || 'auto'}
-                onChange={(e) => updateStyle('padding', e.target.value)}
-                className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 outline-none appearance-none cursor-pointer hover:border-neutral-700 transition-colors"
-              >
-                <option value="auto">Auto</option>
-                <option value="s">Small</option>
-                <option value="m">Medium</option>
-                <option value="l">Large</option>
-              </select>
+                onChange={(val) => updateStyle('padding', val)}
+                options={[
+                  { value: 'auto', label: 'Auto' },
+                  { value: 's', label: 'Small' },
+                  { value: 'm', label: 'Medium' },
+                  { value: 'l', label: 'Large' },
+                  { value: 'xl', label: 'Extra Large' },
+                ]}
+              />
             </div>
+
+            <Select
+              label="Text Alignment"
+              value={data.style?.alignment || 'auto'}
+              onChange={(val) => updateStyle('alignment', val)}
+              options={[
+                { value: 'auto', label: 'Auto' },
+                { value: 'left', label: 'Left' },
+                { value: 'center', label: 'Center' },
+                { value: 'right', label: 'Right' },
+              ]}
+            />
+
+            <Select
+              label="Max Width"
+              value={data.style?.maxWidth || 'auto'}
+              onChange={(val) => updateStyle('maxWidth', val)}
+              options={[
+                { value: 'auto', label: 'Auto' },
+                { value: 'narrow', label: 'Narrow (800px)' },
+                { value: 'medium', label: 'Medium (1200px)' },
+                { value: 'wide', label: 'Wide (1400px)' },
+                { value: 'full', label: 'Full Width' },
+              ]}
+            />
           </div>
-        </div>
+        )}
 
       </div>
     </div>
