@@ -117,7 +117,9 @@ export type ScrollbarStyleId =
 export interface StoreConfig {
   id?: number; // Legacy ID
   store_id?: string; // Tenant ID
+  slug?: string; // Store URL slug for public access
   name: string;
+  tagline?: string; // Store tagline/description
   currency: string;
   headerStyle: HeaderStyleId;
   heroStyle: HeroStyleId;
@@ -125,6 +127,7 @@ export interface StoreConfig {
   footerStyle: FooterStyleId;
   scrollbarStyle: ScrollbarStyleId;
   primaryColor: string;
+  accentColor?: string; // Secondary accent color
   secondaryColor?: string;
   backgroundColor?: string;
   storeType?: string;
@@ -349,6 +352,7 @@ export interface AdminPanelProps {
   onConfigChange: (newConfig: StoreConfig) => void;
   products: Product[];
   onAddProduct: (product: Product) => void;
+  onDeleteProduct?: (productId: string) => void;
   pages: Page[];
   activePageId: string;
   onAddPage: (page: Page) => void;

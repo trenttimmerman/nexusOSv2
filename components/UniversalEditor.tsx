@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Layout, Image as ImageIcon, Type, AlignLeft, AlignCenter, AlignRight, Palette, Plus, Trash2, ChevronRight, ArrowLeft, Check, Upload, X, Bold, Italic, Link as LinkIcon, List, Loader2 } from 'lucide-react';
+import { ChevronLeft, Layout, Image as ImageIcon, Type, AlignLeft, AlignCenter, AlignRight, Palette, Plus, Trash2, ChevronRight, ArrowLeft, Check, Upload, X, Bold, Italic, Link as LinkIcon, List, Loader2, Sparkles, Wand2 } from 'lucide-react';
 import { UniversalSectionData } from '../lib/smartMapper';
 import { supabase } from '../lib/supabaseClient';
 
@@ -52,6 +52,53 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [showLayoutPicker, setShowLayoutPicker] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState<string | null>(null);
+  
+  // AI Content Generation (simulated for now - would connect to OpenAI/Claude in production)
+  const generateAIContent = async (field: string, context?: string) => {
+    setIsGeneratingAI(field);
+    
+    // Simulate AI generation with realistic delays
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const aiSuggestions: Record<string, Record<string, string>> = {
+      heading: {
+        default: 'Transform Your Vision Into Reality',
+        ecommerce: 'Discover Products You\'ll Love',
+        fashion: 'Elevate Your Style Today',
+        tech: 'Innovation Meets Excellence',
+        food: 'Taste the Difference',
+      },
+      subheading: {
+        default: 'We help businesses grow with cutting-edge solutions designed for the modern world.',
+        ecommerce: 'Shop our curated collection of premium products, handpicked for quality and style.',
+        fashion: 'From runway trends to everyday essentials, find your perfect look.',
+        tech: 'Discover tools and technologies that power the future of work.',
+        food: 'Fresh ingredients, authentic flavors, delivered to your door.',
+      },
+      buttonText: {
+        default: 'Get Started',
+        ecommerce: 'Shop Now',
+        fashion: 'Browse Collection',
+        tech: 'Learn More',
+        food: 'Order Now',
+      },
+      badge: {
+        default: '✨ New Release',
+        ecommerce: '🔥 Best Sellers Inside',
+        fashion: '👗 New Season Arrivals',
+        tech: '🚀 Now Available',
+        food: '🍃 Farm Fresh Daily',
+      }
+    };
+    
+    const suggestions = aiSuggestions[field] || aiSuggestions['default'];
+    const types = Object.keys(suggestions);
+    const randomType = types[Math.floor(Math.random() * types.length)];
+    
+    updateField(field, suggestions[randomType]);
+    setIsGeneratingAI(null);
+  };
 
   // Auto-scroll to active field
   React.useEffect(() => {
@@ -197,17 +244,46 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     </div>
   );
 
-  const Input = ({ label, value, onChange, id }: { label: string, value: string, onChange: (val: string) => void, id?: string }) => (
+  // Input with optional AI generate button
+  const Input = ({ label, value, onChange, id, fieldKey, showAI = false, maxLength, placeholder }: { 
+    label: string, 
+    value: string, 
+    onChange: (val: string) => void, 
+    id?: string,
+    fieldKey?: string,
+    showAI?: boolean,
+    maxLength?: number,
+    placeholder?: string
+  }) => (
     <div className="space-y-2">
-      <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
+        {showAI && fieldKey && (
+          <button 
+            onClick={() => generateAIContent(fieldKey)}
+            disabled={isGeneratingAI === fieldKey}
+            className="flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300 font-bold transition-colors disabled:opacity-50"
+          >
+            {isGeneratingAI === fieldKey ? (
+              <><Loader2 size={10} className="animate-spin" /> Generating...</>
+            ) : (
+              <><Sparkles size={10} /> AI Write</>
+            )}
+          </button>
+        )}
+      </div>
       <input
         id={id}
         type="text"
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
+        maxLength={maxLength}
         className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700"
-        placeholder={`Enter ${label.toLowerCase()}...`}
+        placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
       />
+      {maxLength && (
+        <div className="text-[10px] text-neutral-600 text-right">{(value || '').length}/{maxLength}</div>
+      )}
     </div>
   );
 
@@ -318,7 +394,11 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
             id="editor-field-heading"
             label="Heading" 
             value={data.heading || ''} 
-            onChange={(val) => updateField('heading', val)} 
+            onChange={(val) => updateField('heading', val)}
+            fieldKey="heading"
+            showAI={true}
+            maxLength={60}
+            placeholder="Your main headline (30-60 chars)"
           />
           
           <RichText 
@@ -341,13 +421,17 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
               id="editor-field-buttonText"
               label="Button Text" 
               value={data.buttonText || ''} 
-              onChange={(val) => updateField('buttonText', val)} 
+              onChange={(val) => updateField('buttonText', val)}
+              fieldKey="buttonText"
+              showAI={true}
+              placeholder="e.g., Shop Now"
             />
             <Input 
               id="editor-field-buttonLink"
               label="Button Link" 
               value={data.buttonLink || ''} 
-              onChange={(val) => updateField('buttonLink', val)} 
+              onChange={(val) => updateField('buttonLink', val)}
+              placeholder="/shop or https://..."
             />
           </div>
 
@@ -355,21 +439,26 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
             id="editor-field-secondaryButtonText"
             label="Secondary Button" 
             value={data.secondaryButtonText || ''} 
-            onChange={(val) => updateField('secondaryButtonText', val)} 
+            onChange={(val) => updateField('secondaryButtonText', val)}
+            placeholder="e.g., Learn More"
           />
 
           <Input 
             id="editor-field-badge"
             label="Badge Text" 
             value={data.badge || ''} 
-            onChange={(val) => updateField('badge', val)} 
+            onChange={(val) => updateField('badge', val)}
+            fieldKey="badge"
+            showAI={true}
+            placeholder="e.g., ✨ New Collection"
           />
 
           <Input 
             id="editor-field-marqueeText"
             label="Marquee Text" 
             value={data.marqueeText || ''} 
-            onChange={(val) => updateField('marqueeText', val)} 
+            onChange={(val) => updateField('marqueeText', val)}
+            placeholder="Scrolling text message..."
           />
 
           <div className="grid grid-cols-2 gap-4">

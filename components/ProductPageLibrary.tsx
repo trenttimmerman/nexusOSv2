@@ -124,7 +124,7 @@ export const ProductPageStandard: React.FC<ProductPageProps> = ({ product, onAdd
                     </div>
                     <h1 className="text-4xl font-bold text-neutral-900 mb-2">{product.name}</h1>
                     <div className="flex items-center gap-4 mb-6">
-                        <span className="text-2xl font-medium text-neutral-900">${(currentPrice / 100).toFixed(2)}</span>
+                        <span className="text-2xl font-medium text-neutral-900">${currentPrice.toFixed(2)}</span>
                         {product.compareAtPrice && (
                             <span className="text-lg text-neutral-400 line-through">${product.compareAtPrice.toFixed(2)}</span>
                         )}
@@ -247,7 +247,7 @@ export const ProductPageSplit: React.FC<ProductPageProps> = ({ product, onAddToC
         <div className="lg:w-1/2 p-12 lg:p-24 flex flex-col justify-center bg-white">
             <span className="text-sm font-bold tracking-widest uppercase text-neutral-400 mb-4">{product.category}</span>
             <h1 className="text-5xl lg:text-6xl font-black text-neutral-900 mb-6 leading-none">{product.name}</h1>
-            <p className="text-3xl font-light text-neutral-600 mb-12">${(currentPrice / 100).toFixed(2)}</p>
+            <p className="text-3xl font-light text-neutral-600 mb-12">${currentPrice.toFixed(2)}</p>
 
             <div className="prose prose-lg prose-neutral mb-12" dangerouslySetInnerHTML={{ __html: product.description }} />
 
@@ -320,7 +320,7 @@ export const ProductPageMinimal: React.FC<ProductPageProps> = ({ product, onAddT
     <div className="max-w-4xl mx-auto px-6 py-24 text-center">
         <span className="text-xs font-bold tracking-[0.2em] uppercase text-neutral-400 mb-6 block">{product.category}</span>
         <h1 className="text-5xl font-serif italic mb-4">{product.name}</h1>
-        <p className="text-xl text-neutral-600 mb-12">${(currentPrice / 100).toFixed(2)}</p>
+        <p className="text-xl text-neutral-600 mb-12">${currentPrice.toFixed(2)}</p>
 
         <div className="aspect-[4/3] bg-neutral-100 mb-12 overflow-hidden">
             {mainImage && <img src={mainImage} className="w-full h-full object-cover" alt={product.name} />}
@@ -368,7 +368,7 @@ export const ProductPageGallery: React.FC<ProductPageProps> = ({ product }) => {
         <div className="max-w-3xl mx-auto px-6 py-24 text-center">
             <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
             <div className="flex items-center justify-center gap-4 mb-8">
-                <span className="text-2xl">${(product.price / 100).toFixed(2)}</span>
+                <span className="text-2xl">${product.price.toFixed(2)}</span>
             </div>
             <button className="w-full md:w-auto px-16 py-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition-colors shadow-xl shadow-blue-600/20">
                 Add to Cart
@@ -393,7 +393,7 @@ export const ProductPageImmersive: React.FC<ProductPageProps> = ({ product }) =>
                 <div>
                     <span className="text-blue-500 font-mono text-sm mb-2 block">NEW ARRIVAL // 2024</span>
                     <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none mb-4">{product.name}</h1>
-                    <p className="text-2xl text-neutral-400 font-light">${(product.price / 100).toFixed(2)}</p>
+                    <p className="text-2xl text-neutral-400 font-light">${product.price.toFixed(2)}</p>
                 </div>
 
                 <div className="prose prose-invert prose-lg opacity-80" dangerouslySetInnerHTML={{ __html: product.description }} />
@@ -564,7 +564,7 @@ export const ProductPageLiquidReveal: React.FC<ProductPageProps> = ({ product })
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-center p-8 z-10 mix-blend-difference text-white">
                 <span className="text-xs md:text-sm font-mono tracking-widest uppercase mb-2 md:mb-4 opacity-80">{product.category || 'Collection'}</span>
                 <h1 className="text-4xl md:text-6xl lg:text-9xl font-black uppercase tracking-tighter leading-none mb-4 md:mb-6">{product.name}</h1>
-                <p className="text-xl md:text-2xl font-light opacity-80 mb-6 md:mb-8">${(product.price / 100).toFixed(2)}</p>
+                <p className="text-xl md:text-2xl font-light opacity-80 mb-6 md:mb-8">${product.price.toFixed(2)}</p>
                 <div className="flex gap-4 pointer-events-auto">
                     <button className="px-6 py-2 md:px-8 md:py-3 bg-white text-black text-sm md:text-base font-bold uppercase tracking-wider hover:bg-neutral-200 transition-colors">
                         Add to Cart
@@ -687,7 +687,7 @@ export const ProductPageScroll3D: React.FC<ProductPageProps> = ({ product }) => 
                 <div className="text-center p-8">
                     <h2 className="text-3xl md:text-5xl font-bold">History Forged in Combat</h2>
                     <p className="mt-4 text-base md:text-lg text-gray-600">Analyze the details of this battle-worn relic.</p>
-                    <button className="mt-8 px-8 py-3 bg-black text-white font-bold rounded-full w-full md:w-auto">Add to Cart - ${(product.price / 100).toFixed(2)}</button>
+                    <button className="mt-8 px-8 py-3 bg-black text-white font-bold rounded-full w-full md:w-auto">Add to Cart - ${product.price.toFixed(2)}</button>
                 </div>
             </div>
         </div>
@@ -737,7 +737,7 @@ export const ProductPageDrawing: React.FC<ProductPageProps> = ({ product }) => {
                         <h1 className="text-3xl md:text-5xl font-bold">{product.name}</h1>
                         <p className="mt-2 text-base md:text-lg text-gray-600">{product.category}</p>
                         <button className="mt-6 px-6 py-2 bg-black text-white font-semibold rounded-full text-sm md:text-base">
-                            Add to Cart - ${(product.price / 100).toFixed(2)}
+                            Add to Cart - ${product.price.toFixed(2)}
                         </button>
                     </div>
                 </div>
@@ -814,7 +814,7 @@ export const ProductPageBuilder: React.FC<ProductPageProps> = ({ product }) => {
                 </div>
 
                 <button className="mt-8 md:mt-12 w-full p-4 bg-black text-white font-bold text-base md:text-lg hover:bg-gray-800 uppercase sticky bottom-4 shadow-xl">
-                    ADD TO CART // ${(product.price / 100).toFixed(2)}
+                    ADD TO CART // ${product.price.toFixed(2)}
                 </button>
             </div>
         </div>

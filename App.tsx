@@ -169,7 +169,7 @@ const PublicStoreWrapper = () => {
 const AdminWrapper = () => {
   const { 
     storeConfig, products, pages, mediaAssets, campaigns, loading,
-    updateConfig, addProduct, addPage, updatePage, deletePage, 
+    updateConfig, addProduct, deleteProduct, addPage, updatePage, deletePage, 
     addAsset, deleteAsset, addCampaign, updateCampaign, deleteCampaign,
     signOut, userRole, switchStore, storeId
   } = useData();
@@ -187,6 +187,7 @@ const AdminWrapper = () => {
       onConfigChange={updateConfig}
       products={products}
       onAddProduct={addProduct}
+      onDeleteProduct={deleteProduct}
       pages={pages}
       activePageId={activePageId}
       onAddPage={addPage}

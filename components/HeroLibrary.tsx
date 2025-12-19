@@ -736,9 +736,9 @@ export const HERO_COMPONENTS = {
 };
 
 export const HERO_OPTIONS = [
-  { id: 'impact', name: 'Impact', description: 'Full Screen Immersion', date: '2024-01-10', popularity: 98 },
-  { id: 'split', name: 'Split', description: 'Modern 50/50 Layout', date: '2024-03-20', popularity: 85 },
-  { id: 'kinetik', name: 'Kinetik', description: 'High Energy Marquee', date: '2024-08-15', popularity: 90 },
-  { id: 'grid', name: 'Grid', description: 'Editorial Collage', date: '2024-05-10', popularity: 75 },
-  { id: 'typographic', name: 'Typographic', description: 'Text-First Minimal', date: '2024-11-20', popularity: 60 }
+  { id: 'impact', name: 'Full Screen', description: 'Large image fills the screen - great for visual impact', date: '2024-01-10', popularity: 98, recommended: true },
+  { id: 'split', name: 'Side by Side', description: 'Image on one side, text on other - balanced and professional', date: '2024-03-20', popularity: 85, recommended: true },
+  { id: 'kinetik', name: 'Animated Banner', description: 'Eye-catching scrolling text effect', date: '2024-08-15', popularity: 90 },
+  { id: 'grid', name: 'Image Collage', description: 'Multiple images in a grid layout', date: '2024-05-10', popularity: 75 },
+  { id: 'typographic', name: 'Text Only', description: 'Bold text without images - minimal and clean', date: '2024-11-20', popularity: 60 }
 ];

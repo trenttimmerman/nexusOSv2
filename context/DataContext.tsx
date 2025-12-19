@@ -257,9 +257,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           // 6. Config
           const { data: configData } = await supabase.from('store_config').select('*').eq('store_id', currentStoreId).single();
+          // Also fetch store slug for public URL
+          const { data: storeData } = await supabase.from('stores').select('slug').eq('id', currentStoreId).single();
           if (configData) {
             setStoreConfig({
               store_id: configData.store_id,
+              slug: storeData?.slug || '',
               name: configData.name,
               currency: configData.currency,
               headerStyle: configData.header_style as any,

@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { GoogleGenAI } from '@google/genai';
+import { useData } from '../context/DataContext';
+import { CheckCircle2, Circle, Package, CreditCard, Truck, Palette, FileText, ExternalLink } from 'lucide-react';
 import Products from './Products';
 import Orders from './Orders';
 import Customers from './Customers';
@@ -40,6 +42,51 @@ export const DashboardHome: React.FC = () => {
     const trafficChartRef = useRef<HTMLCanvasElement>(null);
     const salesChartInstance = useRef<any>(null);
     const trafficChartInstance = useRef<any>(null);
+    
+    // Get real store data for onboarding checklist
+    const { products, storeConfig } = useData();
+
+    // Onboarding checklist items
+    const checklistItems = [
+        { 
+            id: 'product', 
+            label: 'Add your first product', 
+            completed: products.length > 0,
+            icon: Package,
+            href: '#products'
+        },
+        { 
+            id: 'shipping', 
+            label: 'Set up shipping zones', 
+            completed: (storeConfig.shippingZones?.length ?? 0) > 0,
+            icon: Truck,
+            href: '#shipping'
+        },
+        { 
+            id: 'payments', 
+            label: 'Configure payment methods', 
+            completed: storeConfig.paymentProvider !== 'manual' && !!storeConfig.paymentProvider,
+            icon: CreditCard,
+            href: '#payments'
+        },
+        { 
+            id: 'design', 
+            label: 'Customize your homepage', 
+            completed: !!storeConfig.primaryColor && storeConfig.primaryColor !== '#6366F1',
+            icon: Palette,
+            href: '#design'
+        },
+        { 
+            id: 'details', 
+            label: 'Add your store details', 
+            completed: !!storeConfig.supportEmail,
+            icon: FileText,
+            href: '#settings'
+        },
+    ];
+    
+    const completedCount = checklistItems.filter(item => item.completed).length;
+    const isSetupComplete = completedCount === checklistItems.length;
 
     // Data State
     const [totalRevenue, setTotalRevenue] = React.useState(405231.89);
@@ -230,6 +277,53 @@ export const DashboardHome: React.FC = () => {
     return (
         <>
             <h1 className="text-3xl font-bold text-white mb-6">Dashboard</h1>
+            
+            {/* Onboarding Checklist - Show if setup not complete */}
+            {!isSetupComplete && (
+                <div className="dash-glass-card rounded-2xl p-6 mb-6 border border-blue-500/20 bg-gradient-to-r from-blue-900/20 to-purple-900/20">
+                    <div className="flex items-start justify-between mb-4">
+                        <div>
+                            <h2 className="text-xl font-bold text-white mb-1">🚀 Get your store ready!</h2>
+                            <p className="text-neutral-400 text-sm">Complete these steps to start selling</p>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-2xl font-bold text-white">{completedCount}/{checklistItems.length}</span>
+                            <p className="text-xs text-neutral-500">completed</p>
+                        </div>
+                    </div>
+                    
+                    {/* Progress bar */}
+                    <div className="h-2 bg-neutral-800 rounded-full mb-6 overflow-hidden">
+                        <div 
+                            className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
+                            style={{ width: `${(completedCount / checklistItems.length) * 100}%` }}
+                        />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                        {checklistItems.map((item) => (
+                            <div 
+                                key={item.id}
+                                className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
+                                    item.completed 
+                                        ? 'bg-green-900/20 border border-green-500/30' 
+                                        : 'bg-neutral-800/50 border border-neutral-700 hover:border-blue-500/50 cursor-pointer'
+                                }`}
+                            >
+                                {item.completed ? (
+                                    <CheckCircle2 size={20} className="text-green-500 shrink-0" />
+                                ) : (
+                                    <Circle size={20} className="text-neutral-500 shrink-0" />
+                                )}
+                                <span className={`text-sm ${item.completed ? 'text-green-400 line-through' : 'text-white'}`}>
+                                    {item.label}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                  <div className="dash-glass-card rounded-2xl p-6 fade-in-widget" style={{animationDelay: '0.1s'}}>
                     <p className="text-sm text-gray-400 mb-2">Total Revenue</p>

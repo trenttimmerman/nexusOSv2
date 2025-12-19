@@ -266,7 +266,7 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                         <div>
                                             <div className="flex justify-between items-center mb-2">
                                                 <label className="text-xs font-bold text-neutral-500 uppercase">Description</label>
-                                                <button onClick={generateDescription} disabled={isGenerating} className="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1 font-bold">
+                                                <button onClick={generateDescription} disabled={isGenerating} className="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1 font-bold" title="Uses AI to generate a compelling product description based on the product name and category">
                                                     <Sparkles size={12} /> {isGenerating ? 'Generating...' : 'Generate with AI'}
                                                 </button>
                                             </div>
@@ -274,7 +274,7 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                                 value={formData.description}
                                                 onChange={(e) => handleInputChange('description', e.target.value)}
                                                 className="w-full h-64 bg-black border border-neutral-800 rounded-xl p-4 text-neutral-300 focus:border-blue-500 outline-none resize-none leading-relaxed"
-                                                placeholder="Product description HTML..."
+                                                placeholder="Describe your product. You can use basic HTML for formatting..."
                                             />
                                         </div>
                                     </div>
@@ -288,21 +288,30 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">$</span>
                                                     <input
                                                         type="number"
+                                                        step="0.01"
+                                                        min="0"
                                                         value={formData.price}
-                                                        onChange={(e) => handleInputChange('price', parseFloat(e.target.value))}
+                                                        onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
                                                         className="w-full bg-black border border-neutral-800 rounded-xl p-3 pl-8 text-white font-mono focus:border-blue-500 outline-none"
+                                                        placeholder="0.00"
                                                     />
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Compare At</label>
+                                                <div className="flex items-center gap-1 mb-2">
+                                                    <label className="text-xs font-bold text-neutral-500 uppercase">Compare At</label>
+                                                    <span className="text-neutral-600 text-xs cursor-help" title="Original price before discount. Shows as crossed-out to display savings.">ⓘ</span>
+                                                </div>
                                                 <div className="relative">
                                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">$</span>
                                                     <input
                                                         type="number"
+                                                        step="0.01"
+                                                        min="0"
                                                         value={formData.compareAtPrice || ''}
-                                                        onChange={(e) => handleInputChange('compareAtPrice', parseFloat(e.target.value))}
+                                                        onChange={(e) => handleInputChange('compareAtPrice', parseFloat(e.target.value) || undefined)}
                                                         className="w-full bg-black border border-neutral-800 rounded-xl p-3 pl-8 text-white font-mono focus:border-blue-500 outline-none"
+                                                        placeholder="Original price (optional)"
                                                     />
                                                 </div>
                                             </div>
@@ -317,7 +326,7 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                                 value={formData.category}
                                                 onChange={(e) => handleInputChange('category', e.target.value)}
                                                 className="w-full bg-black border border-neutral-800 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
-                                                placeholder="e.g. Apparel"
+                                                placeholder="e.g. T-Shirts, Hoodies, Accessories"
                                             />
                                         </div>
                                         <div>
@@ -337,11 +346,14 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                             {activeTab === 'media' && (
                                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="font-bold text-white">Media Gallery</h3>
+                                        <div>
+                                            <h3 className="font-bold text-white">Media Gallery</h3>
+                                            <p className="text-xs text-neutral-500 mt-1">JPG, PNG, WebP • Max 5MB per image</p>
+                                        </div>
                                         <label className={`px-4 py-2 bg-white text-black rounded-lg font-bold text-sm cursor-pointer hover:bg-neutral-200 transition-colors flex items-center gap-2 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                             {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} 
                                             {isUploading ? 'Uploading...' : 'Upload'}
-                                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploading} />
+                                            <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={handleImageUpload} disabled={isUploading} />
                                         </label>
                                     </div>
 
@@ -349,6 +361,7 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                         <div className="border-2 border-dashed border-neutral-800 rounded-xl p-12 flex flex-col items-center justify-center text-center">
                                             <div className="w-16 h-16 bg-neutral-800 rounded-full flex items-center justify-center mb-4 text-neutral-500"><ImageIcon size={32} /></div>
                                             <p className="text-neutral-400 font-medium">No images uploaded yet</p>
+                                            <p className="text-xs text-neutral-600 mt-2">Drag & drop or click Upload above</p>
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-2 gap-4">
@@ -375,9 +388,18 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                             {activeTab === 'variants' && (
                                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="font-bold text-white">Product Options</h3>
+                                        <div>
+                                            <h3 className="font-bold text-white">Product Options</h3>
+                                            <p className="text-xs text-neutral-500 mt-1">Add size, color, or other variations</p>
+                                        </div>
                                         <button onClick={addVariantOption} className="text-blue-500 hover:text-blue-400 text-sm font-bold flex items-center gap-1"><Plus size={16} /> Add Option</button>
                                     </div>
+
+                                    {formData.variantOptions.length === 0 && (
+                                        <div className="p-6 border border-dashed border-neutral-800 rounded-xl text-center">
+                                            <p className="text-neutral-400 text-sm">No options yet. Add options like Size (S, M, L) or Color (Red, Blue) to create product variants.</p>
+                                        </div>
+                                    )}
 
                                     <div className="space-y-4">
                                         {formData.variantOptions.map((opt, idx) => (
@@ -389,12 +411,12 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                                             value={opt.name}
                                                             onChange={(e) => updateVariantOption(opt.id, 'name', e.target.value)}
                                                             className="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-white text-sm"
-                                                            placeholder="e.g. Size"
+                                                            placeholder="e.g. Size, Color, Material"
                                                         />
                                                     </div>
                                                     <button onClick={() => {
                                                         setFormData(prev => ({ ...prev, variantOptions: prev.variantOptions.filter(o => o.id !== opt.id) }))
-                                                    }} className="text-neutral-500 hover:text-red-500 p-2"><Trash2 size={16} /></button>
+                                                    }} className="text-neutral-500 hover:text-red-500 p-2" title="Remove option"><Trash2 size={16} /></button>
                                                 </div>
                                                 <div>
                                                     <label className="text-xs font-bold text-neutral-500 uppercase mb-1 block">Option Values</label>
@@ -402,7 +424,7 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                                         value={opt.values.join(', ')}
                                                         onChange={(e) => updateVariantOption(opt.id, 'values', e.target.value.split(',').map(v => v.trim()))}
                                                         className="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-white text-sm"
-                                                        placeholder="e.g. S, M, L (Comma separated)"
+                                                        placeholder="e.g. Small, Medium, Large (separate with commas)"
                                                     />
                                                 </div>
                                             </div>
@@ -413,6 +435,7 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                     {formData.variants.length > 0 && (
                                         <div className="mt-8 border-t border-neutral-800 pt-6">
                                             <h4 className="font-bold text-white mb-4">Variant Inventory</h4>
+                                            <p className="text-xs text-neutral-500 mb-4">Set individual prices and stock for each combination</p>
                                             <div className="bg-black border border-neutral-800 rounded-xl overflow-hidden">
                                                 <table className="w-full text-sm text-left">
                                                     <thead className="bg-neutral-900 text-neutral-500 font-bold uppercase text-xs">
@@ -465,8 +488,11 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                             {activeTab === 'seo' && (
                                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="font-bold text-white">Search Engine Optimization</h3>
-                                        <button onClick={generateSEO} disabled={isGenerating} className="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1 font-bold">
+                                        <div>
+                                            <h3 className="font-bold text-white">Search Engine Settings</h3>
+                                            <p className="text-xs text-neutral-500 mt-1">Help customers find you on Google</p>
+                                        </div>
+                                        <button onClick={generateSEO} disabled={isGenerating} className="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1 font-bold" title="Auto-generate SEO fields from product info">
                                             <Sparkles size={12} /> {isGenerating ? 'Generating...' : 'Generate with AI'}
                                         </button>
                                     </div>
@@ -478,7 +504,9 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                                 value={formData.seo.title}
                                                 onChange={(e) => handleSeoChange('title', e.target.value)}
                                                 className="w-full bg-black border border-neutral-800 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+                                                placeholder="Title shown in Google search results"
                                             />
+                                            <p className="text-xs text-neutral-600 mt-1">{formData.seo.title?.length || 0}/60 characters recommended</p>
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Meta Description</label>
@@ -486,15 +514,22 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                                 value={formData.seo.description}
                                                 onChange={(e) => handleSeoChange('description', e.target.value)}
                                                 className="w-full h-24 bg-black border border-neutral-800 rounded-xl p-3 text-white focus:border-blue-500 outline-none resize-none"
+                                                placeholder="Brief description shown in search results..."
                                             />
+                                            <p className="text-xs text-neutral-600 mt-1">{formData.seo.description?.length || 0}/160 characters recommended</p>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">URL Slug</label>
+                                            <div className="flex items-center gap-1 mb-2">
+                                                <label className="text-xs font-bold text-neutral-500 uppercase">Page Address (URL)</label>
+                                                <span className="text-neutral-600 text-xs cursor-help" title="The web address for this product. Use lowercase letters and hyphens only.">ⓘ</span>
+                                            </div>
                                             <input
                                                 value={formData.seo.slug}
-                                                onChange={(e) => handleSeoChange('slug', e.target.value)}
+                                                onChange={(e) => handleSeoChange('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
                                                 className="w-full bg-black border border-neutral-800 rounded-xl p-3 text-white focus:border-blue-500 outline-none font-mono text-sm"
+                                                placeholder="my-product-name"
                                             />
+                                            <p className="text-xs text-neutral-600 mt-1">yourstore.com/products/<span className="text-blue-500">{formData.seo.slug || 'product-name'}</span></p>
                                         </div>
                                     </div>
                                 </div>
@@ -517,21 +552,31 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
 
                                     <div className="grid grid-cols-2 gap-6">
                                         <div>
-                                            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">SKU</label>
+                                            <div className="flex items-center gap-1 mb-2">
+                                                <label className="text-xs font-bold text-neutral-500 uppercase">SKU</label>
+                                                <span className="text-neutral-600 text-xs cursor-help" title="Stock Keeping Unit - a unique identifier for inventory tracking">ⓘ</span>
+                                            </div>
                                             <input
                                                 value={formData.sku}
                                                 onChange={(e) => handleInputChange('sku', e.target.value)}
                                                 className="w-full bg-black border border-neutral-800 rounded-xl p-3 text-white font-mono focus:border-blue-500 outline-none"
+                                                placeholder="e.g. TSH-BLK-001"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Stock</label>
+                                            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Stock Quantity</label>
                                             <input
                                                 type="number"
-                                                value={formData.stock}
-                                                onChange={(e) => handleInputChange('stock', parseInt(e.target.value))}
+                                                min="0"
+                                                step="1"
+                                                value={formData.stock || 0}
+                                                onChange={(e) => handleInputChange('stock', parseInt(e.target.value) || 0)}
                                                 className="w-full bg-black border border-neutral-800 rounded-xl p-3 text-white font-mono focus:border-blue-500 outline-none"
+                                                placeholder="0"
                                             />
+                                            {formData.stock <= 5 && formData.stock > 0 && (
+                                                <p className="text-xs text-amber-500 mt-1">⚠️ Low stock warning</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

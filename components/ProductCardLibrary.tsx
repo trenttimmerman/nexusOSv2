@@ -36,7 +36,7 @@ export const ProductCardClassic: React.FC<ProductCardProps> = ({ product, onAddT
     <div>
       <div className="flex justify-between items-start">
         <h3 className="font-bold text-lg text-neutral-900 leading-tight cursor-pointer hover:underline" onClick={onNavigate}>{product.name}</h3>
-        <span className="font-medium text-neutral-900">${(product.price / 100).toFixed(2)}</span>
+        <span className="font-medium text-neutral-900">${product.price.toFixed(2)}</span>
       </div>
       <p className="text-sm text-neutral-500 mt-1">{product.category}</p>
     </div>
@@ -69,7 +69,7 @@ export const ProductCardIndustrial: React.FC<ProductCardProps> = ({ product, onA
       </div>
       <h3 className="font-bold text-sm uppercase mb-1 truncate cursor-pointer hover:text-neutral-600" onClick={onNavigate}>{product.name}</h3>
       <div className="flex justify-between items-center mt-3">
-        <span className="font-bold text-lg">${(product.price / 100).toFixed(2)}</span>
+        <span className="font-bold text-lg">${product.price.toFixed(2)}</span>
         <button 
           onClick={(e) => { e.stopPropagation(); onAddToCart(product); }}
           className="bg-black text-white p-2 hover:bg-neutral-800 transition-colors"
@@ -99,7 +99,7 @@ export const ProductCardFocus: React.FC<ProductCardProps> = ({ product, onAddToC
     <div className="absolute inset-0 p-8 flex flex-col justify-end text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-4 group-hover:translate-y-0">
       <span className="text-xs font-medium uppercase tracking-widest mb-2 opacity-80">{product.category}</span>
       <h3 className="text-2xl font-serif italic mb-2">{product.name}</h3>
-      <p className="text-lg font-light mb-6">${(product.price / 100).toFixed(2)}</p>
+      <p className="text-lg font-light mb-6">${product.price.toFixed(2)}</p>
       <button 
         onClick={(e) => { e.stopPropagation(); onAddToCart(product); }}
         className="w-full bg-white text-black py-3 rounded-full font-medium hover:bg-neutral-200 transition-colors"
@@ -139,7 +139,7 @@ export const ProductCardHype: React.FC<ProductCardProps> = ({ product, onAddToCa
 
     <div className="px-1">
        <h3 className="font-black text-xl uppercase italic leading-none mb-1 cursor-pointer hover:underline" onClick={onNavigate}>{product.name}</h3>
-       <span className="font-bold text-neutral-500">${(product.price / 100).toFixed(2)}</span>
+       <span className="font-bold text-neutral-500">${product.price.toFixed(2)}</span>
     </div>
   </div>
 );
@@ -163,7 +163,7 @@ export const ProductCardMagazine: React.FC<ProductCardProps> = ({ product, onAdd
          {product.name}
        </h3>
        <div className="flex items-center justify-center gap-2 mb-4">
-          <span className="text-sm font-medium">${(product.price / 100).toFixed(2)}</span>
+          <span className="text-sm font-medium">${product.price.toFixed(2)}</span>
        </div>
        <button 
          onClick={(e) => { e.stopPropagation(); onAddToCart(product); }}
@@ -191,7 +191,7 @@ export const ProductCardGlass: React.FC<ProductCardProps> = ({ product, onAddToC
     <div className="absolute inset-x-2 bottom-2 p-3 bg-white/70 backdrop-blur-md border border-white/50 rounded-xl flex items-center justify-between transition-transform duration-300 translate-y-[calc(100%+8px)] group-hover:translate-y-0 shadow-lg">
        <div className="flex flex-col">
           <span className="text-xs font-bold text-black truncate max-w-[120px]">{product.name}</span>
-          <span className="text-[10px] font-medium text-neutral-600">${(product.price / 100).toFixed(2)}</span>
+          <span className="text-[10px] font-medium text-neutral-600">${product.price.toFixed(2)}</span>
        </div>
        <button 
          onClick={(e) => { e.stopPropagation(); onAddToCart(product); }}

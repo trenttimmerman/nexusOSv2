@@ -133,8 +133,29 @@ import {
   List,
   Save,
   Video,
-  Layout
+  Layout,
+  ExternalLink,
+  Search,
+  Undo2,
+  Redo2,
+  Rocket,
+  HelpCircle,
+  BookOpen,
+  Info,
+  Phone,
+  MessageSquare,
+  Star
 } from 'lucide-react';
+
+// Page type options for creating new pages
+const PAGE_TYPE_OPTIONS = [
+  { id: 'shop', name: 'Shop', description: 'Display your products', icon: ShoppingBag, slug: '/shop' },
+  { id: 'about', name: 'About Us', description: 'Tell your story', icon: Users, slug: '/about' },
+  { id: 'contact', name: 'Contact', description: 'Let customers reach you', icon: Phone, slug: '/contact' },
+  { id: 'faq', name: 'FAQ', description: 'Answer common questions', icon: HelpCircle, slug: '/faq' },
+  { id: 'blog', name: 'Blog', description: 'Share news and updates', icon: BookOpen, slug: '/blog' },
+  { id: 'custom', name: 'Custom Page', description: 'Start with a blank canvas', icon: FileText, slug: '/new-page' },
+];
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
   activeTab,
@@ -143,6 +164,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onConfigChange,
   products,
   onAddProduct,
+  onDeleteProduct,
   pages,
   activePageId,
   onAddPage,
@@ -170,6 +192,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
   const [isCreatingTenant, setIsCreatingTenant] = useState(false);
+
+  // Product Search/Filter State
+  const [productSearch, setProductSearch] = useState('');
+  const [productCategoryFilter, setProductCategoryFilter] = useState<string>('all');
 
   // Local State for Draft Mode
   const [localPages, setLocalPages] = useState<Page[]>(pages);
@@ -289,6 +315,84 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Product Editor State
   const [isProductEditorOpen, setIsProductEditorOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  
+  // Toast notification state
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+  
+  // Undo/Redo History for Design Studio
+  const [history, setHistory] = useState<{ blocks: PageBlock[], config: StoreConfig }[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [isUndoRedo, setIsUndoRedo] = useState(false);
+  
+  // Save state to history when blocks or config change (but not during undo/redo)
+  useEffect(() => {
+    if (isUndoRedo) {
+      setIsUndoRedo(false);
+      return;
+    }
+    const activePage = pages.find(p => p.id === activePageId);
+    if (activePage && activeTab === AdminTab.DESIGN) {
+      const currentState = { blocks: activePage.blocks || [], config };
+      // Only add to history if something actually changed
+      if (history.length === 0 || JSON.stringify(currentState) !== JSON.stringify(history[historyIndex])) {
+        // Remove any future states if we're not at the end
+        const newHistory = history.slice(0, historyIndex + 1);
+        newHistory.push(currentState);
+        // Keep history limited to 50 states
+        if (newHistory.length > 50) newHistory.shift();
+        setHistory(newHistory);
+        setHistoryIndex(newHistory.length - 1);
+      }
+    }
+  }, [pages, config, activeTab, activePageId]);
+  
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < history.length - 1;
+  
+  const handleUndo = () => {
+    if (!canUndo) return;
+    setIsUndoRedo(true);
+    const previousState = history[historyIndex - 1];
+    setHistoryIndex(historyIndex - 1);
+    // Restore blocks
+    onUpdatePage(activePageId, { blocks: previousState.blocks });
+    // Restore config
+    onConfigChange(previousState.config);
+    showToast('Undo successful', 'success');
+  };
+  
+  const handleRedo = () => {
+    if (!canRedo) return;
+    setIsUndoRedo(true);
+    const nextState = history[historyIndex + 1];
+    setHistoryIndex(historyIndex + 1);
+    // Restore blocks
+    onUpdatePage(activePageId, { blocks: nextState.blocks });
+    // Restore config
+    onConfigChange(nextState.config);
+    showToast('Redo successful', 'success');
+  };
+  
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (activeTab !== AdminTab.DESIGN) return;
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      } else if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTab, canUndo, canRedo, historyIndex, history]);
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
@@ -457,13 +561,30 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   // Live Preview State
-  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile' | 'tablet'>('desktop');
 
   // Sorting State (Local to modals now)
   const [modalSort, setModalSort] = useState<'az' | 'new' | 'hot'>('az');
 
   // Editor Resize State
   const [editorWidth, setEditorWidth] = useState(320);
+  
+  // Design Studio Welcome Wizard State
+  const [showWelcomeWizard, setShowWelcomeWizard] = useState(false);
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(() => localStorage.getItem('evolv_seen_welcome') === 'true');
+  
+  // Add New Page Modal State
+  const [isAddPageModalOpen, setIsAddPageModalOpen] = useState(false);
+  const [newPageType, setNewPageType] = useState<string>('custom');
+  const [newPageName, setNewPageName] = useState('');
+  const [newPageSlug, setNewPageSlug] = useState('');
+  
+  // Show welcome wizard when entering Design Studio for first time
+  useEffect(() => {
+    if (activeTab === AdminTab.DESIGN && !hasSeenWelcome) {
+      setShowWelcomeWizard(true);
+    }
+  }, [activeTab, hasSeenWelcome]);;
   const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
@@ -600,23 +721,74 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // -------------------------
 
-
-
+  // Open the Add Page modal
   const handleAddNewPage = () => {
-    const newPage: Page = {
-      id: Math.random().toString(36).substr(2, 9),
-      title: 'New Page',
-      slug: '/new-page',
-      type: 'custom',
-      content: '',
-      blocks: [{
+    setNewPageType('custom');
+    setNewPageName('');
+    setNewPageSlug('');
+    setIsAddPageModalOpen(true);
+  };
+  
+  // Create the page with user input
+  const handleCreatePage = () => {
+    const pageTypeOption = PAGE_TYPE_OPTIONS.find(p => p.id === newPageType);
+    const pageName = newPageName.trim() || pageTypeOption?.name || 'New Page';
+    const pageSlug = newPageSlug.trim() || pageTypeOption?.slug || '/new-page';
+    
+    // Generate appropriate default blocks based on page type
+    let defaultBlocks: PageBlock[] = [];
+    
+    if (newPageType === 'shop') {
+      defaultBlocks = [{
+        id: Math.random().toString(36).substr(2, 9),
+        type: 'system-grid',
+        name: 'Product Grid',
+        content: '',
+        variant: 'grid',
+        data: { columns: 4, showFilters: true }
+      }];
+    } else if (newPageType === 'contact') {
+      defaultBlocks = [{
         id: Math.random().toString(36).substr(2, 9),
         type: 'section',
-        name: 'Intro Text',
-        content: '<p>Start writing your story here...</p>'
-      }]
+        name: 'Contact Form',
+        content: '<h2>Get in Touch</h2><p>We\'d love to hear from you. Send us a message and we\'ll respond as soon as possible.</p>'
+      }];
+    } else if (newPageType === 'about') {
+      defaultBlocks = [{
+        id: Math.random().toString(36).substr(2, 9),
+        type: 'section',
+        name: 'About Us',
+        content: '<h2>Our Story</h2><p>Tell your customers about your brand, mission, and what makes you unique.</p>'
+      }];
+    } else if (newPageType === 'faq') {
+      defaultBlocks = [{
+        id: Math.random().toString(36).substr(2, 9),
+        type: 'section',
+        name: 'FAQ',
+        content: '<h2>Frequently Asked Questions</h2><p>Add common questions and answers here to help your customers.</p>'
+      }];
+    } else {
+      defaultBlocks = [{
+        id: Math.random().toString(36).substr(2, 9),
+        type: 'section',
+        name: 'Content',
+        content: '<p>Start building your page here...</p>'
+      }];
+    }
+    
+    const newPage: Page = {
+      id: Math.random().toString(36).substr(2, 9),
+      title: pageName,
+      slug: pageSlug.startsWith('/') ? pageSlug : `/${pageSlug}`,
+      type: 'custom',
+      content: '',
+      blocks: defaultBlocks
     };
+    
     onAddPage(newPage);
+    setIsAddPageModalOpen(false);
+    showToast(`${pageName} page created!`, 'success');
   };
 
   // --- BLOCK MANAGEMENT FUNCTIONS ---
@@ -824,7 +996,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.PAGES, icon: FileText, label: 'Pages' },
           { id: AdminTab.MEDIA, icon: FolderOpen, label: 'Media Library' },
           { id: AdminTab.DESIGN, icon: Palette, label: 'Design Studio' },
-          { id: AdminTab.CAMPAIGNS, icon: Megaphone, label: 'Agent Campaigns' },
+          { id: AdminTab.CAMPAIGNS, icon: Megaphone, label: 'Marketing' },
           { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' },
           ...(userRole === 'superuser' ? [{ id: AdminTab.PLATFORM, icon: Users, label: 'Platform Admin' }] : [])
         ].map((item) => (
@@ -850,7 +1022,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </button>
         ))}
       </nav>
-      <div className="p-4 border-t border-nexus-gray">
+      <div className="p-4 border-t border-nexus-gray space-y-2">
+        {/* View Store Button */}
+        {config.slug && (
+          <a
+            href={`/s/${config.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={isSidebarCollapsed ? 'View Store' : ''}
+            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-4'} py-3 rounded-lg text-emerald-500 hover:bg-emerald-500/10 transition-all`}
+          >
+            <ExternalLink size={18} />
+            {!isSidebarCollapsed && <span className="font-medium text-sm">View Store</span>}
+          </a>
+        )}
         <button
           onClick={onLogout}
           title={isSidebarCollapsed ? 'Sign Out' : ''}
@@ -899,12 +1084,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
           {/* Style Grid */}
           <div>
-            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2"><LayoutTemplate size={14} /> Architecture</h4>
+            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2"><LayoutTemplate size={14} /> Choose a Style</h4>
             {renderSortControls(modalSort, setModalSort)}
             <div className="grid grid-cols-2 gap-2">
               {sortItems(HEADER_OPTIONS, modalSort).map((header) => (
-                <button key={header.id} onClick={() => onConfigChange({ ...config, headerStyle: header.id as HeaderStyleId })} className={`text-left p-3 rounded-lg border transition-all ${config.headerStyle === header.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                <button key={header.id} onClick={() => onConfigChange({ ...config, headerStyle: header.id as HeaderStyleId })} className={`text-left p-3 rounded-lg border transition-all relative ${config.headerStyle === header.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                  {(header as any).recommended && (
+                    <span className="absolute -top-2 -right-2 text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">★ TOP</span>
+                  )}
                   <div className="font-bold text-xs mb-1 truncate">{header.name}</div>
+                  <div className="text-[10px] opacity-60 truncate">{header.description}</div>
                 </button>
               ))}
             </div>
@@ -1027,7 +1216,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             {renderSortControls(modalSort, setModalSort)}
             <div className="grid grid-cols-2 gap-2">
               {sortItems(options, modalSort).map((opt) => (
-                <button key={opt.id} onClick={() => setSelection(opt.id)} className={`text-left p-3 rounded-lg border transition-all ${currentSelection === opt.id ? `bg-${color}-600/20 border-${color}-500 text-white` : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                <button key={opt.id} onClick={() => setSelection(opt.id)} className={`text-left p-3 rounded-lg border transition-all relative ${currentSelection === opt.id ? `bg-${color}-600/20 border-${color}-500 text-white` : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                  {opt.recommended && (
+                    <span className="absolute -top-2 -right-2 text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">★ TOP</span>
+                  )}
                   <div className="font-bold text-xs mb-1 truncate">{opt.name}</div>
                   <div className="text-[10px] opacity-60 truncate">{opt.description}</div>
                 </button>
@@ -1047,15 +1239,108 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="p-6 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 sticky top-0 backdrop-blur z-20">
           <div className="flex items-center gap-3">
             <Monitor size={20} className="text-blue-500" />
-            <div><h3 className="text-white font-bold">Interface Studio</h3><p className="text-xs text-neutral-500">Global UI Settings</p></div>
+            <div><h3 className="text-white font-bold">Site Settings</h3><p className="text-xs text-neutral-500">Brand & Global Styles</p></div>
           </div>
           <button onClick={() => setIsInterfaceModalOpen(false)} className="text-neutral-500 hover:text-white"><X size={20} /></button>
         </div>
         <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+          
+          {/* Site Identity Section */}
+          <div>
+            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <Star size={14} /> Site Identity
+            </h4>
+            <div className="space-y-4 bg-neutral-900 p-4 rounded-xl border border-neutral-800">
+              <div>
+                <label className="text-xs font-bold text-neutral-400 mb-2 block">Store Name</label>
+                <input
+                  type="text"
+                  value={config.name || ''}
+                  onChange={(e) => onConfigChange({ ...config, name: e.target.value })}
+                  className="w-full bg-black border border-neutral-700 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
+                  placeholder="Your Store Name"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-neutral-400 mb-2 block">Tagline</label>
+                <input
+                  type="text"
+                  value={config.tagline || ''}
+                  onChange={(e) => onConfigChange({ ...config, tagline: e.target.value })}
+                  className="w-full bg-black border border-neutral-700 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
+                  placeholder="A short description of your business"
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Brand Colors Section */}
+          <div>
+            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <Palette size={14} /> Brand Colors
+            </h4>
+            <div className="space-y-3 bg-neutral-900 p-4 rounded-xl border border-neutral-800">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-neutral-400">Primary Color</span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={config.primaryColor || '#3B82F6'}
+                    onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
+                    className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                  />
+                  <input
+                    type="text"
+                    value={config.primaryColor || '#3B82F6'}
+                    onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
+                    className="w-20 bg-black border border-neutral-700 rounded px-2 py-1 text-xs text-neutral-400 font-mono"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-neutral-400">Accent Color</span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={config.accentColor || '#8B5CF6'}
+                    onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
+                    className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                  />
+                  <input
+                    type="text"
+                    value={config.accentColor || '#8B5CF6'}
+                    onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
+                    className="w-20 bg-black border border-neutral-700 rounded px-2 py-1 text-xs text-neutral-400 font-mono"
+                  />
+                </div>
+              </div>
+              {/* AI Color Suggestions */}
+              <button 
+                onClick={() => {
+                  const palettes = [
+                    { primary: '#3B82F6', accent: '#8B5CF6' }, // Blue/Purple
+                    { primary: '#10B981', accent: '#14B8A6' }, // Green/Teal
+                    { primary: '#F59E0B', accent: '#EF4444' }, // Orange/Red
+                    { primary: '#EC4899', accent: '#8B5CF6' }, // Pink/Purple
+                    { primary: '#000000', accent: '#EAB308' }, // Black/Gold
+                  ];
+                  const random = palettes[Math.floor(Math.random() * palettes.length)];
+                  onConfigChange({ ...config, primaryColor: random.primary, accentColor: random.accent });
+                  showToast('New color palette applied!', 'success');
+                }}
+                className="w-full py-2 flex items-center justify-center gap-2 bg-purple-900/30 hover:bg-purple-900/50 border border-purple-500/30 rounded-lg text-purple-400 text-xs font-bold transition-colors"
+              >
+                <Sparkles size={14} />
+                Generate AI Color Palette
+              </button>
+            </div>
+          </div>
+
+          {/* Scrollbar Style Section */}
           <div>
             <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2"><ArrowDownAZ size={14} /> Scrollbar Style</h4>
-            <div className="grid grid-cols-1 gap-2">
-              {SCROLLBAR_OPTIONS.map((opt) => (
+            <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto custom-scrollbar">
+              {SCROLLBAR_OPTIONS.slice(0, 8).map((opt) => (
                 <button key={opt.id} onClick={() => onConfigChange({ ...config, scrollbarStyle: opt.id as ScrollbarStyleId })} className={`text-left p-3 rounded-lg border transition-all ${config.scrollbarStyle === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
                   <div className="font-bold text-sm mb-1">{opt.name}</div>
                   <div className="text-[10px] opacity-60">{opt.description}</div>
@@ -1126,6 +1411,197 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Welcome Wizard for Design Studio (first-time users)
+  const renderWelcomeWizard = () => {
+    if (!showWelcomeWizard) return null;
+    
+    const dismissWizard = () => {
+      setShowWelcomeWizard(false);
+      setHasSeenWelcome(true);
+      localStorage.setItem('evolv_seen_welcome', 'true');
+    };
+    
+    return (
+      <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-2xl animate-in zoom-in-95 duration-300">
+          <div className="p-8 text-center border-b border-neutral-800">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Sparkles size={32} className="text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Welcome to Design Studio!</h2>
+            <p className="text-neutral-400">Let's build your website. Choose how you'd like to start:</p>
+          </div>
+          
+          <div className="p-6 grid grid-cols-1 gap-4">
+            {/* AI Build Option */}
+            <button 
+              onClick={() => {
+                dismissWizard();
+                showToast('AI Website Builder coming soon! For now, use the templates.', 'success');
+              }}
+              className="group p-6 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-2 border-blue-500/50 rounded-xl text-left hover:border-blue-400 transition-all"
+            >
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-blue-600 rounded-lg">
+                  <Sparkles size={24} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-bold text-white">Build with AI</h3>
+                    <span className="text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full font-bold">RECOMMENDED</span>
+                  </div>
+                  <p className="text-neutral-400 text-sm">Answer a few questions and AI will generate a complete website for you in seconds.</p>
+                </div>
+                <ChevronRight size={20} className="text-neutral-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </div>
+            </button>
+            
+            {/* Template Option */}
+            <button 
+              onClick={() => {
+                dismissWizard();
+                // Keep existing page
+              }}
+              className="group p-6 bg-neutral-800/50 border border-neutral-700 rounded-xl text-left hover:border-neutral-500 transition-all"
+            >
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-neutral-700 rounded-lg">
+                  <Layout size={24} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-white mb-1">Use Current Template</h3>
+                  <p className="text-neutral-400 text-sm">Start with the pre-made design and customize each section to match your brand.</p>
+                </div>
+                <ChevronRight size={20} className="text-neutral-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </div>
+            </button>
+            
+            {/* Blank Canvas Option */}
+            <button 
+              onClick={() => {
+                dismissWizard();
+                // Clear all blocks for blank canvas
+                onUpdatePage(activePageId, { blocks: [] });
+                showToast('Starting with a blank canvas', 'success');
+              }}
+              className="group p-6 bg-neutral-800/50 border border-neutral-700 rounded-xl text-left hover:border-neutral-500 transition-all"
+            >
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-neutral-700 rounded-lg">
+                  <FileText size={24} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-white mb-1">Start from Scratch</h3>
+                  <p className="text-neutral-400 text-sm">Begin with a blank page and build everything yourself. For advanced users.</p>
+                </div>
+                <ChevronRight size={20} className="text-neutral-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </div>
+            </button>
+          </div>
+          
+          <div className="p-4 border-t border-neutral-800 flex justify-center">
+            <button onClick={dismissWizard} className="text-sm text-neutral-500 hover:text-white transition-colors">
+              Skip for now
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Add New Page Modal
+  const renderAddPageModal = () => {
+    if (!isAddPageModalOpen) return null;
+    
+    return (
+      <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-xl animate-in zoom-in-95 duration-300">
+          <div className="p-6 border-b border-neutral-800 flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-bold text-white">Create New Page</h2>
+              <p className="text-neutral-500 text-sm">Choose a page type to get started</p>
+            </div>
+            <button onClick={() => setIsAddPageModalOpen(false)} className="p-2 hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-white">
+              <X size={20} />
+            </button>
+          </div>
+          
+          <div className="p-6 space-y-4">
+            {/* Page Type Selection */}
+            <div className="grid grid-cols-3 gap-3">
+              {PAGE_TYPE_OPTIONS.map((pageType) => (
+                <button
+                  key={pageType.id}
+                  onClick={() => {
+                    setNewPageType(pageType.id);
+                    setNewPageName(pageType.id === 'custom' ? '' : pageType.name);
+                    setNewPageSlug(pageType.slug);
+                  }}
+                  className={`p-4 rounded-xl border transition-all text-center ${
+                    newPageType === pageType.id 
+                      ? 'bg-blue-600/20 border-blue-500 text-white' 
+                      : 'bg-neutral-800/50 border-neutral-700 text-neutral-400 hover:border-neutral-500'
+                  }`}
+                >
+                  <pageType.icon size={24} className="mx-auto mb-2" />
+                  <div className="font-bold text-sm">{pageType.name}</div>
+                </button>
+              ))}
+            </div>
+            
+            {/* Page Name Input */}
+            <div>
+              <label className="block text-sm font-bold text-neutral-300 mb-2">Page Name</label>
+              <input
+                type="text"
+                value={newPageName}
+                onChange={(e) => {
+                  setNewPageName(e.target.value);
+                  // Auto-generate slug from name
+                  const slug = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                  setNewPageSlug(slug ? `/${slug}` : '');
+                }}
+                placeholder="e.g., About Our Team"
+                className="w-full bg-black border border-neutral-700 rounded-lg px-4 py-3 text-white focus:border-blue-500 outline-none"
+              />
+            </div>
+            
+            {/* URL Slug Input */}
+            <div>
+              <label className="block text-sm font-bold text-neutral-300 mb-2">URL Path</label>
+              <div className="flex items-center bg-black border border-neutral-700 rounded-lg overflow-hidden focus-within:border-blue-500">
+                <span className="px-4 py-3 text-neutral-500 bg-neutral-800 border-r border-neutral-700">yourstore.com</span>
+                <input
+                  type="text"
+                  value={newPageSlug}
+                  onChange={(e) => setNewPageSlug(e.target.value)}
+                  placeholder="/about-us"
+                  className="flex-1 bg-transparent px-4 py-3 text-white outline-none font-mono"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-6 border-t border-neutral-800 flex justify-end gap-3">
+            <button 
+              onClick={() => setIsAddPageModalOpen(false)}
+              className="px-6 py-3 text-neutral-400 hover:text-white font-bold"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handleCreatePage}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center gap-2"
+            >
+              <Plus size={18} />
+              Create Page
+            </button>
           </div>
         </div>
       </div>
@@ -1489,6 +1965,30 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-600 transition-colors z-50"
                 onMouseDown={(e) => { e.preventDefault(); setIsResizing(true); }}
               />
+              
+              {/* Undo/Redo Toolbar */}
+              <div className="flex items-center justify-between p-3 border-b border-neutral-800 bg-neutral-900/50">
+                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Design Studio</span>
+                <div className="flex items-center gap-1">
+                  <button 
+                    onClick={handleUndo}
+                    disabled={!canUndo}
+                    title="Undo (Ctrl+Z)"
+                    className={`p-2 rounded-lg transition-colors ${canUndo ? 'hover:bg-neutral-800 text-neutral-400 hover:text-white' : 'text-neutral-700 cursor-not-allowed'}`}
+                  >
+                    <Undo2 size={16} />
+                  </button>
+                  <button 
+                    onClick={handleRedo}
+                    disabled={!canRedo}
+                    title="Redo (Ctrl+Y)"
+                    className={`p-2 rounded-lg transition-colors ${canRedo ? 'hover:bg-neutral-800 text-neutral-400 hover:text-white' : 'text-neutral-700 cursor-not-allowed'}`}
+                  >
+                    <Redo2 size={16} />
+                  </button>
+                </div>
+              </div>
+              
               <div className="flex-1 overflow-y-auto custom-scrollbar">
                 <div className="p-4 space-y-3">
 
@@ -1650,13 +2150,43 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             {/* RIGHT COLUMN: LIVE CANVAS */}
             <div className={`flex-1 bg-[#111] flex flex-col relative transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${isAnyModalOpen ? 'pl-96' : ''}`}>
               <div className="h-12 border-b border-neutral-800 bg-neutral-900 flex items-center justify-between px-6 shrink-0 z-10">
-                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500"></div><div className="w-2 h-2 rounded-full bg-yellow-500"></div><div className="w-2 h-2 rounded-full bg-green-500"></div></div>
-                <div className="flex items-center gap-1 bg-black p-1 rounded-lg border border-neutral-800">
-                  <button onClick={() => setPreviewDevice('desktop')} className={`p-1.5 rounded ${previewDevice === 'desktop' ? 'bg-neutral-800 text-white' : 'text-neutral-500 hover:text-white'}`}><Monitor size={14} /></button>
-                  <button onClick={() => setPreviewDevice('mobile')} className={`p-1.5 rounded ${previewDevice === 'mobile' ? 'bg-neutral-800 text-white' : 'text-neutral-500 hover:text-white'}`}><Smartphone size={14} /></button>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  </div>
+                  {/* Device Preview Toggle */}
+                  <div className="flex items-center gap-1 bg-black p-1 rounded-lg border border-neutral-800">
+                    <button 
+                      onClick={() => setPreviewDevice('desktop')} 
+                      title="Desktop Preview"
+                      className={`p-1.5 rounded flex items-center gap-1.5 ${previewDevice === 'desktop' ? 'bg-neutral-800 text-white' : 'text-neutral-500 hover:text-white'}`}
+                    >
+                      <Monitor size={14} />
+                      <span className="text-[10px] font-bold">Desktop</span>
+                    </button>
+                    <button 
+                      onClick={() => setPreviewDevice('tablet')} 
+                      title="Tablet Preview"
+                      className={`p-1.5 rounded ${previewDevice === 'tablet' ? 'bg-neutral-800 text-white' : 'text-neutral-500 hover:text-white'}`}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                        <line x1="12" y1="18" x2="12" y2="18"/>
+                      </svg>
+                    </button>
+                    <button 
+                      onClick={() => setPreviewDevice('mobile')} 
+                      title="Mobile Preview"
+                      className={`p-1.5 rounded ${previewDevice === 'mobile' ? 'bg-neutral-800 text-white' : 'text-neutral-500 hover:text-white'}`}
+                    >
+                      <Smartphone size={14} />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-xs text-neutral-500 font-mono">Live Preview: 12ms</div>
+                
+                <div className="flex items-center gap-3">
                   <button 
                       onClick={handleSaveChanges}
                       disabled={!hasUnsavedChanges}
@@ -1665,10 +2195,37 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <Save size={14} />
                       {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
                   </button>
+                  {/* View Live Site Button */}
+                  {config.slug && (
+                    <a 
+                      href={`/s/${config.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all"
+                    >
+                      <Eye size={14} />
+                      View Live
+                    </a>
+                  )}
+                  {/* Publish Button */}
+                  <button 
+                    onClick={() => {
+                      handleSaveChanges();
+                      showToast('Website published successfully! 🚀', 'success');
+                    }}
+                    className="flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-lg text-xs font-bold transition-all shadow-lg"
+                  >
+                    <Rocket size={14} />
+                    Publish
+                  </button>
                 </div>
               </div>
               <div className="flex-1 overflow-hidden flex items-center justify-center p-8 bg-[radial-gradient(#222_1px,transparent_1px)] [background-size:16px_16px]">
-                <div className={`bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shadow-2xl overflow-hidden relative ${previewDevice === 'mobile' ? 'w-[375px] h-[812px] rounded-[40px] border-[8px] border-neutral-900' : 'w-full h-full max-w-[1400px] rounded-lg border border-neutral-800'}`}>
+                <div className={`bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shadow-2xl overflow-hidden relative ${
+                  previewDevice === 'mobile' ? 'w-[375px] h-[812px] rounded-[40px] border-[8px] border-neutral-900' : 
+                  previewDevice === 'tablet' ? 'w-[768px] h-[1024px] rounded-[20px] border-[6px] border-neutral-900' :
+                  'w-full h-full max-w-[1400px] rounded-lg border border-neutral-800'
+                }`}>
                   <div className={`w-full h-full overflow-y-auto bg-white scrollbar-${config.scrollbarStyle}`}>
                     <Storefront
                       config={config}
@@ -1713,26 +2270,99 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         return <OrderManager storeId={storeId || null} />;
 
       case AdminTab.PRODUCTS:
+        // Get unique categories for filter dropdown
+        const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+        
+        // Filter products based on search and category
+        const filteredProducts = products.filter(product => {
+          const matchesSearch = !productSearch || 
+            product.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+            product.sku?.toLowerCase().includes(productSearch.toLowerCase()) ||
+            product.category?.toLowerCase().includes(productSearch.toLowerCase());
+          const matchesCategory = productCategoryFilter === 'all' || product.category === productCategoryFilter;
+          return matchesSearch && matchesCategory;
+        });
+
         return (
           <div className="p-8 w-full max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex justify-between items-center mb-6">
               <div><h2 className="text-3xl font-black text-white tracking-tight">Inventory</h2><p className="text-neutral-500">Manage your products and stock</p></div>
               <button onClick={handleCreateProduct} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center gap-2 transition-all"><Plus size={18} /> Add Product</button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              {products.map(product => (
-                <div key={product.id} className="group bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden hover:border-neutral-600 transition-all cursor-pointer" onClick={() => handleEditProduct(product)}>
-                  <div className="aspect-square relative overflow-hidden">
+            {/* Search and Filter Bar */}
+            <div className="flex flex-wrap gap-4 mb-6">
+              <div className="flex-1 min-w-[200px] relative">
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500" />
+                <input
+                  type="text"
+                  placeholder="Search products by name, SKU, or category..."
+                  value={productSearch}
+                  onChange={(e) => setProductSearch(e.target.value)}
+                  className="w-full bg-neutral-900 border border-neutral-800 rounded-xl py-3 pl-12 pr-4 text-white focus:border-blue-500 outline-none"
+                />
+              </div>
+              <select
+                value={productCategoryFilter}
+                onChange={(e) => setProductCategoryFilter(e.target.value)}
+                className="bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none min-w-[150px]"
+              >
+                <option value="all">All Categories</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Results count */}
+            <p className="text-neutral-500 text-sm mb-4">
+              {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+              {productSearch || productCategoryFilter !== 'all' ? ' found' : ''}
+            </p>
+
+            {filteredProducts.length === 0 ? (
+              <div className="text-center py-16 bg-neutral-900/50 rounded-2xl border border-neutral-800">
+                <Package size={48} className="mx-auto mb-4 text-neutral-600" />
+                <h3 className="text-xl font-bold text-white mb-2">
+                  {products.length === 0 ? 'No products yet' : 'No matching products'}
+                </h3>
+                <p className="text-neutral-500 mb-6">
+                  {products.length === 0 
+                    ? 'Add your first product to get started!' 
+                    : 'Try adjusting your search or filter'}
+                </p>
+                {products.length === 0 && (
+                  <button onClick={handleCreateProduct} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold">
+                    Add Your First Product
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {filteredProducts.map(product => (
+                <div key={product.id} className="group bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden hover:border-neutral-600 transition-all">
+                  <div className="aspect-square relative overflow-hidden cursor-pointer" onClick={() => handleEditProduct(product)}>
                     <img src={product.images?.[0]?.url || product.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <button className="p-2 bg-white text-black rounded-lg hover:bg-neutral-200"><Edit3 size={16} /></button>
+                      <button className="p-2 bg-white text-black rounded-lg hover:bg-neutral-200" title="Edit"><Edit3 size={16} /></button>
+                      <button 
+                        className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                        title="Delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm(`Are you sure you want to delete "${product.name}"? This cannot be undone.`)) {
+                            onDeleteProduct?.(product.id);
+                          }
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </div>
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-bold text-white truncate pr-2">{product.name}</h3>
-                      <span className="text-green-500 font-mono text-xs">${product.price}</span>
+                      <span className="text-green-500 font-mono text-xs">${product.price.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs text-neutral-500">
                       <span>{product.category}</span>
@@ -1741,7 +2371,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            )}
 
             {isProductEditorOpen && (
               <ProductEditor
@@ -1749,6 +2380,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 onSave={(p) => {
                   onAddProduct(p);
                   setIsProductEditorOpen(false);
+                  showToast(editingProduct ? 'Product updated successfully ✓' : 'Product created successfully ✓', 'success');
                 }}
                 onCancel={() => setIsProductEditorOpen(false)}
               />
@@ -2737,8 +3369,30 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       {renderHeaderModal()}
       {renderSystemBlockModal()}
       {renderAddSectionLibrary()}
+      {renderWelcomeWizard()}
+      {renderAddPageModal()}
       
       <main className="flex-1 overflow-y-auto relative flex flex-col">{renderContent()}</main>
+      
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-[200] px-6 py-4 rounded-xl shadow-2xl animate-in slide-in-from-bottom-5 duration-300 flex items-center gap-3 ${
+          toast.type === 'success' 
+            ? 'bg-emerald-900/90 border border-emerald-500/30 text-emerald-100' 
+            : 'bg-red-900/90 border border-red-500/30 text-red-100'
+        }`}>
+          {toast.type === 'success' ? (
+            <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          )}
+          <span className="font-medium">{toast.message}</span>
+        </div>
+      )}
     </div>
   );
 };
