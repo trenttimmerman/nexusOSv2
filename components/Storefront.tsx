@@ -304,13 +304,6 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         {activePage.blocks && activePage.blocks.length > 0 ? (
           // Render All Blocks (Including System Components)
           <div className={`${activePage.type === 'custom' ? 'max-w-7xl mx-auto' : 'w-full'}`}>
-            {activePage.type === 'custom' && (
-              <div className="max-w-4xl mx-auto pt-24 px-6 mb-8">
-                <span className="text-xs font-bold uppercase tracking-widest text-neutral-400 block mb-4">Page / {activePage.slug}</span>
-                <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-neutral-900">{activePage.title}</h1>
-              </div>
-            )}
-
             {activePage.type === 'custom' ? (
               <div className="max-w-4xl mx-auto px-6 pb-24">
                 {activePage.blocks.map(renderBlock)}
