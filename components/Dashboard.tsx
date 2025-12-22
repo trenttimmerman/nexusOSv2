@@ -423,6 +423,7 @@ export const DashboardHome: React.FC = () => {
 
 const Dashboard: React.FC<{ route: string }> = ({ route }) => {
     const currentRoute = route || '#/dashboard';
+    const { storeId } = useData();
 
     const renderContent = () => {
         if (currentRoute.startsWith('#/products')) {
@@ -438,7 +439,7 @@ const Dashboard: React.FC<{ route: string }> = ({ route }) => {
             return <Analytics />;
         }
         if (currentRoute.startsWith('#/settings')) {
-            return <Settings />;
+            return <Settings storeId={storeId} />;
         }
         return <DashboardHome />;
     };

@@ -614,6 +614,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [tutorialStep, setTutorialStep] = useState(0);
   const [hasSeenTutorial, setHasSeenTutorial] = useState(() => localStorage.getItem('evolv_seen_tutorial') === 'true');
   
+  // First-Edit Hint State - Shows helpful tip on first section click
+  const [hasSeenFirstEditHint, setHasSeenFirstEditHint] = useState(() => localStorage.getItem('evolv_seen_first_edit') === 'true');
+  const [showFirstEditHint, setShowFirstEditHint] = useState(false);
+  
   // Pre-Publish Checklist State
   const [showPublishChecklist, setShowPublishChecklist] = useState(false);
   
@@ -1318,55 +1322,174 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     </div>
   );
 
-  // --- HEADER CONFIG MODAL ---
+  // --- HEADER CONFIG MODAL (Full-screen with preview) ---
   const renderHeaderModal = () => {
     if (!isHeaderModalOpen) return null;
-    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) }; // 256 is sidebar width
+    
+    // Get the current header component for preview
+    const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
+    const navLinks = pages.map(p => ({
+      label: p.title,
+      href: p.type === 'home' ? '/' : `/${p.slug}`,
+      active: p.id === activePageId,
+    }));
+    
     return (
-      <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
-        <div className="p-6 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 sticky top-0 backdrop-blur z-20">
-          <div className="flex items-center gap-3">
-            <PanelTop size={20} className="text-blue-500" />
-            <div><h3 className="text-white font-bold">Header Studio</h3><p className="text-xs text-neutral-500">Global Navigation</p></div>
-          </div>
-          <button onClick={() => setIsHeaderModalOpen(false)} className="text-neutral-500 hover:text-white"><X size={20} /></button>
-        </div>
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
-          {/* Branding Section */}
-          <div>
-            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2"><Sparkles size={14} /> Identity</h4>
-            <div className="space-y-4 bg-neutral-900 p-4 rounded-xl border border-neutral-800">
-              <div className="flex bg-black p-1 rounded-lg border border-neutral-800">
-                <button onClick={() => { setLogoMode('text'); onConfigChange({ ...config, logoUrl: '' }); }} className={`flex-1 py-2 rounded text-xs font-bold ${logoMode === 'text' ? 'bg-neutral-800 text-white' : 'text-neutral-500'}`}>Text</button>
-                <button onClick={() => setLogoMode('image')} className={`flex-1 py-2 rounded text-xs font-bold ${logoMode === 'image' ? 'bg-neutral-800 text-white' : 'text-neutral-500'}`}>Logo</button>
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+          {/* Modal Header */}
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-600/20 rounded-lg">
+                <PanelTop size={20} className="text-blue-400" />
               </div>
-              {logoMode === 'image' && (
-                <div className="space-y-2">
-                  <label className={`flex items-center justify-center gap-2 w-full p-3 border border-dashed border-neutral-700 rounded bg-black cursor-pointer hover:border-blue-500 ${isUploadingLogo ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                    {isUploadingLogo ? <Loader2 size={14} className="animate-spin text-neutral-400" /> : <Upload size={14} className="text-neutral-400" />}
-                    <span className="text-xs text-neutral-400">{isUploadingLogo ? 'Uploading...' : 'Upload Image'}</span>
-                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" disabled={isUploadingLogo} />
-                  </label>
-                  <input type="range" min="20" max="120" value={config.logoHeight || 32} onChange={(e) => onConfigChange({ ...config, logoHeight: parseInt(e.target.value) })} className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+              <div>
+                <h3 className="text-white font-bold">Header Studio</h3>
+                <p className="text-xs text-neutral-500">Choose a navigation style for your store</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setIsHeaderModalOpen(false)} 
+              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          
+          {/* Modal Content - Split View */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Left Panel - Style Selection */}
+            <div className="w-80 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0">
+              <div className="p-4 border-b border-neutral-800">
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <Sparkles size={14} /> Branding
+                </h4>
+                <div className="space-y-3 bg-neutral-900 p-3 rounded-xl border border-neutral-800">
+                  <div className="flex bg-black p-1 rounded-lg border border-neutral-800">
+                    <button 
+                      onClick={() => { setLogoMode('text'); onConfigChange({ ...config, logoUrl: '' }); }} 
+                      className={`flex-1 py-2 rounded text-xs font-bold ${logoMode === 'text' ? 'bg-neutral-800 text-white' : 'text-neutral-500'}`}
+                    >
+                      Text Logo
+                    </button>
+                    <button 
+                      onClick={() => setLogoMode('image')} 
+                      className={`flex-1 py-2 rounded text-xs font-bold ${logoMode === 'image' ? 'bg-neutral-800 text-white' : 'text-neutral-500'}`}
+                    >
+                      Image Logo
+                    </button>
+                  </div>
+                  {logoMode === 'image' && (
+                    <div className="space-y-2">
+                      <label className={`flex items-center justify-center gap-2 w-full p-3 border border-dashed border-neutral-700 rounded bg-black cursor-pointer hover:border-blue-500 ${isUploadingLogo ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        {isUploadingLogo ? <Loader2 size={14} className="animate-spin text-neutral-400" /> : <Upload size={14} className="text-neutral-400" />}
+                        <span className="text-xs text-neutral-400">{isUploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
+                        <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" disabled={isUploadingLogo} />
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-neutral-500">Size:</span>
+                        <input 
+                          type="range" min="20" max="120" 
+                          value={config.logoHeight || 32} 
+                          onChange={(e) => onConfigChange({ ...config, logoHeight: parseInt(e.target.value) })} 
+                          className="flex-1 h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-blue-600" 
+                        />
+                        <span className="text-[10px] text-neutral-400 w-8">{config.logoHeight || 32}px</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+              
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <LayoutTemplate size={14} /> Header Styles
+                </h4>
+                {renderSortControls(modalSort, setModalSort)}
+                <div className="grid grid-cols-1 gap-2 mt-3">
+                  {sortItems(HEADER_OPTIONS, modalSort).map((header) => (
+                    <button 
+                      key={header.id} 
+                      onClick={() => onConfigChange({ ...config, headerStyle: header.id as HeaderStyleId })} 
+                      className={`text-left p-3 rounded-lg border transition-all relative ${
+                        config.headerStyle === header.id 
+                          ? 'bg-blue-600/20 border-blue-500 text-white ring-2 ring-blue-500/50' 
+                          : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600 hover:bg-neutral-800/50'
+                      }`}
+                    >
+                      {(header as any).recommended && (
+                        <span className="absolute -top-2 -right-2 text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">★ TOP</span>
+                      )}
+                      <div className="font-bold text-sm mb-0.5">{header.name}</div>
+                      <div className="text-[11px] opacity-60">{header.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Right Panel - Live Preview */}
+            <div className="flex-1 bg-neutral-800 flex flex-col">
+              <div className="p-3 border-b border-neutral-700 bg-neutral-900 flex items-center justify-between">
+                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Live Preview</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                  <span className="text-[10px] text-neutral-500">Updates instantly</span>
+                </div>
+              </div>
+              <div className="flex-1 overflow-hidden p-6 flex items-start justify-center bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px]">
+                <div className="w-full max-w-4xl bg-white rounded-lg shadow-2xl overflow-hidden border border-neutral-600">
+                  {/* Simulated browser chrome */}
+                  <div className="bg-neutral-200 px-3 py-2 flex items-center gap-2 border-b border-neutral-300">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                    </div>
+                    <div className="flex-1 bg-white rounded px-3 py-1 text-xs text-neutral-500 ml-2">
+                      {config.slug ? `yourstore.com` : 'yourstore.com'}
+                    </div>
+                  </div>
+                  {/* Header Preview */}
+                  <div className="relative">
+                    <HeaderComponent
+                      storeName={config.name || 'Your Store'}
+                      logoUrl={config.logoUrl}
+                      logoHeight={config.logoHeight}
+                      links={navLinks}
+                      cartCount={2}
+                      onOpenCart={() => {}}
+                      primaryColor={config.primaryColor}
+                      secondaryColor="#666666"
+                    />
+                  </div>
+                  {/* Placeholder content below header */}
+                  <div className="p-8 bg-gradient-to-b from-neutral-50 to-white min-h-[200px]">
+                    <div className="max-w-2xl mx-auto text-center">
+                      <div className="h-8 bg-neutral-200 rounded w-3/4 mx-auto mb-4"></div>
+                      <div className="h-4 bg-neutral-100 rounded w-1/2 mx-auto mb-6"></div>
+                      <div className="flex gap-4 justify-center">
+                        <div className="h-10 w-32 bg-neutral-900 rounded"></div>
+                        <div className="h-10 w-32 bg-neutral-200 rounded"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          {/* Style Grid */}
-          <div>
-            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2"><LayoutTemplate size={14} /> Choose a Style</h4>
-            {renderSortControls(modalSort, setModalSort)}
-            <div className="grid grid-cols-2 gap-2">
-              {sortItems(HEADER_OPTIONS, modalSort).map((header) => (
-                <button key={header.id} onClick={() => onConfigChange({ ...config, headerStyle: header.id as HeaderStyleId })} className={`text-left p-3 rounded-lg border transition-all relative ${config.headerStyle === header.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                  {(header as any).recommended && (
-                    <span className="absolute -top-2 -right-2 text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">★ TOP</span>
-                  )}
-                  <div className="font-bold text-xs mb-1 truncate">{header.name}</div>
-                  <div className="text-[10px] opacity-60 truncate">{header.description}</div>
-                </button>
-              ))}
-            </div>
+          
+          {/* Modal Footer */}
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-between items-center shrink-0">
+            <p className="text-xs text-neutral-500">
+              Current: <span className="text-white font-medium">{HEADER_OPTIONS.find(h => h.id === config.headerStyle)?.name || 'Default'}</span>
+            </p>
+            <button 
+              onClick={() => setIsHeaderModalOpen(false)}
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-sm transition-colors"
+            >
+              Done
+            </button>
           </div>
         </div>
       </div>
@@ -1464,173 +1587,329 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       color = 'orange';
     }
 
-    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) }; // 256 is sidebar width
-
-    return (
-      <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
-        <div className="p-6 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 sticky top-0 backdrop-blur z-20">
-          <div className="flex items-center gap-3">
-            <BoxSelect size={20} className={`text-${color}-500`} />
-            <div><h3 className="text-white font-bold">{title}</h3><p className="text-xs text-neutral-500">System Component</p></div>
-          </div>
-          <button onClick={() => { setIsSystemModalOpen(false); setWarningFields([]); setPendingVariant(null); }} className="text-neutral-500 hover:text-white"><X size={20} /></button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8 relative">
-          {/* WARNING OVERLAY */}
-          {warningFields.length > 0 && (
-            <div className="absolute inset-0 z-50 bg-neutral-950/95 p-6 flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
-              <div className="w-12 h-12 bg-red-900/30 rounded-full flex items-center justify-center text-red-500 mb-4"><AlertTriangle size={24} /></div>
-              <h4 className="text-white font-bold text-lg mb-2">Content Loss Warning</h4>
-              <p className="text-neutral-400 text-sm mb-6">Switching to <span className="text-white font-bold">{HERO_OPTIONS.find(o => o.id === pendingVariant)?.name}</span> will hide the following text fields because they are not supported by this style:</p>
-              <div className="bg-neutral-900 rounded-lg p-3 w-full mb-6 border border-neutral-800">
-                {warningFields.map(field => (
-                  <div key={field} className="text-xs text-red-400 font-mono py-1 border-b border-neutral-800 last:border-0">{field}</div>
-                ))}
-              </div>
-              <div className="flex gap-2 w-full">
-                <button onClick={() => { setWarningFields([]); setPendingVariant(null); }} className="flex-1 py-3 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg font-bold text-sm transition-colors">Cancel</button>
-                <button onClick={confirmVariantChange} className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-sm transition-colors">Confirm</button>
-              </div>
-            </div>
-          )}
-
-          <div>
-            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2"><LayoutTemplate size={14} /> Style Matrix</h4>
-            {renderSortControls(modalSort, setModalSort)}
-            <div className="grid grid-cols-2 gap-2">
-              {sortItems(options, modalSort).map((opt) => (
-                <button key={opt.id} onClick={() => setSelection(opt.id)} className={`text-left p-3 rounded-lg border transition-all relative ${currentSelection === opt.id ? `bg-${color}-600/20 border-${color}-500 text-white` : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                  {opt.recommended && (
-                    <span className="absolute -top-2 -right-2 text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">★ TOP</span>
-                  )}
-                  <div className="font-bold text-xs mb-1 truncate">{opt.name}</div>
-                  <div className="text-[10px] opacity-60 truncate">{opt.description}</div>
-                </button>
+    // Get the preview component based on modal type
+    const getPreviewComponent = () => {
+      if (systemModalType === 'hero') {
+        const HeroComponent = HERO_COMPONENTS[currentSelection as HeroStyleId] || HERO_COMPONENTS['impact'];
+        return HeroComponent ? (
+          <HeroComponent
+            storeName={config.name || 'Your Store'}
+            primaryColor={config.primaryColor}
+            data={activeBlock?.data || { heading: 'Hero Headline', subheading: 'Your amazing subheading goes here' }}
+            isEditable={false}
+          />
+        ) : null;
+      }
+      if (systemModalType === 'grid') {
+        const CardComponent = PRODUCT_CARD_COMPONENTS[currentSelection as ProductCardStyleId] || PRODUCT_CARD_COMPONENTS['classic'];
+        return (
+          <div className="py-12 px-6 max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold mb-6 text-neutral-900">Featured Products</h2>
+            <div className="grid grid-cols-3 gap-6">
+              {[1, 2, 3].map(i => (
+                <CardComponent
+                  key={i}
+                  product={{
+                    id: `preview-${i}`,
+                    name: `Product ${i}`,
+                    price: 99.99,
+                    image: `https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400`,
+                    seo: { slug: 'preview' }
+                  } as any}
+                  primaryColor={config.primaryColor}
+                />
               ))}
             </div>
+          </div>
+        );
+      }
+      if (systemModalType === 'footer') {
+        const FooterComponent = FOOTER_COMPONENTS[currentSelection as FooterStyleId] || FOOTER_COMPONENTS['columns'];
+        return FooterComponent ? (
+          <FooterComponent
+            storeName={config.name || 'Your Store'}
+            primaryColor={config.primaryColor}
+          />
+        ) : null;
+      }
+      return null;
+    };
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+          {/* Modal Header */}
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${
+                color === 'purple' ? 'bg-purple-600/20' : 
+                color === 'green' ? 'bg-green-600/20' : 
+                'bg-orange-600/20'
+              }`}>
+                <BoxSelect size={20} className={`${
+                  color === 'purple' ? 'text-purple-400' : 
+                  color === 'green' ? 'text-green-400' : 
+                  'text-orange-400'
+                }`} />
+              </div>
+              <div>
+                <h3 className="text-white font-bold">{title}</h3>
+                <p className="text-xs text-neutral-500">Choose a layout style</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => { setIsSystemModalOpen(false); setWarningFields([]); setPendingVariant(null); }} 
+              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          
+          {/* Modal Content - Split View */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Left Panel - Style Selection */}
+            <div className="w-80 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative">
+              {/* WARNING OVERLAY */}
+              {warningFields.length > 0 && (
+                <div className="absolute inset-0 z-50 bg-neutral-950/98 p-6 flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
+                  <div className="w-12 h-12 bg-red-900/30 rounded-full flex items-center justify-center text-red-500 mb-4">
+                    <AlertTriangle size={24} />
+                  </div>
+                  <h4 className="text-white font-bold text-lg mb-2">Content Warning</h4>
+                  <p className="text-neutral-400 text-sm mb-4">
+                    Switching to <span className="text-white font-bold">{HERO_OPTIONS.find(o => o.id === pendingVariant)?.name}</span> will hide these fields:
+                  </p>
+                  <div className="bg-neutral-900 rounded-lg p-3 w-full mb-4 border border-neutral-800 max-h-32 overflow-y-auto">
+                    {warningFields.map(field => (
+                      <div key={field} className="text-xs text-red-400 font-mono py-1 border-b border-neutral-800 last:border-0">{field}</div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 w-full">
+                    <button onClick={() => { setWarningFields([]); setPendingVariant(null); }} className="flex-1 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg font-bold text-sm transition-colors">Cancel</button>
+                    <button onClick={confirmVariantChange} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-sm transition-colors">Confirm</button>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <LayoutTemplate size={14} /> Available Styles
+                </h4>
+                {renderSortControls(modalSort, setModalSort)}
+                <div className="grid grid-cols-1 gap-2 mt-3">
+                  {sortItems(options, modalSort).map((opt) => (
+                    <button 
+                      key={opt.id} 
+                      onClick={() => setSelection(opt.id)} 
+                      className={`text-left p-3 rounded-lg border transition-all relative ${
+                        currentSelection === opt.id 
+                          ? `${color === 'purple' ? 'bg-purple-600/20 border-purple-500 ring-2 ring-purple-500/50' : 
+                              color === 'green' ? 'bg-green-600/20 border-green-500 ring-2 ring-green-500/50' : 
+                              'bg-orange-600/20 border-orange-500 ring-2 ring-orange-500/50'} text-white` 
+                          : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600 hover:bg-neutral-800/50'
+                      }`}
+                    >
+                      {opt.recommended && (
+                        <span className="absolute -top-2 -right-2 text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">★ TOP</span>
+                      )}
+                      <div className="font-bold text-sm mb-0.5">{opt.name}</div>
+                      <div className="text-[11px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Right Panel - Live Preview */}
+            <div className="flex-1 bg-neutral-800 flex flex-col">
+              <div className="p-3 border-b border-neutral-700 bg-neutral-900 flex items-center justify-between">
+                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Live Preview</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                  <span className="text-[10px] text-neutral-500">Updates instantly</span>
+                </div>
+              </div>
+              <div className="flex-1 overflow-auto p-6 bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px]">
+                <div className="bg-white rounded-lg shadow-2xl overflow-hidden border border-neutral-600 min-h-full">
+                  {getPreviewComponent()}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Modal Footer */}
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-between items-center shrink-0">
+            <p className="text-xs text-neutral-500">
+              Current: <span className="text-white font-medium">{options.find(o => o.id === currentSelection)?.name || 'Default'}</span>
+            </p>
+            <button 
+              onClick={() => { setIsSystemModalOpen(false); setWarningFields([]); setPendingVariant(null); }}
+              className={`px-6 py-2 rounded-lg font-bold text-sm transition-colors text-white ${
+                color === 'purple' ? 'bg-purple-600 hover:bg-purple-500' : 
+                color === 'green' ? 'bg-green-600 hover:bg-green-500' : 
+                'bg-orange-600 hover:bg-orange-500'
+              }`}
+            >
+              Done
+            </button>
           </div>
         </div>
       </div>
     );
   };
-  // ... rest of the file
+  // --- INTERFACE MODAL (Full-screen) ---
   const renderInterfaceModal = () => {
     if (!isInterfaceModalOpen) return null;
-    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) };
+    
     return (
-      <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
-        <div className="p-6 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 sticky top-0 backdrop-blur z-20">
-          <div className="flex items-center gap-3">
-            <Monitor size={20} className="text-blue-500" />
-            <div><h3 className="text-white font-bold">Site Settings</h3><p className="text-xs text-neutral-500">Brand & Global Styles</p></div>
-          </div>
-          <button onClick={() => setIsInterfaceModalOpen(false)} className="text-neutral-500 hover:text-white"><X size={20} /></button>
-        </div>
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
-          
-          {/* Site Identity Section */}
-          <div>
-            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Star size={14} /> Site Identity
-            </h4>
-            <div className="space-y-4 bg-neutral-900 p-4 rounded-xl border border-neutral-800">
-              <div>
-                <label className="text-xs font-bold text-neutral-400 mb-2 block">Store Name</label>
-                <input
-                  type="text"
-                  value={config.name || ''}
-                  onChange={(e) => onConfigChange({ ...config, name: e.target.value })}
-                  className="w-full bg-black border border-neutral-700 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
-                  placeholder="Your Store Name"
-                />
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+          {/* Modal Header */}
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-600/20 rounded-lg">
+                <Monitor size={20} className="text-purple-400" />
               </div>
               <div>
-                <label className="text-xs font-bold text-neutral-400 mb-2 block">Tagline</label>
-                <input
-                  type="text"
-                  value={config.tagline || ''}
-                  onChange={(e) => onConfigChange({ ...config, tagline: e.target.value })}
-                  className="w-full bg-black border border-neutral-700 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
-                  placeholder="A short description of your business"
-                />
+                <h3 className="text-white font-bold">Site Settings</h3>
+                <p className="text-xs text-neutral-500">Brand & Global Styles</p>
               </div>
             </div>
+            <button 
+              onClick={() => setIsInterfaceModalOpen(false)} 
+              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
           </div>
           
-          {/* Brand Colors Section */}
-          <div>
-            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Palette size={14} /> Brand Colors
-            </h4>
-            <div className="space-y-3 bg-neutral-900 p-4 rounded-xl border border-neutral-800">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-neutral-400">Primary Color</span>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={config.primaryColor || '#3B82F6'}
-                    onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
-                    className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                  />
-                  <input
-                    type="text"
-                    value={config.primaryColor || '#3B82F6'}
-                    onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
-                    className="w-20 bg-black border border-neutral-700 rounded px-2 py-1 text-xs text-neutral-400 font-mono"
-                  />
+          {/* Modal Content */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Site Identity Section */}
+              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700">
+                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                  <Star size={16} className="text-yellow-500" /> Site Identity
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-neutral-400 mb-2 block">Store Name</label>
+                    <input
+                      type="text"
+                      value={config.name || ''}
+                      onChange={(e) => onConfigChange({ ...config, name: e.target.value })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-purple-500 outline-none"
+                      placeholder="Your Store Name"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-neutral-400 mb-2 block">Tagline</label>
+                    <input
+                      type="text"
+                      value={config.tagline || ''}
+                      onChange={(e) => onConfigChange({ ...config, tagline: e.target.value })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-purple-500 outline-none"
+                      placeholder="A short description of your business"
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-neutral-400">Accent Color</span>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={config.accentColor || '#8B5CF6'}
-                    onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
-                    className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                  />
-                  <input
-                    type="text"
-                    value={config.accentColor || '#8B5CF6'}
-                    onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
-                    className="w-20 bg-black border border-neutral-700 rounded px-2 py-1 text-xs text-neutral-400 font-mono"
-                  />
+              
+              {/* Brand Colors Section */}
+              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700">
+                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                  <Palette size={16} className="text-pink-500" /> Brand Colors
+                </h4>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-neutral-300">Primary Color</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={config.primaryColor || '#3B82F6'}
+                        onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
+                        className="w-10 h-10 rounded-lg cursor-pointer border-2 border-neutral-600 bg-transparent"
+                      />
+                      <input
+                        type="text"
+                        value={config.primaryColor || '#3B82F6'}
+                        onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
+                        className="w-24 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-300 font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-neutral-300">Accent Color</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={config.accentColor || '#8B5CF6'}
+                        onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
+                        className="w-10 h-10 rounded-lg cursor-pointer border-2 border-neutral-600 bg-transparent"
+                      />
+                      <input
+                        type="text"
+                        value={config.accentColor || '#8B5CF6'}
+                        onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
+                        className="w-24 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-300 font-mono"
+                      />
+                    </div>
+                  </div>
+                  {/* AI Color Suggestions */}
+                  <button 
+                    onClick={() => {
+                      const palettes = [
+                        { primary: '#3B82F6', accent: '#8B5CF6' },
+                        { primary: '#10B981', accent: '#14B8A6' },
+                        { primary: '#F59E0B', accent: '#EF4444' },
+                        { primary: '#EC4899', accent: '#8B5CF6' },
+                        { primary: '#000000', accent: '#EAB308' },
+                      ];
+                      const random = palettes[Math.floor(Math.random() * palettes.length)];
+                      onConfigChange({ ...config, primaryColor: random.primary, accentColor: random.accent });
+                      showToast('New color palette applied!', 'success');
+                    }}
+                    className="w-full py-2.5 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 hover:from-purple-600/30 hover:to-pink-600/30 border border-purple-500/30 rounded-lg text-purple-300 text-sm font-bold transition-colors"
+                  >
+                    <Sparkles size={16} />
+                    Generate AI Color Palette
+                  </button>
                 </div>
               </div>
-              {/* AI Color Suggestions */}
-              <button 
-                onClick={() => {
-                  const palettes = [
-                    { primary: '#3B82F6', accent: '#8B5CF6' }, // Blue/Purple
-                    { primary: '#10B981', accent: '#14B8A6' }, // Green/Teal
-                    { primary: '#F59E0B', accent: '#EF4444' }, // Orange/Red
-                    { primary: '#EC4899', accent: '#8B5CF6' }, // Pink/Purple
-                    { primary: '#000000', accent: '#EAB308' }, // Black/Gold
-                  ];
-                  const random = palettes[Math.floor(Math.random() * palettes.length)];
-                  onConfigChange({ ...config, primaryColor: random.primary, accentColor: random.accent });
-                  showToast('New color palette applied!', 'success');
-                }}
-                className="w-full py-2 flex items-center justify-center gap-2 bg-purple-900/30 hover:bg-purple-900/50 border border-purple-500/30 rounded-lg text-purple-400 text-xs font-bold transition-colors"
-              >
-                <Sparkles size={14} />
-                Generate AI Color Palette
-              </button>
-            </div>
-          </div>
 
-          {/* Scrollbar Style Section */}
-          <div>
-            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2"><ArrowDownAZ size={14} /> Scrollbar Style</h4>
-            <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto custom-scrollbar">
-              {SCROLLBAR_OPTIONS.slice(0, 8).map((opt) => (
-                <button key={opt.id} onClick={() => onConfigChange({ ...config, scrollbarStyle: opt.id as ScrollbarStyleId })} className={`text-left p-3 rounded-lg border transition-all ${config.scrollbarStyle === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                  <div className="font-bold text-sm mb-1">{opt.name}</div>
-                  <div className="text-[10px] opacity-60">{opt.description}</div>
-                </button>
-              ))}
+              {/* Scrollbar Style Section */}
+              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700 md:col-span-2">
+                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                  <ArrowDownAZ size={16} className="text-blue-500" /> Scrollbar Style
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {SCROLLBAR_OPTIONS.slice(0, 8).map((opt) => (
+                    <button 
+                      key={opt.id} 
+                      onClick={() => onConfigChange({ ...config, scrollbarStyle: opt.id as ScrollbarStyleId })} 
+                      className={`text-left p-3 rounded-lg border transition-all ${
+                        config.scrollbarStyle === opt.id 
+                          ? 'bg-blue-600/20 border-blue-500 text-white ring-2 ring-blue-500/50' 
+                          : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-500'
+                      }`}
+                    >
+                      <div className="font-bold text-sm mb-0.5">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
+          </div>
+          
+          {/* Modal Footer */}
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-end shrink-0">
+            <button 
+              onClick={() => setIsInterfaceModalOpen(false)}
+              className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold text-sm transition-colors"
+            >
+              Done
+            </button>
           </div>
         </div>
       </div>
@@ -1640,76 +1919,208 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const renderBlockArchitect = () => {
     if (!isArchitectOpen) return null;
 
-    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) }; // 256 is sidebar width
-
     return (
-      <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
-        <div className="p-6 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 sticky top-0 backdrop-blur z-20">
-          <div className="flex items-center gap-3">
-            <Wand2 size={20} className="text-blue-500" />
-            <div><h3 className="text-white font-bold">Block Architect</h3><p className="text-xs text-neutral-500">Visual Design Engine</p></div>
-          </div>
-          <button onClick={() => setIsArchitectOpen(false)} className="text-neutral-500 hover:text-white"><X size={20} /></button>
-        </div>
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
-          <div>
-            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2"><LayoutTemplate size={14} /> Layout Matrix</h4>
-            <div className="grid grid-cols-2 gap-2">
-              {['hero', 'split', 'card', 'cover'].map(l => (
-                <button key={l} onClick={() => setArchitectConfig({ ...architectConfig, layout: l })} className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${architectConfig.layout === l ? 'bg-blue-600 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-700'}`}>
-                  <BoxSelect size={20} /><span className="text-xs font-bold uppercase">{l}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2"><Type size={14} /> Content Control</h4>
-            <div className="space-y-3">
-              <input value={architectConfig.heading} onChange={(e) => setArchitectConfig({ ...architectConfig, heading: e.target.value })} className="w-full bg-neutral-900 border border-neutral-800 rounded p-3 text-white text-sm font-bold focus:border-blue-500 outline-none" placeholder="Heading..." />
-              <textarea value={architectConfig.body} onChange={(e) => setArchitectConfig({ ...architectConfig, body: e.target.value })} className="w-full h-24 bg-neutral-900 border border-neutral-800 rounded p-3 text-neutral-400 text-xs focus:border-blue-500 outline-none resize-none" placeholder="Body text..." />
-            </div>
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2"><ImageIcon size={14} /> Visual Assets</h4>
-            <div className="space-y-3">
-              <div className="relative aspect-video bg-neutral-900 rounded-lg overflow-hidden border border-neutral-800">
-                <img src={architectConfig.image} className="w-full h-full object-cover opacity-50" />
-                <button onClick={simulateImageGen} className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 hover:bg-black/40 transition-colors">
-                  {isGeneratingImage ? <Loader2 className="animate-spin text-white" /> : <><Sparkles size={16} className="text-blue-400" /><span className="text-xs font-bold text-white">Generate with Evolv AI</span></>}
-                </button>
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+          {/* Modal Header */}
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-cyan-600/20 rounded-lg">
+                <Wand2 size={20} className="text-cyan-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold">Block Architect</h3>
+                <p className="text-xs text-neutral-500">Visual Design Engine</p>
               </div>
             </div>
+            <button 
+              onClick={() => setIsArchitectOpen(false)} 
+              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
           </div>
-          <div>
-            <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Sliders size={14} /> Atmosphere
-              <span className="group relative cursor-help">
-                <HelpCircle size={12} className="text-neutral-600 hover:text-neutral-400" />
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-neutral-800 text-neutral-300 text-[10px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 border border-neutral-700 shadow-lg">
-                  Visual effects and background styles for your section
-                </span>
-              </span>
-            </h4>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-neutral-900 rounded-lg border border-neutral-800">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-neutral-400">Glassmorphism</span>
-                  <span className="group relative cursor-help">
-                    <HelpCircle size={10} className="text-neutral-600 hover:text-neutral-400" />
-                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-neutral-800 text-neutral-300 text-[10px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 border border-neutral-700 shadow-lg">
-                      Frosted glass effect with blur and transparency
-                    </span>
-                  </span>
+          
+          {/* Modal Content - Split View */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Left Panel - Controls */}
+            <div className="w-80 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 overflow-y-auto custom-scrollbar p-4 space-y-6">
+              {/* Layout Matrix */}
+              <div>
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <LayoutTemplate size={14} /> Layout
+                </h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {['hero', 'split', 'card', 'cover'].map(l => (
+                    <button 
+                      key={l} 
+                      onClick={() => setArchitectConfig({ ...architectConfig, layout: l })} 
+                      className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${
+                        architectConfig.layout === l 
+                          ? 'bg-cyan-600 border-cyan-500 text-white' 
+                          : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-700'
+                      }`}
+                    >
+                      <BoxSelect size={18} />
+                      <span className="text-[10px] font-bold uppercase">{l}</span>
+                    </button>
+                  ))}
                 </div>
-                <button onClick={() => setArchitectConfig(prev => ({ ...prev, glass: !prev.glass }))} className={`w-8 h-4 rounded-full transition-colors relative ${architectConfig.glass ? 'bg-blue-600' : 'bg-neutral-700'}`}>
-                  <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${architectConfig.glass ? 'translate-x-4' : ''}`}></div>
-                </button>
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                {['clean', 'dark', 'noise'].map(m => (
-                  <button key={m} onClick={() => setArchitectConfig(prev => ({ ...prev, bgMode: m }))} className={`py-2 text-[10px] uppercase font-bold rounded border ${architectConfig.bgMode === m ? 'bg-neutral-800 border-neutral-600 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-500'}`}>{m}</button>
-                ))}
+              
+              {/* Content Control */}
+              <div>
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <Type size={14} /> Content
+                </h4>
+                <div className="space-y-3">
+                  <input 
+                    value={architectConfig.heading} 
+                    onChange={(e) => setArchitectConfig({ ...architectConfig, heading: e.target.value })} 
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-white text-sm font-bold focus:border-cyan-500 outline-none" 
+                    placeholder="Heading..." 
+                  />
+                  <textarea 
+                    value={architectConfig.body} 
+                    onChange={(e) => setArchitectConfig({ ...architectConfig, body: e.target.value })} 
+                    className="w-full h-20 bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-neutral-400 text-xs focus:border-cyan-500 outline-none resize-none" 
+                    placeholder="Body text..." 
+                  />
+                </div>
               </div>
+              
+              {/* Visual Assets */}
+              <div>
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <ImageIcon size={14} /> Image
+                </h4>
+                <div className="relative aspect-video bg-neutral-900 rounded-lg overflow-hidden border border-neutral-800">
+                  <img src={architectConfig.image} className="w-full h-full object-cover opacity-50" />
+                  <button 
+                    onClick={simulateImageGen} 
+                    className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 hover:bg-black/40 transition-colors"
+                  >
+                    {isGeneratingImage ? (
+                      <Loader2 className="animate-spin text-white" />
+                    ) : (
+                      <>
+                        <Sparkles size={16} className="text-cyan-400" />
+                        <span className="text-xs font-bold text-white">Generate with AI</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+              
+              {/* Atmosphere */}
+              <div>
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <Sliders size={14} /> Effects
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-neutral-900 rounded-lg border border-neutral-800">
+                    <span className="text-xs text-neutral-400">Glass Effect</span>
+                    <button 
+                      onClick={() => setArchitectConfig(prev => ({ ...prev, glass: !prev.glass }))} 
+                      className={`w-10 h-5 rounded-full transition-colors relative ${architectConfig.glass ? 'bg-cyan-600' : 'bg-neutral-700'}`}
+                    >
+                      <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${architectConfig.glass ? 'translate-x-5' : ''}`}></div>
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['clean', 'dark', 'noise'].map(m => (
+                      <button 
+                        key={m} 
+                        onClick={() => setArchitectConfig(prev => ({ ...prev, bgMode: m }))} 
+                        className={`py-2 text-[10px] uppercase font-bold rounded-lg border ${
+                          architectConfig.bgMode === m 
+                            ? 'bg-neutral-800 border-cyan-500 text-white' 
+                            : 'bg-neutral-900 border-neutral-800 text-neutral-500 hover:border-neutral-700'
+                        }`}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Right Panel - Live Preview */}
+            <div className="flex-1 bg-neutral-800 flex flex-col">
+              <div className="p-3 border-b border-neutral-700 bg-neutral-900 flex items-center justify-between">
+                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Live Preview</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
+                  <span className="text-[10px] text-neutral-500">Real-time</span>
+                </div>
+              </div>
+              <div className="flex-1 overflow-auto p-6 bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px] flex items-center justify-center">
+                <div className={`w-full max-w-3xl bg-white rounded-lg shadow-2xl overflow-hidden border border-neutral-600 min-h-[300px] ${architectConfig.glass ? 'backdrop-blur-xl bg-white/80' : ''}`}>
+                  {/* Preview based on layout */}
+                  <div className={`p-12 ${architectConfig.bgMode === 'dark' ? 'bg-neutral-900 text-white' : architectConfig.bgMode === 'noise' ? 'bg-neutral-100' : 'bg-white'}`}>
+                    {architectConfig.layout === 'hero' && (
+                      <div className="text-center space-y-4">
+                        <h2 className="text-4xl font-bold">{architectConfig.heading || 'Your Headline'}</h2>
+                        <p className={`text-lg ${architectConfig.bgMode === 'dark' ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                          {architectConfig.body || 'Your supporting text goes here'}
+                        </p>
+                      </div>
+                    )}
+                    {architectConfig.layout === 'split' && (
+                      <div className="flex gap-8 items-center">
+                        <div className="flex-1 space-y-4">
+                          <h2 className="text-3xl font-bold">{architectConfig.heading || 'Your Headline'}</h2>
+                          <p className={architectConfig.bgMode === 'dark' ? 'text-neutral-300' : 'text-neutral-600'}>
+                            {architectConfig.body || 'Your supporting text goes here'}
+                          </p>
+                        </div>
+                        <div className="w-48 h-48 bg-neutral-200 rounded-lg overflow-hidden">
+                          <img src={architectConfig.image} className="w-full h-full object-cover" />
+                        </div>
+                      </div>
+                    )}
+                    {architectConfig.layout === 'card' && (
+                      <div className="max-w-md mx-auto bg-neutral-50 rounded-xl p-6 shadow-lg">
+                        <h2 className="text-2xl font-bold mb-2">{architectConfig.heading || 'Your Headline'}</h2>
+                        <p className="text-neutral-600">{architectConfig.body || 'Your supporting text goes here'}</p>
+                      </div>
+                    )}
+                    {architectConfig.layout === 'cover' && (
+                      <div className="relative h-64 rounded-xl overflow-hidden">
+                        <img src={architectConfig.image} className="absolute inset-0 w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-center p-6">
+                          <div>
+                            <h2 className="text-3xl font-bold text-white mb-2">{architectConfig.heading || 'Your Headline'}</h2>
+                            <p className="text-neutral-200">{architectConfig.body || 'Your supporting text'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Modal Footer */}
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-between items-center shrink-0">
+            <p className="text-xs text-neutral-500">
+              Layout: <span className="text-white font-medium capitalize">{architectConfig.layout}</span>
+            </p>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setIsArchitectOpen(false)}
+                className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg font-bold text-sm transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => setIsArchitectOpen(false)}
+                className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-bold text-sm transition-colors"
+              >
+                Apply
+              </button>
             </div>
           </div>
         </div>
@@ -2239,7 +2650,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       );
     }
     
-    // Default Selection Mode
+    // Default Selection Mode - Now shows that user has a starter template
     return (
       <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-2xl animate-in zoom-in-95 duration-300">
@@ -2248,28 +2659,48 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <Sparkles size={32} className="text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Welcome to Design Studio!</h2>
-            <p className="text-neutral-400">Let's build your website. Choose how you'd like to start:</p>
+            <p className="text-neutral-400">We've created a starter template for you. Choose how you'd like to proceed:</p>
           </div>
           
           <div className="p-6 grid grid-cols-1 gap-4">
+            {/* Start Editing - Primary CTA */}
+            <button 
+              onClick={() => {
+                dismissWizard();
+                showToast('Click any section to start editing!', 'success');
+              }}
+              className="group p-6 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-2 border-green-500/50 rounded-xl text-left hover:border-green-400 transition-all"
+            >
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-green-600 rounded-lg">
+                  <Edit3 size={24} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-bold text-white">Start Customizing</h3>
+                    <span className="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">RECOMMENDED</span>
+                  </div>
+                  <p className="text-neutral-400 text-sm">Your starter template is ready! Click any section in the preview to edit its content.</p>
+                </div>
+                <ChevronRight size={20} className="text-neutral-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </div>
+            </button>
+            
             {/* AI Build Option */}
             <button 
               onClick={() => {
                 setWizardMode('ai-questions');
                 setAiWizardStep(0);
               }}
-              className="group p-6 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-2 border-blue-500/50 rounded-xl text-left hover:border-blue-400 transition-all"
+              className="group p-6 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-neutral-700 rounded-xl text-left hover:border-blue-400 transition-all"
             >
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-blue-600 rounded-lg">
                   <Sparkles size={24} className="text-white" />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-bold text-white">Build with AI</h3>
-                    <span className="text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full font-bold">RECOMMENDED</span>
-                  </div>
-                  <p className="text-neutral-400 text-sm">Answer 5 quick questions and AI will generate a complete website for you in seconds.</p>
+                  <h3 className="text-lg font-bold text-white mb-1">Generate with AI</h3>
+                  <p className="text-neutral-400 text-sm">Answer 5 quick questions and AI will create a personalized website for your business.</p>
                 </div>
                 <ChevronRight size={20} className="text-neutral-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
               </div>
@@ -2285,33 +2716,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <Layout size={24} className="text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-white mb-1">Choose a Template</h3>
-                  <p className="text-neutral-400 text-sm">Start with a pre-made design and customize each section to match your brand.</p>
+                  <h3 className="text-lg font-bold text-white mb-1">Browse Templates</h3>
+                  <p className="text-neutral-400 text-sm">Choose from pre-designed templates for different business types.</p>
                 </div>
                 <ChevronRight size={20} className="text-neutral-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
               </div>
             </button>
-            
-            {/* Blank Canvas Option */}
-            <button 
-              onClick={() => {
-                dismissWizard();
-                onUpdatePage(activePageId, { blocks: [] });
-                showToast('Starting with a blank canvas', 'success');
-              }}
-              className="group p-6 bg-neutral-800/50 border border-neutral-700 rounded-xl text-left hover:border-neutral-500 transition-all"
-            >
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-neutral-700 rounded-lg">
-                  <FileText size={24} className="text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-white mb-1">Start from Scratch</h3>
-                  <p className="text-neutral-400 text-sm">Begin with a blank page and build everything yourself. For advanced users.</p>
-                </div>
-                <ChevronRight size={20} className="text-neutral-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
-              </div>
-            </button>
+          </div>
+          
+          {/* Quick Tips */}
+          <div className="px-6 pb-6">
+            <div className="bg-neutral-800/50 rounded-xl p-4 border border-neutral-700">
+              <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                <Lightbulb size={16} className="text-yellow-500" />
+                Quick Tips
+              </h4>
+              <ul className="text-xs text-neutral-400 space-y-1">
+                <li>• Click any section in the preview to edit it</li>
+                <li>• Use the + button to add new sections</li>
+                <li>• Drag sections to reorder them</li>
+                <li>• Look for ✨ AI buttons to generate content</li>
+              </ul>
+            </div>
           </div>
           
           <div className="p-4 border-t border-neutral-800 flex justify-center">
@@ -3043,338 +3469,301 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const renderAddSectionLibrary = () => {
     if (!isAddSectionOpen) return null;
 
-    const style = { left: editorWidth + (isSidebarCollapsed ? 80 : 256) }; // 256 is sidebar width
+    const categoryColors: Record<string, string> = {
+      hero: 'purple',
+      grid: 'green',
+      collection: 'emerald',
+      layout: 'cyan',
+      scroll: 'orange',
+      social: 'pink',
+      blog: 'rose',
+      video: 'red',
+      content: 'blue',
+      marketing: 'yellow',
+      media: 'indigo',
+      contact: 'teal'
+    };
+
+    const currentColor = categoryColors[selectedCategory || 'purple'] || 'purple';
 
     return (
-      <div style={style} className="fixed top-0 bottom-0 w-96 z-[90] bg-neutral-950 flex flex-col border-r border-neutral-800 shadow-2xl animate-in slide-in-from-left duration-300">
-        <div className="p-6 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 sticky top-0 backdrop-blur z-20">
-          <div className="flex items-center gap-3">
-            <Plus size={20} className="text-white" />
-            <div>
-              <h3 className="text-white font-bold">Add Section</h3>
-              <p className="text-xs text-neutral-500">{addSectionStep === 'categories' ? 'Choose Type' : 'Select Style'}</p>
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+          {/* Modal Header */}
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-cyan-600/20 rounded-lg">
+                <Plus size={20} className="text-cyan-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold">Add Section</h3>
+                <p className="text-xs text-neutral-500">{addSectionStep === 'categories' ? 'Choose Type' : 'Select Style'}</p>
+              </div>
             </div>
+            <button 
+              onClick={() => { setIsAddSectionOpen(false); setPreviewBlock(null); setAddSectionStep('categories'); }} 
+              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
           </div>
-          <button onClick={() => { setIsAddSectionOpen(false); setPreviewBlock(null); setAddSectionStep('categories'); }} className="text-neutral-500 hover:text-white"><X size={20} /></button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-          {addSectionStep === 'categories' ? (
-            <div className="space-y-2">
-              <button onClick={() => { setSelectedCategory('hero'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-purple-500 rounded-xl flex items-center justify-between group transition-all">
-                <div className="flex items-center gap-4">
+          
+          {/* Modal Content */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+            {addSectionStep === 'categories' ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <button onClick={() => { setSelectedCategory('hero'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-purple-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
                   <div className="p-3 bg-purple-900/20 text-purple-500 rounded-lg group-hover:bg-purple-500 group-hover:text-white transition-colors"><LayoutTemplate size={24} /></div>
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="block text-sm font-bold text-white">Hero Engine</span>
                     <span className="text-xs text-neutral-500">High impact entry sections</span>
                   </div>
-                </div>
-                <ChevronDown className="-rotate-90 text-neutral-600" />
-              </button>
+                </button>
 
-              <button onClick={() => { setSelectedCategory('grid'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-green-500 rounded-xl flex items-center justify-between group transition-all">
-                <div className="flex items-center gap-4">
+                <button onClick={() => { setSelectedCategory('grid'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-green-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
                   <div className="p-3 bg-green-900/20 text-green-500 rounded-lg group-hover:bg-green-500 group-hover:text-white transition-colors"><Grid size={24} /></div>
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="block text-sm font-bold text-white">Product Grid</span>
                     <span className="text-xs text-neutral-500">Inventory display systems</span>
                   </div>
-                </div>
-                <ChevronDown className="-rotate-90 text-neutral-600" />
-              </button>
+                </button>
 
-              <button onClick={() => { setSelectedCategory('collection'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-emerald-500 rounded-xl flex items-center justify-between group transition-all">
-                <div className="flex items-center gap-4">
+                <button onClick={() => { setSelectedCategory('collection'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-emerald-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
                   <div className="p-3 bg-emerald-900/20 text-emerald-500 rounded-lg group-hover:bg-emerald-500 group-hover:text-white transition-colors"><ShoppingBag size={24} /></div>
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="block text-sm font-bold text-white">Collections</span>
                     <span className="text-xs text-neutral-500">Featured products & lists</span>
                   </div>
-                </div>
-                <ChevronDown className="-rotate-90 text-neutral-600" />
-              </button>
+                </button>
 
-              <button onClick={() => { setSelectedCategory('layout'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-cyan-500 rounded-xl flex items-center justify-between group transition-all">
-                <div className="flex items-center gap-4">
+                <button onClick={() => { setSelectedCategory('layout'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-cyan-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
                   <div className="p-3 bg-cyan-900/20 text-cyan-500 rounded-lg group-hover:bg-cyan-500 group-hover:text-white transition-colors"><Layout size={24} /></div>
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="block text-sm font-bold text-white">Layouts</span>
                     <span className="text-xs text-neutral-500">Multi-column & banners</span>
                   </div>
-                </div>
-                <ChevronDown className="-rotate-90 text-neutral-600" />
-              </button>
+                </button>
 
-              <button onClick={() => { setSelectedCategory('scroll'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-orange-500 rounded-xl flex items-center justify-between group transition-all">
-                <div className="flex items-center gap-4">
+                <button onClick={() => { setSelectedCategory('scroll'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-orange-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
                   <div className="p-3 bg-orange-900/20 text-orange-500 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors"><Repeat size={24} /></div>
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="block text-sm font-bold text-white">Scroll Sections</span>
                     <span className="text-xs text-neutral-500">Marquees and tickers</span>
                   </div>
-                </div>
-                <ChevronDown className="-rotate-90 text-neutral-600" />
-              </button>
+                </button>
 
-              <button onClick={() => { setSelectedCategory('social'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-pink-500 rounded-xl flex items-center justify-between group transition-all">
-                <div className="flex items-center gap-4">
+                <button onClick={() => { setSelectedCategory('social'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-pink-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
                   <div className="p-3 bg-pink-900/20 text-pink-500 rounded-lg group-hover:bg-pink-500 group-hover:text-white transition-colors"><Share2 size={24} /></div>
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="block text-sm font-bold text-white">Social Feed</span>
-                    <span className="text-xs text-neutral-500">Instagram & TikTok integration</span>
+                    <span className="text-xs text-neutral-500">Instagram & TikTok</span>
                   </div>
-                </div>
-                <ChevronDown className="-rotate-90 text-neutral-600" />
-              </button>
+                </button>
 
-              <button onClick={() => { setSelectedCategory('blog'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-rose-500 rounded-xl flex items-center justify-between group transition-all">
-                <div className="flex items-center gap-4">
+                <button onClick={() => { setSelectedCategory('blog'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-rose-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
                   <div className="p-3 bg-rose-900/20 text-rose-500 rounded-lg group-hover:bg-rose-500 group-hover:text-white transition-colors"><FileText size={24} /></div>
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="block text-sm font-bold text-white">Blog Posts</span>
                     <span className="text-xs text-neutral-500">News and articles</span>
                   </div>
-                </div>
-                <ChevronDown className="-rotate-90 text-neutral-600" />
-              </button>
+                </button>
 
-              <button onClick={() => { setSelectedCategory('video'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-red-500 rounded-xl flex items-center justify-between group transition-all">
-                <div className="flex items-center gap-4">
+                <button onClick={() => { setSelectedCategory('video'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-red-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
                   <div className="p-3 bg-red-900/20 text-red-500 rounded-lg group-hover:bg-red-500 group-hover:text-white transition-colors"><Video size={24} /></div>
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="block text-sm font-bold text-white">Video</span>
                     <span className="text-xs text-neutral-500">Players and backgrounds</span>
                   </div>
-                </div>
-                <ChevronDown className="-rotate-90 text-neutral-600" />
-              </button>
+                </button>
 
-              <button onClick={() => { setSelectedCategory('content'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-blue-500 rounded-xl flex items-center justify-between group transition-all">
-                <div className="flex items-center gap-4">
+                <button onClick={() => { setSelectedCategory('content'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-blue-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
                   <div className="p-3 bg-blue-900/20 text-blue-500 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition-colors"><Type size={24} /></div>
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="block text-sm font-bold text-white">Rich Content</span>
                     <span className="text-xs text-neutral-500">Text, Collapsibles, HTML</span>
                   </div>
-                </div>
-                <ChevronDown className="-rotate-90 text-neutral-600" />
-              </button>
+                </button>
 
-              <button onClick={() => { setSelectedCategory('marketing'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-yellow-500 rounded-xl flex items-center justify-between group transition-all">
-                <div className="flex items-center gap-4">
+                <button onClick={() => { setSelectedCategory('marketing'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-yellow-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
                   <div className="p-3 bg-yellow-900/20 text-yellow-500 rounded-lg group-hover:bg-yellow-500 group-hover:text-white transition-colors"><Megaphone size={24} /></div>
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="block text-sm font-bold text-white">Marketing</span>
                     <span className="text-xs text-neutral-500">Email, Promos, Logos</span>
                   </div>
-                </div>
-                <ChevronDown className="-rotate-90 text-neutral-600" />
-              </button>
+                </button>
 
-              <button onClick={() => { setSelectedCategory('media'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-indigo-500 rounded-xl flex items-center justify-between group transition-all">
-                <div className="flex items-center gap-4">
+                <button onClick={() => { setSelectedCategory('media'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-indigo-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
                   <div className="p-3 bg-indigo-900/20 text-indigo-500 rounded-lg group-hover:bg-indigo-500 group-hover:text-white transition-colors"><ImageIcon size={24} /></div>
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="block text-sm font-bold text-white">Media Gallery</span>
                     <span className="text-xs text-neutral-500">Grids, Sliders, Showcases</span>
                   </div>
-                </div>
-                <ChevronDown className="-rotate-90 text-neutral-600" />
-              </button>
+                </button>
 
-              <button onClick={() => { setSelectedCategory('contact'); setAddSectionStep('options'); }} className="w-full p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-teal-500 rounded-xl flex items-center justify-between group transition-all">
-                <div className="flex items-center gap-4">
+                <button onClick={() => { setSelectedCategory('contact'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-teal-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
                   <div className="p-3 bg-teal-900/20 text-teal-500 rounded-lg group-hover:bg-teal-500 group-hover:text-white transition-colors"><Mail size={24} /></div>
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="block text-sm font-bold text-white">Contact</span>
                     <span className="text-xs text-neutral-500">Forms and maps</span>
                   </div>
-                </div>
-                <ChevronDown className="-rotate-90 text-neutral-600" />
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <button onClick={() => { setAddSectionStep('categories'); setPreviewBlock(null); }} className="text-xs font-bold text-neutral-500 hover:text-white flex items-center gap-1"><ChevronDown className="rotate-90" size={14} /> Back to Categories</button>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <button onClick={() => { setAddSectionStep('categories'); setPreviewBlock(null); }} className="text-xs font-bold text-neutral-500 hover:text-white flex items-center gap-1 mb-4"><ChevronDown className="rotate-90" size={14} /> Back to Categories</button>
 
-              {selectedCategory === 'hero' && (
-                <div className="grid grid-cols-1 gap-2">
-                  {HERO_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-hero', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-purple-600/20 border-purple-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {selectedCategory === 'hero' && HERO_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('system-hero', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-purple-600/20 border-purple-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
                       <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                    </button>
+                  ))}
+
+                  {selectedCategory === 'grid' && PRODUCT_CARD_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('system-grid', `Grid: ${opt.name}`, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-green-600/20 border-green-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                    </button>
+                  ))}
+
+                  {selectedCategory === 'collection' && COLLECTION_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('system-collection', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-emerald-600/20 border-emerald-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                    </button>
+                  ))}
+
+                  {selectedCategory === 'layout' && LAYOUT_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('system-layout', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-cyan-600/20 border-cyan-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                    </button>
+                  ))}
+
+                  {selectedCategory === 'scroll' && SCROLL_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('system-scroll', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-orange-600/20 border-orange-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                    </button>
+                  ))}
+
+                  {selectedCategory === 'social' && SOCIAL_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('system-social', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-pink-600/20 border-pink-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                    </button>
+                  ))}
+
+                  {selectedCategory === 'blog' && BLOG_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('system-blog', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-rose-600/20 border-rose-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                    </button>
+                  ))}
+
+                  {selectedCategory === 'video' && VIDEO_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('system-video', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-red-600/20 border-red-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                    </button>
+                  ))}
+
+                  {selectedCategory === 'media' && GALLERY_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('system-gallery', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-indigo-600/20 border-indigo-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                    </button>
+                  ))}
+
+                  {selectedCategory === 'contact' && CONTACT_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('system-contact', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-teal-600/20 border-teal-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
                     </button>
                   ))}
                 </div>
-              )}
 
-              {selectedCategory === 'grid' && (
-                <div className="grid grid-cols-1 gap-2">
-                  {PRODUCT_CARD_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-grid', `Grid: ${opt.name}`, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-green-600/20 border-green-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60">{opt.description}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {selectedCategory === 'collection' && (
-                <div className="grid grid-cols-1 gap-2">
-                  {COLLECTION_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-collection', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-emerald-600/20 border-emerald-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60">{opt.description}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {selectedCategory === 'layout' && (
-                <div className="grid grid-cols-1 gap-2">
-                  {LAYOUT_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-layout', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-cyan-600/20 border-cyan-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60">{opt.description}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {selectedCategory === 'scroll' && (
-                <div className="grid grid-cols-1 gap-2">
-                  {SCROLL_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-scroll', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-orange-600/20 border-orange-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60">{opt.description}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {selectedCategory === 'social' && (
-                <div className="grid grid-cols-1 gap-2">
-                  {SOCIAL_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-social', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-pink-600/20 border-pink-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60">{opt.description}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {selectedCategory === 'blog' && (
-                <div className="grid grid-cols-1 gap-2">
-                  {BLOG_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-blog', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-rose-600/20 border-rose-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60">{opt.description}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {selectedCategory === 'video' && (
-                <div className="grid grid-cols-1 gap-2">
-                  {VIDEO_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-video', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-red-600/20 border-red-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60">{opt.description}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {selectedCategory === 'content' && (
-                <div className="space-y-4">
-                  <div>
-                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Rich Text</h5>
-                    <div className="grid grid-cols-1 gap-2">
-                      {RICH_TEXT_OPTIONS.map(opt => (
-                        <button key={opt.id} onClick={() => addBlock('system-rich-text', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                          <div className="font-bold text-sm">{opt.name}</div>
-                          <div className="text-[10px] opacity-60">{opt.description}</div>
-                        </button>
-                      ))}
+                {/* Content category has special subcategories */}
+                {selectedCategory === 'content' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h5 className="text-xs font-bold text-neutral-500 uppercase mb-3">Rich Text</h5>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {RICH_TEXT_OPTIONS.map(opt => (
+                          <button key={opt.id} onClick={() => addBlock('system-rich-text', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                            <div className="font-bold text-sm">{opt.name}</div>
+                            <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-bold text-neutral-500 uppercase mb-3">Collapsible</h5>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {COLLAPSIBLE_OPTIONS.map(opt => (
+                          <button key={opt.id} onClick={() => addBlock('system-collapsible', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                            <div className="font-bold text-sm">{opt.name}</div>
+                            <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Collapsible</h5>
-                    <div className="grid grid-cols-1 gap-2">
-                      {COLLAPSIBLE_OPTIONS.map(opt => (
-                        <button key={opt.id} onClick={() => addBlock('system-collapsible', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                          <div className="font-bold text-sm">{opt.name}</div>
-                          <div className="text-[10px] opacity-60">{opt.description}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+                )}
 
-              {selectedCategory === 'marketing' && (
-                <div className="space-y-4">
-                  <div>
-                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Email Signup</h5>
-                    <div className="grid grid-cols-1 gap-2">
-                      {EMAIL_SIGNUP_OPTIONS.map(opt => (
-                        <button key={opt.id} onClick={() => addBlock('system-email', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                          <div className="font-bold text-sm">{opt.name}</div>
-                          <div className="text-[10px] opacity-60">{opt.description}</div>
-                        </button>
-                      ))}
+                {/* Marketing category has special subcategories */}
+                {selectedCategory === 'marketing' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h5 className="text-xs font-bold text-neutral-500 uppercase mb-3">Email Signup</h5>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {EMAIL_SIGNUP_OPTIONS.map(opt => (
+                          <button key={opt.id} onClick={() => addBlock('system-email', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                            <div className="font-bold text-sm">{opt.name}</div>
+                            <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-bold text-neutral-500 uppercase mb-3">Promotions</h5>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {PROMO_BANNER_OPTIONS.map(opt => (
+                          <button key={opt.id} onClick={() => addBlock('system-promo', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                            <div className="font-bold text-sm">{opt.name}</div>
+                            <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-bold text-neutral-500 uppercase mb-3">Trust Indicators</h5>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {LOGO_LIST_OPTIONS.map(opt => (
+                          <button key={opt.id} onClick={() => addBlock('system-logo-list', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                            <div className="font-bold text-sm">{opt.name}</div>
+                            <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Promotions</h5>
-                    <div className="grid grid-cols-1 gap-2">
-                      {PROMO_BANNER_OPTIONS.map(opt => (
-                        <button key={opt.id} onClick={() => addBlock('system-promo', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                          <div className="font-bold text-sm">{opt.name}</div>
-                          <div className="text-[10px] opacity-60">{opt.description}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-neutral-500 uppercase mb-2">Trust Indicators</h5>
-                    <div className="grid grid-cols-1 gap-2">
-                      {LOGO_LIST_OPTIONS.map(opt => (
-                        <button key={opt.id} onClick={() => addBlock('system-logo-list', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                          <div className="font-bold text-sm">{opt.name}</div>
-                          <div className="text-[10px] opacity-60">{opt.description}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {selectedCategory === 'media' && (
-                <div className="grid grid-cols-1 gap-2">
-                  {GALLERY_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-gallery', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-indigo-600/20 border-indigo-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60">{opt.description}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {selectedCategory === 'contact' && (
-                <div className="grid grid-cols-1 gap-2">
-                  {CONTACT_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-contact', opt.name, '', opt.id)} className={`text-left p-3 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-teal-600/20 border-teal-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60">{opt.description}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
+          </div>
+          
+          {/* Modal Footer */}
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-end shrink-0">
+            <button 
+              onClick={() => { setIsAddSectionOpen(false); setPreviewBlock(null); setAddSectionStep('categories'); }}
+              className="px-6 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg font-bold text-sm transition-colors"
+            >
+              Close
+            </button>
+          </div>
         </div>
-
       </div>
     );
   };
@@ -3436,7 +3825,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           return (
                             <div key={page.id} className={`rounded-lg transition-colors ${isActive ? 'bg-neutral-900 border border-neutral-800' : ''}`}>
                               <button onClick={() => { onSetActivePage(page.id); setSelectedBlockId(null); setShowPageProperties(false); }} className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm transition-colors ${isActive ? 'text-blue-400' : 'text-neutral-400 hover:bg-white/5 hover:text-white'}`}>
-                                <div className="flex items-center gap-3">{page.type === 'home' ? <Home size={14} /> : <FileText size={14} />}<span className="font-medium">{page.title}</span></div>
+                                <div className="flex items-center gap-3">{page.type === 'home' ? <Home size={14} /> : <FileText size={14} />}<span className="font-medium">{page.type === 'home' ? 'Home' : (page.title || 'Untitled')}</span>{page.type === 'home' && <span className="text-[9px] bg-neutral-800 text-neutral-500 px-1.5 py-0.5 rounded ml-1">Landing</span>}</div>
                                 <div className="flex items-center gap-2">{isActive && (<button onClick={(e) => { e.stopPropagation(); setShowPageProperties(!showPageProperties); }} className={`p-1 rounded hover:bg-neutral-800 transition-colors ${showPageProperties ? 'text-white bg-neutral-800' : 'text-neutral-500'}`} title="Page Properties"><Settings size={12} /></button>)}{isActive && <span className="text-[10px] bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20 font-bold">EDIT</span>}</div>
                               </button>
                               {isActive && showPageProperties && (
@@ -3638,6 +4027,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
                   </div>
+                  
+                  {/* Current Page Label */}
+                  <div className="flex items-center gap-2 px-3 py-1 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
+                    {(activePage?.type === 'home' || activePage?.slug === '/' || activePage?.slug === '') ? (
+                      <Home size={12} className="text-blue-400" />
+                    ) : (
+                      <FileText size={12} className="text-blue-400" />
+                    )}
+                    <span className="text-xs font-medium text-white">
+                      {(activePage?.type === 'home' || activePage?.slug === '/' || activePage?.slug === '') ? 'Home' : (activePage?.title || 'Page')}
+                    </span>
+                    <span className="text-[10px] text-neutral-500">• editing</span>
+                  </div>
+                  
                   {/* Device Preview Toggle */}
                   <div className="flex items-center gap-1 bg-black p-1 rounded-lg border border-neutral-800">
                     <div className="flex items-center gap-1 pr-2 border-r border-neutral-800 mr-1">
@@ -3823,6 +4226,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       onUpdateBlock={updateActiveBlockData}
                       onEditBlock={(blockId) => {
                         setSelectedBlockId(blockId);
+                        // Show first-edit hint if this is user's first time clicking a section
+                        if (!hasSeenFirstEditHint) {
+                          setShowFirstEditHint(true);
+                          setHasSeenFirstEditHint(true);
+                          localStorage.setItem('evolv_seen_first_edit', 'true');
+                          setTimeout(() => setShowFirstEditHint(false), 5000);
+                        }
                       }}
                       onSelectField={(field) => setActiveField(field)}
                       onMoveBlock={(blockId, direction) => {
@@ -4965,6 +5375,27 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       {renderBrandSettings()}
       {renderNavBuilder()}
       {renderVersionHistory()}
+      
+      {/* First Edit Hint - Shows when user clicks a section for the first time */}
+      {showFirstEditHint && selectedBlockId && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[250] animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="bg-blue-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 max-w-md">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Edit3 size={20} />
+            </div>
+            <div>
+              <p className="font-bold mb-0.5">Section Selected!</p>
+              <p className="text-sm text-blue-100">Edit this section's content in the panel on the left. Look for ✨ to use AI assistance.</p>
+            </div>
+            <button 
+              onClick={() => setShowFirstEditHint(false)}
+              className="text-blue-200 hover:text-white transition-colors flex-shrink-0"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+      )}
       
       <main className="flex-1 overflow-y-auto relative flex flex-col">{renderContent()}</main>
       
