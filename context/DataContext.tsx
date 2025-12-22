@@ -448,7 +448,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await supabase.from('pages').update(updates).eq('id', pageId);
     if (error) {
       console.error('Failed to update page:', error);
-      return;
+      throw new Error(`Failed to update page: ${error.message}`);
     }
     // Only update local state if DB update succeeded
     setPages(prev => prev.map(p => p.id === pageId ? { ...p, ...updates } : p));
