@@ -876,11 +876,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setHasUnsavedChanges(true);
   };
 
-  const deleteBlock = (id: string) => {
+  const deleteBlock = async (id: string) => {
     const updatedBlocks = activePage.blocks.filter(b => b.id !== id);
     setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks: updatedBlocks } : p));
-    setHasUnsavedChanges(true);
     if (selectedBlockId === id) setSelectedBlockId(null);
+    // Auto-save deletion immediately
+    await onUpdatePage(activePageId, { blocks: updatedBlocks });
   };
 
   const handleSaveChanges = async () => {

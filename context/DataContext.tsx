@@ -444,8 +444,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updatePage = async (pageId: string, updates: Partial<Page>) => {
+    // Update database first to ensure persistence
+    const { error } = await supabase.from('pages').update(updates).eq('id', pageId);
+    if (error) {
+      console.error('Failed to update page:', error);
+      return;
+    }
+    // Only update local state if DB update succeeded
     setPages(prev => prev.map(p => p.id === pageId ? { ...p, ...updates } : p));
-    await supabase.from('pages').update(updates).eq('id', pageId);
   };
 
   const deletePage = async (pageId: string) => {
