@@ -36,6 +36,7 @@ interface HeroProps {
   isEditable?: boolean;
   onUpdate?: (data: any) => void;
   onSelectField?: (field: string) => void;
+  onEditBlock?: (blockId: string) => void;
   blockId?: string;
 }
 
@@ -69,6 +70,15 @@ export const EditableText: React.FC<{
   useEffect(() => {
     setTempValue(value);
   }, [value]);
+
+  useEffect(() => {
+    if (isEditing && textareaRef.current) {
+      textareaRef.current.focus();
+      // Move cursor to end
+      const length = textareaRef.current.value.length;
+      textareaRef.current.setSelectionRange(length, length);
+    }
+  }, [isEditing]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -113,7 +123,10 @@ export const EditableText: React.FC<{
             ref={textareaRef}
             autoFocus
             value={tempValue}
-            onChange={(e) => setTempValue(e.target.value)}
+            onChange={(e) => {
+              setTempValue(e.target.value);
+              onChange(e.target.value);
+            }}
             onKeyDown={handleKeyDown}
             className={`${className} bg-transparent outline-none resize-none overflow-hidden min-h-[1.2em] w-full selection:bg-blue-500/30 shadow-[0_0_0_4px_rgba(59,130,246,0.5),0_0_30px_rgba(59,130,246,0.6)] rounded px-1 -mx-1 relative z-50`}
             style={{ 
@@ -174,6 +187,18 @@ export const EditableImage: React.FC<{
   elementId?: string;
   onSelect?: () => void;
 }> = ({ src, onChange, isEditable, className, alt, overlayOpacity = 0, onOverlayOpacityChange, elementId, onSelect }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // In a real app, we would upload to Supabase here.
+    // For now, we'll use a local URL to show immediate feedback.
+    const localUrl = URL.createObjectURL(file);
+    onChange(localUrl);
+  };
+
   return (
     <div 
       id={elementId} 
@@ -195,10 +220,41 @@ export const EditableImage: React.FC<{
               style={{ opacity: overlayOpacity }}
             />
           )}
+          {isEditable && (
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-20">
+              <button 
+                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                className="p-2 bg-white text-black rounded-full hover:scale-110 transition-transform shadow-lg"
+                title="Replace Image"
+              >
+                <ImageIcon size={20} />
+              </button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                className="hidden" 
+                accept="image/*" 
+              />
+            </div>
+          )}
         </>
       ) : (
         <div className="w-full h-full bg-neutral-200 flex items-center justify-center text-neutral-400">
           <ImageIcon size={24} />
+          {isEditable && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+          )}
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            className="hidden" 
+            accept="image/*" 
+          />
         </div>
       )}
     </div>
@@ -208,7 +264,7 @@ export const EditableImage: React.FC<{
 // ------------------------
 
 // 1. Impact (Classic, Full Screen, Centered)
-export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId, onSelectField }) => {
+export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId, onSelectField, onEditBlock }) => {
   const heading = data?.heading || "REDEFINE REALITY";
   const image = data?.image || "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2940&auto=format&fit=crop";
   const buttonText = data?.buttonText || "Shop The Drop";
@@ -221,6 +277,13 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
   const alignment = style.alignment || 'center';
   const padding = style.padding === 'none' ? 'py-0' : style.padding === 's' ? 'py-12' : style.padding === 'l' ? 'py-32' : 'py-24';
   const overlayOpacity = data?.overlayOpacity !== undefined ? data.overlayOpacity : 0.3;
+
+  const handleSelect = (field: string) => {
+    if (isEditable) {
+      onEditBlock?.(blockId || '');
+      onSelectField?.(field);
+    }
+  };
 
   return (
     <section 
@@ -236,7 +299,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
             className="w-full h-full"
             overlayOpacity={overlayOpacity}
             onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
-            onSelect={() => onSelectField?.('image')}
+            onSelect={() => handleSelect('image')}
         />
         {/* Removed hardcoded gradient to allow user controlled overlay */}
       </div>
@@ -253,7 +316,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
                style={data?.badge_style}
                isEditable={isEditable} 
                placeholder="Badge Text"
-               onSelect={() => onSelectField?.('badge')}
+               onSelect={() => handleSelect('badge')}
             />
           </span>
         </div>
@@ -267,7 +330,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
              style={data?.heading_style}
              isEditable={isEditable} 
              placeholder="Enter Headline"
-             onSelect={() => onSelectField?.('heading')}
+             onSelect={() => handleSelect('heading')}
           />
         </div>
         <div className={`flex flex-col md:flex-row gap-4 ${alignment === 'left' ? 'justify-start' : alignment === 'right' ? 'justify-end' : 'justify-center'} items-center animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300`}>
@@ -281,7 +344,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
                  style={data?.button_style}
                  isEditable={isEditable}
                  placeholder="Button Text"
-                 onSelect={() => onSelectField?.('buttonText')}
+                 onSelect={() => handleSelect('buttonText')}
              />
              <ArrowRight size={18} />
           </button>
@@ -295,7 +358,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
                  style={data?.secondary_button_style}
                  isEditable={isEditable}
                  placeholder="Secondary Button"
-                 onSelect={() => onSelectField?.('secondaryButtonText')}
+                 onSelect={() => handleSelect('secondaryButtonText')}
              />
           </button>
         </div>

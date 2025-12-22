@@ -291,6 +291,8 @@ export interface PageBlock {
   name: string;
   content: string; // HTML content for 'section', ignored/metadata for system blocks
   variant?: string; // Optional override for system styles (e.g. 'impact', 'minimal')
+  hidden?: boolean;
+  locked?: boolean;
   data?: {
     heading?: string;
     subheading?: string;
@@ -462,5 +464,8 @@ export interface StorefrontProps {
   onMoveBlock?: (blockId: string, direction: 'up' | 'down') => void;
   onDeleteBlock?: (blockId: string) => void;
   onDuplicateBlock?: (blockId: string) => void;
+  onToggleVisibility?: (blockId: string) => void;
+  onToggleLock?: (blockId: string) => void;
+  onSwitchLayout?: (blockId: string) => void;
   showCartDrawer?: boolean;
 }

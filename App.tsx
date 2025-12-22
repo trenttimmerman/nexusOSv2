@@ -177,6 +177,16 @@ const AdminWrapper = () => {
   const [activeTab, setActiveTab] = React.useState<AdminTab>(AdminTab.DASHBOARD);
   const [activePageId, setActivePageId] = React.useState('home');
 
+  // Sync activePageId with actual home page ID if it's still 'home'
+  React.useEffect(() => {
+    if (activePageId === 'home' && pages && pages.length > 0) {
+      const homePage = pages.find(p => p.type === 'home');
+      if (homePage && homePage.id !== 'home') {
+        setActivePageId(homePage.id);
+      }
+    }
+  }, [pages, activePageId]);
+
   if (loading) return <LoadingScreen />;
 
   return (

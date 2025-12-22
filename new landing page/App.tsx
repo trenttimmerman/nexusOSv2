@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import SocialProof from './components/SocialProof';
-import Features from './components/Features';
-import Testimonial from './components/Testimonial';
-import CallToAction from './components/CallToAction';
-import Footer from './components/Footer';
-import FadeInSection from './components/FadeInSection';
-import Dashboard from './components/Dashboard';
+import Header from './Header';
+import Hero from './Hero';
+import SocialProof from './SocialProof';
+import Features from './Features';
+import Testimonial from './Testimonial';
+import CallToAction from './CallToAction';
+import Footer from './Footer';
+import FadeInSection from './FadeInSection';
+import Dashboard from './Dashboard';
 
 const App: React.FC = () => {
     const [route, setRoute] = useState(window.location.hash);

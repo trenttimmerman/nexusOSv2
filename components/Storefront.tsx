@@ -16,11 +16,30 @@ import { CONTACT_COMPONENTS } from './ContactLibrary';
 import { LAYOUT_COMPONENTS } from './LayoutLibrary';
 import { COLLECTION_COMPONENTS } from './CollectionLibrary';
 import { SectionWrapper } from './SectionWrapper';
-import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
+import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2, Lock, Unlock, Eye, EyeOff } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 
-export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: string) => void }> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true, onSelectField }) => {
+export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: string) => void }> = ({ 
+  config, 
+  products, 
+  pages, 
+  activePageId, 
+  activeProductSlug, 
+  onNavigate, 
+  previewBlock, 
+  activeBlockId, 
+  onUpdateBlock, 
+  onEditBlock, 
+  onMoveBlock, 
+  onDeleteBlock, 
+  onDuplicateBlock, 
+  onToggleVisibility,
+  onToggleLock,
+  onSwitchLayout,
+  showCartDrawer = true, 
+  onSelectField 
+}) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
 
   // Extract design settings from config
@@ -173,6 +192,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
               isEditable={isEditable}
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
               onSelectField={onSelectField}
+              onEditBlock={onEditBlock}
               blockId={block.id}
             />
           ) : null;
@@ -273,11 +293,16 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         key={block.id}
         blockId={block.id}
         isSelected={activeBlockId === block.id}
+        isHidden={block.hidden}
+        isLocked={block.locked}
         onSelect={() => onEditBlock && onEditBlock(block.id)}
         onMoveUp={() => onMoveBlock && onMoveBlock(block.id, 'up')}
         onMoveDown={() => onMoveBlock && onMoveBlock(block.id, 'down')}
         onDelete={() => onDeleteBlock && onDeleteBlock(block.id)}
         onDuplicate={() => onDuplicateBlock && onDuplicateBlock(block.id)}
+        onToggleVisibility={() => onToggleVisibility && onToggleVisibility(block.id)}
+        onToggleLock={() => onToggleLock && onToggleLock(block.id)}
+        onSwitchLayout={() => onSwitchLayout && onSwitchLayout(block.id)}
       >
         {renderContent()}
       </SectionWrapper>
@@ -304,6 +329,13 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         {activePage.blocks && activePage.blocks.length > 0 ? (
           // Render All Blocks (Including System Components)
           <div className={`${activePage.type === 'custom' ? 'max-w-7xl mx-auto' : 'w-full'}`}>
+            {activePage.type === 'custom' && (
+              <div className="max-w-4xl mx-auto pt-24 px-6 mb-8">
+                <span className="text-xs font-bold uppercase tracking-widest text-neutral-400 block mb-4">Page / {activePage.slug}</span>
+                <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-neutral-900">{activePage.title}</h1>
+              </div>
+            )}
+
             {activePage.type === 'custom' ? (
               <div className="max-w-4xl mx-auto px-6 pb-24">
                 {activePage.blocks.map(renderBlock)}

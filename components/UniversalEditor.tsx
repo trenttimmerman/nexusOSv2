@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { ChevronLeft, Layout, Image as ImageIcon, Type, AlignLeft, AlignCenter, AlignRight, Palette, Plus, Trash2, ChevronRight, ArrowLeft, Check, Upload, X, Bold, Italic, Link as LinkIcon, List, Loader2, Sparkles, Wand2, Info, ChevronDown, GripVertical, Mail, Phone, MessageSquare, User, FileText, Hash, Calendar, CheckSquare, ToggleLeft, Grid, Columns, Filter, SortAsc, Lightbulb, ExternalLink, Home, ShoppingBag, Users, HelpCircle, Zap, AlertCircle } from 'lucide-react';
 import { UniversalSectionData } from '../lib/smartMapper';
 import { supabase } from '../lib/supabaseClient';
+import { GoogleGenAI } from '@google/genai';
+
+// Initialize Gemini AI
+const genAI = import.meta.env.VITE_GEMINI_API_KEY ? new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY) : null;
 
 // Import Options
 import { BLOG_OPTIONS } from './BlogLibrary';
@@ -426,46 +430,71 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   const generateAIContent = async (field: string, context?: string) => {
     setIsGeneratingAI(field);
     
-    // Simulate AI generation with realistic delays
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const aiSuggestions: Record<string, Record<string, string>> = {
-      heading: {
-        default: 'Transform Your Vision Into Reality',
-        ecommerce: 'Discover Products You\'ll Love',
-        fashion: 'Elevate Your Style Today',
-        tech: 'Innovation Meets Excellence',
-        food: 'Taste the Difference',
-      },
-      subheading: {
-        default: 'We help businesses grow with cutting-edge solutions designed for the modern world.',
-        ecommerce: 'Shop our curated collection of premium products, handpicked for quality and style.',
-        fashion: 'From runway trends to everyday essentials, find your perfect look.',
-        tech: 'Discover tools and technologies that power the future of work.',
-        food: 'Fresh ingredients, authentic flavors, delivered to your door.',
-      },
-      buttonText: {
-        default: 'Get Started',
-        ecommerce: 'Shop Now',
-        fashion: 'Browse Collection',
-        tech: 'Learn More',
-        food: 'Order Now',
-      },
-      badge: {
-        default: '✨ New Release',
-        ecommerce: '🔥 Best Sellers Inside',
-        fashion: '👗 New Season Arrivals',
-        tech: '🚀 Now Available',
-        food: '🍃 Farm Fresh Daily',
+    try {
+      if (!genAI) {
+        // Fallback to simulated generation if no API key
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        const aiSuggestions: Record<string, Record<string, string>> = {
+          heading: {
+            default: 'Transform Your Vision Into Reality',
+            ecommerce: 'Discover Products You\'ll Love',
+            fashion: 'Elevate Your Style Today',
+            tech: 'Innovation Meets Excellence',
+            food: 'Taste the Difference',
+          },
+          subheading: {
+            default: 'We help businesses grow with cutting-edge solutions designed for the modern world.',
+            ecommerce: 'Shop our curated collection of premium products, handpicked for quality and style.',
+            fashion: 'From runway trends to everyday essentials, find your perfect look.',
+            tech: 'Discover tools and technologies that power the future of work.',
+            food: 'Fresh ingredients, authentic flavors, delivered to your door.',
+          },
+          buttonText: {
+            default: 'Get Started',
+            ecommerce: 'Shop Now',
+            fashion: 'Browse Collection',
+            tech: 'Learn More',
+            food: 'Order Now',
+          },
+          badge: {
+            default: '✨ New Release',
+            ecommerce: '🔥 Best Sellers Inside',
+            fashion: '👗 New Season Arrivals',
+            tech: '🚀 Now Available',
+            food: '🍃 Farm Fresh Daily',
+          }
+        };
+        
+        const suggestions = aiSuggestions[field] || aiSuggestions['default'];
+        const types = Object.keys(suggestions);
+        const randomType = types[Math.floor(Math.random() * types.length)];
+        updateField(field, suggestions[randomType]);
+      } else {
+        // Real AI generation with Gemini
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        
+        const sectionType = activeSection?.type || 'general';
+        const prompt = `You are an expert copywriter for a modern e-commerce platform. 
+        Generate a short, compelling ${field} for a ${sectionType} section of a website.
+        Context: ${context || 'A professional business website'}
+        Field type: ${field}
+        Requirements:
+        - Compelling and professional
+        - Maximum 60 characters for headings
+        - Maximum 160 characters for subheadings
+        - Just return the text, no quotes or extra commentary.`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text().trim();
+        
+        updateField(field, text);
       }
-    };
-    
-    const suggestions = aiSuggestions[field] || aiSuggestions['default'];
-    const types = Object.keys(suggestions);
-    const randomType = types[Math.floor(Math.random() * types.length)];
-    
-    updateField(field, suggestions[randomType]);
-    setIsGeneratingAI(null);
+    } catch (error) {
+      console.error('AI Generation Error:', error);
+    } finally {
+      setIsGeneratingAI(null);
+    }
   };
 
   // Auto-scroll to active field
@@ -554,8 +583,108 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   const [showExamples, setShowExamples] = useState<string | null>(null);
   const [showLinkPicker, setShowLinkPicker] = useState<string | null>(null);
   const [editingFormField, setEditingFormField] = useState<string | null>(null);
+  const [showStockPhotos, setShowStockPhotos] = useState<string | null>(null);
+  const [stockSearchQuery, setStockSearchQuery] = useState('');
+  const [isSearchingStock, setIsSearchingStock] = useState(false);
+  const [stockResults, setStockResults] = useState<string[]>([]);
+  const [showImageTools, setShowImageTools] = useState<string | null>(null);
 
-  // Enhanced Image Picker with preview, dimensions, alt text
+  // Stock photo search (using Unsplash API - simulated for now)
+  const searchStockPhotos = async (query: string) => {
+    setIsSearchingStock(true);
+    
+    try {
+      const accessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
+      if (accessKey) {
+        const response = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=12&client_id=${accessKey}`);
+        const data = await response.json();
+        if (data.results) {
+          setStockResults(data.results.map((img: any) => img.urls.regular));
+        }
+      } else {
+        // Improved simulation if no API key
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // Use predefined relevant images for common searches
+        const stockImages: Record<string, string[]> = {
+          'hero': [
+            'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80&fit=crop',
+          ],
+          'product': [
+            'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1491553895911-0055uj8a866?w=800&q=80&fit=crop',
+          ],
+          'office': [
+            'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1497215842964-222b430dc094?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1462826303086-329426d1aef5?w=800&q=80&fit=crop',
+          ],
+          'nature': [
+            'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1518173946687-a4c036bc0a04?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&q=80&fit=crop',
+          ],
+          'food': [
+            'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80&fit=crop',
+          ],
+          'fashion': [
+            'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=800&q=80&fit=crop',
+          ],
+        };
+        
+        // Find matching category or use default
+        const lowerQuery = query.toLowerCase();
+        const matchedKey = Object.keys(stockImages).find(key => lowerQuery.includes(key));
+        setStockResults(matchedKey ? stockImages[matchedKey] : stockImages['hero']);
+      }
+    } catch (error) {
+      console.error('Stock Photo Search Error:', error);
+    } finally {
+      setIsSearchingStock(false);
+    }
+  };
+
+  // Generate AI alt text
+  const generateAltText = async (imageUrl: string, fieldKey: string) => {
+    // Simulate AI generation
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const altTexts = [
+      'Professional workspace with modern design elements',
+      'High-quality product photography on clean background',
+      'Vibrant lifestyle image showcasing brand aesthetics',
+      'Team collaboration in contemporary office setting',
+      'Stunning visual that captures brand essence',
+    ];
+    const randomAlt = altTexts[Math.floor(Math.random() * altTexts.length)];
+    updateField(`${fieldKey}Alt`, randomAlt);
+  };
+
+  // Enhanced Image Picker with preview, dimensions, alt text, stock photos, AI tools
   const ImagePicker = ({ id, label, value, onChange, onUpload, tip }: { 
     id?: string, 
     label: string, 
@@ -563,63 +692,189 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     onChange: (val: string) => void, 
     onUpload: (e: any) => void,
     tip?: string 
-  }) => (
+  }) => {
+    const fieldKey = id?.replace('editor-field-', '') || '';
+    
+    return (
     <div className="space-y-2" id={id}>
-      <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-neutral-700">{label}</label>
-        {value && <button onClick={() => onChange('')} className="text-xs text-red-600 hover:text-red-700">Remove</button>}
-      </div>
+      <label className="text-xs font-bold uppercase text-neutral-500 flex items-center justify-between">
+        {label}
+        {value && <button onClick={() => onChange('')} className="text-red-500 hover:text-red-400 text-[10px]">Remove</button>}
+      </label>
       
       {tip && (
-        <p className="text-xs text-neutral-500">{tip}</p>
+        <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+          <Info size={10} /> {tip}
+        </p>
       )}
       
       {!value ? (
-        <div className="border-2 border-dashed border-neutral-300 rounded-lg p-8 hover:bg-neutral-50 hover:border-neutral-400 transition-all group relative">
-          <input 
-            type="file" 
-            accept="image/*"
-            onChange={onUpload}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-            disabled={isUploading}
-          />
-          <div className="flex flex-col items-center justify-center text-neutral-400 group-hover:text-neutral-600">
-            {isUploading ? <Loader2 size={32} className="animate-spin mb-3 text-blue-600" /> : <Upload size={32} className="mb-3" />}
-            <span className="text-sm font-medium mb-1">Drop image here or click to upload</span>
-            <span className="text-xs text-neutral-400">PNG, JPG up to 5MB</span>
+        <div className="space-y-3">
+          {/* Upload Area */}
+          <div className="border-2 border-dashed border-neutral-800 rounded-lg p-6 hover:bg-neutral-900/50 hover:border-neutral-700 transition-all group relative">
+            <input 
+              type="file" 
+              accept="image/*"
+              onChange={onUpload}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              disabled={isUploading}
+            />
+            <div className="flex flex-col items-center justify-center text-neutral-500 group-hover:text-neutral-400">
+              {isUploading ? <Loader2 size={24} className="animate-spin mb-2" /> : <Upload size={24} className="mb-2" />}
+              <span className="text-xs font-medium mb-1">Drop image here or click to upload</span>
+              <span className="text-[10px] text-neutral-600">PNG, JPG up to 5MB</span>
+            </div>
           </div>
+          
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 gap-2">
+            <button 
+              onClick={() => {
+                setShowStockPhotos(showStockPhotos === fieldKey ? null : fieldKey);
+                setStockSearchQuery('');
+                setStockResults([]);
+              }}
+              className="flex items-center justify-center gap-2 p-2 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors"
+            >
+              <ImageIcon size={14} /> Stock Photos
+            </button>
+            <button 
+              onClick={() => {
+                // Simulate AI image generation prompt
+                const prompt = window.prompt('Describe the image you want AI to generate:');
+                if (prompt) {
+                  // In production, this would call DALL-E/Midjourney API
+                  const randomImg = `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 100000000)}?w=800&q=80&fit=crop`;
+                  onChange(randomImg);
+                }
+              }}
+              className="flex items-center justify-center gap-2 p-2 bg-purple-900/30 border border-purple-800/50 rounded-lg text-xs text-purple-400 hover:bg-purple-900/50 transition-colors"
+            >
+              <Sparkles size={14} /> AI Generate
+            </button>
+          </div>
+          
+          {/* Stock Photo Search */}
+          {showStockPhotos === fieldKey && (
+            <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-3 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={stockSearchQuery}
+                  onChange={(e) => setStockSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && searchStockPhotos(stockSearchQuery)}
+                  placeholder="Search free photos..."
+                  className="flex-1 bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-500 outline-none"
+                />
+                <button
+                  onClick={() => searchStockPhotos(stockSearchQuery)}
+                  disabled={isSearchingStock}
+                  className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold disabled:opacity-50"
+                >
+                  {isSearchingStock ? <Loader2 size={14} className="animate-spin" /> : 'Search'}
+                </button>
+              </div>
+              
+              {/* Quick categories */}
+              <div className="flex flex-wrap gap-1 mb-3">
+                {['Hero', 'Product', 'Office', 'Nature', 'Food', 'Fashion'].map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => { setStockSearchQuery(cat); searchStockPhotos(cat); }}
+                    className="px-2 py-1 bg-neutral-800 hover:bg-neutral-700 rounded text-[10px] text-neutral-400"
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Results grid */}
+              {stockResults.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto custom-scrollbar">
+                  {stockResults.map((url, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        onChange(url);
+                        setShowStockPhotos(null);
+                      }}
+                      className="aspect-square rounded-lg overflow-hidden border border-neutral-800 hover:border-blue-500 transition-colors"
+                    >
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              {stockResults.length === 0 && !isSearchingStock && stockSearchQuery && (
+                <p className="text-xs text-neutral-500 text-center py-4">No results. Try a different search.</p>
+              )}
+            </div>
+          )}
         </div>
       ) : (
-        <div className="relative group rounded-lg overflow-hidden border border-neutral-200 bg-neutral-50">
+        <div className="relative group rounded-lg overflow-hidden border border-neutral-800 bg-neutral-950">
           <div className="aspect-video relative">
             <img src={value} className="w-full h-full object-cover" alt={label} />
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-               <label className="px-4 py-2 bg-white hover:bg-neutral-100 rounded-lg cursor-pointer text-neutral-900 transition-colors text-sm font-medium flex items-center gap-2 shadow-lg">
-                  <Upload size={16} /> Replace
+            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+               <label className="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg cursor-pointer text-white backdrop-blur-sm transition-colors text-xs font-medium flex items-center gap-2">
+                  <Upload size={14} /> Replace
                   <input type="file" accept="image/*" onChange={onUpload} className="hidden" />
                </label>
                <button 
+                 onClick={() => setShowImageTools(showImageTools === fieldKey ? null : fieldKey)}
+                 className="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white backdrop-blur-sm transition-colors text-xs font-medium flex items-center gap-2"
+               >
+                 <Wand2 size={14} /> Tools
+               </button>
+               <button 
                  onClick={() => onChange('')}
-                 className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-white transition-colors text-sm font-medium shadow-lg"
+                 className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-red-400 backdrop-blur-sm transition-colors text-xs font-medium"
                >
                  Remove
                </button>
             </div>
           </div>
-          {/* Alt text input */}
-          <div className="p-3 border-t border-neutral-200 bg-white">
-            <input 
-              type="text" 
-              value={data[`${id?.replace('editor-field-', '')}Alt`] || ''}
-              onChange={(e) => updateField(`${id?.replace('editor-field-', '')}Alt`, e.target.value)}
-              className="w-full p-2 bg-neutral-50 text-sm text-neutral-700 rounded-lg border border-neutral-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-              placeholder="Alt text for accessibility"
-            />
+          
+          {/* Image Tools Panel */}
+          {showImageTools === fieldKey && (
+            <div className="p-3 border-t border-neutral-800 bg-neutral-900 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+              <p className="text-[10px] text-neutral-500 font-bold uppercase">AI Image Tools</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button className="flex items-center gap-2 p-2 bg-neutral-800 hover:bg-neutral-700 rounded text-xs text-neutral-300 transition-colors">
+                  <Sparkles size={12} /> Enhance
+                </button>
+                <button className="flex items-center gap-2 p-2 bg-neutral-800 hover:bg-neutral-700 rounded text-xs text-neutral-300 transition-colors">
+                  <Wand2 size={12} /> Remove BG
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* Alt text input with AI generation */}
+          <div className="p-2 border-t border-neutral-800">
+            <div className="flex gap-2">
+              <input 
+                type="text" 
+                value={data[`${fieldKey}Alt`] || ''}
+                onChange={(e) => updateField(`${fieldKey}Alt`, e.target.value)}
+                className="flex-1 p-2 bg-neutral-900 text-xs text-neutral-400 rounded border border-neutral-800 focus:outline-none focus:border-blue-500"
+                placeholder="Alt text for accessibility"
+              />
+              <button
+                onClick={() => generateAltText(value, fieldKey)}
+                className="px-2 py-1 text-purple-400 hover:text-purple-300 text-[10px] font-bold flex items-center gap-1"
+                title="Generate alt text with AI"
+              >
+                <Sparkles size={10} /> AI
+              </button>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
+  };
 
   // Enhanced Rich Text with working formatting
   const RichText = ({ id, label, value, onChange, rows = 3, tip, maxLength, showAI, fieldKey }: { 
@@ -684,48 +939,50 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     return (
       <div className="space-y-2" id={id}>
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-neutral-700">{label}</label>
+          <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-0.5 bg-neutral-100 border border-neutral-200 rounded p-0.5">
+            <div className="flex items-center gap-0.5 bg-neutral-950 border border-neutral-800 rounded p-0.5">
               <button 
                 onClick={() => applyFormat('bold')} 
-                className="p-1.5 hover:bg-white rounded text-neutral-500 hover:text-neutral-900 transition-colors"
-                title="Bold"
+                className="p-1.5 hover:bg-neutral-800 rounded text-neutral-500 hover:text-white transition-colors"
+                title="Bold (**text**)"
               >
-                <Bold size={14} />
+                <Bold size={12} />
               </button>
               <button 
                 onClick={() => applyFormat('italic')} 
-                className="p-1.5 hover:bg-white rounded text-neutral-500 hover:text-neutral-900 transition-colors"
-                title="Italic"
+                className="p-1.5 hover:bg-neutral-800 rounded text-neutral-500 hover:text-white transition-colors"
+                title="Italic (*text*)"
               >
-                <Italic size={14} />
+                <Italic size={12} />
               </button>
               <button 
                 onClick={() => applyFormat('link')} 
-                className="p-1.5 hover:bg-white rounded text-neutral-500 hover:text-neutral-900 transition-colors"
-                title="Link"
+                className="p-1.5 hover:bg-neutral-800 rounded text-neutral-500 hover:text-white transition-colors"
+                title="Link [text](url)"
               >
-                <LinkIcon size={14} />
+                <LinkIcon size={12} />
               </button>
             </div>
             {showAI && fieldKey && (
               <button 
                 onClick={() => generateAIContent(fieldKey)}
                 disabled={isGeneratingAI === fieldKey}
-                className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 font-medium transition-colors disabled:opacity-50"
+                className="flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300 font-bold transition-colors disabled:opacity-50"
               >
                 {isGeneratingAI === fieldKey ? (
-                  <><Loader2 size={12} className="animate-spin" /> Writing...</>
+                  <><Loader2 size={10} className="animate-spin" /> Generating...</>
                 ) : (
-                  <><Sparkles size={12} /> AI Write</>
+                  <><Sparkles size={10} /> AI Write</>
                 )}
               </button>
             )}
           </div>
         </div>
         {tip && (
-          <p className="text-xs text-neutral-500">{tip}</p>
+          <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+            <Lightbulb size={10} /> {tip}
+          </p>
         )}
         <textarea
           ref={textareaRef}
@@ -734,14 +991,14 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
             setLocalValue(e.target.value);
             onChange(e.target.value);
           }}
-          className="w-full p-3 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none resize-none transition-all placeholder:text-neutral-400"
+          className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-neutral-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none resize-none transition-all placeholder:text-neutral-700"
           rows={rows}
           maxLength={maxLength}
           placeholder={`Enter ${label.toLowerCase()}...`}
         />
         {maxLength && (
-          <div className={`text-xs text-right ${(localValue?.length || 0) > maxLength * 0.9 ? 'text-amber-600' : 'text-neutral-400'}`}>
-            {localValue?.length || 0}/{maxLength}
+          <div className={`text-[10px] text-right ${(localValue?.length || 0) > maxLength * 0.9 ? 'text-yellow-500' : 'text-neutral-600'}`}>
+            {localValue?.length || 0}/{maxLength} characters
           </div>
         )}
       </div>
@@ -763,12 +1020,12 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   }) => (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-neutral-700">{label}</label>
+        <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
         <div className="flex items-center gap-2">
           {examples && examples.length > 0 && (
             <button 
               onClick={() => setShowExamples(showExamples === fieldKey ? null : fieldKey || null)}
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              className="text-[10px] text-blue-400 hover:text-blue-300 font-medium"
             >
               Examples
             </button>
@@ -777,19 +1034,21 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
             <button 
               onClick={() => generateAIContent(fieldKey)}
               disabled={isGeneratingAI === fieldKey}
-              className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 font-medium transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300 font-bold transition-colors disabled:opacity-50"
             >
               {isGeneratingAI === fieldKey ? (
-                <><Loader2 size={12} className="animate-spin" /> Writing...</>
+                <><Loader2 size={10} className="animate-spin" /> Generating...</>
               ) : (
-                <><Sparkles size={12} /> AI Write</>
+                <><Sparkles size={10} /> AI Write</>
               )}
             </button>
           )}
         </div>
       </div>
       {tip && (
-        <p className="text-xs text-neutral-500">{tip}</p>
+        <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+          <Lightbulb size={10} /> {tip}
+        </p>
       )}
       <input
         id={id}
@@ -797,13 +1056,13 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
         maxLength={maxLength}
-        className="w-full p-3 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-400"
+        className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700"
         placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
       />
       {/* Examples dropdown */}
       {showExamples === fieldKey && examples && (
-        <div className="bg-white border border-neutral-200 rounded-lg p-2 space-y-1 shadow-lg">
-          <p className="text-xs text-neutral-500 mb-2 px-2">Click to use:</p>
+        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
+          <p className="text-[10px] text-neutral-500 mb-2">Click to use:</p>
           {examples.map((example, i) => (
             <button
               key={i}
@@ -811,7 +1070,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 onChange(example);
                 setShowExamples(null);
               }}
-              className="w-full text-left px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded transition-colors"
+              className="w-full text-left px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
             >
               {example}
             </button>
@@ -819,7 +1078,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         </div>
       )}
       {maxLength && (
-        <div className={`text-xs text-right ${(value?.length || 0) > maxLength * 0.9 ? 'text-amber-600' : 'text-neutral-400'}`}>
+        <div className={`text-[10px] text-right ${(value?.length || 0) > maxLength * 0.9 ? 'text-yellow-500' : 'text-neutral-600'}`}>
           {value?.length || 0}/{maxLength}
         </div>
       )}
@@ -835,7 +1094,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     placeholder?: string
   }) => (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-neutral-700">{label}</label>
+      <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
       <div className="relative">
         <input
           id={id}
@@ -843,59 +1102,59 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
           value={value || ''}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setShowLinkPicker(id || 'link')}
-          className="w-full p-3 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-400 pr-10"
+          className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700 pr-8"
           placeholder={placeholder || '/page or https://...'}
         />
         <button 
           onClick={() => setShowLinkPicker(showLinkPicker === id ? null : (id || 'link'))}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors"
         >
           <ChevronDown size={16} />
         </button>
       </div>
       
       {showLinkPicker === (id || 'link') && (
-        <div className="bg-white border border-neutral-200 rounded-lg p-2 space-y-1 shadow-lg">
-          <p className="text-xs text-neutral-500 px-2 py-1 font-medium">Internal Pages</p>
+        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
+          <p className="text-[10px] text-neutral-500 px-2 py-1 font-bold uppercase">Internal Pages</p>
           <button
             onClick={() => { onChange('/'); setShowLinkPicker(null); }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded transition-colors"
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
           >
-            <Home size={14} /> Home Page
+            <Home size={12} /> Home Page
           </button>
           <button
             onClick={() => { onChange('/shop'); setShowLinkPicker(null); }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded transition-colors"
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
           >
-            <ShoppingBag size={14} /> Shop / Products
+            <ShoppingBag size={12} /> Shop / Products
           </button>
           {pages.map(page => (
             <button
               key={page.id}
               onClick={() => { onChange(`/${page.slug}`); setShowLinkPicker(null); }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded transition-colors"
+              className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
             >
-              <FileText size={14} /> {page.name}
+              <FileText size={12} /> {page.name}
             </button>
           ))}
-          <div className="border-t border-neutral-200 mt-2 pt-2">
-            <p className="text-xs text-neutral-500 px-2 py-1 font-medium">Scroll To Section</p>
+          <div className="border-t border-neutral-800 mt-2 pt-2">
+            <p className="text-[10px] text-neutral-500 px-2 py-1 font-bold uppercase">Scroll To Section</p>
             <button
               onClick={() => { onChange('#contact'); setShowLinkPicker(null); }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded transition-colors"
+              className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
             >
-              <Hash size={14} /> Contact Section
+              <Hash size={12} /> Contact Section
             </button>
             <button
               onClick={() => { onChange('#products'); setShowLinkPicker(null); }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded transition-colors"
+              className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
             >
-              <Hash size={14} /> Products Section
+              <Hash size={12} /> Products Section
             </button>
           </div>
-          <div className="border-t border-neutral-200 mt-2 pt-2">
-            <p className="text-xs text-neutral-500 px-2 py-1 font-medium">External Link</p>
-            <p className="text-xs text-neutral-400 px-2 py-1">Type full URL above (https://...)</p>
+          <div className="border-t border-neutral-800 mt-2 pt-2">
+            <p className="text-[10px] text-neutral-500 px-2 py-1 font-bold uppercase">External Link</p>
+            <p className="text-[10px] text-neutral-600 px-2 py-1">Type full URL above (https://...)</p>
           </div>
         </div>
       )}
@@ -938,25 +1197,25 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-neutral-700">Form Fields</label>
+          <label className="text-xs font-bold uppercase text-neutral-500">Form Fields</label>
           <button
             onClick={() => setAddingField(!addingField)}
-            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium"
+            className="flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 font-bold"
           >
-            <Plus size={14} /> Add Field
+            <Plus size={12} /> Add Field
           </button>
         </div>
 
         {/* Field type selector */}
         {addingField && (
-          <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-3 shadow-sm">
-            <p className="text-xs text-neutral-600 mb-3 font-medium">Choose field type:</p>
+          <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            <p className="text-[10px] text-neutral-500 mb-2 font-bold uppercase">Choose field type:</p>
             <div className="grid grid-cols-2 gap-2">
               {FORM_FIELD_TYPES.map(type => (
                 <button
                   key={type.value}
                   onClick={() => addField(type.value)}
-                  className="flex items-center gap-2 p-2.5 text-sm text-neutral-700 hover:bg-white hover:border-neutral-300 rounded-lg border border-neutral-200 transition-colors"
+                  className="flex items-center gap-2 p-2 text-xs text-neutral-300 hover:bg-neutral-800 rounded border border-neutral-800 transition-colors"
                 >
                   {type.icon} {type.label}
                 </button>
@@ -970,7 +1229,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
           {fields.map((field, index) => (
             <div 
               key={field.id}
-              className="bg-neutral-50 border border-neutral-200 rounded-lg p-3 group"
+              className="bg-neutral-900 border border-neutral-800 rounded-lg p-3 group"
             >
               {editingFormField === field.id ? (
                 <div className="space-y-3">
@@ -978,29 +1237,29 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     type="text"
                     value={field.label}
                     onChange={(e) => updateFormField(field.id, { label: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-900"
+                    className="w-full p-2 bg-neutral-950 border border-neutral-700 rounded text-sm text-white"
                     placeholder="Field label"
                   />
                   <input
                     type="text"
                     value={field.placeholder || ''}
                     onChange={(e) => updateFormField(field.id, { placeholder: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-700"
+                    className="w-full p-2 bg-neutral-950 border border-neutral-700 rounded text-xs text-neutral-400"
                     placeholder="Placeholder text"
                   />
                   <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2 text-sm text-neutral-600">
+                    <label className="flex items-center gap-2 text-xs text-neutral-400">
                       <input
                         type="checkbox"
                         checked={field.required}
                         onChange={(e) => updateFormField(field.id, { required: e.target.checked })}
-                        className="rounded border-neutral-300"
+                        className="rounded border-neutral-700"
                       />
                       Required field
                     </label>
                     <button
                       onClick={() => setEditingFormField(null)}
-                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                      className="text-xs text-blue-400 hover:text-blue-300"
                     >
                       Done
                     </button>
@@ -1012,37 +1271,37 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     <button 
                       onClick={() => moveField(index, 'up')}
                       disabled={index === 0}
-                      className="p-0.5 text-neutral-400 hover:text-neutral-600 disabled:opacity-30"
+                      className="p-0.5 text-neutral-600 hover:text-neutral-400 disabled:opacity-30"
                     >
                       <ChevronLeft size={12} className="rotate-90" />
                     </button>
                     <button 
                       onClick={() => moveField(index, 'down')}
                       disabled={index === fields.length - 1}
-                      className="p-0.5 text-neutral-400 hover:text-neutral-600 disabled:opacity-30"
+                      className="p-0.5 text-neutral-600 hover:text-neutral-400 disabled:opacity-30"
                     >
                       <ChevronRight size={12} className="rotate-90" />
                     </button>
                   </div>
-                  <GripVertical size={14} className="text-neutral-400" />
+                  <GripVertical size={14} className="text-neutral-600" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-neutral-900">{field.label}</span>
-                      {field.required && <span className="text-xs text-red-600">Required</span>}
+                      <span className="text-sm text-neutral-300">{field.label}</span>
+                      {field.required && <span className="text-[10px] text-red-400">Required</span>}
                     </div>
-                    <span className="text-xs text-neutral-500">{FORM_FIELD_TYPES.find(t => t.value === field.type)?.label}</span>
+                    <span className="text-[10px] text-neutral-600">{FORM_FIELD_TYPES.find(t => t.value === field.type)?.label}</span>
                   </div>
                   <button
                     onClick={() => setEditingFormField(field.id)}
-                    className="p-1.5 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 rounded opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded opacity-0 group-hover:opacity-100 transition-all"
                   >
-                    <Type size={14} />
+                    <Type size={12} />
                   </button>
                   <button
                     onClick={() => removeFormField(field.id)}
-                    className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-all"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={12} />
                   </button>
                 </div>
               )}
@@ -1055,16 +1314,16 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
 
   // Toggle Component
   const Toggle = ({ label, value, onChange, tip }: { label: string, value: boolean, onChange: (val: boolean) => void, tip?: string }) => (
-    <div className="flex items-center justify-between py-3 px-1">
+    <div className="flex items-center justify-between py-2">
       <div>
-        <label className="text-sm font-medium text-neutral-700">{label}</label>
-        {tip && <p className="text-xs text-neutral-500 mt-0.5">{tip}</p>}
+        <label className="text-sm text-neutral-300">{label}</label>
+        {tip && <p className="text-[10px] text-neutral-600">{tip}</p>}
       </div>
       <button
         onClick={() => onChange(!value)}
-        className={`relative w-11 h-6 rounded-full transition-colors ${value ? 'bg-blue-600' : 'bg-neutral-300'}`}
+        className={`relative w-10 h-5 rounded-full transition-colors ${value ? 'bg-blue-600' : 'bg-neutral-700'}`}
       >
-        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${value ? 'translate-x-6' : 'translate-x-1'}`} />
+        <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${value ? 'translate-x-5' : 'translate-x-0.5'}`} />
       </button>
     </div>
   );
@@ -1080,9 +1339,11 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     max?: number
   }) => (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-neutral-700">{label}</label>
+      <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
       {tip && (
-        <p className="text-xs text-neutral-500">{tip}</p>
+        <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+          <Info size={10} /> {tip}
+        </p>
       )}
       <input
         type="number"
@@ -1090,7 +1351,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         onChange={(e) => onChange(parseInt(e.target.value) || min)}
         min={min}
         max={max}
-        className="w-full p-3 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-400"
+        className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700"
         placeholder={placeholder}
       />
     </div>
@@ -1105,14 +1366,16 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     tip?: string
   }) => (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-neutral-700">{label}</label>
+      <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
       {tip && (
-        <p className="text-xs text-neutral-500">{tip}</p>
+        <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+          <Info size={10} /> {tip}
+        </p>
       )}
       <select
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full p-3 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none cursor-pointer"
+        className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 outline-none appearance-none cursor-pointer"
       >
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1125,14 +1388,14 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
 
   if (showLayoutPicker) {
     return (
-      <div className="h-full flex flex-col bg-white">
-        <div className="p-4 border-b border-neutral-200 flex items-center gap-3">
-          <button onClick={() => setShowLayoutPicker(false)} className="p-2 hover:bg-neutral-100 rounded-lg text-neutral-600 hover:text-neutral-900 transition-colors">
+      <div className="h-full flex flex-col bg-neutral-900 border-l border-neutral-800">
+        <div className="p-4 border-b border-neutral-800 flex items-center gap-2">
+          <button onClick={() => setShowLayoutPicker(false)} className="p-1 hover:bg-neutral-800 rounded text-neutral-400 hover:text-white transition-colors">
             <ArrowLeft size={20} />
           </button>
-          <h3 className="font-semibold text-neutral-900">Choose Layout</h3>
+          <h3 className="font-bold text-white">Choose Layout</h3>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-3">
+        <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-4 custom-scrollbar">
           {options.map(opt => (
             <button
               key={opt.id}
@@ -1140,13 +1403,13 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 onSwitchLayout(opt.id);
                 setShowLayoutPicker(false);
               }}
-              className={`text-left border rounded-lg overflow-hidden transition-all group ${variant === opt.id ? 'ring-2 ring-blue-500 border-blue-500 bg-blue-50' : 'bg-white border-neutral-200 hover:border-neutral-300 hover:shadow-md'}`}
+              className={`text-left border rounded-xl overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all group ${variant === opt.id ? 'ring-2 ring-blue-600 bg-blue-900/20 border-blue-500' : 'bg-neutral-950 border-neutral-800 hover:border-neutral-700'}`}
             >
-              <div className={`aspect-video flex items-center justify-center transition-colors ${variant === opt.id ? 'bg-blue-100 text-blue-600' : 'bg-neutral-100 text-neutral-400 group-hover:bg-neutral-200 group-hover:text-neutral-600'}`}>
+              <div className={`aspect-video flex items-center justify-center transition-colors ${variant === opt.id ? 'bg-blue-900/30 text-blue-400' : 'bg-neutral-900 text-neutral-600 group-hover:bg-neutral-800 group-hover:text-neutral-500'}`}>
                 <Layout size={24} />
               </div>
               <div className="p-3">
-                <div className={`font-medium text-sm mb-1 transition-colors ${variant === opt.id ? 'text-blue-700' : 'text-neutral-700 group-hover:text-neutral-900'}`}>{opt.name}</div>
+                <div className={`font-bold text-sm mb-1 transition-colors ${variant === opt.id ? 'text-white' : 'text-neutral-300 group-hover:text-white'}`}>{opt.name}</div>
                 <div className="text-xs text-neutral-500 line-clamp-2">{opt.description}</div>
               </div>
             </button>
@@ -1159,14 +1422,14 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   if (activeItemIndex !== null && data.items && data.items[activeItemIndex]) {
     const item = data.items[activeItemIndex];
     return (
-      <div className="h-full flex flex-col bg-white">
-        <div className="p-4 border-b border-neutral-200 flex items-center gap-3">
-          <button onClick={() => setActiveItemIndex(null)} className="p-2 hover:bg-neutral-100 rounded-lg text-neutral-600 hover:text-neutral-900 transition-colors">
+      <div className="h-full flex flex-col bg-neutral-900 border-l border-neutral-800">
+        <div className="p-4 border-b border-neutral-800 flex items-center gap-2">
+          <button onClick={() => setActiveItemIndex(null)} className="p-1 hover:bg-neutral-800 rounded text-neutral-400 hover:text-white transition-colors">
             <ArrowLeft size={20} />
           </button>
-          <h3 className="font-semibold text-neutral-900">Edit Item {activeItemIndex + 1}</h3>
+          <h3 className="font-bold text-white">Edit Item {activeItemIndex + 1}</h3>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
           <Input 
             label="Title" 
             value={item.title} 
@@ -1194,43 +1457,41 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   }
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-neutral-900 border-l border-neutral-800">
       {/* Header */}
-      <div className="p-4 border-b border-neutral-200">
-        <div className="flex items-center justify-between mb-3">
+      <div className="p-4 border-b border-neutral-800">
+        <div className="flex items-center justify-between mb-2">
           <div>
-            <h3 className="font-semibold text-neutral-900">{sectionConfig.title}</h3>
-            <p className="text-xs text-neutral-500 mt-0.5">{sectionConfig.description}</p>
+            <h3 className="font-bold text-white text-sm">{sectionConfig.title}</h3>
+            <p className="text-[10px] text-neutral-500">{sectionConfig.description}</p>
           </div>
+          <span className="text-[10px] bg-neutral-800 px-2 py-0.5 rounded text-neutral-400 border border-neutral-700">{variant}</span>
         </div>
         <button 
           onClick={() => setShowLayoutPicker(true)}
-          className="w-full flex items-center justify-between p-3 bg-neutral-50 hover:bg-neutral-100 rounded-lg border border-neutral-200 hover:border-neutral-300 transition-all group"
+          className="w-full flex items-center justify-between p-3 bg-neutral-950 hover:bg-neutral-800 rounded-xl border border-neutral-800 hover:border-neutral-700 transition-all group shadow-sm"
         >
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white rounded-lg text-neutral-600 group-hover:text-neutral-900 transition-colors shadow-sm border border-neutral-200">
+            <div className="p-1.5 bg-neutral-900 rounded-lg text-neutral-400 group-hover:text-white transition-colors">
               <Layout size={16} />
             </div>
-            <div className="text-left">
-              <span className="font-medium text-sm text-neutral-700 group-hover:text-neutral-900 transition-colors block">{currentOption?.name || 'Select Layout'}</span>
-              <span className="text-xs text-neutral-400">Click to change layout</span>
-            </div>
+            <span className="font-bold text-sm text-neutral-300 group-hover:text-white transition-colors">{currentOption?.name || 'Select Layout'}</span>
           </div>
-          <ChevronRight size={16} className="text-neutral-400 group-hover:text-neutral-600 transition-colors" />
+          <ChevronRight size={16} className="text-neutral-600 group-hover:text-neutral-400 transition-colors" />
         </button>
       </div>
 
       {/* Group Tabs */}
       {sectionConfig.groups.length > 1 && (
-        <div className="flex border-b border-neutral-200 bg-neutral-50 px-2">
+        <div className="flex border-b border-neutral-800 bg-neutral-950/50">
           {sectionConfig.groups.map(group => (
             <button
               key={group.id}
               onClick={() => setActiveGroup(group.id)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors border-b-2 ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold transition-colors border-b-2 ${
                 activeGroup === group.id 
-                  ? 'text-blue-600 border-blue-600 bg-white' 
-                  : 'text-neutral-500 border-transparent hover:text-neutral-700'
+                  ? 'text-white border-blue-500 bg-blue-500/5' 
+                  : 'text-neutral-500 border-transparent hover:text-neutral-300'
               }`}
             >
               {group.icon}
@@ -1241,7 +1502,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
       )}
 
       {/* Main Content - Dynamic Fields */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-5">
+      <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
         
         {/* Render section-specific fields for active group */}
         {sectionConfig.fields
@@ -1372,13 +1633,13 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
 
         {/* Items List (Drill Down) - for sections with items */}
         {data.items && activeGroup === 'content' && (
-          <div className="space-y-4 pt-6 border-t border-neutral-200">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium text-neutral-700 flex items-center gap-2">
-                <List size={14} /> Items ({data.items.length})
+          <div className="space-y-4 pt-6 border-t border-neutral-800">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-bold text-xs uppercase tracking-widest text-neutral-500 flex items-center gap-2">
+                <List size={12} /> Items ({data.items.length})
               </h4>
-              <button onClick={addItem} className="p-2 hover:bg-blue-50 rounded-lg text-blue-600 hover:text-blue-700 transition-colors">
-                <Plus size={18} />
+              <button onClick={addItem} className="p-1.5 hover:bg-blue-500/10 rounded text-blue-500 hover:text-blue-400 transition-colors">
+                <Plus size={16} />
               </button>
             </div>
             <div className="space-y-2">
@@ -1386,19 +1647,19 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 <div key={i} className="flex items-center gap-2 group">
                   <button 
                     onClick={() => setActiveItemIndex(i)}
-                    className="flex-1 flex items-center gap-3 p-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 hover:border-neutral-300 rounded-lg text-left transition-all"
+                    className="flex-1 flex items-center gap-3 p-2 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 rounded-lg text-left transition-all group-hover:shadow-md"
                   >
-                    <div className="w-12 h-12 bg-white rounded-lg overflow-hidden shrink-0 border border-neutral-200 flex items-center justify-center text-neutral-400">
-                      {item.image ? <img src={item.image} className="w-full h-full object-cover" alt="" /> : <ImageIcon size={20} />}
+                    <div className="w-10 h-10 bg-neutral-900 rounded-md overflow-hidden shrink-0 border border-neutral-800 flex items-center justify-center text-neutral-700">
+                      {item.image ? <img src={item.image} className="w-full h-full object-cover" alt="" /> : <ImageIcon size={16} />}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium truncate text-neutral-900">{item.title || 'Untitled'}</div>
-                      <div className="text-xs text-neutral-500 truncate">Item {i + 1}</div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate text-neutral-300 group-hover:text-white transition-colors">{item.title || 'Untitled'}</div>
+                      <div className="text-[10px] text-neutral-600 truncate">Item {i + 1}</div>
                     </div>
-                    <ChevronRight size={16} className="text-neutral-400 group-hover:text-neutral-600 transition-colors" />
+                    <ChevronRight size={14} className="ml-auto text-neutral-600 group-hover:text-neutral-400 transition-colors" />
                   </button>
-                  <button onClick={() => removeItem(i)} className="p-2 text-neutral-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 rounded-lg">
-                    <Trash2 size={16} />
+                  <button onClick={() => removeItem(i)} className="p-2 text-neutral-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/10 rounded-lg">
+                    <Trash2 size={14} />
                   </button>
                 </div>
               ))}
@@ -1408,9 +1669,9 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
 
         {/* Design Settings - always available */}
         {activeGroup === sectionConfig.groups[sectionConfig.groups.length - 1]?.id && (
-          <div className="space-y-4 pt-6 border-t border-neutral-200">
-            <h4 className="text-sm font-medium text-neutral-700 flex items-center gap-2 mb-4">
-              <Palette size={14} /> Design Overrides
+          <div className="space-y-4 pt-6 border-t border-neutral-800">
+            <h4 className="font-bold text-xs uppercase tracking-widest text-neutral-500 flex items-center gap-2 mb-4">
+              <Palette size={12} /> Design Overrides
             </h4>
             
             <div className="grid grid-cols-2 gap-4">
