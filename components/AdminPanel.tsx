@@ -28,10 +28,6 @@ import { ShippingManager } from './ShippingManager';
 import { ClientManagement } from './ClientManagement';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
-import { GoogleGenAI } from '@google/genai';
-
-// Initialize Gemini AI
-const genAI = import.meta.env.VITE_GEMINI_API_KEY ? new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY) : null;
 
 const SCROLLBAR_OPTIONS = [
   { id: 'native', name: 'Native', description: 'Default browser scrollbar' },
@@ -82,7 +78,6 @@ import {
   Send,
   MoreHorizontal,
   Eye,
-  EyeOff,
   X,
   LayoutTemplate,
   ChevronDown,
@@ -99,7 +94,6 @@ import {
   FileText,
   Home,
   Trash2,
-  Copy,
   Columns,
   Quote,
   Heading,
@@ -150,12 +144,7 @@ import {
   Info,
   Phone,
   MessageSquare,
-  Star,
-  GripVertical,
-  Lightbulb,
-  Circle,
-  Lock,
-  Unlock
+  Star
 } from 'lucide-react';
 
 // Page type options for creating new pages
@@ -195,11 +184,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onSwitchStore
 }) => {
 
-  // Helper to update config partially
-  const onUpdateConfig = (updates: Partial<StoreConfig>) => {
-    onConfigChange({ ...config, ...updates });
-  };
-
   // Platform Admin State
   const [tenants, setTenants] = useState<any[]>([]);
   const [isLoadingTenants, setIsLoadingTenants] = useState(false);
@@ -216,17 +200,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Local State for Draft Mode
   const [localPages, setLocalPages] = useState<Page[]>(pages);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
 
-  // Current Active Page Data
-  const activePage = localPages.find(p => p.id === activePageId) || localPages[0];
-
-  // Sync from props only when not editing
   useEffect(() => {
-      if (!hasUnsavedChanges && !isSaving) {
+      if (!hasUnsavedChanges) {
           setLocalPages(pages);
       }
-  }, [pages, hasUnsavedChanges, isSaving]);
+  }, [pages, hasUnsavedChanges]);
   
   // Settings State
   const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'payments' | 'shipping' | 'taxes' | 'policies' | 'notifications' | 'domains'>('general');
@@ -356,9 +335,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       setIsUndoRedo(false);
       return;
     }
-    const activePageToTrack = localPages.find(p => p.id === activePageId) || localPages[0];
-    if (activePageToTrack && activeTab === AdminTab.DESIGN) {
-      const currentState = { blocks: activePageToTrack.blocks || [], config };
+    const activePage = pages.find(p => p.id === activePageId);
+    if (activePage && activeTab === AdminTab.DESIGN) {
+      const currentState = { blocks: activePage.blocks || [], config };
       // Only add to history if something actually changed
       if (history.length === 0 || JSON.stringify(currentState) !== JSON.stringify(history[historyIndex])) {
         // Remove any future states if we're not at the end
@@ -370,7 +349,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         setHistoryIndex(newHistory.length - 1);
       }
     }
-  }, [localPages, config, activeTab, activePageId]);
+  }, [pages, config, activeTab, activePageId]);
   
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
@@ -380,11 +359,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setIsUndoRedo(true);
     const previousState = history[historyIndex - 1];
     setHistoryIndex(historyIndex - 1);
-    // Restore blocks in local state
-    setLocalPages(prev => prev.map(p => p.id === activePage.id ? { ...p, blocks: previousState.blocks } : p));
+    // Restore blocks
+    onUpdatePage(activePageId, { blocks: previousState.blocks });
     // Restore config
     onConfigChange(previousState.config);
-    setHasUnsavedChanges(true);
     showToast('Undo successful', 'success');
   };
   
@@ -393,11 +371,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setIsUndoRedo(true);
     const nextState = history[historyIndex + 1];
     setHistoryIndex(historyIndex + 1);
-    // Restore blocks in local state
-    setLocalPages(prev => prev.map(p => p.id === activePage.id ? { ...p, blocks: nextState.blocks } : p));
+    // Restore blocks
+    onUpdatePage(activePageId, { blocks: nextState.blocks });
     // Restore config
     onConfigChange(nextState.config);
-    setHasUnsavedChanges(true);
     showToast('Redo successful', 'success');
   };
   
@@ -411,9 +388,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       } else if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
         e.preventDefault();
         handleRedo();
-      } else if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-        handleSaveChanges();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -551,7 +525,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const [isRewriting, setIsRewriting] = useState(false);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [activeField, setActiveField] = useState<string | null>(null);
   const [showPageProperties, setShowPageProperties] = useState(false);
 
@@ -589,8 +562,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Live Preview State
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile' | 'tablet'>('desktop');
-  const [previewOrientation, setPreviewOrientation] = useState<'portrait' | 'landscape'>('portrait');
-  const [previewDevicePreset, setPreviewDevicePreset] = useState<string>('default');
 
   // Sorting State (Local to modals now)
   const [modalSort, setModalSort] = useState<'az' | 'new' | 'hot'>('az');
@@ -601,95 +572,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Design Studio Welcome Wizard State
   const [showWelcomeWizard, setShowWelcomeWizard] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(() => localStorage.getItem('evolv_seen_welcome') === 'true');
-  const [wizardMode, setWizardMode] = useState<'select' | 'ai-questions' | 'ai-generating' | 'templates'>('select');
-  const [aiWizardStep, setAiWizardStep] = useState(0);
-  const [aiWizardAnswers, setAiWizardAnswers] = useState<Record<string, string>>({});
-  
-  // AI Section Recommendations State
-  const [showSectionRecommendations, setShowSectionRecommendations] = useState(false);
-  const [recommendedSections, setRecommendedSections] = useState<string[]>([]);
-  
-  // Tutorial State
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [tutorialStep, setTutorialStep] = useState(0);
-  const [hasSeenTutorial, setHasSeenTutorial] = useState(() => localStorage.getItem('evolv_seen_tutorial') === 'true');
-  
-  // First-Edit Hint State - Shows helpful tip on first section click
-  const [hasSeenFirstEditHint, setHasSeenFirstEditHint] = useState(() => localStorage.getItem('evolv_seen_first_edit') === 'true');
-  const [showFirstEditHint, setShowFirstEditHint] = useState(false);
-  
-  // Pre-Publish Checklist State
-  const [showPublishChecklist, setShowPublishChecklist] = useState(false);
-  
-  // Brand Settings State  
-  const [showBrandSettings, setShowBrandSettings] = useState(false);
-  
-  // Version History State
-  const [showVersionHistory, setShowVersionHistory] = useState(false);
-  const [pageVersions, setPageVersions] = useState<Array<{id: string, created_at: string, blocks: PageBlock[], version_name?: string}>>([]);
-  const [isSavingVersion, setIsSavingVersion] = useState(false);
-
-  // Fetch versions for active page
-  const fetchPageVersions = async () => {
-    if (!activePageId) return;
-    try {
-      const { data, error } = await supabase
-        .from('page_versions')
-        .select('*')
-        .eq('page_id', activePageId)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      setPageVersions(data || []);
-    } catch (err) {
-      console.error('Error fetching page versions:', err);
-    }
-  };
-
-  // Save current state as a new version
-  const savePageVersion = async (name?: string) => {
-    const activePage = localPages.find(p => p.id === activePageId);
-    if (!activePage || !storeId) return;
-
-    setIsSavingVersion(true);
-    try {
-      const { error } = await supabase
-        .from('page_versions')
-        .insert({
-          page_id: activePageId,
-          store_id: storeId,
-          blocks: activePage.blocks,
-          version_name: name || `Version ${new Date().toLocaleString()}`
-        });
-
-      if (error) throw error;
-      showToast('Version saved successfully', 'success');
-      fetchPageVersions();
-    } catch (err) {
-      console.error('Error saving version:', err);
-      showToast('Failed to save version', 'error');
-    } finally {
-      setIsSavingVersion(false);
-    }
-  };
-
-  // Restore a version
-  const restoreVersion = (version: any) => {
-    onUpdatePage(activePageId, { blocks: version.blocks });
-    setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks: version.blocks } : p));
-    setHasUnsavedChanges(true);
-    showToast('Version restored (unsaved)', 'success');
-    setShowVersionHistory(false);
-  };
-
-  useEffect(() => {
-    if (showVersionHistory) {
-      fetchPageVersions();
-    }
-  }, [showVersionHistory, activePageId]);
-  
-  // Navigation Builder State
-  const [showNavBuilder, setShowNavBuilder] = useState(false);
   
   // Add New Page Modal State
   const [isAddPageModalOpen, setIsAddPageModalOpen] = useState(false);
@@ -702,7 +584,41 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     if (activeTab === AdminTab.DESIGN && !hasSeenWelcome) {
       setShowWelcomeWizard(true);
     }
-  }, [activeTab, hasSeenWelcome]);;
+  }, [activeTab, hasSeenWelcome]);
+
+  // Keyboard shortcut for closing modals with Escape key
+  useEffect(() => {
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        // Close modals in priority order (most specific first)
+        if (isArchitectOpen) {
+          setIsArchitectOpen(false);
+        } else if (isAddSectionOpen) {
+          setIsAddSectionOpen(false);
+          setAddSectionStep('categories');
+          setSelectedCategory(null);
+        } else if (isHeaderModalOpen) {
+          setIsHeaderModalOpen(false);
+        } else if (isSystemModalOpen) {
+          setIsSystemModalOpen(false);
+          setSystemModalType(null);
+        } else if (isInterfaceModalOpen) {
+          setIsInterfaceModalOpen(false);
+        } else if (isAddPageModalOpen) {
+          setIsAddPageModalOpen(false);
+          setNewPageType('custom');
+          setNewPageName('');
+          setNewPageSlug('');
+        } else if (isProductEditorOpen) {
+          setIsProductEditorOpen(false);
+          setEditingProduct(null);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleEscapeKey);
+    return () => window.removeEventListener('keydown', handleEscapeKey);
+  }, [isArchitectOpen, isAddSectionOpen, isHeaderModalOpen, isSystemModalOpen, isInterfaceModalOpen, isAddPageModalOpen, isProductEditorOpen]);
+
   const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
@@ -736,6 +652,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
   }, [isResizing]);
 
+  // Current Active Page Data
+  const activePage = localPages.find(p => p.id === activePageId) || localPages[0];
   const activeBlock = activePage.blocks?.find(b => b.id === selectedBlockId);
 
   // --- ARCHITECT GENERATOR ---
@@ -911,7 +829,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const addBlock = (html: string, name: string, type: PageBlock['type'] = 'section', variant?: string) => {
     const newBlock: PageBlock = {
-      id: crypto.randomUUID(),
+      id: Math.random().toString(36).substr(2, 9),
       type: type,
       name: name,
       content: html,
@@ -921,28 +839,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     
     // Update Local State (Draft Mode)
     setLocalPages(prev => prev.map(p => {
-        if (p.id !== activePage.id) return p;
-        
-        const blocks = p.blocks || [];
-        const selectedIndex = blocks.findIndex(b => b.id === selectedBlockId);
-        
-        let newBlocks;
-        if (selectedIndex !== -1) {
-          // Insert after selected block
-          newBlocks = [...blocks];
-          newBlocks.splice(selectedIndex + 1, 0, newBlock);
-        } else {
-          // Add to end
-          newBlocks = [...blocks, newBlock];
-        }
-        
+        if (p.id !== activePageId) return p;
         return {
             ...p,
-            blocks: newBlocks
+            blocks: [...(p.blocks || []), newBlock]
         };
     }));
     setHasUnsavedChanges(true);
-    showToast(`Added ${name} section`, 'success');
 
     setSelectedBlockId(newBlock.id);
     setIsAddSectionOpen(false);
@@ -954,7 +857,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const updateActiveBlock = (content: string) => {
     if (!selectedBlockId) return;
     setLocalPages(prev => prev.map(p => {
-        if (p.id !== activePage.id) return p;
+        if (p.id !== activePageId) return p;
         return {
             ...p,
             blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, content } : b)
@@ -965,15 +868,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const updateActiveBlockData = (blockId: string, data: any) => {
     if (!blockId) return;
-    
-    // Basic validation
-    if (data.heading && data.heading.length > 200) {
-      showToast('Heading is too long', 'error');
-      return;
-    }
-
     setLocalPages(prev => prev.map(p => {
-      if (p.id !== activePage.id) return p;
+      if (p.id !== activePageId) return p;
       
       const updatedBlocks = p.blocks.map(b => {
         if (b.id !== blockId) return b;
@@ -1003,167 +899,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   }
 
   const moveBlock = (index: number, direction: -1 | 1) => {
-    setLocalPages(prev => prev.map(p => {
-      if (p.id !== activePage.id) return p;
-      const blocks = [...p.blocks];
-      if (index + direction < 0 || index + direction >= blocks.length) return p;
-      const temp = blocks[index];
-      blocks[index] = blocks[index + direction];
-      blocks[index + direction] = temp;
-      return { ...p, blocks };
-    }));
-    setHasUnsavedChanges(true);
-  };
+    const blocks = [...activePage.blocks];
+    if (index + direction < 0 || index + direction >= blocks.length) return;
 
-  const handleDragStart = (index: number) => {
-    setDraggedIndex(index);
-  };
-
-  const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    if (draggedIndex === null || draggedIndex === index) return;
-  };
-
-  const handleDrop = (index: number) => {
-    if (draggedIndex === null || draggedIndex === index) {
-      setDraggedIndex(null);
-      return;
-    }
-
-    setLocalPages(prev => prev.map(p => {
-      if (p.id !== activePage.id) return p;
-      const blocks = [...p.blocks];
-      const draggedBlock = blocks[draggedIndex];
-      blocks.splice(draggedIndex, 1);
-      blocks.splice(index, 0, draggedBlock);
-      return { ...p, blocks };
-    }));
+    const temp = blocks[index];
+    blocks[index] = blocks[index + direction];
+    blocks[index + direction] = temp;
     
+    setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks } : p));
     setHasUnsavedChanges(true);
-    setDraggedIndex(null);
-    showToast('Section reordered', 'success');
-  };
-
-  const toggleBlockVisibility = (blockId: string) => {
-    setLocalPages(prev => prev.map(p => {
-      if (p.id !== activePage.id) return p;
-      return {
-        ...p,
-        blocks: p.blocks.map(b => b.id === blockId ? { ...b, hidden: !b.hidden } : b)
-      };
-    }));
-    setHasUnsavedChanges(true);
-  };
-
-  const toggleBlockLock = (blockId: string) => {
-    setLocalPages(prev => prev.map(p => {
-      if (p.id !== activePage.id) return p;
-      return {
-        ...p,
-        blocks: p.blocks.map(b => b.id === blockId ? { ...b, locked: !b.locked } : b)
-      };
-    }));
-    setHasUnsavedChanges(true);
-  };
-
-  const duplicateBlock = (blockId: string) => {
-    setLocalPages(prev => prev.map(p => {
-      if (p.id !== activePage.id) return p;
-      const block = p.blocks.find(b => b.id === blockId);
-      if (!block) return p;
-      
-      const newBlock = { ...block, id: crypto.randomUUID() };
-      const index = p.blocks.findIndex(b => b.id === blockId);
-      const newBlocks = [...p.blocks];
-      newBlocks.splice(index + 1, 0, newBlock);
-      
-      setSelectedBlockId(newBlock.id);
-      return { ...p, blocks: newBlocks };
-    }));
-    setHasUnsavedChanges(true);
-    showToast('Section duplicated', 'success');
   };
 
   const deleteBlock = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this section? This action can be undone with Ctrl+Z.')) return;
-    
     const updatedBlocks = activePage.blocks.filter(b => b.id !== id);
-    
-    // Update local state immediately for responsiveness
-    setLocalPages(prev => prev.map(p => {
-      if (p.id !== activePage.id) return p;
-      return { ...p, blocks: updatedBlocks };
-    }));
-    
+    setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks: updatedBlocks } : p));
     if (selectedBlockId === id) setSelectedBlockId(null);
-    
-    // Persist to database immediately
-    try {
-      await onUpdatePage(activePageId, { blocks: updatedBlocks });
-      showToast('Section deleted', 'success');
-    } catch (error) {
-      console.error('Failed to delete section:', error);
-      showToast('Failed to delete section', 'error');
-      // Revert local state on error
-      setLocalPages(pages);
-    }
+    // Auto-save deletion immediately
+    await onUpdatePage(activePageId, { blocks: updatedBlocks });
   };
 
   const handleSaveChanges = async () => {
-      if (!storeId || !hasUnsavedChanges) return;
-      
-      setIsSaving(true);
-      try {
-        // Save all pages that might have changed using the context update function
-        for (const page of localPages) {
-          const originalPage = pages.find(p => p.id === page.id);
-          // Only update if there are actual changes
-          if (JSON.stringify(originalPage) !== JSON.stringify(page)) {
-            await onUpdatePage(page.id, {
-              title: page.title,
-              slug: page.slug,
-              blocks: page.blocks,
-              metadata: page.metadata
-            });
-          }
-        }
-
-        setHasUnsavedChanges(false);
-        showToast('All changes saved successfully', 'success');
-      } catch (err) {
-        console.error('Error saving changes:', err);
-        showToast('Failed to save changes', 'error');
-      } finally {
-        setIsSaving(false);
+      const pageToSave = localPages.find(p => p.id === activePageId);
+      if (pageToSave) {
+          await onUpdatePage(activePageId, { blocks: pageToSave.blocks });
+          setHasUnsavedChanges(false);
       }
   };
-
-  // Auto-save functionality
-  useEffect(() => {
-    if (!hasUnsavedChanges) return;
-
-    const timer = setTimeout(() => {
-      handleSaveChanges();
-    }, 5000); // Auto-save after 5 seconds of inactivity
-
-    return () => clearTimeout(timer);
-  }, [localPages, hasUnsavedChanges]);
-
-  const handlePublish = async () => {
-    await handleSaveChanges();
-    showToast('Website published successfully! 🚀', 'success');
-  };
-
-  // Track section additions for AI recommendations
-  const lastSectionCount = React.useRef(activePage?.blocks?.length || 0);
-  React.useEffect(() => {
-    const currentCount = activePage?.blocks?.length || 0;
-    if (currentCount > lastSectionCount.current && currentCount <= 3 && !localStorage.getItem('evolv_hide_suggestions')) {
-      // Show recommendations after adding a section
-      setTimeout(() => setShowSectionRecommendations(true), 500);
-    }
-    lastSectionCount.current = currentCount;
-  }, [activePage?.blocks?.length]);
 
   const handlePreviewBlock = (type: PageBlock['type'], name: string, html: string = '', variant?: string) => {
     setPreviewBlock({
@@ -1322,172 +1083,114 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     </div>
   );
 
-  // --- HEADER CONFIG MODAL (Full-screen with preview) ---
+  // --- HEADER CONFIG MODAL ---
   const renderHeaderModal = () => {
     if (!isHeaderModalOpen) return null;
     
-    // Get the current header component for preview
-    const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
-    const navLinks = pages.map(p => ({
-      label: p.title,
-      href: p.type === 'home' ? '/' : `/${p.slug}`,
-      active: p.id === activePageId,
-    }));
+    // Get the current header component for live preview
+    const HeaderComponent = HEADER_COMPONENTS[config.headerStyle];
     
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
-          {/* Modal Header */}
-          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+          {/* Header */}
+          <div className="p-4 border-b border-neutral-800 bg-neutral-950 shrink-0 flex justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-600/20 rounded-lg">
-                <PanelTop size={20} className="text-blue-400" />
+                <PanelTop size={20} className="text-blue-500" />
               </div>
               <div>
                 <h3 className="text-white font-bold">Header Studio</h3>
-                <p className="text-xs text-neutral-500">Choose a navigation style for your store</p>
+                <p className="text-xs text-neutral-500">Global Navigation Design</p>
               </div>
             </div>
-            <button 
-              onClick={() => setIsHeaderModalOpen(false)} 
-              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
-            >
+            <button onClick={() => setIsHeaderModalOpen(false)} className="p-2 hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-white transition-colors">
               <X size={20} />
             </button>
           </div>
           
-          {/* Modal Content - Split View */}
+          {/* Content - Split View */}
           <div className="flex-1 flex overflow-hidden">
-            {/* Left Panel - Style Selection */}
-            <div className="w-80 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0">
-              <div className="p-4 border-b border-neutral-800">
-                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <Sparkles size={14} /> Branding
+            {/* Left: Controls */}
+            <div className="w-80 border-r border-neutral-800 overflow-y-auto custom-scrollbar p-6 space-y-6">
+              {/* Branding Section */}
+              <div>
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Sparkles size={14} /> Identity
                 </h4>
-                <div className="space-y-3 bg-neutral-900 p-3 rounded-xl border border-neutral-800">
+                <div className="space-y-4 bg-neutral-800/50 p-4 rounded-xl border border-neutral-700">
                   <div className="flex bg-black p-1 rounded-lg border border-neutral-800">
-                    <button 
-                      onClick={() => { setLogoMode('text'); onConfigChange({ ...config, logoUrl: '' }); }} 
-                      className={`flex-1 py-2 rounded text-xs font-bold ${logoMode === 'text' ? 'bg-neutral-800 text-white' : 'text-neutral-500'}`}
-                    >
-                      Text Logo
-                    </button>
-                    <button 
-                      onClick={() => setLogoMode('image')} 
-                      className={`flex-1 py-2 rounded text-xs font-bold ${logoMode === 'image' ? 'bg-neutral-800 text-white' : 'text-neutral-500'}`}
-                    >
-                      Image Logo
-                    </button>
+                    <button onClick={() => { setLogoMode('text'); onConfigChange({ ...config, logoUrl: '' }); }} className={`flex-1 py-2 rounded text-xs font-bold ${logoMode === 'text' ? 'bg-neutral-700 text-white' : 'text-neutral-500'}`}>Text</button>
+                    <button onClick={() => setLogoMode('image')} className={`flex-1 py-2 rounded text-xs font-bold ${logoMode === 'image' ? 'bg-neutral-700 text-white' : 'text-neutral-500'}`}>Logo</button>
                   </div>
                   {logoMode === 'image' && (
                     <div className="space-y-2">
-                      <label className={`flex items-center justify-center gap-2 w-full p-3 border border-dashed border-neutral-700 rounded bg-black cursor-pointer hover:border-blue-500 ${isUploadingLogo ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <label className={`flex items-center justify-center gap-2 w-full p-3 border border-dashed border-neutral-600 rounded bg-black cursor-pointer hover:border-blue-500 ${isUploadingLogo ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         {isUploadingLogo ? <Loader2 size={14} className="animate-spin text-neutral-400" /> : <Upload size={14} className="text-neutral-400" />}
-                        <span className="text-xs text-neutral-400">{isUploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
+                        <span className="text-xs text-neutral-400">{isUploadingLogo ? 'Uploading...' : 'Upload Image'}</span>
                         <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" disabled={isUploadingLogo} />
                       </label>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-neutral-500">Size:</span>
-                        <input 
-                          type="range" min="20" max="120" 
-                          value={config.logoHeight || 32} 
-                          onChange={(e) => onConfigChange({ ...config, logoHeight: parseInt(e.target.value) })} 
-                          className="flex-1 h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-blue-600" 
-                        />
-                        <span className="text-[10px] text-neutral-400 w-8">{config.logoHeight || 32}px</span>
+                        <span className="text-xs text-neutral-500">Height</span>
+                        <input type="range" min="20" max="120" value={config.logoHeight || 32} onChange={(e) => onConfigChange({ ...config, logoHeight: parseInt(e.target.value) })} className="flex-1 h-1 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                        <span className="text-xs text-neutral-400 w-8">{config.logoHeight || 32}px</span>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
               
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
-                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <LayoutTemplate size={14} /> Header Styles
+              {/* Style Grid */}
+              <div>
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <LayoutTemplate size={14} /> Choose Style
                 </h4>
                 {renderSortControls(modalSort, setModalSort)}
-                <div className="grid grid-cols-1 gap-2 mt-3">
+                <div className="grid grid-cols-2 gap-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
                   {sortItems(HEADER_OPTIONS, modalSort).map((header) => (
-                    <button 
-                      key={header.id} 
-                      onClick={() => onConfigChange({ ...config, headerStyle: header.id as HeaderStyleId })} 
-                      className={`text-left p-3 rounded-lg border transition-all relative ${
-                        config.headerStyle === header.id 
-                          ? 'bg-blue-600/20 border-blue-500 text-white ring-2 ring-blue-500/50' 
-                          : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600 hover:bg-neutral-800/50'
-                      }`}
-                    >
+                    <button key={header.id} onClick={() => onConfigChange({ ...config, headerStyle: header.id as HeaderStyleId })} className={`text-left p-3 rounded-lg border transition-all relative ${config.headerStyle === header.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-800/50 border-neutral-700 text-neutral-400 hover:border-neutral-500'}`}>
                       {(header as any).recommended && (
                         <span className="absolute -top-2 -right-2 text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">★ TOP</span>
                       )}
-                      <div className="font-bold text-sm mb-0.5">{header.name}</div>
-                      <div className="text-[11px] opacity-60">{header.description}</div>
+                      <div className="font-bold text-xs mb-1 truncate">{header.name}</div>
+                      <div className="text-[10px] opacity-60 truncate">{header.description}</div>
                     </button>
                   ))}
                 </div>
               </div>
             </div>
             
-            {/* Right Panel - Live Preview */}
-            <div className="flex-1 bg-neutral-800 flex flex-col">
-              <div className="p-3 border-b border-neutral-700 bg-neutral-900 flex items-center justify-between">
-                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Live Preview</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                  <span className="text-[10px] text-neutral-500">Updates instantly</span>
+            {/* Right: Live Preview */}
+            <div className="flex-1 bg-neutral-950 overflow-hidden flex flex-col">
+              <div className="p-3 bg-neutral-900/50 border-b border-neutral-800 flex items-center justify-between">
+                <span className="text-xs text-neutral-500 font-medium">Live Preview</span>
+                <div className="flex items-center gap-1 text-xs text-neutral-600">
+                  <Eye size={12} />
+                  {HEADER_OPTIONS.find(h => h.id === config.headerStyle)?.name}
                 </div>
               </div>
-              <div className="flex-1 overflow-hidden p-6 flex items-start justify-center bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px]">
-                <div className="w-full max-w-4xl bg-white rounded-lg shadow-2xl overflow-hidden border border-neutral-600">
-                  {/* Simulated browser chrome */}
-                  <div className="bg-neutral-200 px-3 py-2 flex items-center gap-2 border-b border-neutral-300">
-                    <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                    </div>
-                    <div className="flex-1 bg-white rounded px-3 py-1 text-xs text-neutral-500 ml-2">
-                      {config.slug ? `yourstore.com` : 'yourstore.com'}
-                    </div>
-                  </div>
-                  {/* Header Preview */}
-                  <div className="relative">
-                    <HeaderComponent
-                      storeName={config.name || 'Your Store'}
-                      logoUrl={config.logoUrl}
-                      logoHeight={config.logoHeight}
-                      links={navLinks}
-                      cartCount={2}
-                      onOpenCart={() => {}}
-                      primaryColor={config.primaryColor}
-                      secondaryColor="#666666"
+              <div className="flex-1 overflow-auto p-4">
+                <div className="bg-white rounded-lg overflow-hidden shadow-2xl">
+                  {HeaderComponent && (
+                    <HeaderComponent 
+                      config={config} 
+                      cartItemCount={0} 
+                      onCartClick={() => {}} 
+                      pages={pages}
+                      currentPageSlug="/"
                     />
-                  </div>
-                  {/* Placeholder content below header */}
-                  <div className="p-8 bg-gradient-to-b from-neutral-50 to-white min-h-[200px]">
-                    <div className="max-w-2xl mx-auto text-center">
-                      <div className="h-8 bg-neutral-200 rounded w-3/4 mx-auto mb-4"></div>
-                      <div className="h-4 bg-neutral-100 rounded w-1/2 mx-auto mb-6"></div>
-                      <div className="flex gap-4 justify-center">
-                        <div className="h-10 w-32 bg-neutral-900 rounded"></div>
-                        <div className="h-10 w-32 bg-neutral-200 rounded"></div>
-                      </div>
-                    </div>
+                  )}
+                  <div className="h-32 bg-neutral-100 flex items-center justify-center text-neutral-400 text-sm">
+                    Page Content Preview
                   </div>
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Modal Footer */}
-          <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-between items-center shrink-0">
-            <p className="text-xs text-neutral-500">
-              Current: <span className="text-white font-medium">{HEADER_OPTIONS.find(h => h.id === config.headerStyle)?.name || 'Default'}</span>
-            </p>
-            <button 
-              onClick={() => setIsHeaderModalOpen(false)}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-sm transition-colors"
-            >
+          {/* Footer */}
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0 flex justify-end gap-3">
+            <button onClick={() => setIsHeaderModalOpen(false)} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-colors">
               Done
             </button>
           </div>
@@ -1510,9 +1213,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     let color = 'blue';
 
     const handleHeroVariantChange = (id: string) => {
-      if (!selectedBlockId) return;
+      if (!selectedBlockId || !activeBlock || !activeBlock.data) {
+        const updatedBlocks = activePage.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: id } : b);
+        onUpdatePage(activePageId, { blocks: updatedBlocks });
+        return;
+      }
 
-      const currentFields = Object.keys(activeBlock?.data || {}).filter(k => activeBlock?.data?.[k]);
+      const currentFields = Object.keys(activeBlock.data).filter(k => activeBlock.data![k]);
       const targetFields = HERO_FIELDS[id] || [];
 
       const lostFields = currentFields.filter(field => !targetFields.includes(field));
@@ -1521,27 +1228,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         setWarningFields(lostFields);
         setPendingVariant(id);
       } else {
-        setLocalPages(prev => prev.map(p => {
-          if (p.id !== activePage.id) return p;
-          return {
-            ...p,
-            blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: id } : b)
-          };
-        }));
-        setHasUnsavedChanges(true);
+        const updatedBlocks = activePage.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: id } : b);
+        onUpdatePage(activePageId, { blocks: updatedBlocks });
       }
     };
 
     const confirmVariantChange = () => {
       if (pendingVariant && selectedBlockId) {
-        setLocalPages(prev => prev.map(p => {
-          if (p.id !== activePage.id) return p;
-          return {
-            ...p,
-            blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: pendingVariant } : b)
-          };
-        }));
-        setHasUnsavedChanges(true);
+        const updatedBlocks = activePage.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: pendingVariant } : b);
+        onUpdatePage(activePageId, { blocks: updatedBlocks });
         setPendingVariant(null);
         setWarningFields([]);
       }
@@ -1566,14 +1261,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       title = 'Product Grid Engine';
       setSelection = (id) => {
         if (selectedBlockId) {
-          setLocalPages(prev => prev.map(p => {
-            if (p.id !== activePage.id) return p;
-            return {
-              ...p,
-              blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: id } : b)
-            };
-          }));
-          setHasUnsavedChanges(true);
+          const updatedBlocks = activePage.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: id } : b);
+          onUpdatePage(activePageId, { blocks: updatedBlocks });
         } else {
           onConfigChange({ ...config, productCardStyle: id as ProductCardStyleId });
         }
@@ -1587,169 +1276,131 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       color = 'orange';
     }
 
-    // Get the preview component based on modal type
-    const getPreviewComponent = () => {
-      if (systemModalType === 'hero') {
-        const HeroComponent = HERO_COMPONENTS[currentSelection as HeroStyleId] || HERO_COMPONENTS['impact'];
-        return HeroComponent ? (
-          <HeroComponent
-            storeName={config.name || 'Your Store'}
-            primaryColor={config.primaryColor}
-            data={activeBlock?.data || { heading: 'Hero Headline', subheading: 'Your amazing subheading goes here' }}
-            isEditable={false}
-          />
-        ) : null;
-      }
-      if (systemModalType === 'grid') {
-        const CardComponent = PRODUCT_CARD_COMPONENTS[currentSelection as ProductCardStyleId] || PRODUCT_CARD_COMPONENTS['classic'];
-        return (
-          <div className="py-12 px-6 max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6 text-neutral-900">Featured Products</h2>
-            <div className="grid grid-cols-3 gap-6">
-              {[1, 2, 3].map(i => (
-                <CardComponent
-                  key={i}
-                  product={{
-                    id: `preview-${i}`,
-                    name: `Product ${i}`,
-                    price: 99.99,
-                    image: `https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400`,
-                    seo: { slug: 'preview' }
-                  } as any}
-                  primaryColor={config.primaryColor}
-                />
-              ))}
-            </div>
-          </div>
-        );
-      }
-      if (systemModalType === 'footer') {
-        const FooterComponent = FOOTER_COMPONENTS[currentSelection as FooterStyleId] || FOOTER_COMPONENTS['columns'];
-        return FooterComponent ? (
-          <FooterComponent
-            storeName={config.name || 'Your Store'}
-            primaryColor={config.primaryColor}
-          />
-        ) : null;
-      }
-      return null;
+    const colorClasses: Record<string, string> = {
+      purple: 'bg-purple-600/20 border-purple-500',
+      green: 'bg-green-600/20 border-green-500',
+      orange: 'bg-orange-600/20 border-orange-500',
+    };
+    const iconColorClasses: Record<string, string> = {
+      purple: 'bg-purple-600/20 text-purple-500',
+      green: 'bg-green-600/20 text-green-500',
+      orange: 'bg-orange-600/20 text-orange-500',
     };
 
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
-          {/* Modal Header */}
-          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+          {/* Header */}
+          <div className="p-4 border-b border-neutral-800 bg-neutral-950 shrink-0 flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${
-                color === 'purple' ? 'bg-purple-600/20' : 
-                color === 'green' ? 'bg-green-600/20' : 
-                'bg-orange-600/20'
-              }`}>
-                <BoxSelect size={20} className={`${
-                  color === 'purple' ? 'text-purple-400' : 
-                  color === 'green' ? 'text-green-400' : 
-                  'text-orange-400'
-                }`} />
+              <div className={`p-2 rounded-lg ${iconColorClasses[color]}`}>
+                <BoxSelect size={20} />
               </div>
               <div>
                 <h3 className="text-white font-bold">{title}</h3>
-                <p className="text-xs text-neutral-500">Choose a layout style</p>
+                <p className="text-xs text-neutral-500">System Component Style</p>
               </div>
             </div>
-            <button 
-              onClick={() => { setIsSystemModalOpen(false); setWarningFields([]); setPendingVariant(null); }} 
-              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
-            >
+            <button onClick={() => { setIsSystemModalOpen(false); setWarningFields([]); setPendingVariant(null); }} className="p-2 hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-white transition-colors">
               <X size={20} />
             </button>
           </div>
           
-          {/* Modal Content - Split View */}
-          <div className="flex-1 flex overflow-hidden">
-            {/* Left Panel - Style Selection */}
-            <div className="w-80 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative">
-              {/* WARNING OVERLAY */}
-              {warningFields.length > 0 && (
-                <div className="absolute inset-0 z-50 bg-neutral-950/98 p-6 flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
-                  <div className="w-12 h-12 bg-red-900/30 rounded-full flex items-center justify-center text-red-500 mb-4">
-                    <AlertTriangle size={24} />
-                  </div>
-                  <h4 className="text-white font-bold text-lg mb-2">Content Warning</h4>
-                  <p className="text-neutral-400 text-sm mb-4">
-                    Switching to <span className="text-white font-bold">{HERO_OPTIONS.find(o => o.id === pendingVariant)?.name}</span> will hide these fields:
-                  </p>
-                  <div className="bg-neutral-900 rounded-lg p-3 w-full mb-4 border border-neutral-800 max-h-32 overflow-y-auto">
-                    {warningFields.map(field => (
-                      <div key={field} className="text-xs text-red-400 font-mono py-1 border-b border-neutral-800 last:border-0">{field}</div>
-                    ))}
-                  </div>
-                  <div className="flex gap-2 w-full">
-                    <button onClick={() => { setWarningFields([]); setPendingVariant(null); }} className="flex-1 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg font-bold text-sm transition-colors">Cancel</button>
-                    <button onClick={confirmVariantChange} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-sm transition-colors">Confirm</button>
-                  </div>
+          {/* Content - Split View */}
+          <div className="flex-1 flex overflow-hidden relative">
+            {/* WARNING OVERLAY */}
+            {warningFields.length > 0 && (
+              <div className="absolute inset-0 z-50 bg-neutral-950/95 p-6 flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
+                <div className="w-16 h-16 bg-red-900/30 rounded-full flex items-center justify-center text-red-500 mb-4">
+                  <AlertTriangle size={32} />
                 </div>
-              )}
-              
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
-                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <LayoutTemplate size={14} /> Available Styles
-                </h4>
-                {renderSortControls(modalSort, setModalSort)}
-                <div className="grid grid-cols-1 gap-2 mt-3">
-                  {sortItems(options, modalSort).map((opt) => (
-                    <button 
-                      key={opt.id} 
-                      onClick={() => setSelection(opt.id)} 
-                      className={`text-left p-3 rounded-lg border transition-all relative ${
-                        currentSelection === opt.id 
-                          ? `${color === 'purple' ? 'bg-purple-600/20 border-purple-500 ring-2 ring-purple-500/50' : 
-                              color === 'green' ? 'bg-green-600/20 border-green-500 ring-2 ring-green-500/50' : 
-                              'bg-orange-600/20 border-orange-500 ring-2 ring-orange-500/50'} text-white` 
-                          : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600 hover:bg-neutral-800/50'
-                      }`}
-                    >
-                      {opt.recommended && (
-                        <span className="absolute -top-2 -right-2 text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">★ TOP</span>
-                      )}
-                      <div className="font-bold text-sm mb-0.5">{opt.name}</div>
-                      <div className="text-[11px] opacity-60">{opt.description}</div>
-                    </button>
+                <h4 className="text-white font-bold text-xl mb-2">Content Loss Warning</h4>
+                <p className="text-neutral-400 text-sm mb-6 max-w-md">
+                  Switching to <span className="text-white font-bold">{HERO_OPTIONS.find(o => o.id === pendingVariant)?.name}</span> will hide the following fields because they are not supported by this style:
+                </p>
+                <div className="bg-neutral-900 rounded-lg p-4 w-full max-w-sm mb-6 border border-neutral-800">
+                  {warningFields.map(field => (
+                    <div key={field} className="text-sm text-red-400 font-mono py-2 border-b border-neutral-800 last:border-0">{field}</div>
                   ))}
                 </div>
+                <div className="flex gap-3">
+                  <button onClick={() => { setWarningFields([]); setPendingVariant(null); }} className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg font-bold text-sm transition-colors">Cancel</button>
+                  <button onClick={confirmVariantChange} className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-sm transition-colors">Confirm Change</button>
+                </div>
+              </div>
+            )}
+            
+            {/* Left: Style Options */}
+            <div className="w-80 border-r border-neutral-800 overflow-y-auto custom-scrollbar p-6">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <LayoutTemplate size={14} /> Style Matrix
+              </h4>
+              {renderSortControls(modalSort, setModalSort)}
+              <div className="grid grid-cols-2 gap-2">
+                {sortItems(options, modalSort).map((opt) => (
+                  <button 
+                    key={opt.id} 
+                    onClick={() => setSelection(opt.id)} 
+                    className={`text-left p-3 rounded-lg border transition-all relative ${currentSelection === opt.id ? `${colorClasses[color]} text-white` : 'bg-neutral-800/50 border-neutral-700 text-neutral-400 hover:border-neutral-500'}`}
+                  >
+                    {opt.recommended && (
+                      <span className="absolute -top-2 -right-2 text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">★ TOP</span>
+                    )}
+                    <div className="font-bold text-xs mb-1 truncate">{opt.name}</div>
+                    <div className="text-[10px] opacity-60 truncate">{opt.description}</div>
+                  </button>
+                ))}
               </div>
             </div>
             
-            {/* Right Panel - Live Preview */}
-            <div className="flex-1 bg-neutral-800 flex flex-col">
-              <div className="p-3 border-b border-neutral-700 bg-neutral-900 flex items-center justify-between">
-                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Live Preview</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                  <span className="text-[10px] text-neutral-500">Updates instantly</span>
+            {/* Right: Live Preview */}
+            <div className="flex-1 bg-neutral-950 overflow-hidden flex flex-col">
+              <div className="p-3 bg-neutral-900/50 border-b border-neutral-800 flex items-center justify-between">
+                <span className="text-xs text-neutral-500 font-medium">Live Preview</span>
+                <div className="flex items-center gap-1 text-xs text-neutral-600">
+                  <Eye size={12} />
+                  {options.find(o => o.id === currentSelection)?.name}
                 </div>
               </div>
-              <div className="flex-1 overflow-auto p-6 bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px]">
-                <div className="bg-white rounded-lg shadow-2xl overflow-hidden border border-neutral-600 min-h-full">
-                  {getPreviewComponent()}
+              <div className="flex-1 overflow-auto p-4 flex items-center justify-center">
+                <div className="bg-white rounded-lg overflow-hidden shadow-2xl w-full max-w-2xl">
+                  {systemModalType === 'hero' && (
+                    <div className="h-64 bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center">
+                      <div className="text-center p-8">
+                        <div className="text-2xl font-bold text-neutral-700 mb-2">Hero Preview</div>
+                        <div className="text-neutral-500 text-sm">{options.find(o => o.id === currentSelection)?.name} Style</div>
+                      </div>
+                    </div>
+                  )}
+                  {systemModalType === 'grid' && (
+                    <div className="p-6 bg-neutral-50">
+                      <div className="grid grid-cols-3 gap-4">
+                        {[1,2,3].map(i => (
+                          <div key={i} className="bg-white rounded-lg p-4 shadow-sm border">
+                            <div className="aspect-square bg-neutral-200 rounded mb-3"></div>
+                            <div className="h-3 bg-neutral-200 rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-neutral-100 rounded w-1/2"></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {systemModalType === 'footer' && (
+                    <div className="bg-neutral-900 text-white p-8">
+                      <div className="text-center">
+                        <div className="text-lg font-bold mb-2">Footer Preview</div>
+                        <div className="text-neutral-400 text-sm">{options.find(o => o.id === currentSelection)?.name} Style</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Modal Footer */}
-          <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-between items-center shrink-0">
-            <p className="text-xs text-neutral-500">
-              Current: <span className="text-white font-medium">{options.find(o => o.id === currentSelection)?.name || 'Default'}</span>
-            </p>
-            <button 
-              onClick={() => { setIsSystemModalOpen(false); setWarningFields([]); setPendingVariant(null); }}
-              className={`px-6 py-2 rounded-lg font-bold text-sm transition-colors text-white ${
-                color === 'purple' ? 'bg-purple-600 hover:bg-purple-500' : 
-                color === 'green' ? 'bg-green-600 hover:bg-green-500' : 
-                'bg-orange-600 hover:bg-orange-500'
-              }`}
-            >
+          {/* Footer */}
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0 flex justify-end gap-3">
+            <button onClick={() => { setIsSystemModalOpen(false); setWarningFields([]); setPendingVariant(null); }} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-colors">
               Done
             </button>
           </div>
@@ -1757,157 +1408,153 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       </div>
     );
   };
-  // --- INTERFACE MODAL (Full-screen) ---
+  // ... rest of the file
   const renderInterfaceModal = () => {
     if (!isInterfaceModalOpen) return null;
     
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
-          {/* Modal Header */}
-          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+          {/* Header */}
+          <div className="p-4 border-b border-neutral-800 bg-neutral-950 shrink-0 flex justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-600/20 rounded-lg">
-                <Monitor size={20} className="text-purple-400" />
+                <Monitor size={20} className="text-purple-500" />
               </div>
               <div>
                 <h3 className="text-white font-bold">Site Settings</h3>
-                <p className="text-xs text-neutral-500">Brand & Global Styles</p>
+                <p className="text-xs text-neutral-500">Brand Identity & Global Styles</p>
               </div>
             </div>
-            <button 
-              onClick={() => setIsInterfaceModalOpen(false)} 
-              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
-            >
+            <button onClick={() => setIsInterfaceModalOpen(false)} className="p-2 hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-white transition-colors">
               <X size={20} />
             </button>
           </div>
           
-          {/* Modal Content */}
+          {/* Content - 2-Column Grid */}
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Site Identity Section */}
-              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700">
-                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                  <Star size={16} className="text-yellow-500" /> Site Identity
-                </h4>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs font-bold text-neutral-400 mb-2 block">Store Name</label>
-                    <input
-                      type="text"
-                      value={config.name || ''}
-                      onChange={(e) => onConfigChange({ ...config, name: e.target.value })}
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-purple-500 outline-none"
-                      placeholder="Your Store Name"
-                    />
+            <div className="grid grid-cols-2 gap-6">
+              {/* Left Column */}
+              <div className="space-y-6">
+                {/* Site Identity Section */}
+                <div>
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Star size={14} /> Site Identity
+                  </h4>
+                  <div className="space-y-4 bg-neutral-800/50 p-4 rounded-xl border border-neutral-700">
+                    <div>
+                      <label className="text-xs font-bold text-neutral-400 mb-2 block">Store Name</label>
+                      <input
+                        type="text"
+                        value={config.name || ''}
+                        onChange={(e) => onConfigChange({ ...config, name: e.target.value })}
+                        className="w-full bg-black border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-purple-500 outline-none"
+                        placeholder="Your Store Name"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-neutral-400 mb-2 block">Tagline</label>
+                      <input
+                        type="text"
+                        value={config.tagline || ''}
+                        onChange={(e) => onConfigChange({ ...config, tagline: e.target.value })}
+                        className="w-full bg-black border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-purple-500 outline-none"
+                        placeholder="A short description of your business"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-xs font-bold text-neutral-400 mb-2 block">Tagline</label>
-                    <input
-                      type="text"
-                      value={config.tagline || ''}
-                      onChange={(e) => onConfigChange({ ...config, tagline: e.target.value })}
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-purple-500 outline-none"
-                      placeholder="A short description of your business"
-                    />
+                </div>
+                
+                {/* Brand Colors Section */}
+                <div>
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Palette size={14} /> Brand Colors
+                  </h4>
+                  <div className="space-y-4 bg-neutral-800/50 p-4 rounded-xl border border-neutral-700">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-neutral-300">Primary Color</span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={config.primaryColor || '#3B82F6'}
+                          onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
+                          className="w-10 h-10 rounded-lg cursor-pointer border-2 border-neutral-600 bg-transparent"
+                        />
+                        <input
+                          type="text"
+                          value={config.primaryColor || '#3B82F6'}
+                          onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
+                          className="w-24 bg-black border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-400 font-mono"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-neutral-300">Accent Color</span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={config.accentColor || '#8B5CF6'}
+                          onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
+                          className="w-10 h-10 rounded-lg cursor-pointer border-2 border-neutral-600 bg-transparent"
+                        />
+                        <input
+                          type="text"
+                          value={config.accentColor || '#8B5CF6'}
+                          onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
+                          className="w-24 bg-black border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-400 font-mono"
+                        />
+                      </div>
+                    </div>
+                    {/* AI Color Suggestions */}
+                    <button 
+                      onClick={() => {
+                        const palettes = [
+                          { primary: '#3B82F6', accent: '#8B5CF6' },
+                          { primary: '#10B981', accent: '#14B8A6' },
+                          { primary: '#F59E0B', accent: '#EF4444' },
+                          { primary: '#EC4899', accent: '#8B5CF6' },
+                          { primary: '#000000', accent: '#EAB308' },
+                        ];
+                        const random = palettes[Math.floor(Math.random() * palettes.length)];
+                        onConfigChange({ ...config, primaryColor: random.primary, accentColor: random.accent });
+                        showToast('New color palette applied!', 'success');
+                      }}
+                      className="w-full py-2.5 flex items-center justify-center gap-2 bg-purple-900/30 hover:bg-purple-900/50 border border-purple-500/30 rounded-lg text-purple-400 text-sm font-bold transition-colors"
+                    >
+                      <Sparkles size={16} />
+                      Generate AI Color Palette
+                    </button>
                   </div>
                 </div>
               </div>
               
-              {/* Brand Colors Section */}
-              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700">
-                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                  <Palette size={16} className="text-pink-500" /> Brand Colors
-                </h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-neutral-300">Primary Color</span>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={config.primaryColor || '#3B82F6'}
-                        onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
-                        className="w-10 h-10 rounded-lg cursor-pointer border-2 border-neutral-600 bg-transparent"
-                      />
-                      <input
-                        type="text"
-                        value={config.primaryColor || '#3B82F6'}
-                        onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
-                        className="w-24 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-300 font-mono"
-                      />
-                    </div>
+              {/* Right Column */}
+              <div className="space-y-6">
+                {/* Scrollbar Style Section */}
+                <div>
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <ArrowDownAZ size={14} /> Scrollbar Style
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1 bg-neutral-800/50 p-4 rounded-xl border border-neutral-700">
+                    {SCROLLBAR_OPTIONS.map((opt) => (
+                      <button 
+                        key={opt.id} 
+                        onClick={() => onConfigChange({ ...config, scrollbarStyle: opt.id as ScrollbarStyleId })} 
+                        className={`text-left p-3 rounded-lg border transition-all ${config.scrollbarStyle === opt.id ? 'bg-purple-600/20 border-purple-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}
+                      >
+                        <div className="font-bold text-xs mb-1">{opt.name}</div>
+                        <div className="text-[10px] opacity-60">{opt.description}</div>
+                      </button>
+                    ))}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-neutral-300">Accent Color</span>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={config.accentColor || '#8B5CF6'}
-                        onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
-                        className="w-10 h-10 rounded-lg cursor-pointer border-2 border-neutral-600 bg-transparent"
-                      />
-                      <input
-                        type="text"
-                        value={config.accentColor || '#8B5CF6'}
-                        onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
-                        className="w-24 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-300 font-mono"
-                      />
-                    </div>
-                  </div>
-                  {/* AI Color Suggestions */}
-                  <button 
-                    onClick={() => {
-                      const palettes = [
-                        { primary: '#3B82F6', accent: '#8B5CF6' },
-                        { primary: '#10B981', accent: '#14B8A6' },
-                        { primary: '#F59E0B', accent: '#EF4444' },
-                        { primary: '#EC4899', accent: '#8B5CF6' },
-                        { primary: '#000000', accent: '#EAB308' },
-                      ];
-                      const random = palettes[Math.floor(Math.random() * palettes.length)];
-                      onConfigChange({ ...config, primaryColor: random.primary, accentColor: random.accent });
-                      showToast('New color palette applied!', 'success');
-                    }}
-                    className="w-full py-2.5 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 hover:from-purple-600/30 hover:to-pink-600/30 border border-purple-500/30 rounded-lg text-purple-300 text-sm font-bold transition-colors"
-                  >
-                    <Sparkles size={16} />
-                    Generate AI Color Palette
-                  </button>
-                </div>
-              </div>
-
-              {/* Scrollbar Style Section */}
-              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700 md:col-span-2">
-                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                  <ArrowDownAZ size={16} className="text-blue-500" /> Scrollbar Style
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {SCROLLBAR_OPTIONS.slice(0, 8).map((opt) => (
-                    <button 
-                      key={opt.id} 
-                      onClick={() => onConfigChange({ ...config, scrollbarStyle: opt.id as ScrollbarStyleId })} 
-                      className={`text-left p-3 rounded-lg border transition-all ${
-                        config.scrollbarStyle === opt.id 
-                          ? 'bg-blue-600/20 border-blue-500 text-white ring-2 ring-blue-500/50' 
-                          : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-500'
-                      }`}
-                    >
-                      <div className="font-bold text-sm mb-0.5">{opt.name}</div>
-                      <div className="text-[10px] opacity-60">{opt.description}</div>
-                    </button>
-                  ))}
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Modal Footer */}
-          <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-end shrink-0">
-            <button 
-              onClick={() => setIsInterfaceModalOpen(false)}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold text-sm transition-colors"
-            >
+          {/* Footer */}
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0 flex justify-end gap-3">
+            <button onClick={() => setIsInterfaceModalOpen(false)} className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-sm transition-colors">
               Done
             </button>
           </div>
@@ -1921,48 +1568,37 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
-          {/* Modal Header */}
-          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+          {/* Header */}
+          <div className="p-4 border-b border-neutral-800 bg-neutral-950 shrink-0 flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-cyan-600/20 rounded-lg">
-                <Wand2 size={20} className="text-cyan-400" />
+              <div className="p-2 bg-blue-600/20 rounded-lg">
+                <Wand2 size={20} className="text-blue-500" />
               </div>
               <div>
                 <h3 className="text-white font-bold">Block Architect</h3>
                 <p className="text-xs text-neutral-500">Visual Design Engine</p>
               </div>
             </div>
-            <button 
-              onClick={() => setIsArchitectOpen(false)} 
-              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
-            >
+            <button onClick={() => setIsArchitectOpen(false)} className="p-2 hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-white transition-colors">
               <X size={20} />
             </button>
           </div>
           
-          {/* Modal Content - Split View */}
+          {/* Content - Split View */}
           <div className="flex-1 flex overflow-hidden">
-            {/* Left Panel - Controls */}
-            <div className="w-80 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 overflow-y-auto custom-scrollbar p-4 space-y-6">
+            {/* Left: Controls */}
+            <div className="w-80 border-r border-neutral-800 overflow-y-auto custom-scrollbar p-6 space-y-6">
               {/* Layout Matrix */}
               <div>
-                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <LayoutTemplate size={14} /> Layout
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <LayoutTemplate size={14} /> Layout Matrix
                 </h4>
                 <div className="grid grid-cols-2 gap-2">
                   {['hero', 'split', 'card', 'cover'].map(l => (
-                    <button 
-                      key={l} 
-                      onClick={() => setArchitectConfig({ ...architectConfig, layout: l })} 
-                      className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${
-                        architectConfig.layout === l 
-                          ? 'bg-cyan-600 border-cyan-500 text-white' 
-                          : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-700'
-                      }`}
-                    >
-                      <BoxSelect size={18} />
-                      <span className="text-[10px] font-bold uppercase">{l}</span>
+                    <button key={l} onClick={() => setArchitectConfig({ ...architectConfig, layout: l })} className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${architectConfig.layout === l ? 'bg-blue-600 border-blue-500 text-white' : 'bg-neutral-800/50 border-neutral-700 text-neutral-400 hover:border-neutral-500'}`}>
+                      <BoxSelect size={20} />
+                      <span className="text-xs font-bold uppercase">{l}</span>
                     </button>
                   ))}
                 </div>
@@ -1970,20 +1606,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               
               {/* Content Control */}
               <div>
-                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <Type size={14} /> Content
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Type size={14} /> Content Control
                 </h4>
                 <div className="space-y-3">
                   <input 
                     value={architectConfig.heading} 
                     onChange={(e) => setArchitectConfig({ ...architectConfig, heading: e.target.value })} 
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-white text-sm font-bold focus:border-cyan-500 outline-none" 
+                    className="w-full bg-black border border-neutral-700 rounded-lg p-3 text-white text-sm font-bold focus:border-blue-500 outline-none" 
                     placeholder="Heading..." 
                   />
                   <textarea 
                     value={architectConfig.body} 
                     onChange={(e) => setArchitectConfig({ ...architectConfig, body: e.target.value })} 
-                    className="w-full h-20 bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-neutral-400 text-xs focus:border-cyan-500 outline-none resize-none" 
+                    className="w-full h-24 bg-black border border-neutral-700 rounded-lg p-3 text-neutral-300 text-sm focus:border-blue-500 outline-none resize-none" 
                     placeholder="Body text..." 
                   />
                 </div>
@@ -1991,20 +1627,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               
               {/* Visual Assets */}
               <div>
-                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <ImageIcon size={14} /> Image
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <ImageIcon size={14} /> Visual Assets
                 </h4>
-                <div className="relative aspect-video bg-neutral-900 rounded-lg overflow-hidden border border-neutral-800">
-                  <img src={architectConfig.image} className="w-full h-full object-cover opacity-50" />
-                  <button 
-                    onClick={simulateImageGen} 
-                    className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 hover:bg-black/40 transition-colors"
-                  >
+                <div className="relative aspect-video bg-neutral-800 rounded-lg overflow-hidden border border-neutral-700">
+                  <img src={architectConfig.image} className="w-full h-full object-cover opacity-60" />
+                  <button onClick={simulateImageGen} className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 hover:bg-black/40 transition-colors">
                     {isGeneratingImage ? (
                       <Loader2 className="animate-spin text-white" />
                     ) : (
                       <>
-                        <Sparkles size={16} className="text-cyan-400" />
+                        <Sparkles size={16} className="text-blue-400" />
                         <span className="text-xs font-bold text-white">Generate with AI</span>
                       </>
                     )}
@@ -2014,30 +1647,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               
               {/* Atmosphere */}
               <div>
-                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <Sliders size={14} /> Effects
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Sliders size={14} /> Atmosphere
                 </h4>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-neutral-900 rounded-lg border border-neutral-800">
-                    <span className="text-xs text-neutral-400">Glass Effect</span>
-                    <button 
-                      onClick={() => setArchitectConfig(prev => ({ ...prev, glass: !prev.glass }))} 
-                      className={`w-10 h-5 rounded-full transition-colors relative ${architectConfig.glass ? 'bg-cyan-600' : 'bg-neutral-700'}`}
-                    >
-                      <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${architectConfig.glass ? 'translate-x-5' : ''}`}></div>
+                  <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg border border-neutral-700">
+                    <span className="text-sm text-neutral-300">Glassmorphism</span>
+                    <button onClick={() => setArchitectConfig(prev => ({ ...prev, glass: !prev.glass }))} className={`w-10 h-5 rounded-full transition-colors relative ${architectConfig.glass ? 'bg-blue-600' : 'bg-neutral-700'}`}>
+                      <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${architectConfig.glass ? 'translate-x-5' : ''}`}></div>
                     </button>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {['clean', 'dark', 'noise'].map(m => (
-                      <button 
-                        key={m} 
-                        onClick={() => setArchitectConfig(prev => ({ ...prev, bgMode: m }))} 
-                        className={`py-2 text-[10px] uppercase font-bold rounded-lg border ${
-                          architectConfig.bgMode === m 
-                            ? 'bg-neutral-800 border-cyan-500 text-white' 
-                            : 'bg-neutral-900 border-neutral-800 text-neutral-500 hover:border-neutral-700'
-                        }`}
-                      >
+                      <button key={m} onClick={() => setArchitectConfig(prev => ({ ...prev, bgMode: m }))} className={`py-2.5 text-xs uppercase font-bold rounded-lg border transition-all ${architectConfig.bgMode === m ? 'bg-blue-600 border-blue-500 text-white' : 'bg-neutral-800/50 border-neutral-700 text-neutral-400 hover:border-neutral-500'}`}>
                         {m}
                       </button>
                     ))}
@@ -2046,451 +1668,49 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
             </div>
             
-            {/* Right Panel - Live Preview */}
-            <div className="flex-1 bg-neutral-800 flex flex-col">
-              <div className="p-3 border-b border-neutral-700 bg-neutral-900 flex items-center justify-between">
-                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Live Preview</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
-                  <span className="text-[10px] text-neutral-500">Real-time</span>
+            {/* Right: Live Preview */}
+            <div className="flex-1 bg-neutral-950 overflow-hidden flex flex-col">
+              <div className="p-3 bg-neutral-900/50 border-b border-neutral-800 flex items-center justify-between">
+                <span className="text-xs text-neutral-500 font-medium">Live Preview</span>
+                <div className="flex items-center gap-1 text-xs text-neutral-600">
+                  <Eye size={12} />
+                  {architectConfig.layout} layout
                 </div>
               </div>
-              <div className="flex-1 overflow-auto p-6 bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px] flex items-center justify-center">
-                <div className={`w-full max-w-3xl bg-white rounded-lg shadow-2xl overflow-hidden border border-neutral-600 min-h-[300px] ${architectConfig.glass ? 'backdrop-blur-xl bg-white/80' : ''}`}>
-                  {/* Preview based on layout */}
-                  <div className={`p-12 ${architectConfig.bgMode === 'dark' ? 'bg-neutral-900 text-white' : architectConfig.bgMode === 'noise' ? 'bg-neutral-100' : 'bg-white'}`}>
-                    {architectConfig.layout === 'hero' && (
-                      <div className="text-center space-y-4">
-                        <h2 className="text-4xl font-bold">{architectConfig.heading || 'Your Headline'}</h2>
-                        <p className={`text-lg ${architectConfig.bgMode === 'dark' ? 'text-neutral-300' : 'text-neutral-600'}`}>
-                          {architectConfig.body || 'Your supporting text goes here'}
-                        </p>
-                      </div>
-                    )}
-                    {architectConfig.layout === 'split' && (
-                      <div className="flex gap-8 items-center">
-                        <div className="flex-1 space-y-4">
-                          <h2 className="text-3xl font-bold">{architectConfig.heading || 'Your Headline'}</h2>
-                          <p className={architectConfig.bgMode === 'dark' ? 'text-neutral-300' : 'text-neutral-600'}>
-                            {architectConfig.body || 'Your supporting text goes here'}
-                          </p>
-                        </div>
-                        <div className="w-48 h-48 bg-neutral-200 rounded-lg overflow-hidden">
-                          <img src={architectConfig.image} className="w-full h-full object-cover" />
-                        </div>
-                      </div>
-                    )}
-                    {architectConfig.layout === 'card' && (
-                      <div className="max-w-md mx-auto bg-neutral-50 rounded-xl p-6 shadow-lg">
-                        <h2 className="text-2xl font-bold mb-2">{architectConfig.heading || 'Your Headline'}</h2>
-                        <p className="text-neutral-600">{architectConfig.body || 'Your supporting text goes here'}</p>
-                      </div>
-                    )}
-                    {architectConfig.layout === 'cover' && (
-                      <div className="relative h-64 rounded-xl overflow-hidden">
-                        <img src={architectConfig.image} className="absolute inset-0 w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-center p-6">
-                          <div>
-                            <h2 className="text-3xl font-bold text-white mb-2">{architectConfig.heading || 'Your Headline'}</h2>
-                            <p className="text-neutral-200">{architectConfig.body || 'Your supporting text'}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+              <div className="flex-1 overflow-auto p-6 flex items-center justify-center">
+                <div 
+                  className="bg-white rounded-xl overflow-hidden shadow-2xl w-full max-w-2xl"
+                  dangerouslySetInnerHTML={{ __html: constructBlockHTML(architectConfig) }}
+                />
               </div>
             </div>
           </div>
           
-          {/* Modal Footer */}
-          <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-between items-center shrink-0">
-            <p className="text-xs text-neutral-500">
-              Layout: <span className="text-white font-medium capitalize">{architectConfig.layout}</span>
-            </p>
-            <div className="flex gap-2">
-              <button 
-                onClick={() => setIsArchitectOpen(false)}
-                className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg font-bold text-sm transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={() => setIsArchitectOpen(false)}
-                className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-bold text-sm transition-colors"
-              >
-                Apply
-              </button>
-            </div>
+          {/* Footer */}
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0 flex justify-between">
+            <button onClick={() => setIsArchitectOpen(false)} className="px-6 py-2.5 text-neutral-400 hover:text-white font-medium text-sm transition-colors">
+              Cancel
+            </button>
+            <button 
+              onClick={() => {
+                // Apply the block
+                if (selectedBlockId && activePage) {
+                  const updatedBlocks = activePage.blocks.map(b => 
+                    b.id === selectedBlockId ? { ...b, content: constructBlockHTML(architectConfig) } : b
+                  );
+                  onUpdatePage(activePageId, { blocks: updatedBlocks });
+                  showToast('Block updated!', 'success');
+                }
+                setIsArchitectOpen(false);
+              }} 
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-colors"
+            >
+              Apply Changes
+            </button>
           </div>
         </div>
       </div>
     );
-  };
-
-  // AI Website Builder Questions
-  const AI_WIZARD_QUESTIONS = [
-    {
-      id: 'business_type',
-      question: "What type of business is this website for?",
-      options: [
-        { value: 'ecommerce', label: '🛍️ Online Store', description: 'Sell products online' },
-        { value: 'portfolio', label: '🎨 Portfolio', description: 'Showcase your work' },
-        { value: 'service', label: '💼 Service Business', description: 'Offer services' },
-        { value: 'restaurant', label: '🍽️ Restaurant/Food', description: 'Food & dining' },
-        { value: 'blog', label: '📝 Blog/Content', description: 'Share articles & content' },
-        { value: 'agency', label: '🏢 Agency', description: 'Marketing/Creative agency' },
-      ]
-    },
-    {
-      id: 'style_preference',
-      question: "What style best matches your brand?",
-      options: [
-        { value: 'minimal', label: '✨ Minimal', description: 'Clean and simple' },
-        { value: 'bold', label: '💪 Bold', description: 'Strong and impactful' },
-        { value: 'playful', label: '🎉 Playful', description: 'Fun and energetic' },
-        { value: 'luxury', label: '💎 Luxury', description: 'Premium and elegant' },
-        { value: 'modern', label: '🚀 Modern', description: 'Contemporary and sleek' },
-        { value: 'cozy', label: '🏡 Cozy', description: 'Warm and inviting' },
-      ]
-    },
-    {
-      id: 'primary_goal',
-      question: "What's the main goal of your website?",
-      options: [
-        { value: 'sell', label: '💰 Sell Products', description: 'Drive purchases' },
-        { value: 'leads', label: '📧 Get Leads', description: 'Collect contact info' },
-        { value: 'showcase', label: '🖼️ Showcase Work', description: 'Display portfolio' },
-        { value: 'inform', label: '📚 Inform Visitors', description: 'Share information' },
-        { value: 'bookings', label: '📅 Get Bookings', description: 'Schedule appointments' },
-        { value: 'brand', label: '🏷️ Build Brand', description: 'Establish presence' },
-      ]
-    },
-    {
-      id: 'color_preference',
-      question: "Choose your primary brand color:",
-      options: [
-        { value: '#3B82F6', label: '💙 Blue', description: 'Trust & professionalism' },
-        { value: '#10B981', label: '💚 Green', description: 'Growth & nature' },
-        { value: '#8B5CF6', label: '💜 Purple', description: 'Creativity & luxury' },
-        { value: '#EF4444', label: '❤️ Red', description: 'Energy & passion' },
-        { value: '#F59E0B', label: '🧡 Orange', description: 'Friendly & optimistic' },
-        { value: '#000000', label: '🖤 Black', description: 'Sophisticated & bold' },
-      ]
-    },
-    {
-      id: 'business_name',
-      question: "What's your business name?",
-      type: 'text',
-      placeholder: 'Enter your business name...'
-    }
-  ];
-
-  // Generate AI Website based on answers
-  const generateAIWebsite = async () => {
-    setWizardMode('ai-generating');
-    
-    const { business_type, style_preference, primary_goal, color_preference, business_name } = aiWizardAnswers;
-    let sectionsToAdd: PageBlock[] = [];
-
-    try {
-      if (genAI) {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const prompt = `You are an expert website builder. Generate a JSON array of section configurations for a new website.
-        Business Name: ${business_name}
-        Business Type: ${business_type}
-        Style Preference: ${style_preference}
-        Primary Goal: ${primary_goal}
-        
-        Return a JSON array of objects with this structure:
-        {
-          "type": "system-hero" | "system-collection" | "system-gallery" | "system-social" | "system-contact" | "system-email",
-          "variant": "string",
-          "data": { ...relevant fields for that section... }
-        }
-        
-        Include at least 5 sections: Hero, Features/Collection, Social Proof, Contact, and Email Signup.
-        Make the content specific to the business name and type.
-        Just return the JSON array, no markdown formatting.`;
-
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text().trim();
-        
-        try {
-          // Clean up potential markdown formatting if AI included it
-          const jsonStr = text.replace(/```json\n?|\n?```/g, '');
-          const generatedSections = JSON.parse(jsonStr);
-          sectionsToAdd = generatedSections.map((s: any, i: number) => ({
-            ...s,
-            id: `${s.type}-${Date.now()}-${i}`
-          }));
-        } catch (e) {
-          console.error('Failed to parse AI generated sections, falling back to template', e);
-        }
-      }
-
-      // Fallback or default logic if AI failed or not available
-      if (sectionsToAdd.length === 0) {
-    const heroTexts: Record<string, { heading: string, subheading: string }> = {
-      ecommerce: { heading: `Welcome to ${business_name || 'Our Store'}`, subheading: 'Discover our curated collection of premium products.' },
-      portfolio: { heading: `${business_name || 'Creative Studio'}`, subheading: 'Crafting beautiful digital experiences since day one.' },
-      service: { heading: `${business_name || 'Expert Services'}`, subheading: 'Professional solutions tailored to your needs.' },
-      restaurant: { heading: `${business_name || 'Delicious Eats'}`, subheading: 'Fresh ingredients, unforgettable flavors.' },
-      blog: { heading: `${business_name || 'The Blog'}`, subheading: 'Stories, insights, and ideas worth sharing.' },
-      agency: { heading: `${business_name || 'Creative Agency'}`, subheading: 'We turn bold ideas into remarkable results.' },
-    };
-    
-    const heroContent = heroTexts[business_type] || heroTexts.ecommerce;
-    
-    sectionsToAdd.push({
-      id: `hero-${Date.now()}`,
-      type: 'system-hero',
-      variant: style_preference === 'minimal' ? 'centered-gradient' : style_preference === 'bold' ? 'impact' : 'editorial',
-      data: {
-        heading: heroContent.heading,
-        subheading: heroContent.subheading,
-        buttonText: primary_goal === 'sell' ? 'Shop Now' : primary_goal === 'leads' ? 'Get Started' : 'Learn More',
-        buttonLink: primary_goal === 'sell' ? '/shop' : '#contact',
-      }
-    });
-    
-    // Add sections based on business type
-    if (business_type === 'ecommerce' || primary_goal === 'sell') {
-      sectionsToAdd.push({
-        id: `products-${Date.now()}`,
-        type: 'system-collection',
-        variant: 'minimal-grid',
-        data: {
-          heading: 'Featured Products',
-          subheading: 'Our most popular items',
-          productCount: 8,
-          gridColumns: '4',
-        }
-      });
-    }
-    
-    if (business_type === 'portfolio' || primary_goal === 'showcase') {
-      sectionsToAdd.push({
-        id: `gallery-${Date.now()}`,
-        type: 'system-gallery',
-        variant: 'masonry',
-        data: {
-          heading: 'Our Work',
-          subheading: 'A selection of our best projects',
-        }
-      });
-    }
-    
-    // Add social proof section
-    sectionsToAdd.push({
-      id: `social-${Date.now()}`,
-      type: 'system-social',
-      variant: 'testimonial-cards',
-      data: {
-        heading: 'What People Say',
-        subheading: 'Trusted by customers worldwide',
-      }
-    });
-    
-    // Add contact section for lead generation
-    if (primary_goal === 'leads' || primary_goal === 'bookings') {
-      sectionsToAdd.push({
-        id: `contact-${Date.now()}`,
-        type: 'system-contact',
-        variant: 'split',
-        data: {
-          heading: 'Get in Touch',
-          subheading: 'We\'d love to hear from you',
-          submitButtonText: 'Send Message',
-          successMessage: 'Thanks! We\'ll be in touch soon.',
-        }
-      });
-    }
-    
-    // Add email signup
-    sectionsToAdd.push({
-      id: `email-${Date.now()}`,
-      type: 'system-email',
-      variant: 'centered',
-      data: {
-        heading: 'Stay Updated',
-        subheading: 'Subscribe to our newsletter for the latest news and offers.',
-        buttonText: 'Subscribe',
-      }
-    });
-    
-    // Update the page with generated sections
-    onUpdatePage(activePageId, { blocks: sectionsToAdd });
-    
-    // Update store config with color preference
-    if (color_preference) {
-      onConfigChange({ ...config, primaryColor: color_preference });
-    }
-    if (business_name) {
-      onConfigChange({ ...config, name: business_name });
-    }
-    
-    // Close wizard
-    setShowWelcomeWizard(false);
-    setHasSeenWelcome(true);
-    localStorage.setItem('evolv_seen_welcome', 'true');
-    setWizardMode('select');
-    setAiWizardStep(0);
-    setAiWizardAnswers({});
-    
-    showToast('🎉 Your website has been generated! Customize each section as needed.', 'success');
-    
-    // Show tutorial after generation
-    if (!hasSeenTutorial) {
-      setTimeout(() => setShowTutorial(true), 500);
-    }
-    }
-    } catch (err) {
-      console.error('Error generating AI website:', err);
-      showToast('Failed to generate website. Please try again.', 'error');
-    } finally {
-      setWizardMode('select');
-    }
-  };
-
-  // Page Templates
-  const PAGE_TEMPLATES = [
-    {
-      id: 'modern-store',
-      name: 'Modern E-commerce',
-      description: 'Clean product-focused design',
-      preview: '🛍️',
-      sections: ['hero', 'collection', 'social', 'email']
-    },
-    {
-      id: 'minimal-portfolio',
-      name: 'Minimal Portfolio',
-      description: 'Showcase your work elegantly',
-      preview: '🎨',
-      sections: ['hero', 'gallery', 'contact']
-    },
-    {
-      id: 'agency-landing',
-      name: 'Agency Landing',
-      description: 'Bold and professional',
-      preview: '🏢',
-      sections: ['hero', 'layout', 'social', 'contact']
-    },
-    {
-      id: 'blog-home',
-      name: 'Blog Homepage',
-      description: 'Content-first design',
-      preview: '📝',
-      sections: ['hero', 'blog', 'email']
-    },
-    {
-      id: 'restaurant',
-      name: 'Restaurant',
-      description: 'Showcase your menu',
-      preview: '🍽️',
-      sections: ['hero', 'gallery', 'contact']
-    },
-    {
-      id: 'service-business',
-      name: 'Service Business',
-      description: 'Generate leads and bookings',
-      preview: '💼',
-      sections: ['hero', 'layout', 'collapsible', 'contact']
-    }
-  ];
-
-  const applyTemplate = (templateId: string) => {
-    const template = PAGE_TEMPLATES.find(t => t.id === templateId);
-    if (!template) return;
-    
-    const sectionsToAdd: PageBlock[] = [];
-    
-    template.sections.forEach((sectionType, index) => {
-      const sectionId = `${sectionType}-${Date.now()}-${index}`;
-      
-      switch (sectionType) {
-        case 'hero':
-          sectionsToAdd.push({
-            id: sectionId,
-            type: 'system-hero',
-            variant: 'impact',
-            data: { heading: 'Your Headline Here', subheading: 'Your supporting text goes here.', buttonText: 'Get Started' }
-          });
-          break;
-        case 'collection':
-          sectionsToAdd.push({
-            id: sectionId,
-            type: 'system-collection',
-            variant: 'minimal-grid',
-            data: { heading: 'Featured Products', productCount: 8 }
-          });
-          break;
-        case 'gallery':
-          sectionsToAdd.push({
-            id: sectionId,
-            type: 'system-gallery',
-            variant: 'masonry',
-            data: { heading: 'Our Gallery' }
-          });
-          break;
-        case 'contact':
-          sectionsToAdd.push({
-            id: sectionId,
-            type: 'system-contact',
-            variant: 'split',
-            data: { heading: 'Contact Us', submitButtonText: 'Send Message' }
-          });
-          break;
-        case 'social':
-          sectionsToAdd.push({
-            id: sectionId,
-            type: 'system-social',
-            variant: 'testimonial-cards',
-            data: { heading: 'What People Say' }
-          });
-          break;
-        case 'email':
-          sectionsToAdd.push({
-            id: sectionId,
-            type: 'system-email',
-            variant: 'centered',
-            data: { heading: 'Stay Updated', buttonText: 'Subscribe' }
-          });
-          break;
-        case 'blog':
-          sectionsToAdd.push({
-            id: sectionId,
-            type: 'system-blog',
-            variant: 'grid',
-            data: { heading: 'Latest Articles', postsToShow: 6 }
-          });
-          break;
-        case 'layout':
-          sectionsToAdd.push({
-            id: sectionId,
-            type: 'system-layout',
-            variant: 'two-column',
-            data: { heading: 'Why Choose Us', subheading: 'We deliver excellence in everything we do.' }
-          });
-          break;
-        case 'collapsible':
-          sectionsToAdd.push({
-            id: sectionId,
-            type: 'system-collapsible',
-            variant: 'faq',
-            data: { heading: 'Frequently Asked Questions' }
-          });
-          break;
-      }
-    });
-    
-    onUpdatePage(activePageId, { blocks: sectionsToAdd });
-    setShowWelcomeWizard(false);
-    setHasSeenWelcome(true);
-    localStorage.setItem('evolv_seen_welcome', 'true');
-    setWizardMode('select');
-    showToast(`Applied "${template.name}" template!`, 'success');
   };
 
   // Welcome Wizard for Design Studio (first-time users)
@@ -2501,156 +1721,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       setShowWelcomeWizard(false);
       setHasSeenWelcome(true);
       localStorage.setItem('evolv_seen_welcome', 'true');
-      setWizardMode('select');
-      setAiWizardStep(0);
     };
     
-    const currentQuestion = AI_WIZARD_QUESTIONS[aiWizardStep];
-    
-    // AI Questions Mode
-    if (wizardMode === 'ai-questions' && currentQuestion) {
-      return (
-        <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-2xl animate-in zoom-in-95 duration-300">
-            {/* Progress Bar */}
-            <div className="p-4 border-b border-neutral-800">
-              <div className="flex items-center justify-between mb-2">
-                <button onClick={() => aiWizardStep > 0 ? setAiWizardStep(aiWizardStep - 1) : setWizardMode('select')} className="text-neutral-400 hover:text-white transition-colors">
-                  ← Back
-                </button>
-                <span className="text-xs text-neutral-500">Step {aiWizardStep + 1} of {AI_WIZARD_QUESTIONS.length}</span>
-              </div>
-              <div className="h-1 bg-neutral-800 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
-                  style={{ width: `${((aiWizardStep + 1) / AI_WIZARD_QUESTIONS.length) * 100}%` }}
-                />
-              </div>
-            </div>
-            
-            <div className="p-8">
-              <h2 className="text-2xl font-bold text-white mb-6 text-center">{currentQuestion.question}</h2>
-              
-              {currentQuestion.type === 'text' ? (
-                <div className="space-y-4">
-                  <input
-                    type="text"
-                    value={aiWizardAnswers[currentQuestion.id] || ''}
-                    onChange={(e) => setAiWizardAnswers(prev => ({ ...prev, [currentQuestion.id]: e.target.value }))}
-                    placeholder={currentQuestion.placeholder}
-                    className="w-full bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-4 text-white text-lg focus:border-blue-500 outline-none"
-                    autoFocus
-                  />
-                  <button
-                    onClick={() => {
-                      if (aiWizardStep < AI_WIZARD_QUESTIONS.length - 1) {
-                        setAiWizardStep(aiWizardStep + 1);
-                      } else {
-                        generateAIWebsite();
-                      }
-                    }}
-                    disabled={!aiWizardAnswers[currentQuestion.id]}
-                    className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 disabled:opacity-50 text-white rounded-xl font-bold text-lg transition-all"
-                  >
-                    {aiWizardStep < AI_WIZARD_QUESTIONS.length - 1 ? 'Continue' : '✨ Generate My Website'}
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  {currentQuestion.options?.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        setAiWizardAnswers(prev => ({ ...prev, [currentQuestion.id]: option.value }));
-                        if (aiWizardStep < AI_WIZARD_QUESTIONS.length - 1) {
-                          setAiWizardStep(aiWizardStep + 1);
-                        } else {
-                          generateAIWebsite();
-                        }
-                      }}
-                      className={`p-4 rounded-xl border transition-all text-left ${
-                        aiWizardAnswers[currentQuestion.id] === option.value
-                          ? 'bg-blue-600/20 border-blue-500 text-white'
-                          : 'bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:bg-neutral-800'
-                      }`}
-                    >
-                      <div className="text-lg mb-1">{option.label}</div>
-                      <div className="text-xs text-neutral-500">{option.description}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            <div className="p-4 border-t border-neutral-800 flex justify-center">
-              <button onClick={dismissWizard} className="text-sm text-neutral-500 hover:text-white transition-colors">
-                Skip and start from scratch
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    
-    // AI Generating Mode
-    if (wizardMode === 'ai-generating') {
-      return (
-        <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-md p-12 text-center animate-in zoom-in-95 duration-300">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse">
-              <Sparkles size={40} className="text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Building Your Website...</h2>
-            <p className="text-neutral-400 mb-6">AI is creating the perfect design for your business.</p>
-            <div className="flex items-center justify-center gap-2">
-              <Loader2 size={20} className="animate-spin text-blue-500" />
-              <span className="text-sm text-neutral-500">This usually takes about 5 seconds</span>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    
-    // Templates Mode
-    if (wizardMode === 'templates') {
-      return (
-        <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-3xl animate-in zoom-in-95 duration-300">
-            <div className="p-6 border-b border-neutral-800 flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-bold text-white">Choose a Template</h2>
-                <p className="text-neutral-500 text-sm">Start with a pre-built design</p>
-              </div>
-              <button onClick={() => setWizardMode('select')} className="text-neutral-400 hover:text-white">
-                ← Back
-              </button>
-            </div>
-            
-            <div className="p-6 grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
-              {PAGE_TEMPLATES.map((template) => (
-                <button
-                  key={template.id}
-                  onClick={() => applyTemplate(template.id)}
-                  className="group p-4 bg-neutral-800/50 border border-neutral-700 rounded-xl text-left hover:border-blue-500 hover:bg-blue-500/10 transition-all"
-                >
-                  <div className="text-4xl mb-3">{template.preview}</div>
-                  <h3 className="font-bold text-white mb-1">{template.name}</h3>
-                  <p className="text-xs text-neutral-500">{template.description}</p>
-                </button>
-              ))}
-            </div>
-            
-            <div className="p-4 border-t border-neutral-800 flex justify-center">
-              <button onClick={dismissWizard} className="text-sm text-neutral-500 hover:text-white transition-colors">
-                Skip for now
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    
-    // Default Selection Mode - Now shows that user has a starter template
     return (
       <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-2xl animate-in zoom-in-95 duration-300">
@@ -2659,48 +1731,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <Sparkles size={32} className="text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Welcome to Design Studio!</h2>
-            <p className="text-neutral-400">We've created a starter template for you. Choose how you'd like to proceed:</p>
+            <p className="text-neutral-400">Let's build your website. Choose how you'd like to start:</p>
           </div>
           
           <div className="p-6 grid grid-cols-1 gap-4">
-            {/* Start Editing - Primary CTA */}
-            <button 
-              onClick={() => {
-                dismissWizard();
-                showToast('Click any section to start editing!', 'success');
-              }}
-              className="group p-6 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-2 border-green-500/50 rounded-xl text-left hover:border-green-400 transition-all"
-            >
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-green-600 rounded-lg">
-                  <Edit3 size={24} className="text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-bold text-white">Start Customizing</h3>
-                    <span className="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">RECOMMENDED</span>
-                  </div>
-                  <p className="text-neutral-400 text-sm">Your starter template is ready! Click any section in the preview to edit its content.</p>
-                </div>
-                <ChevronRight size={20} className="text-neutral-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
-              </div>
-            </button>
-            
             {/* AI Build Option */}
             <button 
               onClick={() => {
-                setWizardMode('ai-questions');
-                setAiWizardStep(0);
+                dismissWizard();
+                showToast('AI Website Builder coming soon! For now, use the templates.', 'success');
               }}
-              className="group p-6 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-neutral-700 rounded-xl text-left hover:border-blue-400 transition-all"
+              className="group p-6 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-2 border-blue-500/50 rounded-xl text-left hover:border-blue-400 transition-all"
             >
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-blue-600 rounded-lg">
                   <Sparkles size={24} className="text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-white mb-1">Generate with AI</h3>
-                  <p className="text-neutral-400 text-sm">Answer 5 quick questions and AI will create a personalized website for your business.</p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-bold text-white">Build with AI</h3>
+                    <span className="text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full font-bold">RECOMMENDED</span>
+                  </div>
+                  <p className="text-neutral-400 text-sm">Answer a few questions and AI will generate a complete website for you in seconds.</p>
                 </div>
                 <ChevronRight size={20} className="text-neutral-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
               </div>
@@ -2708,7 +1760,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             
             {/* Template Option */}
             <button 
-              onClick={() => setWizardMode('templates')}
+              onClick={() => {
+                dismissWizard();
+                // Keep existing page
+              }}
               className="group p-6 bg-neutral-800/50 border border-neutral-700 rounded-xl text-left hover:border-neutral-500 transition-all"
             >
               <div className="flex items-start gap-4">
@@ -2716,577 +1771,39 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <Layout size={24} className="text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-white mb-1">Browse Templates</h3>
-                  <p className="text-neutral-400 text-sm">Choose from pre-designed templates for different business types.</p>
+                  <h3 className="text-lg font-bold text-white mb-1">Use Current Template</h3>
+                  <p className="text-neutral-400 text-sm">Start with the pre-made design and customize each section to match your brand.</p>
+                </div>
+                <ChevronRight size={20} className="text-neutral-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </div>
+            </button>
+            
+            {/* Blank Canvas Option */}
+            <button 
+              onClick={() => {
+                dismissWizard();
+                // Clear all blocks for blank canvas
+                onUpdatePage(activePageId, { blocks: [] });
+                showToast('Starting with a blank canvas', 'success');
+              }}
+              className="group p-6 bg-neutral-800/50 border border-neutral-700 rounded-xl text-left hover:border-neutral-500 transition-all"
+            >
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-neutral-700 rounded-lg">
+                  <FileText size={24} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-white mb-1">Start from Scratch</h3>
+                  <p className="text-neutral-400 text-sm">Begin with a blank page and build everything yourself. For advanced users.</p>
                 </div>
                 <ChevronRight size={20} className="text-neutral-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
               </div>
             </button>
           </div>
           
-          {/* Quick Tips */}
-          <div className="px-6 pb-6">
-            <div className="bg-neutral-800/50 rounded-xl p-4 border border-neutral-700">
-              <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
-                <Lightbulb size={16} className="text-yellow-500" />
-                Quick Tips
-              </h4>
-              <ul className="text-xs text-neutral-400 space-y-1">
-                <li>• Click any section in the preview to edit it</li>
-                <li>• Use the + button to add new sections</li>
-                <li>• Drag sections to reorder them</li>
-                <li>• Look for ✨ AI buttons to generate content</li>
-              </ul>
-            </div>
-          </div>
-          
           <div className="p-4 border-t border-neutral-800 flex justify-center">
             <button onClick={dismissWizard} className="text-sm text-neutral-500 hover:text-white transition-colors">
               Skip for now
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Tutorial System for first-time users
-  const TUTORIAL_STEPS = [
-    {
-      title: 'Welcome to Design Studio!',
-      description: 'This is where you build and customize your website. Let me show you around.',
-      target: null,
-      position: 'center'
-    },
-    {
-      title: 'Page Structure',
-      description: 'Your page is made up of sections. Each section is a building block of your website.',
-      target: 'section-list',
-      position: 'right'
-    },
-    {
-      title: 'Add Sections',
-      description: 'Click the + button to add new sections like Hero, Products, Contact Forms, and more.',
-      target: 'add-section-btn',
-      position: 'right'
-    },
-    {
-      title: 'Edit Content',
-      description: 'Click any section to edit its content, images, and styling in the panel on the left.',
-      target: 'editor-panel',
-      position: 'right'
-    },
-    {
-      title: 'Live Preview',
-      description: 'See your changes in real-time! Toggle between desktop, tablet, and mobile views.',
-      target: 'preview-device',
-      position: 'bottom'
-    },
-    {
-      title: 'AI Assistance',
-      description: 'Look for the ✨ AI Write buttons to generate content instantly.',
-      target: null,
-      position: 'center'
-    },
-    {
-      title: 'You\'re Ready!',
-      description: 'Start building your website. You can access this tutorial anytime from the Help menu.',
-      target: null,
-      position: 'center'
-    }
-  ];
-
-  const renderTutorial = () => {
-    if (!showTutorial) return null;
-    
-    const currentStep = TUTORIAL_STEPS[tutorialStep];
-    const isLastStep = tutorialStep === TUTORIAL_STEPS.length - 1;
-    
-    const dismissTutorial = () => {
-      setShowTutorial(false);
-      setHasSeenTutorial(true);
-      localStorage.setItem('evolv_seen_tutorial', 'true');
-      setTutorialStep(0);
-    };
-    
-    return (
-      <div className="fixed inset-0 z-[400] pointer-events-none">
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/60 pointer-events-auto" onClick={dismissTutorial} />
-        
-        {/* Tutorial Card */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-[400px] animate-in zoom-in-95 duration-300">
-            {/* Progress */}
-            <div className="p-4 border-b border-neutral-800">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-neutral-500">Tutorial</span>
-                <span className="text-xs text-neutral-500">{tutorialStep + 1} / {TUTORIAL_STEPS.length}</span>
-              </div>
-              <div className="flex gap-1">
-                {TUTORIAL_STEPS.map((_, i) => (
-                  <div key={i} className={`flex-1 h-1 rounded-full ${i <= tutorialStep ? 'bg-blue-500' : 'bg-neutral-800'}`} />
-                ))}
-              </div>
-            </div>
-            
-            <div className="p-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4">
-                <Lightbulb size={24} className="text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-white mb-2">{currentStep.title}</h3>
-              <p className="text-neutral-400 text-sm">{currentStep.description}</p>
-            </div>
-            
-            <div className="p-4 border-t border-neutral-800 flex items-center justify-between">
-              <button onClick={dismissTutorial} className="text-sm text-neutral-500 hover:text-white transition-colors">
-                Skip tutorial
-              </button>
-              <div className="flex gap-2">
-                {tutorialStep > 0 && (
-                  <button 
-                    onClick={() => setTutorialStep(tutorialStep - 1)}
-                    className="px-4 py-2 text-neutral-400 hover:text-white"
-                  >
-                    Back
-                  </button>
-                )}
-                <button 
-                  onClick={() => isLastStep ? dismissTutorial() : setTutorialStep(tutorialStep + 1)}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold"
-                >
-                  {isLastStep ? 'Get Started' : 'Next'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // AI Section Recommendations
-  const getSectionRecommendations = () => {
-    const existingSections = activePage.blocks?.map(b => b.type) || [];
-    const recommendations: Array<{ type: string, label: string, reason: string }> = [];
-    
-    // Always recommend these if missing
-    if (!existingSections.includes('system-hero')) {
-      recommendations.push({ type: 'system-hero', label: 'Hero Section', reason: 'First impression for visitors' });
-    }
-    
-    // If has products/hero but no social proof
-    if ((existingSections.includes('system-collection') || existingSections.includes('system-hero')) && !existingSections.includes('system-social')) {
-      recommendations.push({ type: 'system-social', label: 'Customer Reviews', reason: 'Builds trust (+35% conversion)' });
-    }
-    
-    // If has hero but no contact
-    if (existingSections.includes('system-hero') && !existingSections.includes('system-contact')) {
-      recommendations.push({ type: 'system-contact', label: 'Contact Form', reason: 'Let customers reach you' });
-    }
-    
-    // If has multiple sections but no FAQ
-    if (existingSections.length >= 2 && !existingSections.includes('system-collapsible')) {
-      recommendations.push({ type: 'system-collapsible', label: 'FAQ Section', reason: 'Answer common questions' });
-    }
-    
-    // If no email signup
-    if (!existingSections.includes('system-email')) {
-      recommendations.push({ type: 'system-email', label: 'Email Signup', reason: 'Grow your subscriber list' });
-    }
-    
-    return recommendations.slice(0, 3);
-  };
-
-  const renderSectionRecommendations = () => {
-    if (!showSectionRecommendations) return null;
-    
-    const recommendations = getSectionRecommendations();
-    if (recommendations.length === 0) {
-      setShowSectionRecommendations(false);
-      return null;
-    }
-    
-    return (
-      <div className="fixed bottom-6 right-6 z-[200] animate-in slide-in-from-bottom-5 duration-300">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-xl shadow-2xl w-[320px]">
-          <div className="p-4 border-b border-neutral-800 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles size={16} className="text-blue-400" />
-              <span className="font-bold text-white text-sm">AI Suggestions</span>
-            </div>
-            <button onClick={() => setShowSectionRecommendations(false)} className="text-neutral-500 hover:text-white">
-              <X size={16} />
-            </button>
-          </div>
-          <div className="p-3 space-y-2">
-            <p className="text-xs text-neutral-500 mb-3">Based on your page, consider adding:</p>
-            {recommendations.map((rec) => (
-              <button
-                key={rec.type}
-                onClick={() => {
-                  // Add the recommended section
-                  const newBlock: PageBlock = {
-                    id: `${rec.type}-${Date.now()}`,
-                    type: rec.type as any,
-                    variant: 'default',
-                    data: {}
-                  };
-                  const currentBlocks = activePage.blocks || [];
-                  onUpdatePage(activePageId, { blocks: [...currentBlocks, newBlock] });
-                  showToast(`Added ${rec.label}!`, 'success');
-                }}
-                className="w-full flex items-center gap-3 p-3 bg-neutral-800/50 hover:bg-neutral-800 border border-neutral-700 rounded-lg text-left transition-colors group"
-              >
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-white">{rec.label}</div>
-                  <div className="text-[10px] text-neutral-500">{rec.reason}</div>
-                </div>
-                <Plus size={16} className="text-neutral-500 group-hover:text-blue-400 transition-colors" />
-              </button>
-            ))}
-          </div>
-          <div className="p-3 border-t border-neutral-800">
-            <button 
-              onClick={() => {
-                localStorage.setItem('evolv_hide_suggestions', 'true');
-                setShowSectionRecommendations(false);
-              }}
-              className="text-[10px] text-neutral-600 hover:text-neutral-400"
-            >
-              Don't show suggestions
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Pre-Publish Checklist
-  const getPublishChecklist = () => {
-    const blocks = activePage.blocks || [];
-    const hasHero = blocks.some(b => b.type === 'system-hero');
-    const hasContact = blocks.some(b => b.type === 'system-contact');
-    const hasProducts = blocks.some(b => b.type === 'system-collection');
-    const hasEmailSignup = blocks.some(b => b.type === 'system-email');
-    
-    return [
-      { 
-        id: 'hero', 
-        label: 'Hero section added', 
-        passed: hasHero, 
-        fix: () => {
-          const newBlock: PageBlock = { id: `hero-${Date.now()}`, type: 'system-hero', variant: 'impact', data: { heading: 'Your Headline Here' } };
-          onUpdatePage(activePageId, { blocks: [newBlock, ...blocks] });
-        }
-      },
-      { 
-        id: 'contact', 
-        label: 'Contact information available', 
-        passed: hasContact || !!config.supportEmail,
-        fix: () => {
-          if (!hasContact) {
-            const newBlock: PageBlock = { id: `contact-${Date.now()}`, type: 'system-contact', variant: 'split', data: {} };
-            onUpdatePage(activePageId, { blocks: [...blocks, newBlock] });
-          }
-        }
-      },
-      { 
-        id: 'products', 
-        label: 'Products or content displayed', 
-        passed: hasProducts || blocks.length >= 3,
-        fix: () => {
-          if (!hasProducts) {
-            const newBlock: PageBlock = { id: `collection-${Date.now()}`, type: 'system-collection', variant: 'minimal-grid', data: {} };
-            onUpdatePage(activePageId, { blocks: [...blocks, newBlock] });
-          }
-        }
-      },
-      { 
-        id: 'seo', 
-        label: 'Store name configured', 
-        passed: !!config.name && config.name !== 'My Store',
-        fix: () => setActiveTab(AdminTab.SETTINGS)
-      },
-      { 
-        id: 'email', 
-        label: 'Email capture enabled', 
-        passed: hasEmailSignup,
-        fix: () => {
-          const newBlock: PageBlock = { id: `email-${Date.now()}`, type: 'system-email', variant: 'centered', data: {} };
-          onUpdatePage(activePageId, { blocks: [...blocks, newBlock] });
-        }
-      },
-    ];
-  };
-
-  const renderPublishChecklist = () => {
-    if (!showPublishChecklist) return null;
-    
-    const checklist = getPublishChecklist();
-    const passedCount = checklist.filter(c => c.passed).length;
-    const allPassed = passedCount === checklist.length;
-    
-    return (
-      <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-md animate-in zoom-in-95 duration-300">
-          <div className="p-6 border-b border-neutral-800">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {allPassed ? (
-                  <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center">
-                    <CheckCircle2 size={20} className="text-white" />
-                  </div>
-                ) : (
-                  <div className="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center">
-                    <AlertTriangle size={20} className="text-white" />
-                  </div>
-                )}
-                <div>
-                  <h2 className="text-lg font-bold text-white">Pre-Publish Check</h2>
-                  <p className="text-sm text-neutral-500">{passedCount}/{checklist.length} items passed</p>
-                </div>
-              </div>
-              <button onClick={() => setShowPublishChecklist(false)} className="text-neutral-400 hover:text-white">
-                <X size={20} />
-              </button>
-            </div>
-          </div>
-          
-          <div className="p-4 space-y-2">
-            {checklist.map((item) => (
-              <div 
-                key={item.id}
-                className={`flex items-center justify-between p-3 rounded-lg ${item.passed ? 'bg-emerald-900/20 border border-emerald-900/30' : 'bg-amber-900/20 border border-amber-900/30'}`}
-              >
-                <div className="flex items-center gap-3">
-                  {item.passed ? (
-                    <CheckCircle2 size={18} className="text-emerald-400" />
-                  ) : (
-                    <Circle size={18} className="text-amber-400" />
-                  )}
-                  <span className={`text-sm ${item.passed ? 'text-emerald-100' : 'text-amber-100'}`}>{item.label}</span>
-                </div>
-                {!item.passed && (
-                  <button 
-                    onClick={() => { item.fix(); setShowPublishChecklist(false); }}
-                    className="text-xs text-blue-400 hover:text-blue-300 font-bold"
-                  >
-                    Fix
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-          
-          <div className="p-4 border-t border-neutral-800 flex gap-3">
-            <button 
-              onClick={() => setShowPublishChecklist(false)}
-              className="flex-1 py-3 text-neutral-400 hover:text-white font-bold"
-            >
-              Review Later
-            </button>
-            <button 
-              onClick={() => {
-                setShowPublishChecklist(false);
-                handlePublish();
-              }}
-              className={`flex-1 py-3 rounded-xl font-bold ${allPassed ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-amber-600 hover:bg-amber-700 text-white'}`}
-            >
-              {allPassed ? 'Publish Now' : 'Publish Anyway'}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Brand Settings Modal
-  const renderBrandSettings = () => {
-    if (!showBrandSettings) return null;
-    
-    const colorPalettes = [
-      { name: 'Ocean', colors: ['#0EA5E9', '#0284C7', '#0369A1', '#075985'] },
-      { name: 'Forest', colors: ['#22C55E', '#16A34A', '#15803D', '#166534'] },
-      { name: 'Sunset', colors: ['#F97316', '#EA580C', '#DC2626', '#B91C1C'] },
-      { name: 'Lavender', colors: ['#A855F7', '#9333EA', '#7E22CE', '#6B21A8'] },
-      { name: 'Mono', colors: ['#FFFFFF', '#A3A3A3', '#525252', '#171717'] },
-      { name: 'Warm', colors: ['#FBBF24', '#F59E0B', '#D97706', '#B45309'] },
-    ];
-    
-    return (
-      <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-300">
-          <div className="p-6 border-b border-neutral-800 flex justify-between items-center">
-            <div>
-              <h2 className="text-xl font-bold text-white">Brand Settings</h2>
-              <p className="text-neutral-500 text-sm">Customize your site's look and feel</p>
-            </div>
-            <button onClick={() => setShowBrandSettings(false)} className="text-neutral-400 hover:text-white">
-              <X size={20} />
-            </button>
-          </div>
-          
-          <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-            {/* Primary Color */}
-            <div>
-              <label className="block text-sm font-bold text-neutral-300 mb-3">Primary Color</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={config.primaryColor || '#6366F1'}
-                  onChange={(e) => onUpdateConfig({ primaryColor: e.target.value })}
-                  className="w-12 h-12 rounded-lg cursor-pointer border-2 border-neutral-700"
-                />
-                <input
-                  type="text"
-                  value={config.primaryColor || '#6366F1'}
-                  onChange={(e) => onUpdateConfig({ primaryColor: e.target.value })}
-                  className="flex-1 bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white font-mono text-sm"
-                />
-                <button 
-                  onClick={() => {
-                    // Generate AI palette
-                    const randomPalette = colorPalettes[Math.floor(Math.random() * colorPalettes.length)];
-                    onUpdateConfig({ primaryColor: randomPalette.colors[0] });
-                    showToast(`Applied ${randomPalette.name} palette`, 'success');
-                  }}
-                  className="px-3 py-2 bg-purple-600/20 border border-purple-600/50 rounded-lg text-purple-400 text-sm font-bold flex items-center gap-2"
-                >
-                  <Sparkles size={14} /> AI Suggest
-                </button>
-              </div>
-            </div>
-            
-            {/* Color Palettes */}
-            <div>
-              <label className="block text-sm font-bold text-neutral-300 mb-3">Quick Palettes</label>
-              <div className="grid grid-cols-3 gap-3">
-                {colorPalettes.map((palette) => (
-                  <button
-                    key={palette.name}
-                    onClick={() => onUpdateConfig({ primaryColor: palette.colors[0] })}
-                    className="p-3 bg-neutral-800 border border-neutral-700 rounded-lg hover:border-neutral-500 transition-colors"
-                  >
-                    <div className="flex gap-1 mb-2">
-                      {palette.colors.map((color, i) => (
-                        <div key={i} className="w-4 h-4 rounded" style={{ backgroundColor: color }} />
-                      ))}
-                    </div>
-                    <span className="text-xs text-neutral-400">{palette.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            {/* Store Name */}
-            <div>
-              <label className="block text-sm font-bold text-neutral-300 mb-2">Store Name</label>
-              <input
-                type="text"
-                value={config.name || ''}
-                onChange={(e) => onUpdateConfig({ name: e.target.value })}
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-3 text-white"
-                placeholder="Your Store Name"
-              />
-            </div>
-            
-            {/* Logo */}
-            <div>
-              <label className="block text-sm font-bold text-neutral-300 mb-2">Logo</label>
-              {config.logoUrl ? (
-                <div className="flex items-center gap-3">
-                  <img src={config.logoUrl} alt="Logo" className="h-12 object-contain bg-neutral-800 rounded-lg p-2" />
-                  <button 
-                    onClick={() => onUpdateConfig({ logoUrl: '' })}
-                    className="text-red-400 hover:text-red-300 text-sm"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <label className="flex items-center justify-center h-20 border-2 border-dashed border-neutral-700 rounded-lg cursor-pointer hover:border-neutral-500">
-                  <div className="text-center">
-                    <Upload size={20} className="mx-auto text-neutral-500 mb-1" />
-                    <span className="text-xs text-neutral-500">Upload Logo</span>
-                  </div>
-                  <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
-                </label>
-              )}
-            </div>
-          </div>
-          
-          <div className="p-4 border-t border-neutral-800 flex justify-end">
-            <button 
-              onClick={() => setShowBrandSettings(false)}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Navigation Builder Modal
-  const renderNavBuilder = () => {
-    if (!showNavBuilder) return null;
-    
-    const navItems = localPages.filter(p => p.type !== 'hidden').map(p => ({
-      id: p.id,
-      label: p.title,
-      href: p.type === 'home' ? '/' : `/${p.slug}`,
-      type: p.type
-    }));
-    
-    return (
-      <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-md animate-in zoom-in-95 duration-300">
-          <div className="p-6 border-b border-neutral-800 flex justify-between items-center">
-            <div>
-              <h2 className="text-xl font-bold text-white">Navigation Menu</h2>
-              <p className="text-neutral-500 text-sm">Configure your site navigation</p>
-            </div>
-            <button onClick={() => setShowNavBuilder(false)} className="text-neutral-400 hover:text-white">
-              <X size={20} />
-            </button>
-          </div>
-          
-          <div className="p-4 space-y-2 max-h-[50vh] overflow-y-auto custom-scrollbar">
-            <p className="text-xs text-neutral-500 mb-3">Drag to reorder. Pages are automatically included in navigation.</p>
-            {navItems.map((item, index) => (
-              <div 
-                key={item.id}
-                className="flex items-center gap-3 p-3 bg-neutral-800 border border-neutral-700 rounded-lg group"
-              >
-                <GripVertical size={14} className="text-neutral-600" />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-white">{item.label}</div>
-                  <div className="text-[10px] text-neutral-500 font-mono">{item.href}</div>
-                </div>
-                <button 
-                  onClick={() => {
-                    setActivePageId(item.id);
-                    setShowNavBuilder(false);
-                  }}
-                  className="text-xs text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  Edit
-                </button>
-              </div>
-            ))}
-          </div>
-          
-          <div className="p-4 border-t border-neutral-800">
-            <button 
-              onClick={() => {
-                setShowNavBuilder(false);
-                setIsAddPageModalOpen(true);
-              }}
-              className="w-full py-3 border-2 border-dashed border-neutral-700 hover:border-neutral-500 rounded-lg text-neutral-400 hover:text-white transition-colors flex items-center justify-center gap-2"
-            >
-              <Plus size={16} /> Add New Page
             </button>
           </div>
         </div>
@@ -3353,15 +1870,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             
             {/* URL Slug Input */}
             <div>
-              <label className="flex items-center gap-2 text-sm font-bold text-neutral-300 mb-2">
-                URL Path
-                <span className="group relative cursor-help">
-                  <HelpCircle size={12} className="text-neutral-500 hover:text-neutral-300" />
-                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-neutral-800 text-neutral-300 text-[10px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 border border-neutral-700 shadow-lg">
-                    The URL where this page will be accessible (e.g., /about-us)
-                  </span>
-                </span>
-              </label>
+              <label className="block text-sm font-bold text-neutral-300 mb-2">URL Path</label>
               <div className="flex items-center bg-black border border-neutral-700 rounded-lg overflow-hidden focus-within:border-blue-500">
                 <span className="px-4 py-3 text-neutral-500 bg-neutral-800 border-r border-neutral-700">yourstore.com</span>
                 <input
@@ -3372,7 +1881,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   className="flex-1 bg-transparent px-4 py-3 text-white outline-none font-mono"
                 />
               </div>
-              <p className="text-[10px] text-neutral-600 mt-1">Use lowercase letters, numbers, and hyphens only</p>
             </div>
           </div>
           
@@ -3396,315 +1904,179 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     );
   };
 
-  const renderVersionHistory = () => {
-    if (!showVersionHistory) return null;
-
-    return (
-      <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-2xl animate-in zoom-in-95 duration-300">
-          <div className="p-6 border-b border-neutral-800 flex justify-between items-center">
-            <div>
-              <h2 className="text-xl font-bold text-white">Version History</h2>
-              <p className="text-neutral-500 text-sm">Restore previous versions of this page</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => savePageVersion()}
-                disabled={isSavingVersion}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 disabled:opacity-50"
-              >
-                {isSavingVersion ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                Save Current
-              </button>
-              <button onClick={() => setShowVersionHistory(false)} className="p-2 hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-white">
-                <X size={20} />
-              </button>
-            </div>
-          </div>
-          
-          <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-            {pageVersions.length === 0 ? (
-              <div className="text-center py-12">
-                <Clock size={48} className="mx-auto text-neutral-700 mb-4" />
-                <p className="text-neutral-500">No versions found for this page.</p>
-                <p className="text-xs text-neutral-600 mt-1">Save your first version to see it here.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {pageVersions.map((version) => (
-                  <div 
-                    key={version.id}
-                    className="p-4 bg-neutral-800/50 border border-neutral-700 rounded-xl flex items-center justify-between group hover:border-neutral-500 transition-all"
-                  >
-                    <div>
-                      <div className="text-sm font-bold text-white">{version.version_name}</div>
-                      <div className="text-xs text-neutral-500 flex items-center gap-2 mt-1">
-                        <Calendar size={12} />
-                        {new Date(version.created_at).toLocaleString()}
-                        <span className="px-1.5 py-0.5 bg-neutral-700 rounded text-[10px]">{version.blocks.length} sections</span>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => restoreVersion(version)}
-                      className="px-4 py-2 bg-neutral-700 hover:bg-white hover:text-black text-white rounded-lg text-xs font-bold transition-all"
-                    >
-                      Restore
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          
-          <div className="p-6 border-t border-neutral-800 bg-neutral-900/50 rounded-b-2xl">
-            <p className="text-[10px] text-neutral-500 text-center">
-              Restoring a version will replace your current draft. You must click "Save Changes" to make it live.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   const renderAddSectionLibrary = () => {
     if (!isAddSectionOpen) return null;
 
-    const categoryColors: Record<string, string> = {
-      hero: 'purple',
-      grid: 'green',
-      collection: 'emerald',
-      layout: 'cyan',
-      scroll: 'orange',
-      social: 'pink',
-      blog: 'rose',
-      video: 'red',
-      content: 'blue',
-      marketing: 'yellow',
-      media: 'indigo',
-      contact: 'teal'
-    };
-
-    const currentColor = categoryColors[selectedCategory || 'purple'] || 'purple';
+    // Category definitions with colors
+    const categories = [
+      { id: 'hero', name: 'Hero Engine', desc: 'High impact entry sections', icon: LayoutTemplate, color: 'purple' },
+      { id: 'grid', name: 'Product Grid', desc: 'Inventory display systems', icon: Grid, color: 'green' },
+      { id: 'collection', name: 'Collections', desc: 'Featured products & lists', icon: ShoppingBag, color: 'emerald' },
+      { id: 'layout', name: 'Layouts', desc: 'Multi-column & banners', icon: Layout, color: 'cyan' },
+      { id: 'scroll', name: 'Scroll Sections', desc: 'Marquees and tickers', icon: Repeat, color: 'orange' },
+      { id: 'social', name: 'Social Feed', desc: 'Instagram & TikTok', icon: Share2, color: 'pink' },
+      { id: 'blog', name: 'Blog Posts', desc: 'News and articles', icon: FileText, color: 'rose' },
+      { id: 'video', name: 'Video', desc: 'Players and backgrounds', icon: Video, color: 'red' },
+      { id: 'content', name: 'Rich Content', desc: 'Text, Collapsibles, HTML', icon: Type, color: 'blue' },
+      { id: 'marketing', name: 'Marketing', desc: 'Email, Promos, Logos', icon: Megaphone, color: 'yellow' },
+      { id: 'media', name: 'Media Gallery', desc: 'Grids, Sliders, Showcases', icon: ImageIcon, color: 'indigo' },
+      { id: 'contact', name: 'Contact', desc: 'Forms and maps', icon: Mail, color: 'teal' },
+    ];
 
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
         <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
-          {/* Modal Header */}
-          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+          {/* Header */}
+          <div className="p-4 border-b border-neutral-800 bg-neutral-950 shrink-0 flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-cyan-600/20 rounded-lg">
-                <Plus size={20} className="text-cyan-400" />
+              <div className="p-2 bg-orange-600/20 rounded-lg">
+                <Plus size={20} className="text-orange-500" />
               </div>
               <div>
                 <h3 className="text-white font-bold">Add Section</h3>
-                <p className="text-xs text-neutral-500">{addSectionStep === 'categories' ? 'Choose Type' : 'Select Style'}</p>
+                <p className="text-xs text-neutral-500">{addSectionStep === 'categories' ? 'Choose a section type' : `Select ${selectedCategory} style`}</p>
               </div>
             </div>
-            <button 
-              onClick={() => { setIsAddSectionOpen(false); setPreviewBlock(null); setAddSectionStep('categories'); }} 
-              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
-            >
+            <button onClick={() => { setIsAddSectionOpen(false); setPreviewBlock(null); setAddSectionStep('categories'); setSelectedCategory(null); }} className="p-2 hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-white transition-colors">
               <X size={20} />
             </button>
           </div>
           
-          {/* Modal Content */}
+          {/* Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
             {addSectionStep === 'categories' ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                <button onClick={() => { setSelectedCategory('hero'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-purple-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
-                  <div className="p-3 bg-purple-900/20 text-purple-500 rounded-lg group-hover:bg-purple-500 group-hover:text-white transition-colors"><LayoutTemplate size={24} /></div>
-                  <div className="text-center">
-                    <span className="block text-sm font-bold text-white">Hero Engine</span>
-                    <span className="text-xs text-neutral-500">High impact entry sections</span>
-                  </div>
-                </button>
-
-                <button onClick={() => { setSelectedCategory('grid'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-green-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
-                  <div className="p-3 bg-green-900/20 text-green-500 rounded-lg group-hover:bg-green-500 group-hover:text-white transition-colors"><Grid size={24} /></div>
-                  <div className="text-center">
-                    <span className="block text-sm font-bold text-white">Product Grid</span>
-                    <span className="text-xs text-neutral-500">Inventory display systems</span>
-                  </div>
-                </button>
-
-                <button onClick={() => { setSelectedCategory('collection'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-emerald-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
-                  <div className="p-3 bg-emerald-900/20 text-emerald-500 rounded-lg group-hover:bg-emerald-500 group-hover:text-white transition-colors"><ShoppingBag size={24} /></div>
-                  <div className="text-center">
-                    <span className="block text-sm font-bold text-white">Collections</span>
-                    <span className="text-xs text-neutral-500">Featured products & lists</span>
-                  </div>
-                </button>
-
-                <button onClick={() => { setSelectedCategory('layout'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-cyan-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
-                  <div className="p-3 bg-cyan-900/20 text-cyan-500 rounded-lg group-hover:bg-cyan-500 group-hover:text-white transition-colors"><Layout size={24} /></div>
-                  <div className="text-center">
-                    <span className="block text-sm font-bold text-white">Layouts</span>
-                    <span className="text-xs text-neutral-500">Multi-column & banners</span>
-                  </div>
-                </button>
-
-                <button onClick={() => { setSelectedCategory('scroll'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-orange-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
-                  <div className="p-3 bg-orange-900/20 text-orange-500 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors"><Repeat size={24} /></div>
-                  <div className="text-center">
-                    <span className="block text-sm font-bold text-white">Scroll Sections</span>
-                    <span className="text-xs text-neutral-500">Marquees and tickers</span>
-                  </div>
-                </button>
-
-                <button onClick={() => { setSelectedCategory('social'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-pink-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
-                  <div className="p-3 bg-pink-900/20 text-pink-500 rounded-lg group-hover:bg-pink-500 group-hover:text-white transition-colors"><Share2 size={24} /></div>
-                  <div className="text-center">
-                    <span className="block text-sm font-bold text-white">Social Feed</span>
-                    <span className="text-xs text-neutral-500">Instagram & TikTok</span>
-                  </div>
-                </button>
-
-                <button onClick={() => { setSelectedCategory('blog'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-rose-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
-                  <div className="p-3 bg-rose-900/20 text-rose-500 rounded-lg group-hover:bg-rose-500 group-hover:text-white transition-colors"><FileText size={24} /></div>
-                  <div className="text-center">
-                    <span className="block text-sm font-bold text-white">Blog Posts</span>
-                    <span className="text-xs text-neutral-500">News and articles</span>
-                  </div>
-                </button>
-
-                <button onClick={() => { setSelectedCategory('video'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-red-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
-                  <div className="p-3 bg-red-900/20 text-red-500 rounded-lg group-hover:bg-red-500 group-hover:text-white transition-colors"><Video size={24} /></div>
-                  <div className="text-center">
-                    <span className="block text-sm font-bold text-white">Video</span>
-                    <span className="text-xs text-neutral-500">Players and backgrounds</span>
-                  </div>
-                </button>
-
-                <button onClick={() => { setSelectedCategory('content'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-blue-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
-                  <div className="p-3 bg-blue-900/20 text-blue-500 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition-colors"><Type size={24} /></div>
-                  <div className="text-center">
-                    <span className="block text-sm font-bold text-white">Rich Content</span>
-                    <span className="text-xs text-neutral-500">Text, Collapsibles, HTML</span>
-                  </div>
-                </button>
-
-                <button onClick={() => { setSelectedCategory('marketing'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-yellow-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
-                  <div className="p-3 bg-yellow-900/20 text-yellow-500 rounded-lg group-hover:bg-yellow-500 group-hover:text-white transition-colors"><Megaphone size={24} /></div>
-                  <div className="text-center">
-                    <span className="block text-sm font-bold text-white">Marketing</span>
-                    <span className="text-xs text-neutral-500">Email, Promos, Logos</span>
-                  </div>
-                </button>
-
-                <button onClick={() => { setSelectedCategory('media'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-indigo-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
-                  <div className="p-3 bg-indigo-900/20 text-indigo-500 rounded-lg group-hover:bg-indigo-500 group-hover:text-white transition-colors"><ImageIcon size={24} /></div>
-                  <div className="text-center">
-                    <span className="block text-sm font-bold text-white">Media Gallery</span>
-                    <span className="text-xs text-neutral-500">Grids, Sliders, Showcases</span>
-                  </div>
-                </button>
-
-                <button onClick={() => { setSelectedCategory('contact'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-teal-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
-                  <div className="p-3 bg-teal-900/20 text-teal-500 rounded-lg group-hover:bg-teal-500 group-hover:text-white transition-colors"><Mail size={24} /></div>
-                  <div className="text-center">
-                    <span className="block text-sm font-bold text-white">Contact</span>
-                    <span className="text-xs text-neutral-500">Forms and maps</span>
-                  </div>
-                </button>
+              <div className="grid grid-cols-3 gap-3">
+                {categories.map((cat) => {
+                  const IconComponent = cat.icon;
+                  return (
+                    <button 
+                      key={cat.id} 
+                      onClick={() => { setSelectedCategory(cat.id as any); setAddSectionStep('options'); }} 
+                      className={`p-5 bg-neutral-800/50 hover:bg-neutral-800 border border-neutral-700 hover:border-${cat.color}-500 rounded-xl flex flex-col items-center text-center group transition-all`}
+                    >
+                      <div className={`p-3 bg-${cat.color}-900/20 text-${cat.color}-500 rounded-lg group-hover:bg-${cat.color}-500 group-hover:text-white transition-colors mb-3`}>
+                        <IconComponent size={24} />
+                      </div>
+                      <span className="block text-sm font-bold text-white mb-1">{cat.name}</span>
+                      <span className="text-xs text-neutral-500">{cat.desc}</span>
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <div className="space-y-4">
-                <button onClick={() => { setAddSectionStep('categories'); setPreviewBlock(null); }} className="text-xs font-bold text-neutral-500 hover:text-white flex items-center gap-1 mb-4"><ChevronDown className="rotate-90" size={14} /> Back to Categories</button>
+                <button onClick={() => { setAddSectionStep('categories'); setPreviewBlock(null); }} className="text-sm font-medium text-neutral-400 hover:text-white flex items-center gap-2 mb-4">
+                  <ChevronLeft size={16} /> Back to Categories
+                </button>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {selectedCategory === 'hero' && HERO_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-hero', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-purple-600/20 border-purple-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
-                    </button>
-                  ))}
+                {selectedCategory === 'hero' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {HERO_OPTIONS.map(opt => (
+                      <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-hero', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-purple-500 hover:bg-purple-600/10">
+                        <div className="font-bold text-sm mb-1">{opt.name}</div>
+                        <div className="text-xs opacity-60">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-                  {selectedCategory === 'grid' && PRODUCT_CARD_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-grid', `Grid: ${opt.name}`, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-green-600/20 border-green-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
-                    </button>
-                  ))}
+                {selectedCategory === 'grid' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {PRODUCT_CARD_OPTIONS.map(opt => (
+                      <button key={opt.id} onClick={() => addBlock('', `Grid: ${opt.name}`, 'system-grid', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-green-500 hover:bg-green-600/10">
+                        <div className="font-bold text-sm mb-1">{opt.name}</div>
+                        <div className="text-xs opacity-60">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-                  {selectedCategory === 'collection' && COLLECTION_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-collection', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-emerald-600/20 border-emerald-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
-                    </button>
-                  ))}
+                {selectedCategory === 'collection' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {COLLECTION_OPTIONS.map(opt => (
+                      <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-collection', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-emerald-500 hover:bg-emerald-600/10">
+                        <div className="font-bold text-sm mb-1">{opt.name}</div>
+                        <div className="text-xs opacity-60">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-                  {selectedCategory === 'layout' && LAYOUT_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-layout', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-cyan-600/20 border-cyan-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
-                    </button>
-                  ))}
+                {selectedCategory === 'layout' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {LAYOUT_OPTIONS.map(opt => (
+                      <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-layout', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-cyan-500 hover:bg-cyan-600/10">
+                        <div className="font-bold text-sm mb-1">{opt.name}</div>
+                        <div className="text-xs opacity-60">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-                  {selectedCategory === 'scroll' && SCROLL_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-scroll', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-orange-600/20 border-orange-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
-                    </button>
-                  ))}
+                {selectedCategory === 'scroll' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {SCROLL_OPTIONS.map(opt => (
+                      <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-scroll', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-orange-500 hover:bg-orange-600/10">
+                        <div className="font-bold text-sm mb-1">{opt.name}</div>
+                        <div className="text-xs opacity-60">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-                  {selectedCategory === 'social' && SOCIAL_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-social', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-pink-600/20 border-pink-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
-                    </button>
-                  ))}
+                {selectedCategory === 'social' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {SOCIAL_OPTIONS.map(opt => (
+                      <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-social', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-pink-500 hover:bg-pink-600/10">
+                        <div className="font-bold text-sm mb-1">{opt.name}</div>
+                        <div className="text-xs opacity-60">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-                  {selectedCategory === 'blog' && BLOG_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-blog', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-rose-600/20 border-rose-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
-                    </button>
-                  ))}
+                {selectedCategory === 'blog' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {BLOG_OPTIONS.map(opt => (
+                      <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-blog', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-rose-500 hover:bg-rose-600/10">
+                        <div className="font-bold text-sm mb-1">{opt.name}</div>
+                        <div className="text-xs opacity-60">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-                  {selectedCategory === 'video' && VIDEO_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-video', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-red-600/20 border-red-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
-                    </button>
-                  ))}
+                {selectedCategory === 'video' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {VIDEO_OPTIONS.map(opt => (
+                      <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-video', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-red-500 hover:bg-red-600/10">
+                        <div className="font-bold text-sm mb-1">{opt.name}</div>
+                        <div className="text-xs opacity-60">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-                  {selectedCategory === 'media' && GALLERY_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-gallery', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-indigo-600/20 border-indigo-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
-                    </button>
-                  ))}
-
-                  {selectedCategory === 'contact' && CONTACT_OPTIONS.map(opt => (
-                    <button key={opt.id} onClick={() => addBlock('system-contact', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-teal-600/20 border-teal-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                      <div className="font-bold text-sm">{opt.name}</div>
-                      <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Content category has special subcategories */}
                 {selectedCategory === 'content' && (
                   <div className="space-y-6">
                     <div>
                       <h5 className="text-xs font-bold text-neutral-500 uppercase mb-3">Rich Text</h5>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-2 gap-3">
                         {RICH_TEXT_OPTIONS.map(opt => (
-                          <button key={opt.id} onClick={() => addBlock('system-rich-text', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                            <div className="font-bold text-sm">{opt.name}</div>
-                            <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                          <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-rich-text', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-blue-500 hover:bg-blue-600/10">
+                            <div className="font-bold text-sm mb-1">{opt.name}</div>
+                            <div className="text-xs opacity-60">{opt.description}</div>
                           </button>
                         ))}
                       </div>
                     </div>
                     <div>
-                      <h5 className="text-xs font-bold text-neutral-500 uppercase mb-3">Collapsible</h5>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      <h5 className="text-xs font-bold text-neutral-500 uppercase mb-3">Collapsible / FAQ</h5>
+                      <div className="grid grid-cols-2 gap-3">
                         {COLLAPSIBLE_OPTIONS.map(opt => (
-                          <button key={opt.id} onClick={() => addBlock('system-collapsible', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                            <div className="font-bold text-sm">{opt.name}</div>
-                            <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                          <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-collapsible', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-blue-500 hover:bg-blue-600/10">
+                            <div className="font-bold text-sm mb-1">{opt.name}</div>
+                            <div className="text-xs opacity-60">{opt.description}</div>
                           </button>
                         ))}
                       </div>
@@ -3712,55 +2084,73 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
                 )}
 
-                {/* Marketing category has special subcategories */}
                 {selectedCategory === 'marketing' && (
                   <div className="space-y-6">
                     <div>
                       <h5 className="text-xs font-bold text-neutral-500 uppercase mb-3">Email Signup</h5>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-2 gap-3">
                         {EMAIL_SIGNUP_OPTIONS.map(opt => (
-                          <button key={opt.id} onClick={() => addBlock('system-email', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                            <div className="font-bold text-sm">{opt.name}</div>
-                            <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                          <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-email', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-yellow-500 hover:bg-yellow-600/10">
+                            <div className="font-bold text-sm mb-1">{opt.name}</div>
+                            <div className="text-xs opacity-60">{opt.description}</div>
                           </button>
                         ))}
                       </div>
                     </div>
                     <div>
                       <h5 className="text-xs font-bold text-neutral-500 uppercase mb-3">Promotions</h5>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-2 gap-3">
                         {PROMO_BANNER_OPTIONS.map(opt => (
-                          <button key={opt.id} onClick={() => addBlock('system-promo', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                            <div className="font-bold text-sm">{opt.name}</div>
-                            <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                          <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-promo', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-yellow-500 hover:bg-yellow-600/10">
+                            <div className="font-bold text-sm mb-1">{opt.name}</div>
+                            <div className="text-xs opacity-60">{opt.description}</div>
                           </button>
                         ))}
                       </div>
                     </div>
                     <div>
                       <h5 className="text-xs font-bold text-neutral-500 uppercase mb-3">Trust Indicators</h5>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-2 gap-3">
                         {LOGO_LIST_OPTIONS.map(opt => (
-                          <button key={opt.id} onClick={() => addBlock('system-logo-list', opt.name, '', opt.id)} className={`text-left p-4 rounded-xl border transition-all ${previewBlock?.variant === opt.id ? 'bg-yellow-600/20 border-yellow-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                            <div className="font-bold text-sm">{opt.name}</div>
-                            <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                          <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-logo-list', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-yellow-500 hover:bg-yellow-600/10">
+                            <div className="font-bold text-sm mb-1">{opt.name}</div>
+                            <div className="text-xs opacity-60">{opt.description}</div>
                           </button>
                         ))}
                       </div>
                     </div>
                   </div>
                 )}
+
+                {selectedCategory === 'media' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {GALLERY_OPTIONS.map(opt => (
+                      <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-gallery', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-indigo-500 hover:bg-indigo-600/10">
+                        <div className="font-bold text-sm mb-1">{opt.name}</div>
+                        <div className="text-xs opacity-60">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {selectedCategory === 'contact' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {CONTACT_OPTIONS.map(opt => (
+                      <button key={opt.id} onClick={() => addBlock('', opt.name, 'system-contact', opt.id)} className="text-left p-4 rounded-xl border transition-all bg-neutral-800/50 border-neutral-700 text-neutral-300 hover:border-teal-500 hover:bg-teal-600/10">
+                        <div className="font-bold text-sm mb-1">{opt.name}</div>
+                        <div className="text-xs opacity-60">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
           
-          {/* Modal Footer */}
-          <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-end shrink-0">
-            <button 
-              onClick={() => { setIsAddSectionOpen(false); setPreviewBlock(null); setAddSectionStep('categories'); }}
-              className="px-6 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg font-bold text-sm transition-colors"
-            >
-              Close
+          {/* Footer */}
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0 flex justify-end gap-3">
+            <button onClick={() => { setIsAddSectionOpen(false); setPreviewBlock(null); setAddSectionStep('categories'); setSelectedCategory(null); }} className="px-6 py-2.5 text-neutral-400 hover:text-white font-medium text-sm transition-colors">
+              Cancel
             </button>
           </div>
         </div>
@@ -3825,7 +2215,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           return (
                             <div key={page.id} className={`rounded-lg transition-colors ${isActive ? 'bg-neutral-900 border border-neutral-800' : ''}`}>
                               <button onClick={() => { onSetActivePage(page.id); setSelectedBlockId(null); setShowPageProperties(false); }} className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm transition-colors ${isActive ? 'text-blue-400' : 'text-neutral-400 hover:bg-white/5 hover:text-white'}`}>
-                                <div className="flex items-center gap-3">{page.type === 'home' ? <Home size={14} /> : <FileText size={14} />}<span className="font-medium">{page.type === 'home' ? 'Home' : (page.title || 'Untitled')}</span>{page.type === 'home' && <span className="text-[9px] bg-neutral-800 text-neutral-500 px-1.5 py-0.5 rounded ml-1">Landing</span>}</div>
+                                <div className="flex items-center gap-3">{page.type === 'home' ? <Home size={14} /> : <FileText size={14} />}<span className="font-medium">{page.title}</span></div>
                                 <div className="flex items-center gap-2">{isActive && (<button onClick={(e) => { e.stopPropagation(); setShowPageProperties(!showPageProperties); }} className={`p-1 rounded hover:bg-neutral-800 transition-colors ${showPageProperties ? 'text-white bg-neutral-800' : 'text-neutral-500'}`} title="Page Properties"><Settings size={12} /></button>)}{isActive && <span className="text-[10px] bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20 font-bold">EDIT</span>}</div>
                               </button>
                               {isActive && showPageProperties && (
@@ -3843,123 +2233,86 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     )}
                   </div>
 
-                  {/* 1. INTERFACE - Global site settings */}
-                  <div className="bg-neutral-900 border border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.3)] rounded-xl overflow-hidden">
+                  {/* GLOBAL INTERFACE */}
+                  <div className="bg-neutral-900 border border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.3)] rounded-xl overflow-hidden mb-3">
                     <button onClick={() => setIsInterfaceModalOpen(true)} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
-                      <div className="flex items-center gap-3"><div className="p-1.5 bg-purple-900/30 text-purple-400 rounded"><Monitor size={16} /></div><span className="font-bold text-sm text-white">Interface</span></div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-neutral-500">{config.scrollbarStyle}</span>
-                        <ChevronRight size={14} className="text-neutral-600" />
-                      </div>
+                      <div className="flex items-center gap-3"><div className="p-1.5 bg-neutral-800 rounded text-neutral-400"><Monitor size={16} /></div><span className="font-bold text-sm text-white">Interface</span></div>
+                      <div className="text-[10px] text-neutral-500 uppercase font-bold">{config.scrollbarStyle}</div>
                     </button>
                   </div>
 
-                  {/* 2. HEADER - Fixed site header */}
-                  <div className="bg-neutral-900 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.2)] rounded-xl overflow-hidden">
-                    <button onClick={() => setIsHeaderModalOpen(true)} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
-                      <div className="flex items-center gap-3"><div className="p-1.5 bg-blue-900/30 text-blue-400 rounded"><PanelTop size={16} /></div><span className="font-bold text-sm text-white">Header</span></div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-neutral-500">{HEADER_OPTIONS.find(h => h.id === config.headerStyle)?.name}</span>
-                        <ChevronRight size={14} className="text-neutral-600" />
-                      </div>
-                    </button>
-                  </div>
-
-                  {/* 3. BODY - Page content blocks */}
+                  {/* UNIFIED PAGE LAYOUT (The Hub) */}
                   <div className="bg-neutral-900 border border-orange-500/50 shadow-[0_0_20px_rgba(249,115,22,0.3)] rounded-xl overflow-hidden">
                     <button onClick={() => setDesignSections(prev => ({ ...prev, pageSections: !prev.pageSections }))} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
-                      <div className="flex items-center gap-3"><div className="p-1.5 bg-orange-900/30 text-orange-400 rounded"><Layers size={16} /></div><span className="font-bold text-sm text-white">Body</span></div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-neutral-500">{activePage.blocks?.length || 0} sections</span>
-                        <ChevronDown size={16} className={`text-neutral-500 transition-transform ${designSections.pageSections ? 'rotate-180' : ''}`} />
-                      </div>
+                      <div className="flex items-center gap-3"><div className="p-1.5 bg-neutral-800 rounded text-neutral-400"><Layers size={16} /></div><span className="font-bold text-sm text-white">Layout</span></div><ChevronDown size={16} className={`text-neutral-500 transition-transform ${designSections.pageSections ? 'rotate-180' : ''}`} />
                     </button>
                     {designSections.pageSections && (
                       <div className="p-4 pt-0 border-t border-neutral-800 bg-black/20">
                         <div className="space-y-2 mb-4 mt-2">
-                          {/* DYNAMIC BLOCKS */}
+                          {/* 1. FIXED HEADER */}
+                          <div className="group flex items-center justify-between p-3 rounded-lg bg-neutral-900 border border-neutral-800 hover:border-blue-500/50 transition-colors">
+                            <div className="flex items-center gap-3">
+                              <div className="p-1.5 bg-blue-900/30 text-blue-400 rounded"><PanelTop size={14} /></div>
+                              <div className="flex flex-col">
+                                <span className="text-xs font-bold text-white">Header</span>
+                                <span className="text-[10px] text-neutral-500">{HEADER_OPTIONS.find(h => h.id === config.headerStyle)?.name}</span>
+                              </div>
+                            </div>
+                            <button onClick={() => setIsHeaderModalOpen(true)} className="px-3 py-1.5 bg-neutral-800 hover:bg-blue-600 text-neutral-400 hover:text-white rounded text-xs font-bold transition-all">Edit</button>
+                          </div>
+
+                          {/* 2. DYNAMIC BLOCKS */}
                           {activePage.blocks?.map((block, idx) => (
-                            <div 
-                              key={block.id} 
-                              draggable
-                              onDragStart={() => handleDragStart(idx)}
-                              onDragOver={(e) => handleDragOver(e, idx)}
-                              onDrop={() => handleDrop(idx)}
-                              className={`group flex flex-col p-3 rounded-lg border transition-all cursor-grab active:cursor-grabbing ${selectedBlockId === block.id ? 'bg-neutral-800 border-neutral-700' : 'bg-transparent border-transparent hover:bg-white/5'} ${block.hidden ? 'opacity-50' : ''} ${draggedIndex === idx ? 'opacity-20' : ''}`}
-                              onClick={() => !block.locked && setSelectedBlockId(block.id)}
-                            >
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-3 overflow-hidden">
-                                  <div className="text-[10px] font-bold text-neutral-600 w-4">{idx + 1}</div>
-                                  <div className="flex flex-col">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs font-medium text-white truncate max-w-[100px]">{block.name}</span>
-                                      {block.locked && <Lock size={10} className="text-amber-500" />}
-                                      {block.hidden && <EyeOff size={10} className="text-orange-500" />}
-                                    </div>
-                                    <span className="text-[10px] text-neutral-500 uppercase">{block.type.replace('system-', '')}</span>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      toggleBlockVisibility(block.id);
-                                    }}
-                                    className={`p-1 rounded transition-colors ${block.hidden ? 'text-orange-500 bg-orange-500/10' : 'text-neutral-400 hover:text-white hover:bg-neutral-700'}`}
-                                    title={block.hidden ? "Show Section" : "Hide Section"}
-                                  >
-                                    {block.hidden ? <EyeOff size={12} /> : <Eye size={12} />}
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      toggleBlockLock(block.id);
-                                    }}
-                                    className={`p-1 rounded transition-colors ${block.locked ? 'text-amber-500 bg-amber-500/10' : 'text-neutral-400 hover:text-white hover:bg-neutral-700'}`}
-                                    title={block.locked ? "Unlock Section" : "Lock Section"}
-                                  >
-                                    {block.locked ? <Lock size={12} /> : <Unlock size={12} />}
-                                  </button>
+                            <div key={block.id} className={`group flex items-center justify-between p-3 rounded-lg border transition-all ${selectedBlockId === block.id ? 'bg-neutral-800 border-neutral-700' : 'bg-transparent border-transparent hover:bg-white/5'}`}>
+                              <div className="flex items-center gap-3 overflow-hidden">
+                                <div className="text-[10px] font-bold text-neutral-600 w-4">{idx + 1}</div>
+                                <div className="flex flex-col">
+                                  <span className="text-xs font-medium text-white truncate max-w-[100px]">{block.name}</span>
+                                  <span className="text-[10px] text-neutral-500 uppercase">{block.type.replace('system-', '')}</span>
                                 </div>
                               </div>
-                              
-                              <div className="flex items-center justify-between pt-2 border-t border-neutral-800/50">
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (block.type === 'system-hero') { setSelectedBlockId(block.id); setSystemModalType('hero'); setIsSystemModalOpen(true); }
-                                      else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setSystemModalType('grid'); setIsSystemModalOpen(true); }
-                                      else if (block.type === 'system-footer') { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }
-                                      else { handleOpenArchitect(block.id); }
-                                    }}
-                                    disabled={block.locked}
-                                    className="p-1.5 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors disabled:opacity-30" title="Edit Section"
-                                  >
-                                    <Edit3 size={14} />
-                                  </button>
-                                  <button 
-                                    onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }}
-                                    className="p-1.5 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors"
-                                    title="Duplicate"
-                                  >
-                                    <Copy size={14} />
-                                  </button>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => {
+                                    if (block.type === 'system-hero') { setSelectedBlockId(block.id); setSystemModalType('hero'); setIsSystemModalOpen(true); }
+                                    else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setSystemModalType('grid'); setIsSystemModalOpen(true); }
+                                    else if (block.type === 'system-footer') { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }
+                                    else if (block.type.startsWith('system-')) { 
+                                      // All other system blocks: just select them to open UniversalEditor
+                                      setSelectedBlockId(block.id);
+                                    }
+                                    else { 
+                                      // Raw HTML sections use Block Architect
+                                      handleOpenArchitect(block.id); 
+                                    }
+                                  }}
+                                  className="p-1.5 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="Edit Section"
+                                >
+                                  <Edit3 size={14} />
+                                </button>
+                                <div className="flex flex-col gap-0.5">
+                                  <button onClick={() => moveBlock(idx, -1)} className="text-neutral-600 hover:text-white disabled:opacity-30" disabled={idx === 0}><MoveUp size={10} /></button>
+                                  <button onClick={() => moveBlock(idx, 1)} className="text-neutral-600 hover:text-white disabled:opacity-30" disabled={idx === (activePage.blocks?.length || 0) - 1}><MoveDown size={10} /></button>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <div className="flex flex-col gap-0.5">
-                                    <button onClick={(e) => { e.stopPropagation(); moveBlock(idx, -1); }} className="text-neutral-600 hover:text-white disabled:opacity-30" disabled={idx === 0}><MoveUp size={10} /></button>
-                                    <button onClick={(e) => { e.stopPropagation(); moveBlock(idx, 1); }} className="text-neutral-600 hover:text-white disabled:opacity-30" disabled={idx === (activePage.blocks?.length || 0) - 1}><MoveDown size={10} /></button>
-                                  </div>
-                                  <button onClick={(e) => { e.stopPropagation(); deleteBlock(block.id); }} className="p-1.5 text-neutral-600 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors ml-1"><Trash2 size={14} /></button>
-                                </div>
+                                <button onClick={() => deleteBlock(block.id)} className="p-1.5 text-neutral-600 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors ml-1"><Trash2 size={14} /></button>
                               </div>
                             </div>
                           ))}
 
+                          {/* 3. FIXED FOOTER */}
+                          <div className="group flex items-center justify-between p-3 rounded-lg bg-neutral-900 border border-neutral-800 hover:border-orange-500/50 transition-colors">
+                            <div className="flex items-center gap-3">
+                              <div className="p-1.5 bg-orange-900/30 text-orange-400 rounded"><PanelBottom size={14} /></div>
+                              <div className="flex flex-col">
+                                <span className="text-xs font-bold text-white">Footer</span>
+                                <span className="text-[10px] text-neutral-500">{FOOTER_OPTIONS.find(f => f.id === config.footerStyle)?.name}</span>
+                              </div>
+                            </div>
+                            <button onClick={() => { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }} className="px-3 py-1.5 bg-neutral-800 hover:bg-orange-600 text-neutral-400 hover:text-white rounded text-xs font-bold transition-all">Edit</button>
+                          </div>
+
                           {/* ADD SECTION BUTTON */}
-                          <div className="pt-2">
+                          <div className="pt-4">
                             <button onClick={() => setIsAddSectionOpen(true)} className="w-full py-3 border border-dashed border-neutral-700 rounded-xl flex items-center justify-center gap-2 text-neutral-500 hover:text-white hover:border-neutral-500 hover:bg-white/5 transition-all text-xs font-bold uppercase tracking-widest">
                               <Plus size={14} /> Add Section
                             </button>
@@ -3967,17 +2320,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         </div>
                       </div>
                     )}
-                  </div>
-
-                  {/* 4. FOOTER - Fixed site footer */}
-                  <div className="bg-neutral-900 border border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)] rounded-xl overflow-hidden">
-                    <button onClick={() => { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
-                      <div className="flex items-center gap-3"><div className="p-1.5 bg-emerald-900/30 text-emerald-400 rounded"><PanelBottom size={16} /></div><span className="font-bold text-sm text-white">Footer</span></div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-neutral-500">{FOOTER_OPTIONS.find(f => f.id === config.footerStyle)?.name}</span>
-                        <ChevronRight size={14} className="text-neutral-600" />
-                      </div>
-                    </button>
                   </div>
 
                   {/* INLINE BLOCK EDITOR (Restored) */}
@@ -4007,7 +2349,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
             {/* UNIVERSAL EDITOR SIDEBAR */}
             {selectedBlockId && activeBlock && activeBlock.type.startsWith('system-') && (
-               <div className="w-80 border-r border-neutral-800 bg-neutral-900 h-full overflow-hidden flex flex-col z-20">
+               <div className="w-80 border-r border-neutral-800 bg-white h-full overflow-hidden flex flex-col z-20">
                  <UniversalEditor
                     blockId={activeBlock.id}
                     blockType={activeBlock.type}
@@ -4032,41 +2374,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
                   </div>
-                  
-                  {/* Current Page Label */}
-                  <div className="flex items-center gap-2 px-3 py-1 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
-                    {(activePage?.type === 'home' || activePage?.slug === '/' || activePage?.slug === '') ? (
-                      <Home size={12} className="text-blue-400" />
-                    ) : (
-                      <FileText size={12} className="text-blue-400" />
-                    )}
-                    <span className="text-xs font-medium text-white">
-                      {(activePage?.type === 'home' || activePage?.slug === '/' || activePage?.slug === '') ? 'Home' : (activePage?.title || 'Page')}
-                    </span>
-                    <span className="text-[10px] text-neutral-500">• editing</span>
-                  </div>
-                  
                   {/* Device Preview Toggle */}
                   <div className="flex items-center gap-1 bg-black p-1 rounded-lg border border-neutral-800">
-                    <div className="flex items-center gap-1 pr-2 border-r border-neutral-800 mr-1">
-                      <button 
-                        onClick={handleUndo}
-                        disabled={!canUndo}
-                        className={`p-1.5 rounded transition-colors ${canUndo ? 'text-neutral-400 hover:text-white hover:bg-neutral-800' : 'text-neutral-700 cursor-not-allowed'}`}
-                        title="Undo (Ctrl+Z)"
-                      >
-                        <Undo2 size={14} />
-                      </button>
-                      <button 
-                        onClick={handleRedo}
-                        disabled={!canRedo}
-                        className={`p-1.5 rounded transition-colors ${canRedo ? 'text-neutral-400 hover:text-white hover:bg-neutral-800' : 'text-neutral-700 cursor-not-allowed'}`}
-                        title="Redo (Ctrl+Y)"
-                      >
-                        <Redo2 size={14} />
-                      </button>
-                    </div>
-
                     <button 
                       onClick={() => setPreviewDevice('desktop')} 
                       title="Desktop Preview"
@@ -4092,72 +2401,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     >
                       <Smartphone size={14} />
                     </button>
-                    
-                    {/* Orientation Toggle */}
-                    {previewDevice !== 'desktop' && (
-                      <button 
-                        onClick={() => setPreviewOrientation(prev => prev === 'portrait' ? 'landscape' : 'portrait')}
-                        title="Toggle Orientation"
-                        className="p-1.5 rounded text-neutral-500 hover:text-white transition-colors border-l border-neutral-800 ml-1 pl-2"
-                      >
-                        <RefreshCw size={14} className={previewOrientation === 'landscape' ? 'rotate-90' : ''} />
-                      </button>
-                    )}
-
-                    {/* Device Presets */}
-                    {previewDevice !== 'desktop' && (
-                      <select 
-                        value={previewDevicePreset}
-                        onChange={(e) => setPreviewDevicePreset(e.target.value)}
-                        className="bg-transparent text-[10px] text-neutral-400 outline-none border-l border-neutral-800 ml-1 pl-2 cursor-pointer hover:text-white"
-                      >
-                        <option value="default">Default</option>
-                        {previewDevice === 'mobile' ? (
-                          <>
-                            <option value="iphone14">iPhone 14</option>
-                            <option value="pixel7">Pixel 7</option>
-                            <option value="se">iPhone SE</option>
-                          </>
-                        ) : (
-                          <>
-                            <option value="ipadpro">iPad Pro</option>
-                            <option value="ipadmini">iPad Mini</option>
-                            <option value="surface">Surface Pro</option>
-                          </>
-                        )}
-                      </select>
-                    )}
-
-                    {/* Mobile Optimization Button - shows when mobile preview is active */}
-                    {previewDevice === 'mobile' && (
-                      <button
-                        onClick={() => {
-                          // Show mobile optimization tips
-                          showToast('📱 Mobile optimization tips: Ensure text is 16px+, buttons have 44px touch targets, and images are compressed.', 'success');
-                        }}
-                        className="p-1.5 rounded bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 transition-colors"
-                        title="Mobile Optimization Tips"
-                      >
-                        <Sparkles size={14} />
-                      </button>
-                    )}
                   </div>
-                  {/* Help & Tutorial Button */}
-                  <button 
-                    onClick={() => setShowTutorial(true)}
-                    title="Show Tutorial"
-                    className="p-1.5 text-neutral-500 hover:text-white transition-colors"
-                  >
-                    <HelpCircle size={14} />
-                  </button>
-                  {/* Navigation Builder */}
-                  <button 
-                    onClick={() => setShowNavBuilder(true)}
-                    title="Edit Navigation"
-                    className="p-1.5 text-neutral-500 hover:text-white transition-colors"
-                  >
-                    <List size={14} />
-                  </button>
                 </div>
                 
                 <div className="flex items-center gap-3">
@@ -4181,28 +2425,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       View Live
                     </a>
                   )}
-                  {/* Brand Settings Button */}
-                  <button 
-                    onClick={() => setShowBrandSettings(true)}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg text-xs font-bold transition-all"
-                  >
-                    <Palette size={14} />
-                    Brand
-                  </button>
-                  {/* Version History Button */}
+                  {/* Publish Button */}
                   <button 
                     onClick={() => {
-                      fetchPageVersions();
-                      setShowVersionHistory(true);
+                      handleSaveChanges();
+                      showToast('Website published successfully! 🚀', 'success');
                     }}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg text-xs font-bold transition-all"
-                  >
-                    <Clock size={14} />
-                    History
-                  </button>
-                  {/* Publish Button - triggers checklist first */}
-                  <button 
-                    onClick={() => setShowPublishChecklist(true)}
                     className="flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-lg text-xs font-bold transition-all shadow-lg"
                   >
                     <Rocket size={14} />
@@ -4212,12 +2440,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
               <div className="flex-1 overflow-hidden flex items-center justify-center p-8 bg-[radial-gradient(#222_1px,transparent_1px)] [background-size:16px_16px]">
                 <div className={`bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shadow-2xl overflow-hidden relative ${
-                  previewDevice === 'mobile' ? (
-                    previewOrientation === 'landscape' ? 'w-[812px] h-[375px] rounded-[40px] border-[8px] border-neutral-900' : 'w-[375px] h-[812px] rounded-[40px] border-[8px] border-neutral-900'
-                  ) : 
-                  previewDevice === 'tablet' ? (
-                    previewOrientation === 'landscape' ? 'w-[1024px] h-[768px] rounded-[20px] border-[6px] border-neutral-900' : 'w-[768px] h-[1024px] rounded-[20px] border-[6px] border-neutral-900'
-                  ) :
+                  previewDevice === 'mobile' ? 'w-[375px] h-[812px] rounded-[40px] border-[8px] border-neutral-900' : 
+                  previewDevice === 'tablet' ? 'w-[768px] h-[1024px] rounded-[20px] border-[6px] border-neutral-900' :
                   'w-full h-full max-w-[1400px] rounded-lg border border-neutral-800'
                 }`}>
                   <div className={`w-full h-full overflow-y-auto bg-white scrollbar-${config.scrollbarStyle}`}>
@@ -4231,13 +2455,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       onUpdateBlock={updateActiveBlockData}
                       onEditBlock={(blockId) => {
                         setSelectedBlockId(blockId);
-                        // Show first-edit hint if this is user's first time clicking a section
-                        if (!hasSeenFirstEditHint) {
-                          setShowFirstEditHint(true);
-                          setHasSeenFirstEditHint(true);
-                          localStorage.setItem('evolv_seen_first_edit', 'true');
-                          setTimeout(() => setShowFirstEditHint(false), 5000);
-                        }
                       }}
                       onSelectField={(field) => setActiveField(field)}
                       onMoveBlock={(blockId, direction) => {
@@ -4245,17 +2462,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         if (index !== -1) moveBlock(index, direction === 'up' ? -1 : 1);
                       }}
                       onDeleteBlock={(blockId) => deleteBlock(blockId)}
-                      onDuplicateBlock={(blockId) => duplicateBlock(blockId)}
-                      onToggleVisibility={(blockId) => toggleBlockVisibility(blockId)}
-                      onToggleLock={(blockId) => toggleBlockLock(blockId)}
-                      onSwitchLayout={(blockId) => {
+                      onDuplicateBlock={(blockId) => {
                         const block = activePage.blocks.find(b => b.id === blockId);
-                        if (!block) return;
-                        setSelectedBlockId(blockId);
-                        if (block.type === 'system-hero') { setSystemModalType('hero'); setIsSystemModalOpen(true); }
-                        else if (block.type === 'system-grid') { setSystemModalType('grid'); setIsSystemModalOpen(true); }
-                        else if (block.type === 'system-footer') { setSystemModalType('footer'); setIsSystemModalOpen(true); }
-                        else { handleOpenArchitect(blockId); }
+                        if (block) {
+                          const newBlock = { ...block, id: crypto.randomUUID() };
+                          const index = activePage.blocks.findIndex(b => b.id === blockId);
+                          const newBlocks = [...activePage.blocks];
+                          newBlocks.splice(index + 1, 0, newBlock);
+                          onUpdatePage(activePageId, { blocks: newBlocks });
+                        }
                       }}
                       showCartDrawer={false}
                     />
@@ -5374,33 +3589,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       {renderAddSectionLibrary()}
       {renderWelcomeWizard()}
       {renderAddPageModal()}
-      {renderTutorial()}
-      {renderSectionRecommendations()}
-      {renderPublishChecklist()}
-      {renderBrandSettings()}
-      {renderNavBuilder()}
-      {renderVersionHistory()}
-      
-      {/* First Edit Hint - Shows when user clicks a section for the first time */}
-      {showFirstEditHint && selectedBlockId && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[250] animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="bg-blue-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 max-w-md">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Edit3 size={20} />
-            </div>
-            <div>
-              <p className="font-bold mb-0.5">Section Selected!</p>
-              <p className="text-sm text-blue-100">Edit this section's content in the panel on the left. Look for ✨ to use AI assistance.</p>
-            </div>
-            <button 
-              onClick={() => setShowFirstEditHint(false)}
-              className="text-blue-200 hover:text-white transition-colors flex-shrink-0"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-      )}
       
       <main className="flex-1 overflow-y-auto relative flex flex-col">{renderContent()}</main>
       

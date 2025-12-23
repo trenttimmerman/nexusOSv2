@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Product, Page, MediaAsset, Campaign, StoreConfig, PageBlock } from '../types';
+import { Product, Page, MediaAsset, Campaign, StoreConfig } from '../types';
 import { MOCK_PRODUCTS } from '../constants';
 
 // Defaults
@@ -42,66 +42,6 @@ const DEFAULT_MEDIA_ASSETS: MediaAsset[] = [
   }
 ];
 
-// Default starter blocks for new stores - gives users something real to customize
-const DEFAULT_HOME_BLOCKS: PageBlock[] = [
-  {
-    id: 'starter-hero',
-    type: 'system-hero',
-    name: 'Hero Section',
-    content: '',
-    variant: 'impact',
-    data: {
-      heading: 'Welcome to Your New Store',
-      subheading: 'This is your homepage hero section. Click to edit this text and make it your own.',
-      buttonText: 'Shop Now',
-      buttonLink: '/shop',
-      backgroundImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop',
-    }
-  },
-  {
-    id: 'starter-features',
-    type: 'system-layout',
-    name: 'Features',
-    content: '',
-    variant: 'layout-features',
-    data: {
-      heading: 'Why Choose Us',
-      subheading: 'Highlight your unique value propositions',
-      features: [
-        { icon: '🚀', title: 'Fast Shipping', description: 'Get your orders delivered quickly' },
-        { icon: '💎', title: 'Premium Quality', description: 'Only the best products for you' },
-        { icon: '💬', title: '24/7 Support', description: 'We\'re here to help anytime' },
-      ]
-    }
-  },
-  {
-    id: 'starter-products',
-    type: 'system-collection',
-    name: 'Featured Products',
-    content: '',
-    variant: 'collection-grid-tight',
-    data: {
-      heading: 'Featured Products',
-      subheading: 'Check out our latest arrivals',
-      productCount: 4,
-      gridColumns: '4',
-    }
-  },
-  {
-    id: 'starter-newsletter',
-    type: 'system-email',
-    name: 'Newsletter',
-    content: '',
-    variant: 'email-minimal',
-    data: {
-      heading: 'Stay in the Loop',
-      subheading: 'Subscribe to our newsletter for exclusive offers and updates.',
-      buttonText: 'Subscribe',
-      placeholder: 'Enter your email',
-    }
-  }
-];
-
 const DEFAULT_PAGES: Page[] = [
   {
     id: 'home',
@@ -109,7 +49,16 @@ const DEFAULT_PAGES: Page[] = [
     slug: '/',
     type: 'home',
     content: '',
-    blocks: DEFAULT_HOME_BLOCKS
+    blocks: [
+      {
+        id: 'scroll-demo',
+        type: 'system-scroll',
+        name: 'Partner Logos',
+        variant: 'logo-marquee',
+        content: '',
+        data: {}
+      }
+    ]
   },
   {
     id: 'about',
@@ -119,27 +68,10 @@ const DEFAULT_PAGES: Page[] = [
     content: '',
     blocks: [
       {
-        id: 'about-hero',
-        type: 'system-hero',
-        name: 'About Hero',
-        content: '',
-        variant: 'split',
-        data: {
-          heading: 'Our Story',
-          subheading: 'Tell your visitors about your brand, mission, and what makes you special.',
-          backgroundImage: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2000&auto=format&fit=crop',
-        }
-      },
-      {
-        id: 'about-content',
-        type: 'system-rich-text',
-        name: 'About Content',
-        content: '',
-        variant: 'rt-centered',
-        data: {
-          heading: 'Who We Are',
-          content: '<p>Share your story here. Talk about how your business started, what drives you, and what you stand for. Customers love to know the people behind the brand.</p><p>This is a rich text section - you can add formatting, links, and more.</p>'
-        }
+        id: 'b1',
+        type: 'section',
+        name: 'Hero Header',
+        content: '<div class="my-12 p-8 bg-neutral-50 rounded-2xl"><h2 class="text-3xl font-bold mb-4">We are Evolv.</h2><p class="text-lg text-neutral-600">Born from the belief that commerce should be fluid, we build tools for the next generation of creators.</p></div>'
       }
     ]
   }
@@ -516,7 +448,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await supabase.from('pages').update(updates).eq('id', pageId);
     if (error) {
       console.error('Failed to update page:', error);
-      throw new Error(`Failed to update page: ${error.message}`);
+      return;
     }
     // Only update local state if DB update succeeded
     setPages(prev => prev.map(p => p.id === pageId ? { ...p, ...updates } : p));
