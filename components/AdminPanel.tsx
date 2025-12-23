@@ -3843,35 +3843,41 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     )}
                   </div>
 
-                  {/* GLOBAL INTERFACE */}
-                  <div className="bg-neutral-900 border border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.3)] rounded-xl overflow-hidden mb-3">
+                  {/* 1. INTERFACE - Global site settings */}
+                  <div className="bg-neutral-900 border border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.3)] rounded-xl overflow-hidden">
                     <button onClick={() => setIsInterfaceModalOpen(true)} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
-                      <div className="flex items-center gap-3"><div className="p-1.5 bg-neutral-800 rounded text-neutral-400"><Monitor size={16} /></div><span className="font-bold text-sm text-white">Interface</span></div>
-                      <div className="text-[10px] text-neutral-500 uppercase font-bold">{config.scrollbarStyle}</div>
+                      <div className="flex items-center gap-3"><div className="p-1.5 bg-purple-900/30 text-purple-400 rounded"><Monitor size={16} /></div><span className="font-bold text-sm text-white">Interface</span></div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-neutral-500">{config.scrollbarStyle}</span>
+                        <ChevronRight size={14} className="text-neutral-600" />
+                      </div>
                     </button>
                   </div>
 
-                  {/* UNIFIED PAGE LAYOUT (The Hub) */}
+                  {/* 2. HEADER - Fixed site header */}
+                  <div className="bg-neutral-900 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.2)] rounded-xl overflow-hidden">
+                    <button onClick={() => setIsHeaderModalOpen(true)} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
+                      <div className="flex items-center gap-3"><div className="p-1.5 bg-blue-900/30 text-blue-400 rounded"><PanelTop size={16} /></div><span className="font-bold text-sm text-white">Header</span></div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-neutral-500">{HEADER_OPTIONS.find(h => h.id === config.headerStyle)?.name}</span>
+                        <ChevronRight size={14} className="text-neutral-600" />
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* 3. BODY - Page content blocks */}
                   <div className="bg-neutral-900 border border-orange-500/50 shadow-[0_0_20px_rgba(249,115,22,0.3)] rounded-xl overflow-hidden">
                     <button onClick={() => setDesignSections(prev => ({ ...prev, pageSections: !prev.pageSections }))} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
-                      <div className="flex items-center gap-3"><div className="p-1.5 bg-neutral-800 rounded text-neutral-400"><Layers size={16} /></div><span className="font-bold text-sm text-white">Layout</span></div><ChevronDown size={16} className={`text-neutral-500 transition-transform ${designSections.pageSections ? 'rotate-180' : ''}`} />
+                      <div className="flex items-center gap-3"><div className="p-1.5 bg-orange-900/30 text-orange-400 rounded"><Layers size={16} /></div><span className="font-bold text-sm text-white">Body</span></div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-neutral-500">{activePage.blocks?.length || 0} sections</span>
+                        <ChevronDown size={16} className={`text-neutral-500 transition-transform ${designSections.pageSections ? 'rotate-180' : ''}`} />
+                      </div>
                     </button>
                     {designSections.pageSections && (
                       <div className="p-4 pt-0 border-t border-neutral-800 bg-black/20">
                         <div className="space-y-2 mb-4 mt-2">
-                          {/* 1. FIXED HEADER */}
-                          <div className="group flex items-center justify-between p-3 rounded-lg bg-neutral-900 border border-neutral-800 hover:border-blue-500/50 transition-colors">
-                            <div className="flex items-center gap-3">
-                              <div className="p-1.5 bg-blue-900/30 text-blue-400 rounded"><PanelTop size={14} /></div>
-                              <div className="flex flex-col">
-                                <span className="text-xs font-bold text-white">Header</span>
-                                <span className="text-[10px] text-neutral-500">{HEADER_OPTIONS.find(h => h.id === config.headerStyle)?.name}</span>
-                              </div>
-                            </div>
-                            <button onClick={() => setIsHeaderModalOpen(true)} className="px-3 py-1.5 bg-neutral-800 hover:bg-blue-600 text-neutral-400 hover:text-white rounded text-xs font-bold transition-all">Edit</button>
-                          </div>
-
-                          {/* 2. DYNAMIC BLOCKS */}
+                          {/* DYNAMIC BLOCKS */}
                           {activePage.blocks?.map((block, idx) => (
                             <div 
                               key={block.id} 
@@ -3952,20 +3958,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             </div>
                           ))}
 
-                          {/* 3. FIXED FOOTER */}
-                          <div className="group flex items-center justify-between p-3 rounded-lg bg-neutral-900 border border-neutral-800 hover:border-orange-500/50 transition-colors">
-                            <div className="flex items-center gap-3">
-                              <div className="p-1.5 bg-orange-900/30 text-orange-400 rounded"><PanelBottom size={14} /></div>
-                              <div className="flex flex-col">
-                                <span className="text-xs font-bold text-white">Footer</span>
-                                <span className="text-[10px] text-neutral-500">{FOOTER_OPTIONS.find(f => f.id === config.footerStyle)?.name}</span>
-                              </div>
-                            </div>
-                            <button onClick={() => { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }} className="px-3 py-1.5 bg-neutral-800 hover:bg-orange-600 text-neutral-400 hover:text-white rounded text-xs font-bold transition-all">Edit</button>
-                          </div>
-
                           {/* ADD SECTION BUTTON */}
-                          <div className="pt-4">
+                          <div className="pt-2">
                             <button onClick={() => setIsAddSectionOpen(true)} className="w-full py-3 border border-dashed border-neutral-700 rounded-xl flex items-center justify-center gap-2 text-neutral-500 hover:text-white hover:border-neutral-500 hover:bg-white/5 transition-all text-xs font-bold uppercase tracking-widest">
                               <Plus size={14} /> Add Section
                             </button>
@@ -3973,6 +3967,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         </div>
                       </div>
                     )}
+                  </div>
+
+                  {/* 4. FOOTER - Fixed site footer */}
+                  <div className="bg-neutral-900 border border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)] rounded-xl overflow-hidden">
+                    <button onClick={() => { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
+                      <div className="flex items-center gap-3"><div className="p-1.5 bg-emerald-900/30 text-emerald-400 rounded"><PanelBottom size={16} /></div><span className="font-bold text-sm text-white">Footer</span></div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-neutral-500">{FOOTER_OPTIONS.find(f => f.id === config.footerStyle)?.name}</span>
+                        <ChevronRight size={14} className="text-neutral-600" />
+                      </div>
+                    </button>
                   </div>
 
                   {/* INLINE BLOCK EDITOR (Restored) */}
