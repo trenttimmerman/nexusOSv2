@@ -200,12 +200,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Local State for Draft Mode
   const [localPages, setLocalPages] = useState<Page[]>(pages);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
       if (!hasUnsavedChanges) {
           setLocalPages(pages);
       }
   }, [pages, hasUnsavedChanges]);
+
+  // Auto-save effect - debounced save when changes are made
+  useEffect(() => {
+    if (!hasUnsavedChanges || isSaving) return;
+    
+    const timer = setTimeout(async () => {
+      const pageToSave = localPages.find(p => p.id === activePageId);
+      if (pageToSave) {
+        setIsSaving(true);
+        await onUpdatePage(activePageId, { blocks: pageToSave.blocks });
+        setHasUnsavedChanges(false);
+        setIsSaving(false);
+        console.log('[AutoSave] Changes saved automatically');
+      }
+    }, 1500); // 1.5 second debounce
+
+    return () => clearTimeout(timer);
+  }, [hasUnsavedChanges, localPages, activePageId, isSaving]);
   
   // Settings State
   const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'payments' | 'shipping' | 'taxes' | 'policies' | 'notifications' | 'domains'>('general');
@@ -2407,11 +2426,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="flex items-center gap-3">
                   <button 
                       onClick={handleSaveChanges}
-                      disabled={!hasUnsavedChanges}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${hasUnsavedChanges ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'}`}
+                      disabled={!hasUnsavedChanges || isSaving}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        isSaving ? 'bg-yellow-600 text-white' :
+                        hasUnsavedChanges ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 
+                        'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+                      }`}
                   >
-                      <Save size={14} />
-                      {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
+                      {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                      {isSaving ? 'Saving...' : hasUnsavedChanges ? 'Save Changes' : 'Saved'}
                   </button>
                   {/* View Live Site Button */}
                   {config.slug && (
