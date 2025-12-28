@@ -445,9 +445,11 @@ The Design Studio supports **15 section types** organized into **12 categories**
 - **Trigger:** Click block in list, or edit icon
 - **Handler:** `setSelectedBlockId(blockId)`
 - **Flow:**
-  - For `system-*` blocks → Opens UniversalEditor panel
-  - For raw `section` type → Opens inline HTML editor
-  - For hero/grid/footer → Opens respective system modal
+  - For `system-hero` → Opens System Modal (hero variant picker)
+  - For `system-grid` → Opens System Modal (grid variant picker)
+  - For `system-footer` → Opens System Modal (footer variant picker)
+  - For other `system-*` blocks → Opens UniversalEditor panel (via `setSelectedBlockId`)
+  - For raw `section` type → Opens Block Architect (HTML editor)
 
 ### 3. Delete Section
 - **Trigger:** Trash icon on block row
