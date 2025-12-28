@@ -16,11 +16,30 @@ import { CONTACT_COMPONENTS } from './ContactLibrary';
 import { LAYOUT_COMPONENTS } from './LayoutLibrary';
 import { COLLECTION_COMPONENTS } from './CollectionLibrary';
 import { SectionWrapper } from './SectionWrapper';
-import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
+import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2, Lock, Unlock, Eye, EyeOff } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 
-export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: string) => void }> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true, onSelectField }) => {
+export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: string) => void }> = ({ 
+  config, 
+  products, 
+  pages, 
+  activePageId, 
+  activeProductSlug, 
+  onNavigate, 
+  previewBlock, 
+  activeBlockId, 
+  onUpdateBlock, 
+  onEditBlock, 
+  onMoveBlock, 
+  onDeleteBlock, 
+  onDuplicateBlock, 
+  onToggleVisibility,
+  onToggleLock,
+  onSwitchLayout,
+  showCartDrawer = true, 
+  onSelectField 
+}) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
 
   // Extract design settings from config
@@ -173,6 +192,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
               isEditable={isEditable}
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
               onSelectField={onSelectField}
+              onEditBlock={onEditBlock}
               blockId={block.id}
             />
           ) : null;
@@ -273,11 +293,16 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         key={block.id}
         blockId={block.id}
         isSelected={activeBlockId === block.id}
+        isHidden={block.hidden}
+        isLocked={block.locked}
         onSelect={() => onEditBlock && onEditBlock(block.id)}
         onMoveUp={() => onMoveBlock && onMoveBlock(block.id, 'up')}
         onMoveDown={() => onMoveBlock && onMoveBlock(block.id, 'down')}
         onDelete={() => onDeleteBlock && onDeleteBlock(block.id)}
         onDuplicate={() => onDuplicateBlock && onDuplicateBlock(block.id)}
+        onToggleVisibility={() => onToggleVisibility && onToggleVisibility(block.id)}
+        onToggleLock={() => onToggleLock && onToggleLock(block.id)}
+        onSwitchLayout={() => onSwitchLayout && onSwitchLayout(block.id)}
       >
         {renderContent()}
       </SectionWrapper>
@@ -303,39 +328,86 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
       <main className="flex-1">
         {activePage.blocks && activePage.blocks.length > 0 ? (
           // Render All Blocks (Including System Components)
-          <div className={`${activePage.type === 'custom' ? 'max-w-7xl mx-auto' : 'w-full'}`}>
-            {activePage.type === 'custom' ? (
-              <div className="max-w-4xl mx-auto px-6 pb-24">
-                {activePage.blocks.map(renderBlock)}
-                {previewBlock && (
-                  <div className="border-2 border-blue-500 rounded-xl relative overflow-hidden animate-pulse">
-                    <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-bold px-2 py-1 z-50">PREVIEW</div>
-                    {renderBlock(previewBlock)}
+          // Treat page as home if type is 'home' OR slug is '/' or empty
+          (() => {
+            const isHomePage = activePage.type === 'home' || activePage.slug === '/' || activePage.slug === '' || activePage.slug === 'home';
+            return (
+              <div className={`${!isHomePage ? 'max-w-7xl mx-auto' : 'w-full'}`}>
+                {/* Page header only for non-home custom pages - no breadcrumb */}
+                {!isHomePage && (
+                  <div className="max-w-4xl mx-auto pt-24 px-6 mb-8">
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-neutral-900">{activePage.title}</h1>
+                  </div>
+                )}
+
+                {!isHomePage ? (
+                  <div className="max-w-4xl mx-auto px-6 pb-24">
+                    {activePage.blocks.map(renderBlock)}
+                    {previewBlock && (
+                      <div className="border-2 border-blue-500 rounded-xl relative overflow-hidden animate-pulse">
+                        <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-bold px-2 py-1 z-50">PREVIEW</div>
+                        {renderBlock(previewBlock)}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="w-full">
+                    {activePage.blocks.map(renderBlock)}
+                    {previewBlock && (
+                      <div className="border-2 border-blue-500 relative overflow-hidden animate-pulse">
+                        <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-bold px-2 py-1 z-50">PREVIEW</div>
+                        {renderBlock(previewBlock)}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            ) : (
-              <div className="w-full">
-                {activePage.blocks.map(renderBlock)}
-                {previewBlock && (
-                  <div className="border-2 border-blue-500 relative overflow-hidden animate-pulse">
-                    <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-bold px-2 py-1 z-50">PREVIEW</div>
-                    {renderBlock(previewBlock)}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+            );
+          })()
         ) : (
-          // Empty State Placeholder
-          <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] p-12 text-center bg-neutral-50/50 m-6 rounded-2xl border-2 border-dashed border-neutral-200">
-            <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400 mb-6 shadow-sm">
-              <Plus size={32} />
+          // Empty State - More helpful with quick actions
+          <div className="flex-1 flex flex-col items-center justify-center min-h-[70vh] p-12 text-center bg-gradient-to-br from-neutral-50 to-neutral-100 m-6 rounded-2xl border-2 border-dashed border-neutral-300">
+            <div className="max-w-md mx-auto">
+              {/* Icon */}
+              <div className="w-20 h-20 rounded-2xl bg-white shadow-lg flex items-center justify-center mx-auto mb-8">
+                <Layout size={36} className="text-neutral-400" />
+              </div>
+              
+              {/* Heading */}
+              <h3 className="text-2xl font-bold mb-3 text-neutral-900">This Page is Empty</h3>
+              <p className="text-neutral-500 mb-8">Add sections to start building your page. Use the sidebar to add a Hero, Products, Contact form, and more.</p>
+              
+              {/* Quick Add Buttons */}
+              <div className="flex flex-wrap gap-3 justify-center mb-8">
+                <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-neutral-200 text-sm font-medium text-neutral-600 flex items-center gap-2">
+                  <Plus size={16} style={{ color: primaryColor }} />
+                  <span>Click + in sidebar</span>
+                </div>
+              </div>
+              
+              {/* Suggested Sections */}
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-200 text-left">
+                <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">Suggested Sections</p>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="flex items-center gap-2 text-neutral-600">
+                    <span>🎯</span> Hero Banner
+                  </div>
+                  <div className="flex items-center gap-2 text-neutral-600">
+                    <span>🛍️</span> Product Grid
+                  </div>
+                  <div className="flex items-center gap-2 text-neutral-600">
+                    <span>✨</span> Features
+                  </div>
+                  <div className="flex items-center gap-2 text-neutral-600">
+                    <span>📧</span> Newsletter
+                  </div>
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-bold mb-2" style={{ color: primaryColor }}>Start Building</h3>
-            <p className="text-neutral-500 max-w-xs mx-auto mb-6">This page is currently empty. Add your first section from the sidebar to bring it to life.</p>
+            
+            {/* Preview block if hovering over a section type */}
             {previewBlock && (
-              <div className="w-full max-w-4xl mx-auto border-2 relative overflow-hidden animate-pulse rounded-lg shadow-xl" style={{ borderColor: primaryColor, backgroundColor }}>
+              <div className="w-full max-w-4xl mx-auto mt-8 border-2 relative overflow-hidden animate-pulse rounded-lg shadow-xl" style={{ borderColor: primaryColor, backgroundColor }}>
                 <div className="text-white text-[10px] font-bold px-2 py-1 z-50 absolute top-0 right-0" style={{ backgroundColor: primaryColor }}>PREVIEW</div>
                 {renderBlock(previewBlock)}
               </div>
