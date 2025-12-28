@@ -3932,6 +3932,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                       if (block.type === 'system-hero') { setSelectedBlockId(block.id); setSystemModalType('hero'); setIsSystemModalOpen(true); }
                                       else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setSystemModalType('grid'); setIsSystemModalOpen(true); }
                                       else if (block.type === 'system-footer') { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }
+                                      else if (block.type.startsWith('system-')) { 
+                                        // All other system blocks: just select them to open UniversalEditor
+                                        setSelectedBlockId(block.id);
+                                      }
                                       else { handleOpenArchitect(block.id); }
                                     }}
                                     disabled={block.locked}
@@ -4255,6 +4259,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         if (block.type === 'system-hero') { setSystemModalType('hero'); setIsSystemModalOpen(true); }
                         else if (block.type === 'system-grid') { setSystemModalType('grid'); setIsSystemModalOpen(true); }
                         else if (block.type === 'system-footer') { setSystemModalType('footer'); setIsSystemModalOpen(true); }
+                        else if (block.type.startsWith('system-')) {
+                          // Other system blocks - UniversalEditor already opens via setSelectedBlockId
+                        }
                         else { handleOpenArchitect(blockId); }
                       }}
                       showCartDrawer={false}
