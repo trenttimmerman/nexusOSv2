@@ -16,6 +16,8 @@ import { COLLECTION_OPTIONS } from './CollectionLibrary';
 import { HERO_OPTIONS } from './HeroLibrary';
 import { GALLERY_OPTIONS } from './GalleryLibrary';
 import { SOCIAL_OPTIONS } from './SocialLibrary';
+import { SCROLL_OPTIONS } from './ScrollLibrary';
+import { PRODUCT_CARD_OPTIONS } from './ProductCardLibrary';
 import { RICH_TEXT_OPTIONS, EMAIL_SIGNUP_OPTIONS, COLLAPSIBLE_OPTIONS, LOGO_LIST_OPTIONS, PROMO_BANNER_OPTIONS } from './SectionLibrary';
 
 const ALL_OPTIONS: Record<string, any[]> = {
@@ -27,6 +29,8 @@ const ALL_OPTIONS: Record<string, any[]> = {
   'system-collection': COLLECTION_OPTIONS,
   'system-gallery': GALLERY_OPTIONS,
   'system-social': SOCIAL_OPTIONS,
+  'system-scroll': SCROLL_OPTIONS,
+  'system-grid': PRODUCT_CARD_OPTIONS,
   'system-rich-text': RICH_TEXT_OPTIONS,
   'system-email': EMAIL_SIGNUP_OPTIONS,
   'system-collapsible': COLLAPSIBLE_OPTIONS,
@@ -351,6 +355,107 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
       { key: 'image', label: 'Image', type: 'image', group: 'media' },
       { key: 'buttonText', label: 'Button Text', type: 'text', group: 'buttons', showAI: true },
       { key: 'buttonLink', label: 'Button Link', type: 'linkSelector', group: 'buttons' },
+    ]
+  },
+
+  'system-scroll': {
+    title: 'Scrolling Section',
+    description: 'Animated scrolling content like marquees and tickers',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'logos', label: 'Logos', icon: <ImageIcon size={12} /> },
+      { id: 'style', label: 'Style', icon: <Palette size={12} /> },
+    ],
+    fields: [
+      { key: 'text', label: 'Ticker Text', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., FREE SHIPPING • NEW ARRIVALS • LIMITED TIME OFFER',
+        tip: 'Use • or | to separate items. Text will scroll continuously.',
+        examples: ['FREE SHIPPING WORLDWIDE • NEW COLLECTION OUT NOW', '🔥 SALE ENDS SOON • UP TO 50% OFF', '✨ PREMIUM QUALITY • HANDCRAFTED'] },
+      { key: 'logos', label: 'Logo URLs', type: 'text', group: 'logos',
+        placeholder: 'Comma-separated image URLs',
+        tip: 'Add logo image URLs separated by commas. Logos will scroll horizontally.' },
+      { key: 'speed', label: 'Scroll Speed', type: 'select', group: 'style',
+        options: [
+          { value: 'slow', label: 'Slow' },
+          { value: 'normal', label: 'Normal' },
+          { value: 'fast', label: 'Fast' },
+        ],
+        defaultValue: 'normal' },
+      { key: 'pauseOnHover', label: 'Pause on Hover', type: 'toggle', group: 'style', defaultValue: true,
+        tip: 'Animation pauses when user hovers over the section' },
+    ]
+  },
+
+  'system-grid': {
+    title: 'Product Grid',
+    description: 'Display products in a customizable grid layout',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'settings', label: 'Grid Settings', icon: <Grid size={12} /> },
+      { id: 'style', label: 'Card Style', icon: <Palette size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Featured Products, Best Sellers',
+        examples: ['Featured Products', 'New Arrivals', 'Best Sellers', 'Shop the Collection'] },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
+        placeholder: 'Optional description for the grid section' },
+      { key: 'columns', label: 'Columns', type: 'select', group: 'settings',
+        options: [
+          { value: '2', label: '2 Columns' },
+          { value: '3', label: '3 Columns' },
+          { value: '4', label: '4 Columns' },
+          { value: '5', label: '5 Columns' },
+        ],
+        defaultValue: '4' },
+      { key: 'limit', label: 'Products to Show', type: 'number', group: 'settings',
+        placeholder: '8', defaultValue: 8,
+        tip: 'Maximum number of products to display' },
+      { key: 'showPrices', label: 'Show Prices', type: 'toggle', group: 'style', defaultValue: true },
+      { key: 'showQuickAdd', label: 'Show Quick Add', type: 'toggle', group: 'style', defaultValue: true,
+        tip: 'Show add to cart button on hover' },
+      { key: 'buttonText', label: 'View All Button', type: 'text', group: 'content',
+        placeholder: 'View All Products' },
+      { key: 'buttonLink', label: 'View All Link', type: 'linkSelector', group: 'content',
+        placeholder: '/shop' },
+    ]
+  },
+
+  'system-logo-list': {
+    title: 'Logo List',
+    description: 'Display partner, client, or brand logos',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'logos', label: 'Logos', icon: <ImageIcon size={12} /> },
+      { id: 'style', label: 'Style', icon: <Palette size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Trusted By, As Seen In',
+        examples: ['Trusted By', 'As Seen In', 'Our Partners', 'Featured In'] },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
+      { key: 'grayscale', label: 'Grayscale Logos', type: 'toggle', group: 'style', defaultValue: true,
+        tip: 'Display logos in grayscale (color on hover)' },
+    ]
+  },
+
+  'system-promo': {
+    title: 'Promo Banner',
+    description: 'Announcement or promotional banner',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'style', label: 'Style', icon: <Palette size={12} /> },
+    ],
+    fields: [
+      { key: 'text', label: 'Banner Text', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Free shipping on orders over $50!',
+        examples: ['🎉 Free shipping on orders over $50!', '⏰ Sale ends tonight!', '✨ New arrivals just dropped'] },
+      { key: 'link', label: 'Link URL', type: 'linkSelector', group: 'content',
+        placeholder: '/shop' },
+      { key: 'linkText', label: 'Link Text', type: 'text', group: 'content',
+        placeholder: 'Shop Now' },
+      { key: 'dismissible', label: 'Can Dismiss', type: 'toggle', group: 'style', defaultValue: true,
+        tip: 'Allow visitors to close the banner' },
     ]
   },
 };

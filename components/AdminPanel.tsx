@@ -1138,16 +1138,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       }
   };
 
-  // Auto-save functionality
+  // Auto-save functionality - saves 1.5s after changes stop
   useEffect(() => {
-    if (!hasUnsavedChanges) return;
+    if (!hasUnsavedChanges || isSaving) return;
 
     const timer = setTimeout(() => {
       handleSaveChanges();
-    }, 5000); // Auto-save after 5 seconds of inactivity
+    }, 1500); // Auto-save after 1.5 seconds of inactivity
 
     return () => clearTimeout(timer);
-  }, [localPages, hasUnsavedChanges]);
+  }, [localPages, hasUnsavedChanges, isSaving]);
 
   const handlePublish = async () => {
     await handleSaveChanges();
