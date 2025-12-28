@@ -56,26 +56,33 @@ Still needs fixing:
 ### Working ✅
 - All 15 section types render correctly
 - Edit pencil routing for all system-* blocks
-- Block Architect adds blocks with correct type
+- Block Architect adds blocks with correct type (FIXED this session)
 - Auto-save (1.5s debounce)
 - Public store access via `/s/{store-slug}`
 - RLS policies for public reads
 - Section field configs for all types
+- Login flow works correctly
+- Page update/save works correctly
+- Profile → Store → Config chain verified
 
-### Needs Database Migration 🟠
-Run this SQL in Supabase dashboard:
+### Database Migrations Created
+Two migrations ready to apply:
 
+**1. Fix Pages Slug (20250101000031)**
 ```sql
--- Fix pages slug constraint to be per-store unique
 ALTER TABLE pages DROP CONSTRAINT IF EXISTS pages_slug_key;
 ALTER TABLE pages ADD CONSTRAINT pages_store_slug_unique UNIQUE (store_id, slug);
 ```
 
-### Outstanding Items 📋
-1. **pages.id** - Should auto-generate UUIDs
-2. **products.id** - Should auto-generate UUIDs
-3. Test all editor flows with live interaction
-4. Consider adding created_at timestamps with defaults
+**2. Add ID Auto-Generation (20250101000032)**
+```sql
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+ALTER TABLE pages ALTER COLUMN id SET DEFAULT gen_random_uuid()::text;
+ALTER TABLE products ALTER COLUMN id SET DEFAULT gen_random_uuid()::text;
+ALTER TABLE pages ALTER COLUMN created_at SET DEFAULT now();
+ALTER TABLE products ALTER COLUMN created_at SET DEFAULT now();
+ALTER TABLE products ALTER COLUMN updated_at SET DEFAULT now();
+```
 
 ---
 
