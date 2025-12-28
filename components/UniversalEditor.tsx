@@ -982,6 +982,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   };
 
   // Enhanced Rich Text with working formatting
+  // Uses local state + debounce to prevent focus loss
   const RichText = ({ id, label, value, onChange, rows = 3, tip, maxLength, showAI, fieldKey }: { 
     id?: string, 
     label: string, 
@@ -995,10 +996,32 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   }) => {
     const [localValue, setLocalValue] = useState(value || '');
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+    const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
 
     React.useEffect(() => {
       setLocalValue(value || '');
     }, [value]);
+    
+    const handleChange = (newValue: string) => {
+      setLocalValue(newValue);
+      
+      // Debounce the parent update
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      debounceRef.current = setTimeout(() => {
+        onChange(newValue);
+      }, 300);
+    };
+    
+    // Cleanup debounce on unmount
+    React.useEffect(() => {
+      return () => {
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+      };
+    }, []);
 
     const applyFormat = (format: 'bold' | 'italic' | 'link') => {
       const textarea = textareaRef.current;
@@ -1018,6 +1041,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
           break;
         case 'italic':
           newText = localValue.substring(0, start) + `*${selectedText}*` + localValue.substring(end);
+
           cursorOffset = selectedText ? 0 : 1;
           break;
         case 'link':
@@ -1030,7 +1054,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
       }
 
       setLocalValue(newText);
-      onChange(newText);
+      onChange(newText); // Immediate update for formatting actions
 
       // Restore focus
       setTimeout(() => {
@@ -1092,10 +1116,8 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         <textarea
           ref={textareaRef}
           value={localValue}
-          onChange={(e) => {
-            setLocalValue(e.target.value);
-            onChange(e.target.value);
-          }}
+          onChange={(e) => handleChange(e.target.value)}
+          onBlur={() => onChange(localValue)}
           className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-neutral-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none resize-none transition-all placeholder:text-neutral-700"
           rows={rows}
           maxLength={maxLength}
@@ -1111,6 +1133,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   };
 
   // Enhanced Input with tips, examples, and character count
+  // Uses local state to prevent focus loss on every keystroke
   const Input = ({ label, value, onChange, id, fieldKey, showAI = false, maxLength, placeholder, tip, examples }: { 
     label: string, 
     value: string, 
@@ -1122,7 +1145,37 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     placeholder?: string,
     tip?: string,
     examples?: string[]
-  }) => (
+  }) => {
+    const [localValue, setLocalValue] = useState(value || '');
+    const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
+    
+    // Sync from parent when value changes externally (e.g., AI generation)
+    React.useEffect(() => {
+      setLocalValue(value || '');
+    }, [value]);
+    
+    const handleChange = (newValue: string) => {
+      setLocalValue(newValue);
+      
+      // Debounce the parent update to prevent excessive re-renders
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      debounceRef.current = setTimeout(() => {
+        onChange(newValue);
+      }, 300);
+    };
+    
+    // Cleanup debounce on unmount
+    React.useEffect(() => {
+      return () => {
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+      };
+    }, []);
+    
+    return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
@@ -1158,8 +1211,9 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
       <input
         id={id}
         type="text"
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
+        value={localValue}
+        onChange={(e) => handleChange(e.target.value)}
+        onBlur={() => onChange(localValue)} // Ensure final value is synced
         maxLength={maxLength}
         className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700"
         placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
@@ -1172,6 +1226,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
             <button
               key={i}
               onClick={() => {
+                setLocalValue(example);
                 onChange(example);
                 setShowExamples(null);
               }}
@@ -1183,29 +1238,52 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         </div>
       )}
       {maxLength && (
-        <div className={`text-[10px] text-right ${(value?.length || 0) > maxLength * 0.9 ? 'text-yellow-500' : 'text-neutral-600'}`}>
-          {value?.length || 0}/{maxLength}
+        <div className={`text-[10px] text-right ${(localValue?.length || 0) > maxLength * 0.9 ? 'text-yellow-500' : 'text-neutral-600'}`}>
+          {localValue?.length || 0}/{maxLength}
         </div>
       )}
     </div>
   );
+  };
 
   // Smart Link Selector with page suggestions
+  // Uses local state to prevent focus loss
   const LinkSelector = ({ label, value, onChange, id, placeholder }: {
     label: string,
     value: string,
     onChange: (val: string) => void,
     id?: string,
     placeholder?: string
-  }) => (
+  }) => {
+    const [localValue, setLocalValue] = useState(value || '');
+    const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
+    
+    React.useEffect(() => {
+      setLocalValue(value || '');
+    }, [value]);
+    
+    const handleChange = (newValue: string) => {
+      setLocalValue(newValue);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => onChange(newValue), 300);
+    };
+    
+    React.useEffect(() => {
+      return () => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+      };
+    }, []);
+    
+    return (
     <div className="space-y-2">
       <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
       <div className="relative">
         <input
           id={id}
           type="text"
-          value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
+          value={localValue}
+          onChange={(e) => handleChange(e.target.value)}
+          onBlur={() => onChange(localValue)}
           onFocus={() => setShowLinkPicker(id || 'link')}
           className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700 pr-8"
           placeholder={placeholder || '/page or https://...'}
