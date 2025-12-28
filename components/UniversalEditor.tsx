@@ -1343,6 +1343,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
       )}
     </div>
   );
+  };
 
   // Form Builder Component
   const FormBuilder = ({ value, onChange }: { value: FormFieldItem[], onChange: (fields: FormFieldItem[]) => void }) => {
