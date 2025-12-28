@@ -909,12 +909,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // --- BLOCK MANAGEMENT FUNCTIONS ---
 
-  const addBlock = (html: string, name: string, type: PageBlock['type'] = 'section', variant?: string) => {
+  const addBlock = (blockType: PageBlock['type'], name: string, content: string = '', variant?: string) => {
     const newBlock: PageBlock = {
       id: crypto.randomUUID(),
-      type: type,
+      type: blockType,
       name: name,
-      content: html,
+      content: content,
       variant: variant,
       data: {}
     };
