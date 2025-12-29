@@ -21,7 +21,7 @@ import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 
 // Style classes generator for block.data.style
-const getBlockStyleClasses = (style?: { padding?: string; paddingX?: string; maxWidth?: string; height?: string; background?: string; alignment?: string }) => {
+const getBlockStyleClasses = (style?: { padding?: string; paddingX?: string; maxWidth?: string; height?: string; background?: string; alignment?: string; imageFit?: string }) => {
   if (!style) return '';
   
   const classes: string[] = [];
@@ -46,13 +46,36 @@ const getBlockStyleClasses = (style?: { padding?: string; paddingX?: string; max
     // 'auto' - use component defaults
   }
   
-  // Height classes
+  // Height classes - use relative container with proper overflow
   switch (style.height) {
-    case 'sm': classes.push('min-h-[300px]'); break;
-    case 'md': classes.push('min-h-[500px]'); break;
-    case 'lg': classes.push('min-h-[700px]'); break;
-    case 'screen': classes.push('min-h-screen'); break;
+    case 'sm': classes.push('h-[300px] overflow-hidden'); break;
+    case 'md': classes.push('h-[500px] overflow-hidden'); break;
+    case 'lg': classes.push('h-[700px] overflow-hidden'); break;
+    case 'screen': classes.push('h-screen overflow-hidden'); break;
     // 'auto' - use component defaults
+  }
+  
+  // Image fit behavior - explicit control over how images scale
+  switch (style.imageFit) {
+    case 'cover': 
+      classes.push('[&_img]:object-cover [&_img]:w-full [&_img]:h-full'); 
+      break;
+    case 'contain': 
+      classes.push('[&_img]:object-contain [&_img]:max-w-full [&_img]:max-h-full [&_img]:mx-auto'); 
+      break;
+    case 'scale': 
+      classes.push('[&_img]:object-scale-down [&_img]:max-w-full [&_img]:max-h-full [&_img]:mx-auto'); 
+      break;
+    default:
+      // 'auto' - apply sensible defaults when height is constrained
+      if (style.height && style.height !== 'auto') {
+        classes.push('[&_img]:max-h-full [&_img]:w-auto [&_img]:object-contain [&_img]:mx-auto');
+      }
+  }
+  
+  // Ensure inner content fills and centers when height is set
+  if (style.height && style.height !== 'auto') {
+    classes.push('[&>*]:h-full [&>*]:flex [&>*]:flex-col [&>*]:justify-center');
   }
   
   // Max Width classes  

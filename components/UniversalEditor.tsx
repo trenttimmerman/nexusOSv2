@@ -1958,18 +1958,31 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
               />
             </div>
 
-            <Select
-              label="Section Height"
-              value={data.style?.height || 'auto'}
-              onChange={(val) => updateStyle('height', val)}
-              options={[
-                { value: 'auto', label: 'Auto (Content)' },
-                { value: 'sm', label: 'Small (300px)' },
-                { value: 'md', label: 'Medium (500px)' },
-                { value: 'lg', label: 'Large (700px)' },
-                { value: 'screen', label: 'Full Screen' },
-              ]}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <Select
+                label="Section Height"
+                value={data.style?.height || 'auto'}
+                onChange={(val) => updateStyle('height', val)}
+                options={[
+                  { value: 'auto', label: 'Auto (Content)' },
+                  { value: 'sm', label: 'Small (300px)' },
+                  { value: 'md', label: 'Medium (500px)' },
+                  { value: 'lg', label: 'Large (700px)' },
+                  { value: 'screen', label: 'Full Screen' },
+                ]}
+              />
+              <Select
+                label="Image Fit"
+                value={data.style?.imageFit || 'auto'}
+                onChange={(val) => updateStyle('imageFit', val)}
+                options={[
+                  { value: 'auto', label: 'Auto' },
+                  { value: 'cover', label: 'Cover (Fill)' },
+                  { value: 'contain', label: 'Contain (Fit)' },
+                  { value: 'scale', label: 'Scale Down' },
+                ]}
+              />
+            </div>
 
             <Select
               label="Text Alignment"
