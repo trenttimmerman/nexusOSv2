@@ -463,11 +463,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updatePage = async (pageId: string, updates: Partial<Page>) => {
     console.log('[DataContext] updatePage called:', { pageId, updates, storeId });
     
+    // DEBUG: Alert to confirm this function is being called
+    // alert(`updatePage called: pageId=${pageId}, storeId=${storeId}, blocks=${updates.blocks?.length}`);
+    
     // Update local state immediately for responsiveness
     setPages(prev => prev.map(p => p.id === pageId ? { ...p, ...updates } : p));
     
     if (!storeId) {
       console.warn('[DataContext] No storeId - cannot save to database');
+      alert('ERROR: No storeId - cannot save to database');
       return;
     }
     
@@ -481,22 +485,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     console.log('[DataContext] Page exists check:', { existingPage, checkError, storeId });
     
+    if (checkError) {
+      alert(`DB Check Error: ${checkError.message}`);
+    }
+    
     if (existingPage) {
       // Page exists, update it - filter by both id AND store_id for safety
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from('pages')
         .update(updates)
         .eq('id', pageId)
-        .eq('store_id', storeId);
+        .eq('store_id', storeId)
+        .select();
       if (error) {
         console.error('[DataContext] Failed to update page:', error);
+        alert(`Failed to update page: ${error.message}`);
       } else {
-        console.log('[DataContext] Page updated successfully');
+        console.log('[DataContext] Page updated successfully:', data);
       }
     } else {
       // Page doesn't exist in DB yet, insert it
       const currentPage = pages.find(p => p.id === pageId);
       console.log('[DataContext] Page not in DB, inserting:', currentPage);
+      alert(`Page not found in DB for store ${storeId}, will insert`);
       if (currentPage) {
         const pageToInsert = {
           ...currentPage,
@@ -506,8 +517,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { error } = await supabase.from('pages').insert(pageToInsert);
         if (error) {
           console.error('[DataContext] Failed to insert page:', error);
+          alert(`Failed to insert page: ${error.message}`);
         } else {
           console.log('[DataContext] Page inserted successfully');
+          alert('Page inserted successfully!');
         }
       }
     }
