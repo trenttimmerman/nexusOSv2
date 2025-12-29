@@ -109,6 +109,7 @@ const PublicStoreWrapper = () => {
         };
 
         setStoreData(config);
+        console.log('[PublicStore] Config set:', { headerStyle: config.headerStyle, config });
         setProducts(productsData || []);
         setPages(pagesData?.length ? pagesData : [
           { id: 'home', title: 'Home', slug: '/', type: 'home', blocks: [] }
