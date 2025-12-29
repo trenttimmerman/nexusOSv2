@@ -4,7 +4,7 @@ import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, 
 import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
-import { FOOTER_OPTIONS, FOOTER_FIELDS } from './FooterLibrary';
+import { FOOTER_OPTIONS, FOOTER_COMPONENTS, FOOTER_FIELDS } from './FooterLibrary';
 import { SOCIAL_OPTIONS, SOCIAL_COMPONENTS } from './SocialLibrary';
 import { SCROLL_OPTIONS, SCROLL_FIELDS } from './ScrollLibrary';
 import { RICH_TEXT_OPTIONS, EMAIL_SIGNUP_OPTIONS, COLLAPSIBLE_OPTIONS, LOGO_LIST_OPTIONS, PROMO_BANNER_OPTIONS } from './SectionLibrary';
@@ -1415,27 +1415,46 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </div>
                     );
                   })()}
-                  {systemModalType === 'grid' && (
-                    <div className="p-6 bg-neutral-50">
-                      <div className="grid grid-cols-3 gap-4">
-                        {[1,2,3].map(i => (
-                          <div key={i} className="bg-white rounded-lg p-4 shadow-sm border">
-                            <div className="aspect-square bg-neutral-200 rounded mb-3"></div>
-                            <div className="h-3 bg-neutral-200 rounded w-3/4 mb-2"></div>
-                            <div className="h-3 bg-neutral-100 rounded w-1/2"></div>
-                          </div>
-                        ))}
+                  {systemModalType === 'grid' && (() => {
+                    const selectedStyle = (previewVariant || currentSelection) as ProductCardStyleId;
+                    const CardComponent = PRODUCT_CARD_COMPONENTS[selectedStyle];
+                    if (!CardComponent) return null;
+                    // Sample products for preview
+                    const sampleProducts = [
+                      { id: '1', name: 'Classic Hoodie', price: 89, images: ['https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400'], seo: { slug: 'hoodie' } },
+                      { id: '2', name: 'Essential Tee', price: 45, images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400'], seo: { slug: 'tee' } },
+                      { id: '3', name: 'Denim Jacket', price: 129, images: ['https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400'], seo: { slug: 'jacket' } },
+                    ];
+                    return (
+                      <div className="p-6 bg-neutral-50">
+                        <div className="grid grid-cols-3 gap-4">
+                          {sampleProducts.map(product => (
+                            <CardComponent
+                              key={product.id}
+                              product={product as any}
+                              onAddToCart={() => {}}
+                              onNavigate={() => {}}
+                              primaryColor={config.primaryColor || '#6366F1'}
+                            />
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  {systemModalType === 'footer' && (
-                    <div className="bg-neutral-900 text-white p-8">
-                      <div className="text-center">
-                        <div className="text-lg font-bold mb-2">Footer Preview</div>
-                        <div className="text-neutral-400 text-sm">{options.find(o => o.id === currentSelection)?.name} Style</div>
+                    );
+                  })()}
+                  {systemModalType === 'footer' && (() => {
+                    const selectedStyle = (previewVariant || currentSelection) as FooterStyleId;
+                    const FooterComponent = FOOTER_COMPONENTS[selectedStyle];
+                    if (!FooterComponent) return null;
+                    return (
+                      <div className="relative" style={{ maxHeight: '300px', overflow: 'hidden' }}>
+                        <FooterComponent
+                          storeName={config.name || 'Store'}
+                          primaryColor={config.primaryColor || '#6366F1'}
+                          secondaryColor={config.secondaryColor || '#8B5CF6'}
+                        />
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               </div>
             </div>
