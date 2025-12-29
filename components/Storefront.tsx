@@ -158,12 +158,14 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   // Dynamic Block Renderer
   const renderBlock = (block: PageBlock) => {
     const isEditable = !!onUpdateBlock;
+    console.log('[Storefront] Rendering block:', { id: block.id, type: block.type, variant: block.variant });
 
     const renderContent = () => {
       switch (block.type) {
         case 'system-hero':
           const heroStyle = (block.variant as HeroStyleId) || config.heroStyle || 'impact';
           const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
+          console.log('[Storefront] Hero block:', { heroStyle, hasComponent: !!HeroComponent });
           return HeroComponent ? (
             <HeroComponent
               key={block.id}
