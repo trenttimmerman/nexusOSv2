@@ -87,6 +87,8 @@ const PublicStoreWrapper = () => {
         const { data: pagesData } = await supabase
           .from('pages').select('*').eq('store_id', store.id);
 
+        console.log('[PublicStore] Loaded store:', { storeSlug, storeId: store.id, pagesCount: pagesData?.length, pages: pagesData });
+
         // Build store config - prioritize store_config table, fallback to stores.settings
         const config = {
           name: storeConfig?.name || store.name || 'Store',
