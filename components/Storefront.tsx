@@ -95,7 +95,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                       cartCount={cartCount}
                       onOpenCart={() => setIsCartOpen(true)}
                   />
-                  <main className="flex-1">
+                  <main className="flex-1 pt-20">
                       <ProductComponent product={product} onAddToCart={addToCart} />
                   </main>
                   <FooterComponent storeName={config.name} primaryColor={config.primaryColor} />
@@ -302,7 +302,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         secondaryColor={secondaryColor}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 pt-20">
         {activePage.blocks && activePage.blocks.length > 0 ? (
           // Render All Blocks (Including System Components)
           <div className={`${activePage.type === 'custom' ? 'max-w-7xl mx-auto' : 'w-full'}`}>
