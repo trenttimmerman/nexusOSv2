@@ -38,6 +38,15 @@ const ALL_OPTIONS: Record<string, any[]> = {
   'system-promo': PROMO_BANNER_OPTIONS,
 };
 
+// Hero variant field visibility - defines which fields appear for each hero style
+const HERO_VARIANT_FIELDS: Record<string, string[]> = {
+  impact: ['heading', 'badge', 'buttonText', 'buttonLink', 'secondaryButtonText', 'secondaryButtonLink', 'image', 'overlayOpacity'],
+  split: ['heading', 'subheading', 'buttonText', 'buttonLink', 'image', 'overlayOpacity'],
+  kinetik: ['heading', 'buttonText', 'buttonLink', 'marqueeText', 'image', 'overlayOpacity'],
+  grid: ['heading', 'subheading', 'buttonText', 'buttonLink', 'secondaryButtonText', 'secondaryButtonLink', 'imageBadge', 'featureCardTitle', 'featureCardSubtitle', 'image', 'sideImage', 'overlayOpacity'],
+  typographic: ['heading', 'subheading', 'topBadge', 'link1Label', 'link1Url', 'link1Image', 'link2Label', 'link2Url', 'link2Image', 'link3Label', 'link3Url', 'link3Image'],
+};
+
 // ============== SECTION-SPECIFIC FIELD CONFIGURATIONS ==============
 // Each section type gets its own relevant fields instead of generic ones
 
@@ -74,6 +83,7 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
       { id: 'extras', label: 'Extras', icon: <Zap size={12} /> },
     ],
     fields: [
+      // === CONTENT GROUP ===
       { key: 'heading', label: 'Headline', type: 'text', group: 'content', maxLength: 60, showAI: true, 
         placeholder: 'Your main headline (30-60 chars)', 
         tip: 'Start with action verbs, focus on benefits. Keep under 60 characters.',
@@ -81,20 +91,73 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
       { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', maxLength: 160, showAI: true,
         placeholder: 'Supporting text that expands on your headline',
         tip: 'Best at 120-160 characters. Explain the value proposition.' },
-      { key: 'image', label: 'Background Image', type: 'image', group: 'media',
-        tip: 'Recommended: 1920x1080px, under 500KB. High contrast works best.' },
+      { key: 'badge', label: 'Badge/Label', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., ✨ New Collection, 🔥 Limited Time',
+        examples: ['✨ New Release', '🔥 Best Sellers Inside', '👗 New Season Arrivals'] },
+      { key: 'topBadge', label: 'Top Badge', type: 'text', group: 'content', showAI: true,
+        placeholder: 'Badge text above headline',
+        tip: 'Small text badge that appears above your headline.' },
+      { key: 'imageBadge', label: 'Image Badge', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Best Seller, New Arrival',
+        tip: 'Badge that overlays on the main image.' },
+      { key: 'featureCardTitle', label: 'Feature Card Title', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Free Shipping',
+        tip: 'Title for the promotional feature card.' },
+      { key: 'featureCardSubtitle', label: 'Feature Card Subtitle', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., On orders over $50',
+        tip: 'Subtitle text for the feature card.' },
+      { key: 'marqueeText', label: 'Scrolling Marquee', type: 'text', group: 'content',
+        placeholder: 'Text that scrolls across the section' },
+      
+      // === BUTTONS GROUP ===
       { key: 'buttonText', label: 'Primary Button', type: 'text', group: 'buttons', showAI: true,
         placeholder: 'e.g., Shop Now, Get Started',
         examples: ['Shop Now', 'Get Started', 'Learn More', 'Browse Collection'] },
-      { key: 'buttonLink', label: 'Button Link', type: 'linkSelector', group: 'buttons',
+      { key: 'buttonLink', label: 'Primary Button Link', type: 'linkSelector', group: 'buttons',
         placeholder: '/shop or https://...' },
       { key: 'secondaryButtonText', label: 'Secondary Button', type: 'text', group: 'buttons',
         placeholder: 'e.g., Learn More (optional)' },
-      { key: 'badge', label: 'Badge/Label', type: 'text', group: 'extras', showAI: true,
-        placeholder: 'e.g., ✨ New Collection, 🔥 Limited Time',
-        examples: ['✨ New Release', '🔥 Best Sellers Inside', '👗 New Season Arrivals'] },
-      { key: 'marqueeText', label: 'Scrolling Marquee', type: 'text', group: 'extras',
-        placeholder: 'Text that scrolls across the section' },
+      { key: 'secondaryButtonLink', label: 'Secondary Button Link', type: 'linkSelector', group: 'buttons',
+        placeholder: '/about or https://...' },
+      // Typographic hero links
+      { key: 'link1Label', label: 'Category 1 Label', type: 'text', group: 'buttons',
+        placeholder: 'e.g., New Arrivals',
+        tip: 'First category link label.' },
+      { key: 'link1Url', label: 'Category 1 Link', type: 'linkSelector', group: 'buttons',
+        placeholder: '/new-arrivals' },
+      { key: 'link2Label', label: 'Category 2 Label', type: 'text', group: 'buttons',
+        placeholder: 'e.g., Best Sellers' },
+      { key: 'link2Url', label: 'Category 2 Link', type: 'linkSelector', group: 'buttons',
+        placeholder: '/best-sellers' },
+      { key: 'link3Label', label: 'Category 3 Label', type: 'text', group: 'buttons',
+        placeholder: 'e.g., Sale Items' },
+      { key: 'link3Url', label: 'Category 3 Link', type: 'linkSelector', group: 'buttons',
+        placeholder: '/sale' },
+      
+      // === MEDIA GROUP ===
+      { key: 'image', label: 'Background Image', type: 'image', group: 'media',
+        tip: 'Recommended: 1920x1080px, under 500KB. High contrast works best.' },
+      { key: 'sideImage', label: 'Side Image', type: 'image', group: 'media',
+        tip: 'Secondary image for grid-style heroes.' },
+      { key: 'link1Image', label: 'Category 1 Image', type: 'image', group: 'media',
+        tip: 'Image for the first category link.' },
+      { key: 'link2Image', label: 'Category 2 Image', type: 'image', group: 'media',
+        tip: 'Image for the second category link.' },
+      { key: 'link3Image', label: 'Category 3 Image', type: 'image', group: 'media',
+        tip: 'Image for the third category link.' },
+      { key: 'overlayOpacity', label: 'Image Darkness', type: 'select', group: 'media',
+        tip: 'How dark the overlay on the background image should be.',
+        options: [
+          { value: '0', label: 'None (0%)' },
+          { value: '0.1', label: 'Very Light (10%)' },
+          { value: '0.2', label: 'Light (20%)' },
+          { value: '0.3', label: 'Medium Light (30%)' },
+          { value: '0.4', label: 'Medium (40%)' },
+          { value: '0.5', label: 'Medium Dark (50%)' },
+          { value: '0.6', label: 'Dark (60%)' },
+          { value: '0.7', label: 'Very Dark (70%)' },
+        ],
+        defaultValue: '0.4' },
     ]
   },
 
@@ -620,7 +683,12 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   const currentOption = options.find(o => o.id === variant);
 
   const updateField = (key: string, value: any) => {
-    onUpdate({ ...data, [key]: value });
+    // Convert overlayOpacity from string to number for hero sections
+    let processedValue = value;
+    if (key === 'overlayOpacity' && typeof value === 'string') {
+      processedValue = parseFloat(value);
+    }
+    onUpdate({ ...data, [key]: processedValue });
   };
 
   const updateStyle = (key: string, value: any) => {
@@ -1733,8 +1801,19 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
       <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
         
         {/* Render section-specific fields for active group */}
+        {/* For heroes, filter fields based on the current variant */}
         {sectionConfig.fields
           .filter(field => field.group === activeGroup)
+          .filter(field => {
+            // If this is a hero section, only show fields relevant to the current variant
+            if (blockType === 'system-hero' && variant) {
+              const variantFields = HERO_VARIANT_FIELDS[variant];
+              if (variantFields) {
+                return variantFields.includes(field.key);
+              }
+            }
+            return true;
+          })
           .map(field => {
             const fieldValue = data[field.key];
             const fieldId = `editor-field-${field.key}`;

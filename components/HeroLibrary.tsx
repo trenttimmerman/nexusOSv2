@@ -42,11 +42,11 @@ interface HeroProps {
 }
 
 export const HERO_FIELDS: Record<string, string[]> = {
-  impact: ['heading', 'image', 'buttonText', 'badge', 'secondaryButtonText'],
-  split: ['heading', 'subheading', 'image', 'buttonText', 'topLabel', 'floatingCardTitle', 'floatingCardPrice'],
-  kinetik: ['heading', 'image', 'buttonText', 'marqueeText'],
-  grid: ['heading', 'subheading', 'image', 'buttonText', 'secondaryButtonText', 'imageBadge', 'featureCardTitle', 'featureCardSubtitle'],
-  typographic: ['heading', 'subheading', 'topBadge', 'link1Label', 'link2Label', 'link3Label']
+  impact: ['heading', 'badge', 'buttonText', 'secondaryButtonText', 'image', 'overlayOpacity'],
+  split: ['heading', 'subheading', 'buttonText', 'image', 'overlayOpacity'],
+  kinetik: ['heading', 'buttonText', 'marqueeText', 'image', 'overlayOpacity'],
+  grid: ['heading', 'subheading', 'buttonText', 'secondaryButtonText', 'imageBadge', 'featureCardTitle', 'featureCardSubtitle', 'image', 'sideImage', 'overlayOpacity'],
+  typographic: ['heading', 'subheading', 'topBadge', 'link1Label', 'link2Label', 'link3Label', 'link1Image', 'link2Image', 'link3Image']
 };
 
 // --- EDITABLE HELPERS ---
