@@ -1369,7 +1369,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     {opt.recommended && (
                       <span className="absolute -top-2 -right-2 text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">★ TOP</span>
                     )}
-                    {isCurrentlyApplied && !previewVariant && (
+                    {isCurrentlyApplied && (
                       <span className="absolute -top-2 left-2 text-[9px] bg-blue-500 text-white px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
                     )}
                     <div className="font-bold text-xs mb-1 truncate">{opt.name}</div>
