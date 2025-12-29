@@ -1382,15 +1382,30 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
               <div className="flex-1 overflow-auto p-4 flex items-center justify-center">
-                <div className="bg-white rounded-lg overflow-hidden shadow-2xl w-full max-w-2xl">
-                  {systemModalType === 'hero' && (
-                    <div className="h-64 bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center">
-                      <div className="text-center p-8">
-                        <div className="text-2xl font-bold text-neutral-700 mb-2">Hero Preview</div>
-                        <div className="text-neutral-500 text-sm">{options.find(o => o.id === currentSelection)?.name} Style</div>
+                <div className="bg-white rounded-lg overflow-hidden shadow-2xl w-full max-w-3xl">
+                  {systemModalType === 'hero' && (() => {
+                    const HeroComponent = HERO_COMPONENTS[currentSelection as HeroStyleId];
+                    if (!HeroComponent) return null;
+                    // Use existing block data if editing, otherwise use sample data
+                    const previewData = activeBlock?.data || {
+                      heading: 'REDEFINE REALITY',
+                      subheading: 'Curated essentials for the modern digital nomad.',
+                      badge: 'New Collection 2024',
+                      buttonText: 'Shop The Drop',
+                      secondaryButtonText: 'View Lookbook',
+                      image: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2940&auto=format&fit=crop',
+                    };
+                    return (
+                      <div className="relative" style={{ maxHeight: '500px', overflow: 'hidden' }}>
+                        <HeroComponent
+                          storeName={config.name || 'Store'}
+                          primaryColor={config.primaryColor || '#6366F1'}
+                          data={previewData}
+                          isEditable={false}
+                        />
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                   {systemModalType === 'grid' && (
                     <div className="p-6 bg-neutral-50">
                       <div className="grid grid-cols-3 gap-4">
