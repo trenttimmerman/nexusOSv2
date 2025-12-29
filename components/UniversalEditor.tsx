@@ -47,6 +47,16 @@ const HERO_VARIANT_FIELDS: Record<string, string[]> = {
   typographic: ['heading', 'subheading', 'topBadge', 'link1Label', 'link1Url', 'link1Image', 'link2Label', 'link2Url', 'link2Image', 'link3Label', 'link3Url', 'link3Image'],
 };
 
+// Product grid variant field visibility
+const GRID_VARIANT_FIELDS: Record<string, string[]> = {
+  classic: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
+  industrial: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'showStock', 'showSku', 'buttonText', 'buttonLink'],
+  focus: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
+  hype: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'showBadges', 'buttonText', 'buttonLink'],
+  magazine: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
+  glass: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
+};
+
 // ============== SECTION-SPECIFIC FIELD CONFIGURATIONS ==============
 // Each section type gets its own relevant fields instead of generic ones
 
@@ -454,15 +464,58 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     description: 'Display products in a customizable grid layout',
     groups: [
       { id: 'content', label: 'Content', icon: <Type size={12} /> },
-      { id: 'settings', label: 'Grid Settings', icon: <Grid size={12} /> },
-      { id: 'style', label: 'Card Style', icon: <Palette size={12} /> },
+      { id: 'products', label: 'Products', icon: <ShoppingBag size={12} /> },
+      { id: 'settings', label: 'Layout', icon: <Grid size={12} /> },
+      { id: 'style', label: 'Style', icon: <Palette size={12} /> },
     ],
     fields: [
+      // === CONTENT GROUP ===
       { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., Featured Products, Best Sellers',
         examples: ['Featured Products', 'New Arrivals', 'Best Sellers', 'Shop the Collection'] },
       { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
         placeholder: 'Optional description for the grid section' },
+      { key: 'buttonText', label: 'View All Button', type: 'text', group: 'content',
+        placeholder: 'View All Products' },
+      { key: 'buttonLink', label: 'View All Link', type: 'linkSelector', group: 'content',
+        placeholder: '/shop' },
+      
+      // === PRODUCTS GROUP ===
+      { key: 'productSource', label: 'Product Source', type: 'select', group: 'products',
+        tip: 'Choose which products to display in this grid',
+        options: [
+          { value: 'all', label: 'All Products' },
+          { value: 'category', label: 'By Category' },
+          { value: 'tag', label: 'By Tag (Featured, Sale, etc.)' },
+          { value: 'manual', label: 'Manual Selection' },
+        ],
+        defaultValue: 'all' },
+      { key: 'productCategory', label: 'Category', type: 'select', group: 'products',
+        tip: 'Filter products by category',
+        options: [{ value: '', label: 'Select a category...' }] },
+      { key: 'productTag', label: 'Tag', type: 'select', group: 'products',
+        tip: 'Filter products by tag',
+        options: [
+          { value: '', label: 'Select a tag...' },
+          { value: 'featured', label: 'Featured' },
+          { value: 'new', label: 'New Arrival' },
+          { value: 'sale', label: 'On Sale' },
+          { value: 'bestseller', label: 'Best Seller' },
+        ] },
+      { key: 'selectedProducts', label: 'Select Products', type: 'productSelector', group: 'products',
+        tip: 'Manually choose which products to display' },
+      { key: 'sortBy', label: 'Sort By', type: 'select', group: 'products',
+        options: [
+          { value: 'newest', label: 'Newest First' },
+          { value: 'oldest', label: 'Oldest First' },
+          { value: 'price-asc', label: 'Price: Low to High' },
+          { value: 'price-desc', label: 'Price: High to Low' },
+          { value: 'name-asc', label: 'Name: A to Z' },
+          { value: 'name-desc', label: 'Name: Z to A' },
+        ],
+        defaultValue: 'newest' },
+      
+      // === SETTINGS/LAYOUT GROUP ===
       { key: 'columns', label: 'Columns', type: 'select', group: 'settings',
         options: [
           { value: '2', label: '2 Columns' },
@@ -471,16 +524,20 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
           { value: '5', label: '5 Columns' },
         ],
         defaultValue: '4' },
-      { key: 'limit', label: 'Products to Show', type: 'number', group: 'settings',
+      { key: 'limit', label: 'Max Products', type: 'number', group: 'settings',
         placeholder: '8', defaultValue: 8,
         tip: 'Maximum number of products to display' },
+      
+      // === STYLE GROUP ===
       { key: 'showPrices', label: 'Show Prices', type: 'toggle', group: 'style', defaultValue: true },
       { key: 'showQuickAdd', label: 'Show Quick Add', type: 'toggle', group: 'style', defaultValue: true,
         tip: 'Show add to cart button on hover' },
-      { key: 'buttonText', label: 'View All Button', type: 'text', group: 'content',
-        placeholder: 'View All Products' },
-      { key: 'buttonLink', label: 'View All Link', type: 'linkSelector', group: 'content',
-        placeholder: '/shop' },
+      { key: 'showStock', label: 'Show Stock Count', type: 'toggle', group: 'style', defaultValue: false,
+        tip: 'Display inventory count (Industrial style)' },
+      { key: 'showSku', label: 'Show SKU', type: 'toggle', group: 'style', defaultValue: false,
+        tip: 'Display product SKU (Industrial style)' },
+      { key: 'showBadges', label: 'Show Badges', type: 'toggle', group: 'style', defaultValue: true,
+        tip: 'Display New Drop, Low Stock badges (Hype style)' },
     ]
   },
 
@@ -550,6 +607,7 @@ interface UniversalEditorProps {
   onUpdate: (data: UniversalSectionData) => void;
   onSwitchLayout: (newVariant: string) => void;
   pages?: { id: string; name: string; slug: string }[];
+  products?: { id: string; name: string; image: string; price: number; category: string; tags?: string[] }[];
 }
 
 // Form field types for the form builder
@@ -587,12 +645,14 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   activeField,
   onUpdate,
   onSwitchLayout,
-  pages = []
+  pages = [],
+  products = []
 }) => {
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [showLayoutPicker, setShowLayoutPicker] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState<string | null>(null);
+  const [productSearchQuery, setProductSearchQuery] = useState('');
   
   // AI Content Generation (simulated for now - would connect to OpenAI/Claude in production)
   const generateAIContent = async (field: string, context?: string) => {
@@ -1608,6 +1668,154 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     );
   };
 
+  // Product Selector Component - allows manual selection of products to display
+  const ProductSelector = ({ 
+    products, 
+    selectedIds, 
+    onChange, 
+    searchQuery, 
+    onSearchChange,
+    tip 
+  }: { 
+    products: { id: string; name: string; image: string; price: number; category: string; tags?: string[] }[];
+    selectedIds: string[];
+    onChange: (ids: string[]) => void;
+    searchQuery: string;
+    onSearchChange: (q: string) => void;
+    tip?: string;
+  }) => {
+    const filteredProducts = products.filter(p => 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const toggleProduct = (productId: string) => {
+      if (selectedIds.includes(productId)) {
+        onChange(selectedIds.filter(id => id !== productId));
+      } else {
+        onChange([...selectedIds, productId]);
+      }
+    };
+
+    const moveProduct = (productId: string, direction: 'up' | 'down') => {
+      const index = selectedIds.indexOf(productId);
+      if (index === -1) return;
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= selectedIds.length) return;
+      const newIds = [...selectedIds];
+      [newIds[index], newIds[newIndex]] = [newIds[newIndex], newIds[index]];
+      onChange(newIds);
+    };
+
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-bold uppercase text-neutral-500">Select Products</label>
+          <span className="text-[10px] text-neutral-600">{selectedIds.length} selected</span>
+        </div>
+        {tip && <p className="text-[10px] text-neutral-600">{tip}</p>}
+        
+        {/* Selected Products List */}
+        {selectedIds.length > 0 && (
+          <div className="space-y-2 p-3 bg-neutral-950 rounded-lg border border-neutral-800">
+            <span className="text-[10px] font-bold uppercase text-neutral-500">Display Order</span>
+            {selectedIds.map((id, index) => {
+              const product = products.find(p => p.id === id);
+              if (!product) return null;
+              return (
+                <div key={id} className="flex items-center gap-2 group">
+                  <div className="flex flex-col">
+                    <button 
+                      onClick={() => moveProduct(id, 'up')} 
+                      disabled={index === 0}
+                      className="p-0.5 text-neutral-600 hover:text-white disabled:opacity-30"
+                    >
+                      <ChevronLeft size={10} className="rotate-90" />
+                    </button>
+                    <button 
+                      onClick={() => moveProduct(id, 'down')} 
+                      disabled={index === selectedIds.length - 1}
+                      className="p-0.5 text-neutral-600 hover:text-white disabled:opacity-30"
+                    >
+                      <ChevronRight size={10} className="rotate-90" />
+                    </button>
+                  </div>
+                  <div className="w-8 h-8 bg-neutral-800 rounded overflow-hidden flex-shrink-0">
+                    {product.image && <img src={product.image} alt="" className="w-full h-full object-cover" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-neutral-300 truncate">{product.name}</div>
+                    <div className="text-[10px] text-neutral-600">${product.price.toFixed(2)}</div>
+                  </div>
+                  <button 
+                    onClick={() => toggleProduct(id)}
+                    className="p-1 text-neutral-600 hover:text-red-400 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Search */}
+        <div className="relative">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search products..."
+            className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600"
+          />
+          {searchQuery && (
+            <button 
+              onClick={() => onSearchChange('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-white"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* Product Grid */}
+        <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto custom-scrollbar">
+          {filteredProducts.length === 0 ? (
+            <div className="col-span-2 text-center py-8 text-neutral-600 text-sm">
+              {products.length === 0 ? 'No products found' : 'No matching products'}
+            </div>
+          ) : (
+            filteredProducts.map(product => {
+              const isSelected = selectedIds.includes(product.id);
+              return (
+                <button
+                  key={product.id}
+                  onClick={() => toggleProduct(product.id)}
+                  className={`relative p-2 rounded-lg border transition-all text-left ${
+                    isSelected 
+                      ? 'border-blue-500 bg-blue-500/10' 
+                      : 'border-neutral-800 bg-neutral-950 hover:border-neutral-700'
+                  }`}
+                >
+                  {isSelected && (
+                    <div className="absolute top-1 right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                      <Check size={10} className="text-white" />
+                    </div>
+                  )}
+                  <div className="w-full aspect-square bg-neutral-800 rounded mb-2 overflow-hidden">
+                    {product.image && <img src={product.image} alt="" className="w-full h-full object-cover" />}
+                  </div>
+                  <div className="text-[10px] text-neutral-300 truncate">{product.name}</div>
+                  <div className="text-[10px] text-neutral-600">${product.price.toFixed(2)}</div>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+    );
+  };
+
   // Toggle Component
   const Toggle = ({ label, value, onChange, tip }: { label: string, value: boolean, onChange: (val: boolean) => void, tip?: string }) => (
     <div className="flex items-center justify-between py-2">
@@ -1801,7 +2009,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
       <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
         
         {/* Render section-specific fields for active group */}
-        {/* For heroes, filter fields based on the current variant */}
+        {/* Filter fields based on block type and current variant */}
         {sectionConfig.fields
           .filter(field => field.group === activeGroup)
           .filter(field => {
@@ -1810,6 +2018,20 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
               const variantFields = HERO_VARIANT_FIELDS[variant];
               if (variantFields) {
                 return variantFields.includes(field.key);
+              }
+            }
+            // If this is a product grid section, filter by variant and product source
+            if (blockType === 'system-grid' && variant) {
+              const variantFields = GRID_VARIANT_FIELDS[variant];
+              if (variantFields) {
+                // Check if field is in variant fields
+                if (!variantFields.includes(field.key)) return false;
+                
+                // Additional filtering based on productSource selection
+                const productSource = data.productSource || 'all';
+                if (field.key === 'productCategory' && productSource !== 'category') return false;
+                if (field.key === 'productTag' && productSource !== 'tag') return false;
+                if (field.key === 'selectedProducts' && productSource !== 'manual') return false;
               }
             }
             return true;
@@ -1877,13 +2099,23 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 );
 
               case 'select':
+                // For productCategory, dynamically generate options from products
+                let selectOptions = field.options || [];
+                if (field.key === 'productCategory' && products.length > 0) {
+                  const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+                  selectOptions = [
+                    { value: '', label: 'Select a category...' },
+                    ...categories.map(cat => ({ value: cat, label: cat }))
+                  ];
+                }
+                
                 return (
                   <Select
                     key={field.key}
                     label={field.label}
                     value={fieldValue || field.defaultValue || ''}
                     onChange={(val) => updateField(field.key, val)}
-                    options={field.options || []}
+                    options={selectOptions}
                     tip={field.tip}
                   />
                 );
@@ -1930,6 +2162,19 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     key={field.key}
                     value={fieldValue || DEFAULT_FORM_FIELDS}
                     onChange={(val) => updateField(field.key, val)}
+                  />
+                );
+
+              case 'productSelector':
+                return (
+                  <ProductSelector
+                    key={field.key}
+                    products={products}
+                    selectedIds={fieldValue || []}
+                    onChange={(val) => updateField(field.key, val)}
+                    searchQuery={productSearchQuery}
+                    onSearchChange={setProductSearchQuery}
+                    tip={field.tip}
                   />
                 );
 

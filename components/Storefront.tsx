@@ -199,6 +199,75 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
     const CardComponent = PRODUCT_CARD_COMPONENTS[styleId] || PRODUCT_CARD_COMPONENTS['classic'];
     const heading = data?.heading || "Latest Drops.";
     const subheading = data?.subheading || "Curated essentials for the modern digital nomad.";
+    
+    // Filter and sort products based on data settings
+    let filteredProducts = [...products];
+    const productSource = data?.productSource || 'all';
+    
+    // Apply filtering based on productSource
+    switch (productSource) {
+      case 'category':
+        if (data?.productCategory) {
+          filteredProducts = filteredProducts.filter(p => 
+            p.category.toLowerCase() === data.productCategory.toLowerCase()
+          );
+        }
+        break;
+      case 'tag':
+        if (data?.productTag) {
+          filteredProducts = filteredProducts.filter(p => 
+            p.tags?.includes(data.productTag)
+          );
+        }
+        break;
+      case 'manual':
+        if (data?.selectedProducts && data.selectedProducts.length > 0) {
+          // Order products by selection order
+          filteredProducts = data.selectedProducts
+            .map((id: string) => products.find(p => p.id === id))
+            .filter(Boolean);
+        }
+        break;
+      // 'all' - use all products
+    }
+    
+    // Apply sorting (only if not manual selection - manual preserves user order)
+    if (productSource !== 'manual') {
+      const sortBy = data?.sortBy || 'newest';
+      switch (sortBy) {
+        case 'oldest':
+          filteredProducts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+          break;
+        case 'newest':
+          filteredProducts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          break;
+        case 'price-asc':
+          filteredProducts.sort((a, b) => a.price - b.price);
+          break;
+        case 'price-desc':
+          filteredProducts.sort((a, b) => b.price - a.price);
+          break;
+        case 'name-asc':
+          filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+          break;
+        case 'name-desc':
+          filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
+          break;
+      }
+    }
+    
+    // Apply limit
+    const limit = data?.limit || 8;
+    filteredProducts = filteredProducts.slice(0, limit);
+    
+    // Determine grid columns
+    const columns = data?.columns || '4';
+    const gridCols = {
+      '2': 'lg:grid-cols-2',
+      '3': 'lg:grid-cols-3',
+      '4': 'lg:grid-cols-4',
+      '5': 'lg:grid-cols-5',
+    }[columns] || 'lg:grid-cols-4';
 
     return (
       <section className="py-24 px-6 max-w-7xl mx-auto">
@@ -225,19 +294,30 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                />
             </p>
           </div>
-          <a href="#" className="text-sm font-bold underline underline-offset-4">View All</a>
+          {data?.buttonText && (
+            <a href={data?.buttonLink || '/shop'} className="text-sm font-bold underline underline-offset-4">
+              {data.buttonText}
+            </a>
+          )}
+          {!data?.buttonText && <a href="#" className="text-sm font-bold underline underline-offset-4">View All</a>}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
-          {products.map((product) => (
-            <CardComponent
-              key={product.id}
-              product={product}
-              onAddToCart={addToCart}
-              onNavigate={() => onNavigate && onNavigate(`/store/products/${product.seo.slug || product.id}`)}
-              primaryColor={config.primaryColor}
-            />
-          ))}
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${gridCols} gap-x-8 gap-y-16`}>
+          {filteredProducts.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-neutral-500">
+              No products found matching your criteria.
+            </div>
+          ) : (
+            filteredProducts.map((product) => (
+              <CardComponent
+                key={product.id}
+                product={product}
+                onAddToCart={addToCart}
+                onNavigate={() => onNavigate && onNavigate(`/store/products/${product.seo.slug || product.id}`)}
+                primaryColor={config.primaryColor}
+              />
+            ))
+          )}
         </div>
       </section>
     );
