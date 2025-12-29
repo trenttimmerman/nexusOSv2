@@ -2565,11 +2565,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       activeBlockId={selectedBlockId}
                       onNavigate={(path) => {
                         // Handle product navigation within the editor preview
-                        if (path.includes('/products/')) {
+                        if (path.startsWith('/products/')) {
                           const slug = path.split('/products/')[1];
                           setActiveProductSlug(slug);
                           setSelectedBlockId(null); // Clear block selection when viewing product
-                        } else if (path === '/store' || path === '/') {
+                        } else if (path === '/') {
                           setActiveProductSlug(null);
                         }
                       }}

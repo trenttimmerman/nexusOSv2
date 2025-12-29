@@ -182,13 +182,13 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                       links={navLinks}
                       cartCount={cartCount}
                       onOpenCart={() => setIsCartOpen(true)}
-                      onLogoClick={() => onNavigate?.('/store')}
+                      onLogoClick={() => onNavigate?.('/')}
                   />
                   <main className="flex-1 pt-20">
                       {/* Back to shop button */}
                       <div className="max-w-6xl mx-auto px-6 py-4">
                         <button 
-                          onClick={() => onNavigate?.('/store')}
+                          onClick={() => onNavigate?.('/')}
                           className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors group"
                         >
                           <svg className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -326,7 +326,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                 key={product.id}
                 product={product}
                 onAddToCart={addToCart}
-                onNavigate={() => onNavigate && onNavigate(`/store/products/${product.seo.slug || product.id}`)}
+                onNavigate={() => onNavigate && onNavigate(`/products/${product.seo.slug || product.id}`)}
                 primaryColor={config.primaryColor}
               />
             ))

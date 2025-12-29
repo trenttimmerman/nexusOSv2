@@ -46,7 +46,18 @@ const StorefrontWrapper = () => {
       pages={pages || []}
       activePageId={activePageId}
       activeProductSlug={productSlug}
-      onNavigate={(path) => navigate(path)}
+      onNavigate={(path) => {
+        // Handle relative paths - prepend /store for this wrapper
+        if (path === '/') {
+          navigate('/store');
+        } else if (path.startsWith('/products/')) {
+          navigate(`/store${path}`);
+        } else if (path.startsWith('/pages/')) {
+          navigate(`/store${path}`);
+        } else {
+          navigate(path);
+        }
+      }}
     />
   );
 };
@@ -167,7 +178,18 @@ const PublicStoreWrapper = () => {
       pages={pages || []}
       activePageId={activePageId}
       activeProductSlug={productSlug}
-      onNavigate={(path) => navigate(`/s/${storeSlug}${path}`)}
+      onNavigate={(path) => {
+        // Handle relative paths - prepend /s/:storeSlug for public stores
+        if (path === '/') {
+          navigate(`/s/${storeSlug}`);
+        } else if (path.startsWith('/products/')) {
+          navigate(`/s/${storeSlug}${path}`);
+        } else if (path.startsWith('/pages/')) {
+          navigate(`/s/${storeSlug}${path}`);
+        } else {
+          navigate(`/s/${storeSlug}${path}`);
+        }
+      }}
     />
   );
 };
