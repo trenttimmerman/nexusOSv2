@@ -1221,6 +1221,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // --- SYSTEM BLOCK MODAL (Hero, Grid, Footer) ---
   const [warningFields, setWarningFields] = useState<string[]>([]);
   const [pendingVariant, setPendingVariant] = useState<string | null>(null);
+  const [previewVariant, setPreviewVariant] = useState<string | null>(null);
 
   const renderSystemBlockModal = () => {
     if (!isSystemModalOpen || !systemModalType) return null;
@@ -1228,7 +1229,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     let options: any[] = [];
     let currentSelection = '';
     let title = '';
-    let setSelection: (id: string) => void = () => { };
+    let applySelection: (id: string) => void = () => { };
     let color = 'blue';
 
     const handleHeroVariantChange = (id: string) => {
@@ -1266,7 +1267,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       // If a block is selected, use its variant, otherwise global
       currentSelection = selectedBlockId ? activeBlock?.variant || config.heroStyle : config.heroStyle;
       title = 'Hero Engine';
-      setSelection = (id) => {
+      applySelection = (id) => {
         if (selectedBlockId) {
           handleHeroVariantChange(id);
         } else {
@@ -1278,7 +1279,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       options = PRODUCT_CARD_OPTIONS;
       currentSelection = selectedBlockId ? activeBlock?.variant || config.productCardStyle : config.productCardStyle;
       title = 'Product Grid Engine';
-      setSelection = (id) => {
+      applySelection = (id) => {
         if (selectedBlockId) {
           const updatedBlocks = activePage.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: id } : b);
           onUpdatePage(activePageId, { blocks: updatedBlocks });
@@ -1291,7 +1292,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       options = FOOTER_OPTIONS;
       currentSelection = config.footerStyle;
       title = 'Footer Architecture';
-      setSelection = (id) => onConfigChange({ ...config, footerStyle: id as FooterStyleId });
+      applySelection = (id) => onConfigChange({ ...config, footerStyle: id as FooterStyleId });
       color = 'orange';
     }
 
@@ -1356,19 +1357,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </h4>
               {renderSortControls(modalSort, setModalSort)}
               <div className="grid grid-cols-2 gap-2">
-                {sortItems(options, modalSort).map((opt) => (
+                {sortItems(options, modalSort).map((opt) => {
+                  const isSelected = (previewVariant || currentSelection) === opt.id;
+                  const isCurrentlyApplied = currentSelection === opt.id;
+                  return (
                   <button 
                     key={opt.id} 
-                    onClick={() => setSelection(opt.id)} 
-                    className={`text-left p-3 rounded-lg border transition-all relative ${currentSelection === opt.id ? `${colorClasses[color]} text-white` : 'bg-neutral-800/50 border-neutral-700 text-neutral-400 hover:border-neutral-500'}`}
+                    onClick={() => setPreviewVariant(opt.id)} 
+                    className={`text-left p-3 rounded-lg border transition-all relative ${isSelected ? `${colorClasses[color]} text-white` : 'bg-neutral-800/50 border-neutral-700 text-neutral-400 hover:border-neutral-500'}`}
                   >
                     {opt.recommended && (
                       <span className="absolute -top-2 -right-2 text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">★ TOP</span>
                     )}
+                    {isCurrentlyApplied && !previewVariant && (
+                      <span className="absolute -top-2 left-2 text-[9px] bg-blue-500 text-white px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
+                    )}
                     <div className="font-bold text-xs mb-1 truncate">{opt.name}</div>
                     <div className="text-[10px] opacity-60 truncate">{opt.description}</div>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
             
@@ -1378,13 +1386,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <span className="text-xs text-neutral-500 font-medium">Live Preview</span>
                 <div className="flex items-center gap-1 text-xs text-neutral-600">
                   <Eye size={12} />
-                  {options.find(o => o.id === currentSelection)?.name}
+                  {options.find(o => o.id === (previewVariant || currentSelection))?.name}
                 </div>
               </div>
               <div className="flex-1 overflow-auto p-4 flex items-center justify-center">
                 <div className="bg-white rounded-lg overflow-hidden shadow-2xl w-full max-w-3xl">
                   {systemModalType === 'hero' && (() => {
-                    const HeroComponent = HERO_COMPONENTS[currentSelection as HeroStyleId];
+                    const selectedStyle = (previewVariant || currentSelection) as HeroStyleId;
+                    const HeroComponent = HERO_COMPONENTS[selectedStyle];
                     if (!HeroComponent) return null;
                     // Use existing block data if editing, otherwise use sample data
                     const previewData = activeBlock?.data || {
@@ -1433,10 +1442,39 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
           
           {/* Footer */}
-          <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0 flex justify-end gap-3">
-            <button onClick={() => { setIsSystemModalOpen(false); setWarningFields([]); setPendingVariant(null); }} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-colors">
-              Done
-            </button>
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0 flex justify-between items-center">
+            <div className="text-xs text-neutral-500">
+              {previewVariant && previewVariant !== currentSelection && (
+                <span className="text-amber-400">Previewing: {options.find(o => o.id === previewVariant)?.name}</span>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => { 
+                  setIsSystemModalOpen(false); 
+                  setWarningFields([]); 
+                  setPendingVariant(null); 
+                  setPreviewVariant(null);
+                }} 
+                className="px-6 py-2.5 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-bold text-sm transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => { 
+                  if (previewVariant && previewVariant !== currentSelection) {
+                    applySelection(previewVariant);
+                  }
+                  setIsSystemModalOpen(false); 
+                  setWarningFields([]); 
+                  setPendingVariant(null);
+                  setPreviewVariant(null);
+                }} 
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-colors"
+              >
+                {previewVariant && previewVariant !== currentSelection ? 'Apply Style' : 'Done'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -2308,9 +2346,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => {
-                                    if (block.type === 'system-hero') { setSelectedBlockId(block.id); setSystemModalType('hero'); setIsSystemModalOpen(true); }
-                                    else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setSystemModalType('grid'); setIsSystemModalOpen(true); }
-                                    else if (block.type === 'system-footer') { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }
+                                    if (block.type === 'system-hero') { setSelectedBlockId(block.id); setSystemModalType('hero'); setPreviewVariant(null); setIsSystemModalOpen(true); }
+                                    else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setSystemModalType('grid'); setPreviewVariant(null); setIsSystemModalOpen(true); }
+                                    else if (block.type === 'system-footer') { setSelectedBlockId(null); setSystemModalType('footer'); setPreviewVariant(null); setIsSystemModalOpen(true); }
                                     else if (block.type.startsWith('system-')) { 
                                       // All other system blocks: just select them to open UniversalEditor
                                       setSelectedBlockId(block.id);
@@ -2342,7 +2380,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                 <span className="text-[10px] text-neutral-500">{FOOTER_OPTIONS.find(f => f.id === config.footerStyle)?.name}</span>
                               </div>
                             </div>
-                            <button onClick={() => { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }} className="px-3 py-1.5 bg-neutral-800 hover:bg-orange-600 text-neutral-400 hover:text-white rounded text-xs font-bold transition-all">Edit</button>
+                            <button onClick={() => { setSelectedBlockId(null); setSystemModalType('footer'); setPreviewVariant(null); setIsSystemModalOpen(true); }} className="px-3 py-1.5 bg-neutral-800 hover:bg-orange-600 text-neutral-400 hover:text-white rounded text-xs font-bold transition-all">Edit</button>
                           </div>
 
                           {/* ADD SECTION BUTTON */}
