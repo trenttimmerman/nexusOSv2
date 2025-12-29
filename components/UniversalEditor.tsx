@@ -1916,11 +1916,40 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 ]}
               />
               <Select
-                label="Padding"
+                label="Container Width"
+                value={data.style?.maxWidth || 'auto'}
+                onChange={(val) => updateStyle('maxWidth', val)}
+                options={[
+                  { value: 'auto', label: 'Auto' },
+                  { value: 'narrow', label: 'Narrow (800px)' },
+                  { value: 'medium', label: 'Medium (1200px)' },
+                  { value: 'wide', label: 'Wide (1400px)' },
+                  { value: 'full', label: 'Full Width' },
+                ]}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Select
+                label="Vertical Padding"
                 value={data.style?.padding || 'auto'}
                 onChange={(val) => updateStyle('padding', val)}
                 options={[
                   { value: 'auto', label: 'Auto' },
+                  { value: 'none', label: 'None' },
+                  { value: 's', label: 'Small' },
+                  { value: 'm', label: 'Medium' },
+                  { value: 'l', label: 'Large' },
+                  { value: 'xl', label: 'Extra Large' },
+                ]}
+              />
+              <Select
+                label="Horizontal Padding"
+                value={data.style?.paddingX || 'auto'}
+                onChange={(val) => updateStyle('paddingX', val)}
+                options={[
+                  { value: 'auto', label: 'Auto' },
+                  { value: 'none', label: 'None' },
                   { value: 's', label: 'Small' },
                   { value: 'm', label: 'Medium' },
                   { value: 'l', label: 'Large' },
@@ -1928,6 +1957,19 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 ]}
               />
             </div>
+
+            <Select
+              label="Section Height"
+              value={data.style?.height || 'auto'}
+              onChange={(val) => updateStyle('height', val)}
+              options={[
+                { value: 'auto', label: 'Auto (Content)' },
+                { value: 'sm', label: 'Small (300px)' },
+                { value: 'md', label: 'Medium (500px)' },
+                { value: 'lg', label: 'Large (700px)' },
+                { value: 'screen', label: 'Full Screen' },
+              ]}
+            />
 
             <Select
               label="Text Alignment"
@@ -1938,19 +1980,6 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 { value: 'left', label: 'Left' },
                 { value: 'center', label: 'Center' },
                 { value: 'right', label: 'Right' },
-              ]}
-            />
-
-            <Select
-              label="Max Width"
-              value={data.style?.maxWidth || 'auto'}
-              onChange={(val) => updateStyle('maxWidth', val)}
-              options={[
-                { value: 'auto', label: 'Auto' },
-                { value: 'narrow', label: 'Narrow (800px)' },
-                { value: 'medium', label: 'Medium (1200px)' },
-                { value: 'wide', label: 'Wide (1400px)' },
-                { value: 'full', label: 'Full Width' },
               ]}
             />
           </div>

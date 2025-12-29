@@ -20,6 +20,70 @@ import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, Al
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 
+// Style classes generator for block.data.style
+const getBlockStyleClasses = (style?: { padding?: string; paddingX?: string; maxWidth?: string; height?: string; background?: string; alignment?: string }) => {
+  if (!style) return '';
+  
+  const classes: string[] = [];
+  
+  // Vertical Padding classes
+  switch (style.padding) {
+    case 'none': classes.push('py-0'); break;
+    case 's': classes.push('py-4'); break;
+    case 'm': classes.push('py-12'); break;
+    case 'l': classes.push('py-20'); break;
+    case 'xl': classes.push('py-32'); break;
+    // 'auto' - no override, use component defaults
+  }
+  
+  // Horizontal Padding classes
+  switch (style.paddingX) {
+    case 'none': classes.push('px-0'); break;
+    case 's': classes.push('px-4'); break;
+    case 'm': classes.push('px-8'); break;
+    case 'l': classes.push('px-16'); break;
+    case 'xl': classes.push('px-24'); break;
+    // 'auto' - use component defaults
+  }
+  
+  // Height classes
+  switch (style.height) {
+    case 'sm': classes.push('min-h-[300px]'); break;
+    case 'md': classes.push('min-h-[500px]'); break;
+    case 'lg': classes.push('min-h-[700px]'); break;
+    case 'screen': classes.push('min-h-screen'); break;
+    // 'auto' - use component defaults
+  }
+  
+  // Max Width classes  
+  switch (style.maxWidth) {
+    case 'narrow': classes.push('[&>*]:max-w-[800px] [&>*]:mx-auto'); break;
+    case 'medium': classes.push('[&>*]:max-w-[1200px] [&>*]:mx-auto'); break;
+    case 'wide': classes.push('[&>*]:max-w-[1400px] [&>*]:mx-auto'); break;
+    case 'full': classes.push('[&>*]:max-w-full'); break;
+    // 'auto' - use component defaults
+  }
+  
+  // Background classes
+  switch (style.background) {
+    case 'white': classes.push('bg-white'); break;
+    case 'black': classes.push('bg-black text-white'); break;
+    case 'accent': classes.push('bg-[var(--color-primary)] text-white'); break;
+    case 'gradient': classes.push('bg-gradient-to-br from-neutral-50 to-neutral-100'); break;
+    // 'auto' - use component defaults
+  }
+  
+  // Text alignment
+  switch (style.alignment) {
+    case 'left': classes.push('text-left'); break;
+    case 'center': classes.push('text-center'); break;
+    case 'right': classes.push('text-right'); break;
+    // 'auto' - use component defaults
+  }
+  
+  return classes.join(' ');
+};
+
 export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: string) => void }> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true, onSelectField }) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
 
@@ -267,8 +331,14 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
       }
     };
 
+    const styleClasses = getBlockStyleClasses(block.data?.style);
+
     if (!isEditable) {
-      return <div key={block.id}>{renderContent()}</div>;
+      return (
+        <div key={block.id} className={styleClasses}>
+          {renderContent()}
+        </div>
+      );
     }
 
     return (
@@ -282,7 +352,9 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         onDelete={() => onDeleteBlock && onDeleteBlock(block.id)}
         onDuplicate={() => onDuplicateBlock && onDuplicateBlock(block.id)}
       >
-        {renderContent()}
+        <div className={styleClasses}>
+          {renderContent()}
+        </div>
       </SectionWrapper>
     );
   };
