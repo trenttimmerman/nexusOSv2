@@ -1235,6 +1235,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const handleHeroVariantChange = (id: string) => {
       if (!selectedBlockId || !activeBlock || !activeBlock.data) {
         const updatedBlocks = activePage.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: id } : b);
+        // Update localPages first for immediate UI feedback
+        setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks: updatedBlocks } : p));
         onUpdatePage(activePageId, { blocks: updatedBlocks });
         return;
       }
@@ -1249,6 +1251,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         setPendingVariant(id);
       } else {
         const updatedBlocks = activePage.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: id } : b);
+        // Update localPages first for immediate UI feedback
+        setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks: updatedBlocks } : p));
         onUpdatePage(activePageId, { blocks: updatedBlocks });
       }
     };
@@ -1256,6 +1260,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const confirmVariantChange = () => {
       if (pendingVariant && selectedBlockId) {
         const updatedBlocks = activePage.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: pendingVariant } : b);
+        // Update localPages first for immediate UI feedback
+        setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks: updatedBlocks } : p));
         onUpdatePage(activePageId, { blocks: updatedBlocks });
         setPendingVariant(null);
         setWarningFields([]);
@@ -1282,6 +1288,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       applySelection = (id) => {
         if (selectedBlockId) {
           const updatedBlocks = activePage.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: id } : b);
+          // Update localPages first for immediate UI feedback
+          setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks: updatedBlocks } : p));
           onUpdatePage(activePageId, { blocks: updatedBlocks });
         } else {
           onConfigChange({ ...config, productCardStyle: id as ProductCardStyleId });
@@ -1481,8 +1489,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </button>
               <button 
                 onClick={() => { 
-                  if (previewVariant && previewVariant !== currentSelection) {
-                    applySelection(previewVariant);
+                  // Always apply the selected style (previewVariant if set, otherwise currentSelection)
+                  // This ensures the variant is explicitly set on the block even if it matches the fallback
+                  const variantToApply = previewVariant || currentSelection;
+                  if (variantToApply && selectedBlockId) {
+                    applySelection(variantToApply);
                   }
                   setIsSystemModalOpen(false); 
                   setWarningFields([]); 
@@ -1491,7 +1502,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 }} 
                 className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-colors"
               >
-                {previewVariant && previewVariant !== currentSelection ? 'Apply Style' : 'Done'}
+                Apply Style
               </button>
             </div>
           </div>
