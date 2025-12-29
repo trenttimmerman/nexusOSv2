@@ -181,9 +181,11 @@ const AdminWrapper = () => {
 
   // Sync activePageId with actual home page ID if it's still 'home'
   React.useEffect(() => {
+    console.log('[AdminWrapper] Syncing activePageId:', { activePageId, pagesCount: pages?.length, pageIds: pages?.map(p => p.id) });
     if (activePageId === 'home' && pages && pages.length > 0) {
       const homePage = pages.find(p => p.type === 'home');
       if (homePage && homePage.id !== 'home') {
+        console.log('[AdminWrapper] Updating activePageId from "home" to:', homePage.id);
         setActivePageId(homePage.id);
       }
     }
