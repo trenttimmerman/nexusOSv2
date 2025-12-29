@@ -11,16 +11,21 @@ interface HeaderProps {
   links: NavLink[];
   cartCount: number;
   onOpenCart?: () => void;
+  onLogoClick?: () => void;
   primaryColor?: string;
   secondaryColor?: string;
 }
 
 // Reusable Logo Helper Component
-const Logo: React.FC<{storeName: string, logoUrl?: string, logoHeight?: number, className?: string}> = ({ storeName, logoUrl, logoHeight = 32, className }) => {
-  if (logoUrl) {
-    return <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px`, width: 'auto' }} className="object-contain" />;
+const Logo: React.FC<{storeName: string, logoUrl?: string, logoHeight?: number, className?: string, onClick?: () => void}> = ({ storeName, logoUrl, logoHeight = 32, className, onClick }) => {
+  const content = logoUrl 
+    ? <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px`, width: 'auto' }} className="object-contain" />
+    : <span className={className}>{storeName}</span>;
+    
+  if (onClick) {
+    return <button onClick={onClick} className="cursor-pointer">{content}</button>;
   }
-  return <span className={className}>{storeName}</span>;
+  return content;
 };
 
 // 1. The Canvas (Minimalist, Clean, Airy)

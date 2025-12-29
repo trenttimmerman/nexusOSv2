@@ -196,6 +196,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Product Search/Filter State
   const [productSearch, setProductSearch] = useState('');
   const [productCategoryFilter, setProductCategoryFilter] = useState<string>('all');
+  
+  // Product Detail Page State (for storefront preview)
+  const [activeProductSlug, setActiveProductSlug] = useState<string | null>(null);
 
   // Local State for Draft Mode
   const [localPages, setLocalPages] = useState<Page[]>(pages);
@@ -2557,8 +2560,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       products={products}
                       pages={localPages}
                       activePageId={activePageId}
+                      activeProductSlug={activeProductSlug || undefined}
                       previewBlock={previewBlock}
                       activeBlockId={selectedBlockId}
+                      onNavigate={(path) => {
+                        // Handle product navigation within the editor preview
+                        if (path.includes('/products/')) {
+                          const slug = path.split('/products/')[1];
+                          setActiveProductSlug(slug);
+                          setSelectedBlockId(null); // Clear block selection when viewing product
+                        } else if (path === '/store' || path === '/') {
+                          setActiveProductSlug(null);
+                        }
+                      }}
                       onUpdateBlock={updateActiveBlockData}
                       onEditBlock={(blockId) => {
                         setSelectedBlockId(blockId);

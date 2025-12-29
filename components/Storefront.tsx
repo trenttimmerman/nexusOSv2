@@ -182,8 +182,21 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                       links={navLinks}
                       cartCount={cartCount}
                       onOpenCart={() => setIsCartOpen(true)}
+                      onLogoClick={() => onNavigate?.('/store')}
                   />
                   <main className="flex-1 pt-20">
+                      {/* Back to shop button */}
+                      <div className="max-w-6xl mx-auto px-6 py-4">
+                        <button 
+                          onClick={() => onNavigate?.('/store')}
+                          className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors group"
+                        >
+                          <svg className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                          Back to shop
+                        </button>
+                      </div>
                       <ProductComponent product={product} onAddToCart={addToCart} />
                   </main>
                   <FooterComponent storeName={config.name} primaryColor={config.primaryColor} />
