@@ -789,6 +789,51 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     updateField(`${fieldKey}Alt`, randomAlt);
   };
 
+  // Simple text input with local state to prevent focus loss
+  const DebouncedInput = ({ value, onChange, placeholder, className }: {
+    value: string;
+    onChange: (val: string) => void;
+    placeholder?: string;
+    className?: string;
+  }) => {
+    const [localValue, setLocalValue] = useState(value || '');
+    const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
+
+    React.useEffect(() => {
+      setLocalValue(value || '');
+    }, [value]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      setLocalValue(newValue);
+      
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      debounceRef.current = setTimeout(() => {
+        onChange(newValue);
+      }, 300);
+    };
+
+    React.useEffect(() => {
+      return () => {
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+      };
+    }, []);
+
+    return (
+      <input 
+        type="text" 
+        value={localValue}
+        onChange={handleChange}
+        className={className}
+        placeholder={placeholder}
+      />
+    );
+  };
+
   // Enhanced Image Picker with preview, dimensions, alt text, stock photos, AI tools
   const ImagePicker = ({ id, label, value, onChange, onUpload, tip }: { 
     id?: string, 
@@ -959,10 +1004,9 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
           {/* Alt text input with AI generation */}
           <div className="p-2 border-t border-neutral-800">
             <div className="flex gap-2">
-              <input 
-                type="text" 
+              <DebouncedInput 
                 value={data[`${fieldKey}Alt`] || ''}
-                onChange={(e) => updateField(`${fieldKey}Alt`, e.target.value)}
+                onChange={(val) => updateField(`${fieldKey}Alt`, val)}
                 className="flex-1 p-2 bg-neutral-900 text-xs text-neutral-400 rounded border border-neutral-800 focus:outline-none focus:border-blue-500"
                 placeholder="Alt text for accessibility"
               />
