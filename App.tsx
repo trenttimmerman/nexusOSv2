@@ -144,7 +144,10 @@ const PublicStoreWrapper = () => {
   }
 
   // Resolve Active Page ID from URL Slug
-  let activePageId = 'home';
+  // Default to the home page's actual ID (not the literal 'home')
+  const homePage = pages.find(p => p.type === 'home' || p.slug === '/');
+  let activePageId = homePage?.id || 'home';
+  
   if (slug) {
     const foundPage = pages.find(p => 
       p.slug === slug || 
@@ -153,6 +156,8 @@ const PublicStoreWrapper = () => {
     );
     if (foundPage) activePageId = foundPage.id;
   }
+  
+  console.log('[PublicStore] Active page resolved:', { activePageId, slug, homePageId: homePage?.id });
 
   return (
     <Storefront
