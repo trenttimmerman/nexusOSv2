@@ -25,7 +25,7 @@ const Logo: React.FC<{storeName: string, logoUrl?: string, logoHeight?: number, 
 
 // 1. The Canvas (Minimalist, Clean, Airy)
 export const HeaderCanvas: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
-  <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-50">
+  <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-[100]">
     <div className="max-w-7xl mx-auto px-6 min-h-[5rem] py-4 flex items-center justify-between">
       <div className="flex items-center gap-8">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-bold tracking-tight" />
