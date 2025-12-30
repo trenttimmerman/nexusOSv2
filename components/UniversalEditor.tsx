@@ -2109,7 +2109,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
               case 'select':
                 // For productCategory, dynamically generate options from products
                 let selectOptions = field.options || [];
-                if (field.key === 'productCategory' && categories.length > 0) {
+                if (field.key === 'productCategory' && categories && categories.length > 0) {
                   // Use the new categories from database
                   selectOptions = [
                     { value: '', label: 'Select a category...' },
@@ -2117,14 +2117,14 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                       .filter(c => c.parent_id === undefined || c.parent_id === null) // Only top-level categories
                       .map(cat => ({ value: cat.id, label: cat.name }))
                   ];
-                } else if (field.key === 'productCategory' && products.length > 0) {
+                } else if (field.key === 'productCategory' && products && products.length > 0) {
                   // Fallback to legacy category extraction from products
                   const legacyCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
                   selectOptions = [
                     { value: '', label: 'Select a category...' },
                     ...legacyCategories.map(cat => ({ value: cat, label: cat }))
                   ];
-                } else if (field.key === 'productCollection' && collections.length > 0) {
+                } else if (field.key === 'productCollection' && collections && collections.length > 0) {
                   // Add collection selector
                   selectOptions = [
                     { value: '', label: 'Select a collection...' },
