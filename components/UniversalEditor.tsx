@@ -612,6 +612,7 @@ interface UniversalEditorProps {
   onSwitchLayout: (newVariant: string) => void;
   pages?: { id: string; name: string; slug: string }[];
   products?: { id: string; name: string; image: string; price: number; category: string; tags?: string[] }[];
+  categories?: { id: string; name: string; slug: string; parent_id?: string | null }[];
 }
 
 // Form field types for the form builder
@@ -650,8 +651,12 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   onUpdate,
   onSwitchLayout,
   pages = [],
-  products = []
+  products = [],
+  categories
 }) => {
+  // Create safe array to avoid TDZ issues
+  const safeCategories = categories || [];
+  
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [showLayoutPicker, setShowLayoutPicker] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -2106,8 +2111,16 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
               case 'select':
                 // For productCategory, dynamically generate options from products
                 let selectOptions = field.options || [];
-                if (field.key === 'productCategory' && products && products.length > 0) {
-                  // Extract unique categories from products
+                if (field.key === 'productCategory' && safeCategories.length > 0) {
+                  // Use categories from database
+                  selectOptions = [
+                    { value: '', label: 'Select a category...' },
+                    ...safeCategories
+                      .filter(c => c.parent_id === undefined || c.parent_id === null)
+                      .map(cat => ({ value: cat.id, label: cat.name }))
+                  ];
+                } else if (field.key === 'productCategory' && products && products.length > 0) {
+                  // Fallback to extracting categories from products
                   const productCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
                   selectOptions = [
                     { value: '', label: 'Select a category...' },
