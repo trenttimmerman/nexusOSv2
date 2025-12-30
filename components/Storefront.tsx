@@ -247,13 +247,14 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         }
         break;
       case 'collection':
-        if (data?.productCollection && collections && collections.length > 0) {
+        if (data?.productCollection && Array.isArray(collections) && collections.length > 0) {
           // Filter by collection - this would need collection_products junction data
           // For now, we'll filter based on collection conditions if available
-          const collection = collections.find(c => c.id === data.productCollection);
+          const collection = collections.find(c => c?.id === data.productCollection);
           if (collection) {
-            if (collection.type === 'manual' && collection.product_ids) {
-              filteredProducts = collection.product_ids
+            if (collection.type === 'manual' && (collection as any).product_ids) {
+              const productIds = (collection as any).product_ids;
+              filteredProducts = productIds
                 .map((id: string) => products.find(p => p.id === id))
                 .filter(Boolean) as Product[];
             } else if (collection.type === 'auto-category' && collection.conditions?.category_id) {
