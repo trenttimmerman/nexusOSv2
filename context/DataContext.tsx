@@ -193,14 +193,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // If no store ID yet (Public Visitor or Guest), try to fetch the 'demo-store'
       if (!targetStoreId && !session) {
+        // First try to get demo-store directly
         const { data: demoStore } = await supabase.from('stores').select('id').eq('slug', 'demo-store').maybeSingle();
         if (demoStore) {
             targetStoreId = demoStore.id;
         } else {
-            // Fallback to first store if demo-store not found
-            const { data: stores } = await supabase.from('stores').select('id').limit(1);
-            if (stores && stores.length > 0) {
-              targetStoreId = stores[0].id;
+            // Fallback: try to get store_id from pages table (which has public read access)
+            const { data: anyPage } = await supabase.from('pages').select('store_id').limit(1).maybeSingle();
+            if (anyPage?.store_id) {
+              targetStoreId = anyPage.store_id;
+              console.log('[DataContext] Found store via pages table:', targetStoreId);
+            } else {
+              // Last resort: try to get any store
+              const { data: stores } = await supabase.from('stores').select('id').limit(1);
+              if (stores && stores.length > 0) {
+                targetStoreId = stores[0].id;
+              }
             }
         }
       }
@@ -227,11 +235,28 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
 
           // 3. Pages
-          const { data: pagesData } = await supabase.from('pages').select('*').eq('store_id', currentStoreId);
+          const { data: pagesData, error: pagesError } = await supabase.from('pages').select('*').eq('store_id', currentStoreId);
+          console.log('[DataContext] Pages fetch:', { pagesData, pagesError, currentStoreId });
           if (pagesData && pagesData.length > 0) {
+            console.log('[DataContext] Loading', pagesData.length, 'pages from database');
             setPages(pagesData.map(p => ({ ...p, createdAt: p.created_at })));
           } else {
-            setPages(DEFAULT_PAGES); // Default pages for new tenants
+            // Initialize default pages in DB for new tenants
+            // Generate unique IDs for each store to avoid primary key conflicts
+            console.log('[DataContext] No pages found, initializing defaults for store:', currentStoreId);
+            const defaultPagesWithStoreId = DEFAULT_PAGES.map(p => ({
+              ...p,
+              id: `${p.id}-${currentStoreId.slice(0, 8)}`, // Make ID unique per store
+              store_id: currentStoreId
+            }));
+            const { error: insertError } = await supabase.from('pages').insert(defaultPagesWithStoreId);
+            if (insertError) {
+              console.error('[DataContext] Failed to insert default pages:', insertError);
+              // If insert fails (e.g., conflict), just use in-memory defaults
+              setPages(DEFAULT_PAGES.map(p => ({ ...p, id: `${p.id}-${currentStoreId.slice(0, 8)}` })));
+            } else {
+              setPages(defaultPagesWithStoreId);
+            }
           }
 
           // 4. Media
@@ -444,19 +469,73 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updatePage = async (pageId: string, updates: Partial<Page>) => {
-    // Update database first to ensure persistence
-    const { error } = await supabase.from('pages').update(updates).eq('id', pageId);
-    if (error) {
-      console.error('Failed to update page:', error);
+    console.log('[DataContext] updatePage called:', { pageId, updates, storeId });
+    
+    // Update local state immediately for responsiveness
+    setPages(prev => prev.map(p => p.id === pageId ? { ...p, ...updates } : p));
+    
+    if (!storeId) {
+      console.warn('[DataContext] No storeId - cannot save to database');
       return;
     }
-    // Only update local state if DB update succeeded
-    setPages(prev => prev.map(p => p.id === pageId ? { ...p, ...updates } : p));
+    
+    // Check if page exists in DB first - MUST filter by store_id for proper isolation
+    const { data: existingPage, error: checkError } = await supabase
+      .from('pages')
+      .select('id')
+      .eq('id', pageId)
+      .eq('store_id', storeId)
+      .maybeSingle();
+    
+    console.log('[DataContext] Page exists check:', { existingPage, checkError, storeId });
+    
+    if (existingPage) {
+      // Page exists, update it - filter by both id AND store_id for safety
+      const { error, data } = await supabase
+        .from('pages')
+        .update(updates)
+        .eq('id', pageId)
+        .eq('store_id', storeId)
+        .select();
+      if (error) {
+        console.error('[DataContext] Failed to update page:', error);
+      } else {
+        console.log('[DataContext] Page updated successfully:', data);
+      }
+    } else {
+      // Page doesn't exist in DB yet, insert it
+      const currentPage = pages.find(p => p.id === pageId);
+      console.log('[DataContext] Page not in DB, inserting:', currentPage);
+      if (currentPage) {
+        const pageToInsert = {
+          ...currentPage,
+          ...updates,
+          store_id: storeId
+        };
+        const { error } = await supabase.from('pages').insert(pageToInsert);
+        if (error) {
+          console.error('[DataContext] Failed to insert page:', error);
+        } else {
+          console.log('[DataContext] Page inserted successfully');
+        }
+      }
+    }
   };
 
   const deletePage = async (pageId: string) => {
     setPages(prev => prev.filter(p => p.id !== pageId));
-    await supabase.from('pages').delete().eq('id', pageId);
+    if (!storeId) {
+      console.warn('[DataContext] No storeId - cannot delete from database');
+      return;
+    }
+    const { error } = await supabase
+      .from('pages')
+      .delete()
+      .eq('id', pageId)
+      .eq('store_id', storeId);
+    if (error) {
+      console.error('[DataContext] Failed to delete page:', error);
+    }
   };
 
   const addAsset = async (asset: MediaAsset) => {

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { EditableText } from './HeroLibrary';
+import { EditableText, EditableImage } from './HeroLibrary';
 import { Plus, Minus, ChevronDown, ChevronUp, Mail, ArrowRight, Check, Star } from 'lucide-react';
 
 // --- RICH TEXT ---
@@ -116,7 +116,12 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
   'email-split': ({ data, isEditable, onUpdate }) => (
     <div className="grid grid-cols-1 md:grid-cols-2 min-h-[500px]">
       <div className="bg-neutral-100 relative">
-        <img src={data?.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80'} className="absolute inset-0 w-full h-full object-cover" />
+        <EditableImage
+          src={data?.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80'}
+          onChange={(val) => onUpdate?.({ ...data, image: val })}
+          isEditable={isEditable}
+          className="absolute inset-0 w-full h-full"
+        />
       </div>
       <div className="flex items-center justify-center p-12 md:p-24 bg-white">
         <div className="w-full max-w-md">
@@ -306,7 +311,12 @@ export const PROMO_BANNER_COMPONENTS: Record<string, React.FC<any>> = {
     <div className="py-12 px-6">
       <div className="max-w-7xl mx-auto bg-neutral-900 rounded-2xl overflow-hidden relative min-h-[300px] flex items-center">
         <div className="absolute inset-0 opacity-50">
-          <img src={data?.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1600&q=80'} className="w-full h-full object-cover" />
+          <EditableImage
+            src={data?.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1600&q=80'}
+            onChange={(val) => onUpdate?.({ ...data, image: val })}
+            isEditable={isEditable}
+            className="w-full h-full"
+          />
         </div>
         <div className="relative z-10 p-12 w-full md:w-1/2 text-white">
           <div className="inline-block px-3 py-1 bg-white/20 backdrop-blur rounded-full text-xs font-bold mb-4">LIMITED TIME</div>

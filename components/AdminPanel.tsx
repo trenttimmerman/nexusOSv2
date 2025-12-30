@@ -4,7 +4,7 @@ import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, 
 import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
-import { FOOTER_OPTIONS, FOOTER_FIELDS } from './FooterLibrary';
+import { FOOTER_OPTIONS, FOOTER_COMPONENTS, FOOTER_FIELDS } from './FooterLibrary';
 import { SOCIAL_OPTIONS, SOCIAL_COMPONENTS } from './SocialLibrary';
 import { SCROLL_OPTIONS, SCROLL_FIELDS } from './ScrollLibrary';
 import { RICH_TEXT_OPTIONS, EMAIL_SIGNUP_OPTIONS, COLLAPSIBLE_OPTIONS, LOGO_LIST_OPTIONS, PROMO_BANNER_OPTIONS } from './SectionLibrary';
@@ -196,16 +196,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Product Search/Filter State
   const [productSearch, setProductSearch] = useState('');
   const [productCategoryFilter, setProductCategoryFilter] = useState<string>('all');
+  
+  // Product Detail Page State (for storefront preview)
+  const [activeProductSlug, setActiveProductSlug] = useState<string | null>(null);
 
   // Local State for Draft Mode
   const [localPages, setLocalPages] = useState<Page[]>(pages);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
       if (!hasUnsavedChanges) {
           setLocalPages(pages);
       }
   }, [pages, hasUnsavedChanges]);
+
+  // Auto-save effect - debounced save when changes are made
+  useEffect(() => {
+    if (!hasUnsavedChanges || isSaving) return;
+    
+    const timer = setTimeout(async () => {
+      const pageToSave = localPages.find(p => p.id === activePageId);
+      if (pageToSave) {
+        setIsSaving(true);
+        await onUpdatePage(activePageId, { blocks: pageToSave.blocks });
+        setHasUnsavedChanges(false);
+        setIsSaving(false);
+        console.log('[AutoSave] Changes saved automatically');
+      }
+    }, 1500); // 1.5 second debounce
+
+    return () => clearTimeout(timer);
+  }, [hasUnsavedChanges, localPages, activePageId, isSaving]);
   
   // Settings State
   const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'payments' | 'shipping' | 'taxes' | 'policies' | 'notifications' | 'domains'>('general');
@@ -1202,6 +1224,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // --- SYSTEM BLOCK MODAL (Hero, Grid, Footer) ---
   const [warningFields, setWarningFields] = useState<string[]>([]);
   const [pendingVariant, setPendingVariant] = useState<string | null>(null);
+  const [previewVariant, setPreviewVariant] = useState<string | null>(null);
 
   const renderSystemBlockModal = () => {
     if (!isSystemModalOpen || !systemModalType) return null;
@@ -1209,12 +1232,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     let options: any[] = [];
     let currentSelection = '';
     let title = '';
-    let setSelection: (id: string) => void = () => { };
+    let applySelection: (id: string) => void = () => { };
     let color = 'blue';
 
     const handleHeroVariantChange = (id: string) => {
       if (!selectedBlockId || !activeBlock || !activeBlock.data) {
         const updatedBlocks = activePage.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: id } : b);
+        // Update localPages first for immediate UI feedback
+        setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks: updatedBlocks } : p));
         onUpdatePage(activePageId, { blocks: updatedBlocks });
         return;
       }
@@ -1229,6 +1254,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         setPendingVariant(id);
       } else {
         const updatedBlocks = activePage.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: id } : b);
+        // Update localPages first for immediate UI feedback
+        setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks: updatedBlocks } : p));
         onUpdatePage(activePageId, { blocks: updatedBlocks });
       }
     };
@@ -1236,6 +1263,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const confirmVariantChange = () => {
       if (pendingVariant && selectedBlockId) {
         const updatedBlocks = activePage.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: pendingVariant } : b);
+        // Update localPages first for immediate UI feedback
+        setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks: updatedBlocks } : p));
         onUpdatePage(activePageId, { blocks: updatedBlocks });
         setPendingVariant(null);
         setWarningFields([]);
@@ -1247,7 +1276,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       // If a block is selected, use its variant, otherwise global
       currentSelection = selectedBlockId ? activeBlock?.variant || config.heroStyle : config.heroStyle;
       title = 'Hero Engine';
-      setSelection = (id) => {
+      applySelection = (id) => {
         if (selectedBlockId) {
           handleHeroVariantChange(id);
         } else {
@@ -1259,9 +1288,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       options = PRODUCT_CARD_OPTIONS;
       currentSelection = selectedBlockId ? activeBlock?.variant || config.productCardStyle : config.productCardStyle;
       title = 'Product Grid Engine';
-      setSelection = (id) => {
+      applySelection = (id) => {
         if (selectedBlockId) {
           const updatedBlocks = activePage.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: id } : b);
+          // Update localPages first for immediate UI feedback
+          setLocalPages(prev => prev.map(p => p.id === activePageId ? { ...p, blocks: updatedBlocks } : p));
           onUpdatePage(activePageId, { blocks: updatedBlocks });
         } else {
           onConfigChange({ ...config, productCardStyle: id as ProductCardStyleId });
@@ -1272,7 +1303,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       options = FOOTER_OPTIONS;
       currentSelection = config.footerStyle;
       title = 'Footer Architecture';
-      setSelection = (id) => onConfigChange({ ...config, footerStyle: id as FooterStyleId });
+      applySelection = (id) => onConfigChange({ ...config, footerStyle: id as FooterStyleId });
       color = 'orange';
     }
 
@@ -1337,19 +1368,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </h4>
               {renderSortControls(modalSort, setModalSort)}
               <div className="grid grid-cols-2 gap-2">
-                {sortItems(options, modalSort).map((opt) => (
+                {sortItems(options, modalSort).map((opt) => {
+                  const isSelected = (previewVariant || currentSelection) === opt.id;
+                  const isCurrentlyApplied = currentSelection === opt.id;
+                  return (
                   <button 
                     key={opt.id} 
-                    onClick={() => setSelection(opt.id)} 
-                    className={`text-left p-3 rounded-lg border transition-all relative ${currentSelection === opt.id ? `${colorClasses[color]} text-white` : 'bg-neutral-800/50 border-neutral-700 text-neutral-400 hover:border-neutral-500'}`}
+                    onClick={() => setPreviewVariant(opt.id)} 
+                    className={`text-left p-3 rounded-lg border transition-all relative ${isSelected ? `${colorClasses[color]} text-white` : 'bg-neutral-800/50 border-neutral-700 text-neutral-400 hover:border-neutral-500'}`}
                   >
                     {opt.recommended && (
                       <span className="absolute -top-2 -right-2 text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">★ TOP</span>
                     )}
+                    {isCurrentlyApplied && (
+                      <span className="absolute -top-2 left-2 text-[9px] bg-blue-500 text-white px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
+                    )}
                     <div className="font-bold text-xs mb-1 truncate">{opt.name}</div>
                     <div className="text-[10px] opacity-60 truncate">{opt.description}</div>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
             
@@ -1359,50 +1397,117 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <span className="text-xs text-neutral-500 font-medium">Live Preview</span>
                 <div className="flex items-center gap-1 text-xs text-neutral-600">
                   <Eye size={12} />
-                  {options.find(o => o.id === currentSelection)?.name}
+                  {options.find(o => o.id === (previewVariant || currentSelection))?.name}
                 </div>
               </div>
               <div className="flex-1 overflow-auto p-4 flex items-center justify-center">
-                <div className="bg-white rounded-lg overflow-hidden shadow-2xl w-full max-w-2xl">
-                  {systemModalType === 'hero' && (
-                    <div className="h-64 bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center">
-                      <div className="text-center p-8">
-                        <div className="text-2xl font-bold text-neutral-700 mb-2">Hero Preview</div>
-                        <div className="text-neutral-500 text-sm">{options.find(o => o.id === currentSelection)?.name} Style</div>
+                <div className="bg-white rounded-lg overflow-hidden shadow-2xl w-full max-w-3xl">
+                  {systemModalType === 'hero' && (() => {
+                    const selectedStyle = (previewVariant || currentSelection) as HeroStyleId;
+                    const HeroComponent = HERO_COMPONENTS[selectedStyle];
+                    if (!HeroComponent) return null;
+                    // Use existing block data if editing, otherwise use sample data
+                    const previewData = activeBlock?.data || {
+                      heading: 'REDEFINE REALITY',
+                      subheading: 'Curated essentials for the modern digital nomad.',
+                      badge: 'New Collection 2024',
+                      buttonText: 'Shop The Drop',
+                      secondaryButtonText: 'View Lookbook',
+                      image: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2940&auto=format&fit=crop',
+                    };
+                    return (
+                      <div className="relative" style={{ maxHeight: '500px', overflow: 'hidden' }}>
+                        <HeroComponent
+                          storeName={config.name || 'Store'}
+                          primaryColor={config.primaryColor || '#6366F1'}
+                          data={previewData}
+                          isEditable={false}
+                        />
                       </div>
-                    </div>
-                  )}
-                  {systemModalType === 'grid' && (
-                    <div className="p-6 bg-neutral-50">
-                      <div className="grid grid-cols-3 gap-4">
-                        {[1,2,3].map(i => (
-                          <div key={i} className="bg-white rounded-lg p-4 shadow-sm border">
-                            <div className="aspect-square bg-neutral-200 rounded mb-3"></div>
-                            <div className="h-3 bg-neutral-200 rounded w-3/4 mb-2"></div>
-                            <div className="h-3 bg-neutral-100 rounded w-1/2"></div>
-                          </div>
-                        ))}
+                    );
+                  })()}
+                  {systemModalType === 'grid' && (() => {
+                    const selectedStyle = (previewVariant || currentSelection) as ProductCardStyleId;
+                    const CardComponent = PRODUCT_CARD_COMPONENTS[selectedStyle];
+                    if (!CardComponent) return null;
+                    // Sample products for preview
+                    const sampleProducts = [
+                      { id: '1', name: 'Classic Hoodie', price: 89, images: ['https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400'], seo: { slug: 'hoodie' } },
+                      { id: '2', name: 'Essential Tee', price: 45, images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400'], seo: { slug: 'tee' } },
+                      { id: '3', name: 'Denim Jacket', price: 129, images: ['https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400'], seo: { slug: 'jacket' } },
+                    ];
+                    return (
+                      <div className="p-6 bg-neutral-50">
+                        <div className="grid grid-cols-3 gap-4">
+                          {sampleProducts.map(product => (
+                            <CardComponent
+                              key={product.id}
+                              product={product as any}
+                              onAddToCart={() => {}}
+                              onNavigate={() => {}}
+                              primaryColor={config.primaryColor || '#6366F1'}
+                            />
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  {systemModalType === 'footer' && (
-                    <div className="bg-neutral-900 text-white p-8">
-                      <div className="text-center">
-                        <div className="text-lg font-bold mb-2">Footer Preview</div>
-                        <div className="text-neutral-400 text-sm">{options.find(o => o.id === currentSelection)?.name} Style</div>
+                    );
+                  })()}
+                  {systemModalType === 'footer' && (() => {
+                    const selectedStyle = (previewVariant || currentSelection) as FooterStyleId;
+                    const FooterComponent = FOOTER_COMPONENTS[selectedStyle];
+                    if (!FooterComponent) return null;
+                    return (
+                      <div className="relative" style={{ maxHeight: '300px', overflow: 'hidden' }}>
+                        <FooterComponent
+                          storeName={config.name || 'Store'}
+                          primaryColor={config.primaryColor || '#6366F1'}
+                          secondaryColor={config.secondaryColor || '#8B5CF6'}
+                        />
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               </div>
             </div>
           </div>
           
           {/* Footer */}
-          <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0 flex justify-end gap-3">
-            <button onClick={() => { setIsSystemModalOpen(false); setWarningFields([]); setPendingVariant(null); }} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-colors">
-              Done
-            </button>
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0 flex justify-between items-center">
+            <div className="text-xs text-neutral-500">
+              {previewVariant && previewVariant !== currentSelection && (
+                <span className="text-amber-400">Previewing: {options.find(o => o.id === previewVariant)?.name}</span>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => { 
+                  setIsSystemModalOpen(false); 
+                  setWarningFields([]); 
+                  setPendingVariant(null); 
+                  setPreviewVariant(null);
+                }} 
+                className="px-6 py-2.5 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-bold text-sm transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => { 
+                  // Always apply the selected style (previewVariant if set, otherwise currentSelection)
+                  // This ensures the variant is explicitly set on the block even if it matches the fallback
+                  const variantToApply = previewVariant || currentSelection;
+                  if (variantToApply && selectedBlockId) {
+                    applySelection(variantToApply);
+                  }
+                  setIsSystemModalOpen(false); 
+                  setWarningFields([]); 
+                  setPendingVariant(null);
+                  setPreviewVariant(null);
+                }} 
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-colors"
+              >
+                Apply Style
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -2274,9 +2379,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => {
-                                    if (block.type === 'system-hero') { setSelectedBlockId(block.id); setSystemModalType('hero'); setIsSystemModalOpen(true); }
-                                    else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setSystemModalType('grid'); setIsSystemModalOpen(true); }
-                                    else if (block.type === 'system-footer') { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }
+                                    if (block.type === 'system-hero') { setSelectedBlockId(block.id); setSystemModalType('hero'); setPreviewVariant(null); setIsSystemModalOpen(true); }
+                                    else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setSystemModalType('grid'); setPreviewVariant(null); setIsSystemModalOpen(true); }
+                                    else if (block.type === 'system-footer') { setSelectedBlockId(null); setSystemModalType('footer'); setPreviewVariant(null); setIsSystemModalOpen(true); }
                                     else if (block.type.startsWith('system-')) { 
                                       // All other system blocks: just select them to open UniversalEditor
                                       setSelectedBlockId(block.id);
@@ -2308,7 +2413,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                 <span className="text-[10px] text-neutral-500">{FOOTER_OPTIONS.find(f => f.id === config.footerStyle)?.name}</span>
                               </div>
                             </div>
-                            <button onClick={() => { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }} className="px-3 py-1.5 bg-neutral-800 hover:bg-orange-600 text-neutral-400 hover:text-white rounded text-xs font-bold transition-all">Edit</button>
+                            <button onClick={() => { setSelectedBlockId(null); setSystemModalType('footer'); setPreviewVariant(null); setIsSystemModalOpen(true); }} className="px-3 py-1.5 bg-neutral-800 hover:bg-orange-600 text-neutral-400 hover:text-white rounded text-xs font-bold transition-all">Edit</button>
                           </div>
 
                           {/* ADD SECTION BUTTON */}
@@ -2361,6 +2466,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       const newData = mapDataToLayout(activeBlock.data || {}, newVariant);
                       updateActiveBlockData(activeBlock.id, { ...newData, variant: newVariant });
                     }}
+                    products={products.map(p => ({ id: p.id, name: p.name, image: p.image, price: p.price, category: p.category, tags: p.tags }))}
                  />
                </div>
             )}
@@ -2407,11 +2513,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="flex items-center gap-3">
                   <button 
                       onClick={handleSaveChanges}
-                      disabled={!hasUnsavedChanges}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${hasUnsavedChanges ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'}`}
+                      disabled={!hasUnsavedChanges || isSaving}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        isSaving ? 'bg-yellow-600 text-white' :
+                        hasUnsavedChanges ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 
+                        'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+                      }`}
                   >
-                      <Save size={14} />
-                      {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
+                      {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                      {isSaving ? 'Saving...' : hasUnsavedChanges ? 'Save Changes' : 'Saved'}
                   </button>
                   {/* View Live Site Button */}
                   {config.slug && (
@@ -2450,8 +2560,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       products={products}
                       pages={localPages}
                       activePageId={activePageId}
+                      activeProductSlug={activeProductSlug || undefined}
                       previewBlock={previewBlock}
                       activeBlockId={selectedBlockId}
+                      onNavigate={(path) => {
+                        // Handle product navigation within the editor preview
+                        if (path.startsWith('/products/')) {
+                          const slug = path.split('/products/')[1];
+                          setActiveProductSlug(slug);
+                          setSelectedBlockId(null); // Clear block selection when viewing product
+                        } else if (path === '/') {
+                          setActiveProductSlug(null);
+                        }
+                      }}
                       onUpdateBlock={updateActiveBlockData}
                       onEditBlock={(blockId) => {
                         setSelectedBlockId(blockId);

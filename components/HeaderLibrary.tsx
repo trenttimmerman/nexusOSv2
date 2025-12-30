@@ -11,21 +11,26 @@ interface HeaderProps {
   links: NavLink[];
   cartCount: number;
   onOpenCart?: () => void;
+  onLogoClick?: () => void;
   primaryColor?: string;
   secondaryColor?: string;
 }
 
 // Reusable Logo Helper Component
-const Logo: React.FC<{storeName: string, logoUrl?: string, logoHeight?: number, className?: string}> = ({ storeName, logoUrl, logoHeight = 32, className }) => {
-  if (logoUrl) {
-    return <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px`, width: 'auto' }} className="object-contain" />;
+const Logo: React.FC<{storeName: string, logoUrl?: string, logoHeight?: number, className?: string, onClick?: () => void}> = ({ storeName, logoUrl, logoHeight = 32, className, onClick }) => {
+  const content = logoUrl 
+    ? <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px`, width: 'auto' }} className="object-contain" />
+    : <span className={className}>{storeName}</span>;
+    
+  if (onClick) {
+    return <button onClick={onClick} className="cursor-pointer">{content}</button>;
   }
-  return <span className={className}>{storeName}</span>;
+  return content;
 };
 
 // 1. The Canvas (Minimalist, Clean, Airy)
 export const HeaderCanvas: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
-  <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-50">
+  <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-[100]">
     <div className="max-w-7xl mx-auto px-6 min-h-[5rem] py-4 flex items-center justify-between">
       <div className="flex items-center gap-8">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-bold tracking-tight" />
@@ -51,7 +56,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 
 // 2. The Nebula (Glassmorphic, Floating, Blur)
 export const HeaderNebula: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
-  <header className="absolute top-4 left-0 right-0 z-50 flex justify-center px-4">
+  <header className="sticky top-0 z-[100] flex justify-center px-4 pt-4">
     <div className="bg-white/60 backdrop-blur-xl border border-white/20 shadow-lg rounded-full px-8 py-3 flex items-center gap-12 max-w-4xl w-full justify-between">
        <div className="flex items-center gap-2">
          {!logoUrl && <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>}
@@ -113,7 +118,7 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <header className="absolute top-6 inset-x-0 z-50 flex justify-center pointer-events-none">
+    <header className="sticky top-0 z-[100] flex justify-center pointer-events-none pt-6">
       <div 
         className={`pointer-events-auto bg-neutral-900 text-white shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] overflow-hidden ${expanded ? 'w-[600px] h-auto rounded-3xl' : 'w-[400px] min-h-[3.5rem] py-2 rounded-full'}`}
         onMouseEnter={() => setExpanded(true)}
@@ -606,7 +611,7 @@ export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
 
 // 20. Ghost (Interaction based)
 export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
-  <header className="absolute top-0 left-0 right-0 z-50 group hover:bg-white/90 hover:backdrop-blur-md transition-all duration-500 py-6 hover:py-4 px-8 flex justify-between items-center">
+  <header className="sticky top-0 left-0 right-0 z-[100] group hover:bg-white/90 hover:backdrop-blur-md transition-all duration-500 py-6 hover:py-4 px-8 flex justify-between items-center">
      <div className="mix-blend-difference text-white group-hover:text-black transition-colors duration-500">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-xl font-bold" />
      </div>

@@ -20,6 +20,93 @@ import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, Al
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 
+// Style classes generator for block.data.style
+const getBlockStyleClasses = (style?: { padding?: string; paddingX?: string; maxWidth?: string; height?: string; background?: string; alignment?: string; imageFit?: string }) => {
+  if (!style) return '';
+  
+  const classes: string[] = [];
+  
+  // Vertical Padding classes
+  switch (style.padding) {
+    case 'none': classes.push('py-0'); break;
+    case 's': classes.push('py-4'); break;
+    case 'm': classes.push('py-12'); break;
+    case 'l': classes.push('py-20'); break;
+    case 'xl': classes.push('py-32'); break;
+    // 'auto' - no override, use component defaults
+  }
+  
+  // Horizontal Padding classes
+  switch (style.paddingX) {
+    case 'none': classes.push('px-0'); break;
+    case 's': classes.push('px-4'); break;
+    case 'm': classes.push('px-8'); break;
+    case 'l': classes.push('px-16'); break;
+    case 'xl': classes.push('px-24'); break;
+    // 'auto' - use component defaults
+  }
+  
+  // Height classes - use relative container with proper overflow
+  switch (style.height) {
+    case 'sm': classes.push('h-[300px] overflow-hidden'); break;
+    case 'md': classes.push('h-[500px] overflow-hidden'); break;
+    case 'lg': classes.push('h-[700px] overflow-hidden'); break;
+    case 'screen': classes.push('h-screen overflow-hidden'); break;
+    // 'auto' - use component defaults
+  }
+  
+  // Image fit behavior - explicit control over how images scale
+  switch (style.imageFit) {
+    case 'cover': 
+      classes.push('[&_img]:object-cover [&_img]:w-full [&_img]:h-full'); 
+      break;
+    case 'contain': 
+      classes.push('[&_img]:object-contain [&_img]:max-w-full [&_img]:max-h-full [&_img]:mx-auto'); 
+      break;
+    case 'scale': 
+      classes.push('[&_img]:object-scale-down [&_img]:max-w-full [&_img]:max-h-full [&_img]:mx-auto'); 
+      break;
+    default:
+      // 'auto' - apply sensible defaults when height is constrained
+      if (style.height && style.height !== 'auto') {
+        classes.push('[&_img]:max-h-full [&_img]:w-auto [&_img]:object-contain [&_img]:mx-auto');
+      }
+  }
+  
+  // Ensure inner content fills and centers when height is set
+  if (style.height && style.height !== 'auto') {
+    classes.push('[&>*]:h-full [&>*]:flex [&>*]:flex-col [&>*]:justify-center');
+  }
+  
+  // Max Width classes  
+  switch (style.maxWidth) {
+    case 'narrow': classes.push('[&>*]:max-w-[800px] [&>*]:mx-auto'); break;
+    case 'medium': classes.push('[&>*]:max-w-[1200px] [&>*]:mx-auto'); break;
+    case 'wide': classes.push('[&>*]:max-w-[1400px] [&>*]:mx-auto'); break;
+    case 'full': classes.push('[&>*]:max-w-full'); break;
+    // 'auto' - use component defaults
+  }
+  
+  // Background classes
+  switch (style.background) {
+    case 'white': classes.push('bg-white'); break;
+    case 'black': classes.push('bg-black text-white'); break;
+    case 'accent': classes.push('bg-[var(--color-primary)] text-white'); break;
+    case 'gradient': classes.push('bg-gradient-to-br from-neutral-50 to-neutral-100'); break;
+    // 'auto' - use component defaults
+  }
+  
+  // Text alignment
+  switch (style.alignment) {
+    case 'left': classes.push('text-left'); break;
+    case 'center': classes.push('text-center'); break;
+    case 'right': classes.push('text-right'); break;
+    // 'auto' - use component defaults
+  }
+  
+  return classes.join(' ');
+};
+
 export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: string) => void }> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true, onSelectField }) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
 
@@ -56,6 +143,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   } as React.CSSProperties;
 
   const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
+  console.log('[Storefront] Header:', { headerStyle: config.headerStyle, hasComponent: !!HeaderComponent, componentName: HeaderComponent?.name });
   // Hero, Card, Footer components are now determined dynamically in renderBlock to allow for variants
   const FooterComponent = FOOTER_COMPONENTS[config.footerStyle] || FOOTER_COMPONENTS['columns'];
 
@@ -94,8 +182,21 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                       links={navLinks}
                       cartCount={cartCount}
                       onOpenCart={() => setIsCartOpen(true)}
+                      onLogoClick={() => onNavigate?.('/')}
                   />
-                  <main className="flex-1">
+                  <main className="flex-1 pt-20">
+                      {/* Back to shop button */}
+                      <div className="max-w-6xl mx-auto px-6 py-4">
+                        <button 
+                          onClick={() => onNavigate?.('/')}
+                          className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors group"
+                        >
+                          <svg className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                          Back to shop
+                        </button>
+                      </div>
                       <ProductComponent product={product} onAddToCart={addToCart} />
                   </main>
                   <FooterComponent storeName={config.name} primaryColor={config.primaryColor} />
@@ -111,6 +212,75 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
     const CardComponent = PRODUCT_CARD_COMPONENTS[styleId] || PRODUCT_CARD_COMPONENTS['classic'];
     const heading = data?.heading || "Latest Drops.";
     const subheading = data?.subheading || "Curated essentials for the modern digital nomad.";
+    
+    // Filter and sort products based on data settings
+    let filteredProducts = [...products];
+    const productSource = data?.productSource || 'all';
+    
+    // Apply filtering based on productSource
+    switch (productSource) {
+      case 'category':
+        if (data?.productCategory) {
+          filteredProducts = filteredProducts.filter(p => 
+            p.category.toLowerCase() === data.productCategory.toLowerCase()
+          );
+        }
+        break;
+      case 'tag':
+        if (data?.productTag) {
+          filteredProducts = filteredProducts.filter(p => 
+            p.tags?.includes(data.productTag)
+          );
+        }
+        break;
+      case 'manual':
+        if (data?.selectedProducts && data.selectedProducts.length > 0) {
+          // Order products by selection order
+          filteredProducts = data.selectedProducts
+            .map((id: string) => products.find(p => p.id === id))
+            .filter(Boolean);
+        }
+        break;
+      // 'all' - use all products
+    }
+    
+    // Apply sorting (only if not manual selection - manual preserves user order)
+    if (productSource !== 'manual') {
+      const sortBy = data?.sortBy || 'newest';
+      switch (sortBy) {
+        case 'oldest':
+          filteredProducts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+          break;
+        case 'newest':
+          filteredProducts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          break;
+        case 'price-asc':
+          filteredProducts.sort((a, b) => a.price - b.price);
+          break;
+        case 'price-desc':
+          filteredProducts.sort((a, b) => b.price - a.price);
+          break;
+        case 'name-asc':
+          filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+          break;
+        case 'name-desc':
+          filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
+          break;
+      }
+    }
+    
+    // Apply limit
+    const limit = data?.limit || 8;
+    filteredProducts = filteredProducts.slice(0, limit);
+    
+    // Determine grid columns
+    const columns = data?.columns || '4';
+    const gridCols = {
+      '2': 'lg:grid-cols-2',
+      '3': 'lg:grid-cols-3',
+      '4': 'lg:grid-cols-4',
+      '5': 'lg:grid-cols-5',
+    }[columns] || 'lg:grid-cols-4';
 
     return (
       <section className="py-24 px-6 max-w-7xl mx-auto">
@@ -137,19 +307,30 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                />
             </p>
           </div>
-          <a href="#" className="text-sm font-bold underline underline-offset-4">View All</a>
+          {data?.buttonText && (
+            <a href={data?.buttonLink || '/shop'} className="text-sm font-bold underline underline-offset-4">
+              {data.buttonText}
+            </a>
+          )}
+          {!data?.buttonText && <a href="#" className="text-sm font-bold underline underline-offset-4">View All</a>}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
-          {products.map((product) => (
-            <CardComponent
-              key={product.id}
-              product={product}
-              onAddToCart={addToCart}
-              onNavigate={() => onNavigate && onNavigate(`/store/products/${product.seo.slug || product.id}`)}
-              primaryColor={config.primaryColor}
-            />
-          ))}
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${gridCols} gap-x-8 gap-y-16`}>
+          {filteredProducts.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-neutral-500">
+              No products found matching your criteria.
+            </div>
+          ) : (
+            filteredProducts.map((product) => (
+              <CardComponent
+                key={product.id}
+                product={product}
+                onAddToCart={addToCart}
+                onNavigate={() => onNavigate && onNavigate(`/products/${product.seo.slug || product.id}`)}
+                primaryColor={config.primaryColor}
+              />
+            ))
+          )}
         </div>
       </section>
     );
@@ -158,12 +339,14 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   // Dynamic Block Renderer
   const renderBlock = (block: PageBlock) => {
     const isEditable = !!onUpdateBlock;
+    console.log('[Storefront] Rendering block:', { id: block.id, type: block.type, variant: block.variant });
 
     const renderContent = () => {
       switch (block.type) {
         case 'system-hero':
           const heroStyle = (block.variant as HeroStyleId) || config.heroStyle || 'impact';
           const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
+          console.log('[Storefront] Hero block:', { heroStyle, hasComponent: !!HeroComponent });
           return HeroComponent ? (
             <HeroComponent
               key={block.id}
@@ -264,8 +447,14 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
       }
     };
 
+    const styleClasses = getBlockStyleClasses(block.data?.style);
+
     if (!isEditable) {
-      return <div key={block.id}>{renderContent()}</div>;
+      return (
+        <div key={block.id} className={styleClasses}>
+          {renderContent()}
+        </div>
+      );
     }
 
     return (
@@ -279,7 +468,9 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         onDelete={() => onDeleteBlock && onDeleteBlock(block.id)}
         onDuplicate={() => onDuplicateBlock && onDuplicateBlock(block.id)}
       >
-        {renderContent()}
+        <div className={styleClasses}>
+          {renderContent()}
+        </div>
       </SectionWrapper>
     );
   };
@@ -300,7 +491,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         secondaryColor={secondaryColor}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 pt-20">
         {activePage.blocks && activePage.blocks.length > 0 ? (
           // Render All Blocks (Including System Components)
           <div className={`${activePage.type === 'custom' ? 'max-w-7xl mx-auto' : 'w-full'}`}>

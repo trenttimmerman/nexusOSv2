@@ -159,6 +159,10 @@ create policy "Users can read own profile" on profiles
 create policy "Users can read own store" on stores
   for select using (id in (select store_id from profiles where id = auth.uid()));
 
+-- Stores: Public read access for storefront visitors
+create policy "Public stores are viewable by everyone" on stores
+  for select using (true);
+
 -- Products: Tenant Isolation
 drop policy if exists "Public Read Products" on products;
 drop policy if exists "Public Write Products" on products;

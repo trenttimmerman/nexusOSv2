@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Layout, Image as ImageIcon, Type, AlignLeft, AlignCenter, AlignRight, Palette, Plus, Trash2, ChevronRight, ArrowLeft, Check, Upload, X, Bold, Italic, Link as LinkIcon, List, Loader2, Sparkles, Wand2, Info, ChevronDown, GripVertical, Mail, Phone, MessageSquare, User, FileText, Hash, Calendar, CheckSquare, ToggleLeft, Grid, Columns, Filter, SortAsc, Lightbulb, ExternalLink, Home, ShoppingBag, Users, HelpCircle, Zap, AlertCircle, Repeat } from 'lucide-react';
+import { ChevronLeft, Layout, Image as ImageIcon, Type, AlignLeft, AlignCenter, AlignRight, Palette, Plus, Trash2, ChevronRight, ArrowLeft, Check, Upload, X, Bold, Italic, Link as LinkIcon, List, Loader2, Sparkles, Wand2, Info, ChevronDown, GripVertical, Mail, Phone, MessageSquare, User, FileText, Hash, Calendar, CheckSquare, ToggleLeft, Grid, Columns, Filter, SortAsc, Lightbulb, ExternalLink, Home, ShoppingBag, Users, HelpCircle, Zap, AlertCircle } from 'lucide-react';
 import { UniversalSectionData } from '../lib/smartMapper';
 import { supabase } from '../lib/supabaseClient';
+import { GoogleGenAI } from '@google/genai';
+
+// Initialize Gemini AI
+const genAI = import.meta.env.VITE_GEMINI_API_KEY ? new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY) : null;
 
 // Import Options
 import { BLOG_OPTIONS } from './BlogLibrary';
@@ -20,18 +24,37 @@ const ALL_OPTIONS: Record<string, any[]> = {
   'system-hero': HERO_OPTIONS,
   'system-blog': BLOG_OPTIONS,
   'system-video': VIDEO_OPTIONS,
-  'system-scroll': SCROLL_OPTIONS,
-  'system-grid': PRODUCT_CARD_OPTIONS,
   'system-contact': CONTACT_OPTIONS,
   'system-layout': LAYOUT_OPTIONS,
   'system-collection': COLLECTION_OPTIONS,
   'system-gallery': GALLERY_OPTIONS,
   'system-social': SOCIAL_OPTIONS,
+  'system-scroll': SCROLL_OPTIONS,
+  'system-grid': PRODUCT_CARD_OPTIONS,
   'system-rich-text': RICH_TEXT_OPTIONS,
   'system-email': EMAIL_SIGNUP_OPTIONS,
   'system-collapsible': COLLAPSIBLE_OPTIONS,
   'system-logo-list': LOGO_LIST_OPTIONS,
   'system-promo': PROMO_BANNER_OPTIONS,
+};
+
+// Hero variant field visibility - defines which fields appear for each hero style
+const HERO_VARIANT_FIELDS: Record<string, string[]> = {
+  impact: ['heading', 'badge', 'buttonText', 'buttonLink', 'secondaryButtonText', 'secondaryButtonLink', 'image', 'overlayOpacity'],
+  split: ['heading', 'subheading', 'buttonText', 'buttonLink', 'image', 'overlayOpacity'],
+  kinetik: ['heading', 'buttonText', 'buttonLink', 'marqueeText', 'image', 'overlayOpacity'],
+  grid: ['heading', 'subheading', 'buttonText', 'buttonLink', 'secondaryButtonText', 'secondaryButtonLink', 'imageBadge', 'featureCardTitle', 'featureCardSubtitle', 'image', 'sideImage', 'overlayOpacity'],
+  typographic: ['heading', 'subheading', 'topBadge', 'link1Label', 'link1Url', 'link1Image', 'link2Label', 'link2Url', 'link2Image', 'link3Label', 'link3Url', 'link3Image'],
+};
+
+// Product grid variant field visibility
+const GRID_VARIANT_FIELDS: Record<string, string[]> = {
+  classic: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
+  industrial: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'showStock', 'showSku', 'buttonText', 'buttonLink'],
+  focus: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
+  hype: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'showBadges', 'buttonText', 'buttonLink'],
+  magazine: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
+  glass: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
 };
 
 // ============== SECTION-SPECIFIC FIELD CONFIGURATIONS ==============
@@ -70,6 +93,7 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
       { id: 'extras', label: 'Extras', icon: <Zap size={12} /> },
     ],
     fields: [
+      // === CONTENT GROUP ===
       { key: 'heading', label: 'Headline', type: 'text', group: 'content', maxLength: 60, showAI: true, 
         placeholder: 'Your main headline (30-60 chars)', 
         tip: 'Start with action verbs, focus on benefits. Keep under 60 characters.',
@@ -77,20 +101,73 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
       { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', maxLength: 160, showAI: true,
         placeholder: 'Supporting text that expands on your headline',
         tip: 'Best at 120-160 characters. Explain the value proposition.' },
-      { key: 'image', label: 'Background Image', type: 'image', group: 'media',
-        tip: 'Recommended: 1920x1080px, under 500KB. High contrast works best.' },
+      { key: 'badge', label: 'Badge/Label', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., ✨ New Collection, 🔥 Limited Time',
+        examples: ['✨ New Release', '🔥 Best Sellers Inside', '👗 New Season Arrivals'] },
+      { key: 'topBadge', label: 'Top Badge', type: 'text', group: 'content', showAI: true,
+        placeholder: 'Badge text above headline',
+        tip: 'Small text badge that appears above your headline.' },
+      { key: 'imageBadge', label: 'Image Badge', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Best Seller, New Arrival',
+        tip: 'Badge that overlays on the main image.' },
+      { key: 'featureCardTitle', label: 'Feature Card Title', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Free Shipping',
+        tip: 'Title for the promotional feature card.' },
+      { key: 'featureCardSubtitle', label: 'Feature Card Subtitle', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., On orders over $50',
+        tip: 'Subtitle text for the feature card.' },
+      { key: 'marqueeText', label: 'Scrolling Marquee', type: 'text', group: 'content',
+        placeholder: 'Text that scrolls across the section' },
+      
+      // === BUTTONS GROUP ===
       { key: 'buttonText', label: 'Primary Button', type: 'text', group: 'buttons', showAI: true,
         placeholder: 'e.g., Shop Now, Get Started',
         examples: ['Shop Now', 'Get Started', 'Learn More', 'Browse Collection'] },
-      { key: 'buttonLink', label: 'Button Link', type: 'linkSelector', group: 'buttons',
+      { key: 'buttonLink', label: 'Primary Button Link', type: 'linkSelector', group: 'buttons',
         placeholder: '/shop or https://...' },
       { key: 'secondaryButtonText', label: 'Secondary Button', type: 'text', group: 'buttons',
         placeholder: 'e.g., Learn More (optional)' },
-      { key: 'badge', label: 'Badge/Label', type: 'text', group: 'extras', showAI: true,
-        placeholder: 'e.g., ✨ New Collection, 🔥 Limited Time',
-        examples: ['✨ New Release', '🔥 Best Sellers Inside', '👗 New Season Arrivals'] },
-      { key: 'marqueeText', label: 'Scrolling Marquee', type: 'text', group: 'extras',
-        placeholder: 'Text that scrolls across the section' },
+      { key: 'secondaryButtonLink', label: 'Secondary Button Link', type: 'linkSelector', group: 'buttons',
+        placeholder: '/about or https://...' },
+      // Typographic hero links
+      { key: 'link1Label', label: 'Category 1 Label', type: 'text', group: 'buttons',
+        placeholder: 'e.g., New Arrivals',
+        tip: 'First category link label.' },
+      { key: 'link1Url', label: 'Category 1 Link', type: 'linkSelector', group: 'buttons',
+        placeholder: '/new-arrivals' },
+      { key: 'link2Label', label: 'Category 2 Label', type: 'text', group: 'buttons',
+        placeholder: 'e.g., Best Sellers' },
+      { key: 'link2Url', label: 'Category 2 Link', type: 'linkSelector', group: 'buttons',
+        placeholder: '/best-sellers' },
+      { key: 'link3Label', label: 'Category 3 Label', type: 'text', group: 'buttons',
+        placeholder: 'e.g., Sale Items' },
+      { key: 'link3Url', label: 'Category 3 Link', type: 'linkSelector', group: 'buttons',
+        placeholder: '/sale' },
+      
+      // === MEDIA GROUP ===
+      { key: 'image', label: 'Background Image', type: 'image', group: 'media',
+        tip: 'Recommended: 1920x1080px, under 500KB. High contrast works best.' },
+      { key: 'sideImage', label: 'Side Image', type: 'image', group: 'media',
+        tip: 'Secondary image for grid-style heroes.' },
+      { key: 'link1Image', label: 'Category 1 Image', type: 'image', group: 'media',
+        tip: 'Image for the first category link.' },
+      { key: 'link2Image', label: 'Category 2 Image', type: 'image', group: 'media',
+        tip: 'Image for the second category link.' },
+      { key: 'link3Image', label: 'Category 3 Image', type: 'image', group: 'media',
+        tip: 'Image for the third category link.' },
+      { key: 'overlayOpacity', label: 'Image Darkness', type: 'select', group: 'media',
+        tip: 'How dark the overlay on the background image should be.',
+        options: [
+          { value: '0', label: 'None (0%)' },
+          { value: '0.1', label: 'Very Light (10%)' },
+          { value: '0.2', label: 'Light (20%)' },
+          { value: '0.3', label: 'Medium Light (30%)' },
+          { value: '0.4', label: 'Medium (40%)' },
+          { value: '0.5', label: 'Medium Dark (50%)' },
+          { value: '0.6', label: 'Dark (60%)' },
+          { value: '0.7', label: 'Very Dark (70%)' },
+        ],
+        defaultValue: '0.4' },
     ]
   },
 
@@ -355,45 +432,150 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
   },
 
   'system-scroll': {
-    title: 'Scroll Section',
-    description: 'Animated scrolling content (marquees, tickers)',
+    title: 'Scrolling Section',
+    description: 'Animated scrolling content like marquees and tickers',
     groups: [
-      { id: 'content', label: 'Content', icon: <Repeat size={12} /> },
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
       { id: 'logos', label: 'Logos', icon: <ImageIcon size={12} /> },
+      { id: 'style', label: 'Style', icon: <Palette size={12} /> },
     ],
     fields: [
       { key: 'text', label: 'Ticker Text', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., FREE SHIPPING • NEW ARRIVALS • LIMITED TIME OFFER',
         tip: 'Use • or | to separate items. Text will scroll continuously.',
-        examples: ['FREE SHIPPING WORLDWIDE • NEW COLLECTION OUT NOW', '🔥 SALE ENDS SOON • UP TO 50% OFF'] },
+        examples: ['FREE SHIPPING WORLDWIDE • NEW COLLECTION OUT NOW', '🔥 SALE ENDS SOON • UP TO 50% OFF', '✨ PREMIUM QUALITY • HANDCRAFTED'] },
       { key: 'logos', label: 'Logo URLs', type: 'text', group: 'logos',
         placeholder: 'Comma-separated image URLs',
         tip: 'Add logo image URLs separated by commas. Logos will scroll horizontally.' },
+      { key: 'speed', label: 'Scroll Speed', type: 'select', group: 'style',
+        options: [
+          { value: 'slow', label: 'Slow' },
+          { value: 'normal', label: 'Normal' },
+          { value: 'fast', label: 'Fast' },
+        ],
+        defaultValue: 'normal' },
+      { key: 'pauseOnHover', label: 'Pause on Hover', type: 'toggle', group: 'style', defaultValue: true,
+        tip: 'Animation pauses when user hovers over the section' },
     ]
   },
 
   'system-grid': {
     title: 'Product Grid',
-    description: 'Display products in a grid layout',
+    description: 'Display products in a customizable grid layout',
     groups: [
       { id: 'content', label: 'Content', icon: <Type size={12} /> },
-      { id: 'settings', label: 'Settings', icon: <Grid size={12} /> },
+      { id: 'products', label: 'Products', icon: <ShoppingBag size={12} /> },
+      { id: 'settings', label: 'Layout', icon: <Grid size={12} /> },
+      { id: 'style', label: 'Style', icon: <Palette size={12} /> },
     ],
     fields: [
+      // === CONTENT GROUP ===
       { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., Featured Products, Best Sellers',
         examples: ['Featured Products', 'New Arrivals', 'Best Sellers', 'Shop the Collection'] },
       { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
         placeholder: 'Optional description for the grid section' },
+      { key: 'buttonText', label: 'View All Button', type: 'text', group: 'content',
+        placeholder: 'View All Products' },
+      { key: 'buttonLink', label: 'View All Link', type: 'linkSelector', group: 'content',
+        placeholder: '/shop' },
+      
+      // === PRODUCTS GROUP ===
+      { key: 'productSource', label: 'Product Source', type: 'select', group: 'products',
+        tip: 'Choose which products to display in this grid',
+        options: [
+          { value: 'all', label: 'All Products' },
+          { value: 'category', label: 'By Category' },
+          { value: 'tag', label: 'By Tag (Featured, Sale, etc.)' },
+          { value: 'manual', label: 'Manual Selection' },
+        ],
+        defaultValue: 'all' },
+      { key: 'productCategory', label: 'Category', type: 'select', group: 'products',
+        tip: 'Filter products by category',
+        options: [{ value: '', label: 'Select a category...' }] },
+      { key: 'productTag', label: 'Tag', type: 'select', group: 'products',
+        tip: 'Filter products by tag',
+        options: [
+          { value: '', label: 'Select a tag...' },
+          { value: 'featured', label: 'Featured' },
+          { value: 'new', label: 'New Arrival' },
+          { value: 'sale', label: 'On Sale' },
+          { value: 'bestseller', label: 'Best Seller' },
+        ] },
+      { key: 'selectedProducts', label: 'Select Products', type: 'productSelector', group: 'products',
+        tip: 'Manually choose which products to display' },
+      { key: 'sortBy', label: 'Sort By', type: 'select', group: 'products',
+        options: [
+          { value: 'newest', label: 'Newest First' },
+          { value: 'oldest', label: 'Oldest First' },
+          { value: 'price-asc', label: 'Price: Low to High' },
+          { value: 'price-desc', label: 'Price: High to Low' },
+          { value: 'name-asc', label: 'Name: A to Z' },
+          { value: 'name-desc', label: 'Name: Z to A' },
+        ],
+        defaultValue: 'newest' },
+      
+      // === SETTINGS/LAYOUT GROUP ===
       { key: 'columns', label: 'Columns', type: 'select', group: 'settings',
         options: [
           { value: '2', label: '2 Columns' },
           { value: '3', label: '3 Columns' },
           { value: '4', label: '4 Columns' },
+          { value: '5', label: '5 Columns' },
         ],
-        defaultValue: '3' },
-      { key: 'limit', label: 'Products to Show', type: 'number', group: 'settings',
-        placeholder: '6', defaultValue: 6 },
+        defaultValue: '4' },
+      { key: 'limit', label: 'Max Products', type: 'number', group: 'settings',
+        placeholder: '8', defaultValue: 8,
+        tip: 'Maximum number of products to display' },
+      
+      // === STYLE GROUP ===
+      { key: 'showPrices', label: 'Show Prices', type: 'toggle', group: 'style', defaultValue: true },
+      { key: 'showQuickAdd', label: 'Show Quick Add', type: 'toggle', group: 'style', defaultValue: true,
+        tip: 'Show add to cart button on hover' },
+      { key: 'showStock', label: 'Show Stock Count', type: 'toggle', group: 'style', defaultValue: false,
+        tip: 'Display inventory count (Industrial style)' },
+      { key: 'showSku', label: 'Show SKU', type: 'toggle', group: 'style', defaultValue: false,
+        tip: 'Display product SKU (Industrial style)' },
+      { key: 'showBadges', label: 'Show Badges', type: 'toggle', group: 'style', defaultValue: true,
+        tip: 'Display New Drop, Low Stock badges (Hype style)' },
+    ]
+  },
+
+  'system-logo-list': {
+    title: 'Logo List',
+    description: 'Display partner, client, or brand logos',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'logos', label: 'Logos', icon: <ImageIcon size={12} /> },
+      { id: 'style', label: 'Style', icon: <Palette size={12} /> },
+    ],
+    fields: [
+      { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Trusted By, As Seen In',
+        examples: ['Trusted By', 'As Seen In', 'Our Partners', 'Featured In'] },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
+      { key: 'grayscale', label: 'Grayscale Logos', type: 'toggle', group: 'style', defaultValue: true,
+        tip: 'Display logos in grayscale (color on hover)' },
+    ]
+  },
+
+  'system-promo': {
+    title: 'Promo Banner',
+    description: 'Announcement or promotional banner',
+    groups: [
+      { id: 'content', label: 'Content', icon: <Type size={12} /> },
+      { id: 'style', label: 'Style', icon: <Palette size={12} /> },
+    ],
+    fields: [
+      { key: 'text', label: 'Banner Text', type: 'text', group: 'content', showAI: true,
+        placeholder: 'e.g., Free shipping on orders over $50!',
+        examples: ['🎉 Free shipping on orders over $50!', '⏰ Sale ends tonight!', '✨ New arrivals just dropped'] },
+      { key: 'link', label: 'Link URL', type: 'linkSelector', group: 'content',
+        placeholder: '/shop' },
+      { key: 'linkText', label: 'Link Text', type: 'text', group: 'content',
+        placeholder: 'Shop Now' },
+      { key: 'dismissible', label: 'Can Dismiss', type: 'toggle', group: 'style', defaultValue: true,
+        tip: 'Allow visitors to close the banner' },
     ]
   },
 };
@@ -425,6 +607,7 @@ interface UniversalEditorProps {
   onUpdate: (data: UniversalSectionData) => void;
   onSwitchLayout: (newVariant: string) => void;
   pages?: { id: string; name: string; slug: string }[];
+  products?: { id: string; name: string; image: string; price: number; category: string; tags?: string[] }[];
 }
 
 // Form field types for the form builder
@@ -462,57 +645,84 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   activeField,
   onUpdate,
   onSwitchLayout,
-  pages = []
+  pages = [],
+  products = []
 }) => {
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [showLayoutPicker, setShowLayoutPicker] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState<string | null>(null);
+  const [productSearchQuery, setProductSearchQuery] = useState('');
   
   // AI Content Generation (simulated for now - would connect to OpenAI/Claude in production)
   const generateAIContent = async (field: string, context?: string) => {
     setIsGeneratingAI(field);
     
-    // Simulate AI generation with realistic delays
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const aiSuggestions: Record<string, Record<string, string>> = {
-      heading: {
-        default: 'Transform Your Vision Into Reality',
-        ecommerce: 'Discover Products You\'ll Love',
-        fashion: 'Elevate Your Style Today',
-        tech: 'Innovation Meets Excellence',
-        food: 'Taste the Difference',
-      },
-      subheading: {
-        default: 'We help businesses grow with cutting-edge solutions designed for the modern world.',
-        ecommerce: 'Shop our curated collection of premium products, handpicked for quality and style.',
-        fashion: 'From runway trends to everyday essentials, find your perfect look.',
-        tech: 'Discover tools and technologies that power the future of work.',
-        food: 'Fresh ingredients, authentic flavors, delivered to your door.',
-      },
-      buttonText: {
-        default: 'Get Started',
-        ecommerce: 'Shop Now',
-        fashion: 'Browse Collection',
-        tech: 'Learn More',
-        food: 'Order Now',
-      },
-      badge: {
-        default: '✨ New Release',
-        ecommerce: '🔥 Best Sellers Inside',
-        fashion: '👗 New Season Arrivals',
-        tech: '🚀 Now Available',
-        food: '🍃 Farm Fresh Daily',
+    try {
+      if (!genAI) {
+        // Fallback to simulated generation if no API key
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        const aiSuggestions: Record<string, Record<string, string>> = {
+          heading: {
+            default: 'Transform Your Vision Into Reality',
+            ecommerce: 'Discover Products You\'ll Love',
+            fashion: 'Elevate Your Style Today',
+            tech: 'Innovation Meets Excellence',
+            food: 'Taste the Difference',
+          },
+          subheading: {
+            default: 'We help businesses grow with cutting-edge solutions designed for the modern world.',
+            ecommerce: 'Shop our curated collection of premium products, handpicked for quality and style.',
+            fashion: 'From runway trends to everyday essentials, find your perfect look.',
+            tech: 'Discover tools and technologies that power the future of work.',
+            food: 'Fresh ingredients, authentic flavors, delivered to your door.',
+          },
+          buttonText: {
+            default: 'Get Started',
+            ecommerce: 'Shop Now',
+            fashion: 'Browse Collection',
+            tech: 'Learn More',
+            food: 'Order Now',
+          },
+          badge: {
+            default: '✨ New Release',
+            ecommerce: '🔥 Best Sellers Inside',
+            fashion: '👗 New Season Arrivals',
+            tech: '🚀 Now Available',
+            food: '🍃 Farm Fresh Daily',
+          }
+        };
+        
+        const suggestions = aiSuggestions[field] || aiSuggestions['default'];
+        const types = Object.keys(suggestions);
+        const randomType = types[Math.floor(Math.random() * types.length)];
+        updateField(field, suggestions[randomType]);
+      } else {
+        // Real AI generation with Gemini
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        
+        const sectionType = activeSection?.type || 'general';
+        const prompt = `You are an expert copywriter for a modern e-commerce platform. 
+        Generate a short, compelling ${field} for a ${sectionType} section of a website.
+        Context: ${context || 'A professional business website'}
+        Field type: ${field}
+        Requirements:
+        - Compelling and professional
+        - Maximum 60 characters for headings
+        - Maximum 160 characters for subheadings
+        - Just return the text, no quotes or extra commentary.`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text().trim();
+        
+        updateField(field, text);
       }
-    };
-    
-    const suggestions = aiSuggestions[field] || aiSuggestions['default'];
-    const types = Object.keys(suggestions);
-    const randomType = types[Math.floor(Math.random() * types.length)];
-    
-    updateField(field, suggestions[randomType]);
-    setIsGeneratingAI(null);
+    } catch (error) {
+      console.error('AI Generation Error:', error);
+    } finally {
+      setIsGeneratingAI(null);
+    }
   };
 
   // Auto-scroll to active field
@@ -533,7 +743,12 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   const currentOption = options.find(o => o.id === variant);
 
   const updateField = (key: string, value: any) => {
-    onUpdate({ ...data, [key]: value });
+    // Convert overlayOpacity from string to number for hero sections
+    let processedValue = value;
+    if (key === 'overlayOpacity' && typeof value === 'string') {
+      processedValue = parseFloat(value);
+    }
+    onUpdate({ ...data, [key]: processedValue });
   };
 
   const updateStyle = (key: string, value: any) => {
@@ -601,8 +816,153 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   const [showExamples, setShowExamples] = useState<string | null>(null);
   const [showLinkPicker, setShowLinkPicker] = useState<string | null>(null);
   const [editingFormField, setEditingFormField] = useState<string | null>(null);
+  const [showStockPhotos, setShowStockPhotos] = useState<string | null>(null);
+  const [stockSearchQuery, setStockSearchQuery] = useState('');
+  const [isSearchingStock, setIsSearchingStock] = useState(false);
+  const [stockResults, setStockResults] = useState<string[]>([]);
+  const [showImageTools, setShowImageTools] = useState<string | null>(null);
 
-  // Enhanced Image Picker with preview, dimensions, alt text
+  // Stock photo search (using Unsplash API - simulated for now)
+  const searchStockPhotos = async (query: string) => {
+    setIsSearchingStock(true);
+    
+    try {
+      const accessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
+      if (accessKey) {
+        const response = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=12&client_id=${accessKey}`);
+        const data = await response.json();
+        if (data.results) {
+          setStockResults(data.results.map((img: any) => img.urls.regular));
+        }
+      } else {
+        // Improved simulation if no API key
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // Use predefined relevant images for common searches
+        const stockImages: Record<string, string[]> = {
+          'hero': [
+            'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80&fit=crop',
+          ],
+          'product': [
+            'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1491553895911-0055uj8a866?w=800&q=80&fit=crop',
+          ],
+          'office': [
+            'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1497215842964-222b430dc094?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1462826303086-329426d1aef5?w=800&q=80&fit=crop',
+          ],
+          'nature': [
+            'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1518173946687-a4c036bc0a04?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&q=80&fit=crop',
+          ],
+          'food': [
+            'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80&fit=crop',
+          ],
+          'fashion': [
+            'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=800&q=80&fit=crop',
+            'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=800&q=80&fit=crop',
+          ],
+        };
+        
+        // Find matching category or use default
+        const lowerQuery = query.toLowerCase();
+        const matchedKey = Object.keys(stockImages).find(key => lowerQuery.includes(key));
+        setStockResults(matchedKey ? stockImages[matchedKey] : stockImages['hero']);
+      }
+    } catch (error) {
+      console.error('Stock Photo Search Error:', error);
+    } finally {
+      setIsSearchingStock(false);
+    }
+  };
+
+  // Generate AI alt text
+  const generateAltText = async (imageUrl: string, fieldKey: string) => {
+    // Simulate AI generation
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const altTexts = [
+      'Professional workspace with modern design elements',
+      'High-quality product photography on clean background',
+      'Vibrant lifestyle image showcasing brand aesthetics',
+      'Team collaboration in contemporary office setting',
+      'Stunning visual that captures brand essence',
+    ];
+    const randomAlt = altTexts[Math.floor(Math.random() * altTexts.length)];
+    updateField(`${fieldKey}Alt`, randomAlt);
+  };
+
+  // Simple text input with local state to prevent focus loss
+  const DebouncedInput = ({ value, onChange, placeholder, className }: {
+    value: string;
+    onChange: (val: string) => void;
+    placeholder?: string;
+    className?: string;
+  }) => {
+    const [localValue, setLocalValue] = useState(value || '');
+    const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
+
+    React.useEffect(() => {
+      setLocalValue(value || '');
+    }, [value]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      setLocalValue(newValue);
+      
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      debounceRef.current = setTimeout(() => {
+        onChange(newValue);
+      }, 300);
+    };
+
+    React.useEffect(() => {
+      return () => {
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+      };
+    }, []);
+
+    return (
+      <input 
+        type="text" 
+        value={localValue}
+        onChange={handleChange}
+        className={className}
+        placeholder={placeholder}
+      />
+    );
+  };
+
+  // Enhanced Image Picker with preview, dimensions, alt text, stock photos, AI tools
   const ImagePicker = ({ id, label, value, onChange, onUpload, tip }: { 
     id?: string, 
     label: string, 
@@ -610,65 +970,191 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     onChange: (val: string) => void, 
     onUpload: (e: any) => void,
     tip?: string 
-  }) => (
+  }) => {
+    const fieldKey = id?.replace('editor-field-', '') || '';
+    
+    return (
     <div className="space-y-2" id={id}>
-      <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-neutral-700">{label}</label>
-        {value && <button onClick={() => onChange('')} className="text-xs text-red-600 hover:text-red-700">Remove</button>}
-      </div>
+      <label className="text-xs font-bold uppercase text-neutral-500 flex items-center justify-between">
+        {label}
+        {value && <button onClick={() => onChange('')} className="text-red-500 hover:text-red-400 text-[10px]">Remove</button>}
+      </label>
       
       {tip && (
-        <p className="text-xs text-neutral-500">{tip}</p>
+        <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+          <Info size={10} /> {tip}
+        </p>
       )}
       
       {!value ? (
-        <div className="border-2 border-dashed border-neutral-300 rounded-lg p-8 hover:bg-neutral-50 hover:border-neutral-400 transition-all group relative">
-          <input 
-            type="file" 
-            accept="image/*"
-            onChange={onUpload}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-            disabled={isUploading}
-          />
-          <div className="flex flex-col items-center justify-center text-neutral-400 group-hover:text-neutral-600">
-            {isUploading ? <Loader2 size={32} className="animate-spin mb-3 text-blue-600" /> : <Upload size={32} className="mb-3" />}
-            <span className="text-sm font-medium mb-1">Drop image here or click to upload</span>
-            <span className="text-xs text-neutral-400">PNG, JPG up to 5MB</span>
+        <div className="space-y-3">
+          {/* Upload Area */}
+          <div className="border-2 border-dashed border-neutral-800 rounded-lg p-6 hover:bg-neutral-900/50 hover:border-neutral-700 transition-all group relative">
+            <input 
+              type="file" 
+              accept="image/*"
+              onChange={onUpload}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              disabled={isUploading}
+            />
+            <div className="flex flex-col items-center justify-center text-neutral-500 group-hover:text-neutral-400">
+              {isUploading ? <Loader2 size={24} className="animate-spin mb-2" /> : <Upload size={24} className="mb-2" />}
+              <span className="text-xs font-medium mb-1">Drop image here or click to upload</span>
+              <span className="text-[10px] text-neutral-600">PNG, JPG up to 5MB</span>
+            </div>
           </div>
+          
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 gap-2">
+            <button 
+              onClick={() => {
+                setShowStockPhotos(showStockPhotos === fieldKey ? null : fieldKey);
+                setStockSearchQuery('');
+                setStockResults([]);
+              }}
+              className="flex items-center justify-center gap-2 p-2 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors"
+            >
+              <ImageIcon size={14} /> Stock Photos
+            </button>
+            <button 
+              onClick={() => {
+                // Simulate AI image generation prompt
+                const prompt = window.prompt('Describe the image you want AI to generate:');
+                if (prompt) {
+                  // In production, this would call DALL-E/Midjourney API
+                  const randomImg = `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 100000000)}?w=800&q=80&fit=crop`;
+                  onChange(randomImg);
+                }
+              }}
+              className="flex items-center justify-center gap-2 p-2 bg-purple-900/30 border border-purple-800/50 rounded-lg text-xs text-purple-400 hover:bg-purple-900/50 transition-colors"
+            >
+              <Sparkles size={14} /> AI Generate
+            </button>
+          </div>
+          
+          {/* Stock Photo Search */}
+          {showStockPhotos === fieldKey && (
+            <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-3 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={stockSearchQuery}
+                  onChange={(e) => setStockSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && searchStockPhotos(stockSearchQuery)}
+                  placeholder="Search free photos..."
+                  className="flex-1 bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-500 outline-none"
+                />
+                <button
+                  onClick={() => searchStockPhotos(stockSearchQuery)}
+                  disabled={isSearchingStock}
+                  className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold disabled:opacity-50"
+                >
+                  {isSearchingStock ? <Loader2 size={14} className="animate-spin" /> : 'Search'}
+                </button>
+              </div>
+              
+              {/* Quick categories */}
+              <div className="flex flex-wrap gap-1 mb-3">
+                {['Hero', 'Product', 'Office', 'Nature', 'Food', 'Fashion'].map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => { setStockSearchQuery(cat); searchStockPhotos(cat); }}
+                    className="px-2 py-1 bg-neutral-800 hover:bg-neutral-700 rounded text-[10px] text-neutral-400"
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Results grid */}
+              {stockResults.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto custom-scrollbar">
+                  {stockResults.map((url, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        onChange(url);
+                        setShowStockPhotos(null);
+                      }}
+                      className="aspect-square rounded-lg overflow-hidden border border-neutral-800 hover:border-blue-500 transition-colors"
+                    >
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              {stockResults.length === 0 && !isSearchingStock && stockSearchQuery && (
+                <p className="text-xs text-neutral-500 text-center py-4">No results. Try a different search.</p>
+              )}
+            </div>
+          )}
         </div>
       ) : (
-        <div className="relative group rounded-lg overflow-hidden border border-neutral-200 bg-neutral-50">
+        <div className="relative group rounded-lg overflow-hidden border border-neutral-800 bg-neutral-950">
           <div className="aspect-video relative">
             <img src={value} className="w-full h-full object-cover" alt={label} />
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-               <label className="px-4 py-2 bg-white hover:bg-neutral-100 rounded-lg cursor-pointer text-neutral-900 transition-colors text-sm font-medium flex items-center gap-2 shadow-lg">
-                  <Upload size={16} /> Replace
+            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+               <label className="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg cursor-pointer text-white backdrop-blur-sm transition-colors text-xs font-medium flex items-center gap-2">
+                  <Upload size={14} /> Replace
                   <input type="file" accept="image/*" onChange={onUpload} className="hidden" />
                </label>
                <button 
+                 onClick={() => setShowImageTools(showImageTools === fieldKey ? null : fieldKey)}
+                 className="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white backdrop-blur-sm transition-colors text-xs font-medium flex items-center gap-2"
+               >
+                 <Wand2 size={14} /> Tools
+               </button>
+               <button 
                  onClick={() => onChange('')}
-                 className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-white transition-colors text-sm font-medium shadow-lg"
+                 className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-red-400 backdrop-blur-sm transition-colors text-xs font-medium"
                >
                  Remove
                </button>
             </div>
           </div>
-          {/* Alt text input */}
-          <div className="p-3 border-t border-neutral-200 bg-white">
-            <input 
-              type="text" 
-              value={data[`${id?.replace('editor-field-', '')}Alt`] || ''}
-              onChange={(e) => updateField(`${id?.replace('editor-field-', '')}Alt`, e.target.value)}
-              className="w-full p-2 bg-neutral-50 text-sm text-neutral-700 rounded-lg border border-neutral-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-              placeholder="Alt text for accessibility"
-            />
+          
+          {/* Image Tools Panel */}
+          {showImageTools === fieldKey && (
+            <div className="p-3 border-t border-neutral-800 bg-neutral-900 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+              <p className="text-[10px] text-neutral-500 font-bold uppercase">AI Image Tools</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button className="flex items-center gap-2 p-2 bg-neutral-800 hover:bg-neutral-700 rounded text-xs text-neutral-300 transition-colors">
+                  <Sparkles size={12} /> Enhance
+                </button>
+                <button className="flex items-center gap-2 p-2 bg-neutral-800 hover:bg-neutral-700 rounded text-xs text-neutral-300 transition-colors">
+                  <Wand2 size={12} /> Remove BG
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* Alt text input with AI generation */}
+          <div className="p-2 border-t border-neutral-800">
+            <div className="flex gap-2">
+              <DebouncedInput 
+                value={data[`${fieldKey}Alt`] || ''}
+                onChange={(val) => updateField(`${fieldKey}Alt`, val)}
+                className="flex-1 p-2 bg-neutral-900 text-xs text-neutral-400 rounded border border-neutral-800 focus:outline-none focus:border-blue-500"
+                placeholder="Alt text for accessibility"
+              />
+              <button
+                onClick={() => generateAltText(value, fieldKey)}
+                className="px-2 py-1 text-purple-400 hover:text-purple-300 text-[10px] font-bold flex items-center gap-1"
+                title="Generate alt text with AI"
+              >
+                <Sparkles size={10} /> AI
+              </button>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
+  };
 
   // Enhanced Rich Text with working formatting
+  // Uses local state + debounce to prevent focus loss
   const RichText = ({ id, label, value, onChange, rows = 3, tip, maxLength, showAI, fieldKey }: { 
     id?: string, 
     label: string, 
@@ -682,10 +1168,32 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   }) => {
     const [localValue, setLocalValue] = useState(value || '');
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+    const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
 
     React.useEffect(() => {
       setLocalValue(value || '');
     }, [value]);
+    
+    const handleChange = (newValue: string) => {
+      setLocalValue(newValue);
+      
+      // Debounce the parent update
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      debounceRef.current = setTimeout(() => {
+        onChange(newValue);
+      }, 300);
+    };
+    
+    // Cleanup debounce on unmount
+    React.useEffect(() => {
+      return () => {
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+      };
+    }, []);
 
     const applyFormat = (format: 'bold' | 'italic' | 'link') => {
       const textarea = textareaRef.current;
@@ -705,6 +1213,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
           break;
         case 'italic':
           newText = localValue.substring(0, start) + `*${selectedText}*` + localValue.substring(end);
+
           cursorOffset = selectedText ? 0 : 1;
           break;
         case 'link':
@@ -717,7 +1226,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
       }
 
       setLocalValue(newText);
-      onChange(newText);
+      onChange(newText); // Immediate update for formatting actions
 
       // Restore focus
       setTimeout(() => {
@@ -731,64 +1240,64 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     return (
       <div className="space-y-2" id={id}>
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-neutral-700">{label}</label>
+          <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-0.5 bg-neutral-100 border border-neutral-200 rounded p-0.5">
+            <div className="flex items-center gap-0.5 bg-neutral-950 border border-neutral-800 rounded p-0.5">
               <button 
                 onClick={() => applyFormat('bold')} 
-                className="p-1.5 hover:bg-white rounded text-neutral-500 hover:text-neutral-900 transition-colors"
-                title="Bold"
+                className="p-1.5 hover:bg-neutral-800 rounded text-neutral-500 hover:text-white transition-colors"
+                title="Bold (**text**)"
               >
-                <Bold size={14} />
+                <Bold size={12} />
               </button>
               <button 
                 onClick={() => applyFormat('italic')} 
-                className="p-1.5 hover:bg-white rounded text-neutral-500 hover:text-neutral-900 transition-colors"
-                title="Italic"
+                className="p-1.5 hover:bg-neutral-800 rounded text-neutral-500 hover:text-white transition-colors"
+                title="Italic (*text*)"
               >
-                <Italic size={14} />
+                <Italic size={12} />
               </button>
               <button 
                 onClick={() => applyFormat('link')} 
-                className="p-1.5 hover:bg-white rounded text-neutral-500 hover:text-neutral-900 transition-colors"
-                title="Link"
+                className="p-1.5 hover:bg-neutral-800 rounded text-neutral-500 hover:text-white transition-colors"
+                title="Link [text](url)"
               >
-                <LinkIcon size={14} />
+                <LinkIcon size={12} />
               </button>
             </div>
             {showAI && fieldKey && (
               <button 
                 onClick={() => generateAIContent(fieldKey)}
                 disabled={isGeneratingAI === fieldKey}
-                className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 font-medium transition-colors disabled:opacity-50"
+                className="flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300 font-bold transition-colors disabled:opacity-50"
               >
                 {isGeneratingAI === fieldKey ? (
-                  <><Loader2 size={12} className="animate-spin" /> Writing...</>
+                  <><Loader2 size={10} className="animate-spin" /> Generating...</>
                 ) : (
-                  <><Sparkles size={12} /> AI Write</>
+                  <><Sparkles size={10} /> AI Write</>
                 )}
               </button>
             )}
           </div>
         </div>
         {tip && (
-          <p className="text-xs text-neutral-500">{tip}</p>
+          <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+            <Lightbulb size={10} /> {tip}
+          </p>
         )}
         <textarea
           ref={textareaRef}
           value={localValue}
-          onChange={(e) => {
-            setLocalValue(e.target.value);
-            onChange(e.target.value);
-          }}
-          className="w-full p-3 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none resize-none transition-all placeholder:text-neutral-400"
+          onChange={(e) => handleChange(e.target.value)}
+          onBlur={() => onChange(localValue)}
+          className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-neutral-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none resize-none transition-all placeholder:text-neutral-700"
           rows={rows}
           maxLength={maxLength}
           placeholder={`Enter ${label.toLowerCase()}...`}
         />
         {maxLength && (
-          <div className={`text-xs text-right ${(localValue?.length || 0) > maxLength * 0.9 ? 'text-amber-600' : 'text-neutral-400'}`}>
-            {localValue?.length || 0}/{maxLength}
+          <div className={`text-[10px] text-right ${(localValue?.length || 0) > maxLength * 0.9 ? 'text-yellow-500' : 'text-neutral-600'}`}>
+            {localValue?.length || 0}/{maxLength} characters
           </div>
         )}
       </div>
@@ -796,6 +1305,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   };
 
   // Enhanced Input with tips, examples, and character count
+  // Uses local state to prevent focus loss on every keystroke
   const Input = ({ label, value, onChange, id, fieldKey, showAI = false, maxLength, placeholder, tip, examples }: { 
     label: string, 
     value: string, 
@@ -807,15 +1317,45 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     placeholder?: string,
     tip?: string,
     examples?: string[]
-  }) => (
+  }) => {
+    const [localValue, setLocalValue] = useState(value || '');
+    const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
+    
+    // Sync from parent when value changes externally (e.g., AI generation)
+    React.useEffect(() => {
+      setLocalValue(value || '');
+    }, [value]);
+    
+    const handleChange = (newValue: string) => {
+      setLocalValue(newValue);
+      
+      // Debounce the parent update to prevent excessive re-renders
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      debounceRef.current = setTimeout(() => {
+        onChange(newValue);
+      }, 300);
+    };
+    
+    // Cleanup debounce on unmount
+    React.useEffect(() => {
+      return () => {
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+      };
+    }, []);
+    
+    return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-neutral-700">{label}</label>
+        <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
         <div className="flex items-center gap-2">
           {examples && examples.length > 0 && (
             <button 
               onClick={() => setShowExamples(showExamples === fieldKey ? null : fieldKey || null)}
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              className="text-[10px] text-blue-400 hover:text-blue-300 font-medium"
             >
               Examples
             </button>
@@ -824,41 +1364,45 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
             <button 
               onClick={() => generateAIContent(fieldKey)}
               disabled={isGeneratingAI === fieldKey}
-              className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 font-medium transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300 font-bold transition-colors disabled:opacity-50"
             >
               {isGeneratingAI === fieldKey ? (
-                <><Loader2 size={12} className="animate-spin" /> Writing...</>
+                <><Loader2 size={10} className="animate-spin" /> Generating...</>
               ) : (
-                <><Sparkles size={12} /> AI Write</>
+                <><Sparkles size={10} /> AI Write</>
               )}
             </button>
           )}
         </div>
       </div>
       {tip && (
-        <p className="text-xs text-neutral-500">{tip}</p>
+        <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+          <Lightbulb size={10} /> {tip}
+        </p>
       )}
       <input
         id={id}
         type="text"
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
+        value={localValue}
+        onChange={(e) => handleChange(e.target.value)}
+        onBlur={() => onChange(localValue)} // Ensure final value is synced
         maxLength={maxLength}
-        className="w-full p-3 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-400"
+        className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700"
         placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
       />
       {/* Examples dropdown */}
       {showExamples === fieldKey && examples && (
-        <div className="bg-white border border-neutral-200 rounded-lg p-2 space-y-1 shadow-lg">
-          <p className="text-xs text-neutral-500 mb-2 px-2">Click to use:</p>
+        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
+          <p className="text-[10px] text-neutral-500 mb-2">Click to use:</p>
           {examples.map((example, i) => (
             <button
               key={i}
               onClick={() => {
+                setLocalValue(example);
                 onChange(example);
                 setShowExamples(null);
               }}
-              className="w-full text-left px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded transition-colors"
+              className="w-full text-left px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
             >
               {example}
             </button>
@@ -866,88 +1410,112 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         </div>
       )}
       {maxLength && (
-        <div className={`text-xs text-right ${(value?.length || 0) > maxLength * 0.9 ? 'text-amber-600' : 'text-neutral-400'}`}>
-          {value?.length || 0}/{maxLength}
+        <div className={`text-[10px] text-right ${(localValue?.length || 0) > maxLength * 0.9 ? 'text-yellow-500' : 'text-neutral-600'}`}>
+          {localValue?.length || 0}/{maxLength}
         </div>
       )}
     </div>
   );
+  };
 
   // Smart Link Selector with page suggestions
+  // Uses local state to prevent focus loss
   const LinkSelector = ({ label, value, onChange, id, placeholder }: {
     label: string,
     value: string,
     onChange: (val: string) => void,
     id?: string,
     placeholder?: string
-  }) => (
+  }) => {
+    const [localValue, setLocalValue] = useState(value || '');
+    const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
+    
+    React.useEffect(() => {
+      setLocalValue(value || '');
+    }, [value]);
+    
+    const handleChange = (newValue: string) => {
+      setLocalValue(newValue);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => onChange(newValue), 300);
+    };
+    
+    React.useEffect(() => {
+      return () => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+      };
+    }, []);
+    
+    return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-neutral-700">{label}</label>
+      <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
       <div className="relative">
         <input
           id={id}
           type="text"
-          value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
+          value={localValue}
+          onChange={(e) => handleChange(e.target.value)}
+          onBlur={() => onChange(localValue)}
           onFocus={() => setShowLinkPicker(id || 'link')}
-          className="w-full p-3 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-400 pr-10"
+          className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700 pr-8"
           placeholder={placeholder || '/page or https://...'}
         />
         <button 
           onClick={() => setShowLinkPicker(showLinkPicker === id ? null : (id || 'link'))}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors"
         >
           <ChevronDown size={16} />
         </button>
       </div>
       
       {showLinkPicker === (id || 'link') && (
-        <div className="bg-white border border-neutral-200 rounded-lg p-2 space-y-1 shadow-lg">
-          <p className="text-xs text-neutral-500 px-2 py-1 font-medium">Internal Pages</p>
+        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
+          <p className="text-[10px] text-neutral-500 px-2 py-1 font-bold uppercase">Internal Pages</p>
           <button
             onClick={() => { onChange('/'); setShowLinkPicker(null); }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded transition-colors"
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
           >
-            <Home size={14} /> Home Page
+            <Home size={12} /> Home Page
           </button>
           <button
             onClick={() => { onChange('/shop'); setShowLinkPicker(null); }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded transition-colors"
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
           >
-            <ShoppingBag size={14} /> Shop / Products
+            <ShoppingBag size={12} /> Shop / Products
           </button>
           {pages.map(page => (
             <button
               key={page.id}
               onClick={() => { onChange(`/${page.slug}`); setShowLinkPicker(null); }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded transition-colors"
+              className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
             >
-              <FileText size={14} /> {page.name}
+              <FileText size={12} /> {page.name}
             </button>
           ))}
-          <div className="border-t border-neutral-200 mt-2 pt-2">
-            <p className="text-xs text-neutral-500 px-2 py-1 font-medium">Scroll To Section</p>
+          <div className="border-t border-neutral-800 mt-2 pt-2">
+            <p className="text-[10px] text-neutral-500 px-2 py-1 font-bold uppercase">Scroll To Section</p>
             <button
               onClick={() => { onChange('#contact'); setShowLinkPicker(null); }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded transition-colors"
+              className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
             >
-              <Hash size={14} /> Contact Section
+              <Hash size={12} /> Contact Section
             </button>
             <button
               onClick={() => { onChange('#products'); setShowLinkPicker(null); }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded transition-colors"
+              className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 rounded transition-colors"
             >
-              <Hash size={14} /> Products Section
+              <Hash size={12} /> Products Section
             </button>
           </div>
-          <div className="border-t border-neutral-200 mt-2 pt-2">
-            <p className="text-xs text-neutral-500 px-2 py-1 font-medium">External Link</p>
-            <p className="text-xs text-neutral-400 px-2 py-1">Type full URL above (https://...)</p>
+          <div className="border-t border-neutral-800 mt-2 pt-2">
+            <p className="text-[10px] text-neutral-500 px-2 py-1 font-bold uppercase">External Link</p>
+            <p className="text-[10px] text-neutral-600 px-2 py-1">Type full URL above (https://...)</p>
           </div>
         </div>
       )}
     </div>
   );
+  };
 
   // Form Builder Component
   const FormBuilder = ({ value, onChange }: { value: FormFieldItem[], onChange: (fields: FormFieldItem[]) => void }) => {
@@ -985,25 +1553,25 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-neutral-700">Form Fields</label>
+          <label className="text-xs font-bold uppercase text-neutral-500">Form Fields</label>
           <button
             onClick={() => setAddingField(!addingField)}
-            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium"
+            className="flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 font-bold"
           >
-            <Plus size={14} /> Add Field
+            <Plus size={12} /> Add Field
           </button>
         </div>
 
         {/* Field type selector */}
         {addingField && (
-          <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-3 shadow-sm">
-            <p className="text-xs text-neutral-600 mb-3 font-medium">Choose field type:</p>
+          <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            <p className="text-[10px] text-neutral-500 mb-2 font-bold uppercase">Choose field type:</p>
             <div className="grid grid-cols-2 gap-2">
               {FORM_FIELD_TYPES.map(type => (
                 <button
                   key={type.value}
                   onClick={() => addField(type.value)}
-                  className="flex items-center gap-2 p-2.5 text-sm text-neutral-700 hover:bg-white hover:border-neutral-300 rounded-lg border border-neutral-200 transition-colors"
+                  className="flex items-center gap-2 p-2 text-xs text-neutral-300 hover:bg-neutral-800 rounded border border-neutral-800 transition-colors"
                 >
                   {type.icon} {type.label}
                 </button>
@@ -1017,7 +1585,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
           {fields.map((field, index) => (
             <div 
               key={field.id}
-              className="bg-neutral-50 border border-neutral-200 rounded-lg p-3 group"
+              className="bg-neutral-900 border border-neutral-800 rounded-lg p-3 group"
             >
               {editingFormField === field.id ? (
                 <div className="space-y-3">
@@ -1025,29 +1593,29 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     type="text"
                     value={field.label}
                     onChange={(e) => updateFormField(field.id, { label: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-900"
+                    className="w-full p-2 bg-neutral-950 border border-neutral-700 rounded text-sm text-white"
                     placeholder="Field label"
                   />
                   <input
                     type="text"
                     value={field.placeholder || ''}
                     onChange={(e) => updateFormField(field.id, { placeholder: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-700"
+                    className="w-full p-2 bg-neutral-950 border border-neutral-700 rounded text-xs text-neutral-400"
                     placeholder="Placeholder text"
                   />
                   <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2 text-sm text-neutral-600">
+                    <label className="flex items-center gap-2 text-xs text-neutral-400">
                       <input
                         type="checkbox"
                         checked={field.required}
                         onChange={(e) => updateFormField(field.id, { required: e.target.checked })}
-                        className="rounded border-neutral-300"
+                        className="rounded border-neutral-700"
                       />
                       Required field
                     </label>
                     <button
                       onClick={() => setEditingFormField(null)}
-                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                      className="text-xs text-blue-400 hover:text-blue-300"
                     >
                       Done
                     </button>
@@ -1059,37 +1627,37 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     <button 
                       onClick={() => moveField(index, 'up')}
                       disabled={index === 0}
-                      className="p-0.5 text-neutral-400 hover:text-neutral-600 disabled:opacity-30"
+                      className="p-0.5 text-neutral-600 hover:text-neutral-400 disabled:opacity-30"
                     >
                       <ChevronLeft size={12} className="rotate-90" />
                     </button>
                     <button 
                       onClick={() => moveField(index, 'down')}
                       disabled={index === fields.length - 1}
-                      className="p-0.5 text-neutral-400 hover:text-neutral-600 disabled:opacity-30"
+                      className="p-0.5 text-neutral-600 hover:text-neutral-400 disabled:opacity-30"
                     >
                       <ChevronRight size={12} className="rotate-90" />
                     </button>
                   </div>
-                  <GripVertical size={14} className="text-neutral-400" />
+                  <GripVertical size={14} className="text-neutral-600" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-neutral-900">{field.label}</span>
-                      {field.required && <span className="text-xs text-red-600">Required</span>}
+                      <span className="text-sm text-neutral-300">{field.label}</span>
+                      {field.required && <span className="text-[10px] text-red-400">Required</span>}
                     </div>
-                    <span className="text-xs text-neutral-500">{FORM_FIELD_TYPES.find(t => t.value === field.type)?.label}</span>
+                    <span className="text-[10px] text-neutral-600">{FORM_FIELD_TYPES.find(t => t.value === field.type)?.label}</span>
                   </div>
                   <button
                     onClick={() => setEditingFormField(field.id)}
-                    className="p-1.5 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 rounded opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded opacity-0 group-hover:opacity-100 transition-all"
                   >
-                    <Type size={14} />
+                    <Type size={12} />
                   </button>
                   <button
                     onClick={() => removeFormField(field.id)}
-                    className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-all"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={12} />
                   </button>
                 </div>
               )}
@@ -1100,18 +1668,166 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     );
   };
 
+  // Product Selector Component - allows manual selection of products to display
+  const ProductSelector = ({ 
+    products, 
+    selectedIds, 
+    onChange, 
+    searchQuery, 
+    onSearchChange,
+    tip 
+  }: { 
+    products: { id: string; name: string; image: string; price: number; category: string; tags?: string[] }[];
+    selectedIds: string[];
+    onChange: (ids: string[]) => void;
+    searchQuery: string;
+    onSearchChange: (q: string) => void;
+    tip?: string;
+  }) => {
+    const filteredProducts = products.filter(p => 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const toggleProduct = (productId: string) => {
+      if (selectedIds.includes(productId)) {
+        onChange(selectedIds.filter(id => id !== productId));
+      } else {
+        onChange([...selectedIds, productId]);
+      }
+    };
+
+    const moveProduct = (productId: string, direction: 'up' | 'down') => {
+      const index = selectedIds.indexOf(productId);
+      if (index === -1) return;
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= selectedIds.length) return;
+      const newIds = [...selectedIds];
+      [newIds[index], newIds[newIndex]] = [newIds[newIndex], newIds[index]];
+      onChange(newIds);
+    };
+
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-bold uppercase text-neutral-500">Select Products</label>
+          <span className="text-[10px] text-neutral-600">{selectedIds.length} selected</span>
+        </div>
+        {tip && <p className="text-[10px] text-neutral-600">{tip}</p>}
+        
+        {/* Selected Products List */}
+        {selectedIds.length > 0 && (
+          <div className="space-y-2 p-3 bg-neutral-950 rounded-lg border border-neutral-800">
+            <span className="text-[10px] font-bold uppercase text-neutral-500">Display Order</span>
+            {selectedIds.map((id, index) => {
+              const product = products.find(p => p.id === id);
+              if (!product) return null;
+              return (
+                <div key={id} className="flex items-center gap-2 group">
+                  <div className="flex flex-col">
+                    <button 
+                      onClick={() => moveProduct(id, 'up')} 
+                      disabled={index === 0}
+                      className="p-0.5 text-neutral-600 hover:text-white disabled:opacity-30"
+                    >
+                      <ChevronLeft size={10} className="rotate-90" />
+                    </button>
+                    <button 
+                      onClick={() => moveProduct(id, 'down')} 
+                      disabled={index === selectedIds.length - 1}
+                      className="p-0.5 text-neutral-600 hover:text-white disabled:opacity-30"
+                    >
+                      <ChevronRight size={10} className="rotate-90" />
+                    </button>
+                  </div>
+                  <div className="w-8 h-8 bg-neutral-800 rounded overflow-hidden flex-shrink-0">
+                    {product.image && <img src={product.image} alt="" className="w-full h-full object-cover" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-neutral-300 truncate">{product.name}</div>
+                    <div className="text-[10px] text-neutral-600">${product.price.toFixed(2)}</div>
+                  </div>
+                  <button 
+                    onClick={() => toggleProduct(id)}
+                    className="p-1 text-neutral-600 hover:text-red-400 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Search */}
+        <div className="relative">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search products..."
+            className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600"
+          />
+          {searchQuery && (
+            <button 
+              onClick={() => onSearchChange('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-white"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* Product Grid */}
+        <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto custom-scrollbar">
+          {filteredProducts.length === 0 ? (
+            <div className="col-span-2 text-center py-8 text-neutral-600 text-sm">
+              {products.length === 0 ? 'No products found' : 'No matching products'}
+            </div>
+          ) : (
+            filteredProducts.map(product => {
+              const isSelected = selectedIds.includes(product.id);
+              return (
+                <button
+                  key={product.id}
+                  onClick={() => toggleProduct(product.id)}
+                  className={`relative p-2 rounded-lg border transition-all text-left ${
+                    isSelected 
+                      ? 'border-blue-500 bg-blue-500/10' 
+                      : 'border-neutral-800 bg-neutral-950 hover:border-neutral-700'
+                  }`}
+                >
+                  {isSelected && (
+                    <div className="absolute top-1 right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                      <Check size={10} className="text-white" />
+                    </div>
+                  )}
+                  <div className="w-full aspect-square bg-neutral-800 rounded mb-2 overflow-hidden">
+                    {product.image && <img src={product.image} alt="" className="w-full h-full object-cover" />}
+                  </div>
+                  <div className="text-[10px] text-neutral-300 truncate">{product.name}</div>
+                  <div className="text-[10px] text-neutral-600">${product.price.toFixed(2)}</div>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+    );
+  };
+
   // Toggle Component
   const Toggle = ({ label, value, onChange, tip }: { label: string, value: boolean, onChange: (val: boolean) => void, tip?: string }) => (
-    <div className="flex items-center justify-between py-3 px-1">
+    <div className="flex items-center justify-between py-2">
       <div>
-        <label className="text-sm font-medium text-neutral-700">{label}</label>
-        {tip && <p className="text-xs text-neutral-500 mt-0.5">{tip}</p>}
+        <label className="text-sm text-neutral-300">{label}</label>
+        {tip && <p className="text-[10px] text-neutral-600">{tip}</p>}
       </div>
       <button
         onClick={() => onChange(!value)}
-        className={`relative w-11 h-6 rounded-full transition-colors ${value ? 'bg-blue-600' : 'bg-neutral-300'}`}
+        className={`relative w-10 h-5 rounded-full transition-colors ${value ? 'bg-blue-600' : 'bg-neutral-700'}`}
       >
-        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${value ? 'translate-x-6' : 'translate-x-1'}`} />
+        <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${value ? 'translate-x-5' : 'translate-x-0.5'}`} />
       </button>
     </div>
   );
@@ -1127,9 +1843,11 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     max?: number
   }) => (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-neutral-700">{label}</label>
+      <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
       {tip && (
-        <p className="text-xs text-neutral-500">{tip}</p>
+        <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+          <Info size={10} /> {tip}
+        </p>
       )}
       <input
         type="number"
@@ -1137,7 +1855,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         onChange={(e) => onChange(parseInt(e.target.value) || min)}
         min={min}
         max={max}
-        className="w-full p-3 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-400"
+        className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700"
         placeholder={placeholder}
       />
     </div>
@@ -1152,14 +1870,16 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     tip?: string
   }) => (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-neutral-700">{label}</label>
+      <label className="text-xs font-bold uppercase text-neutral-500">{label}</label>
       {tip && (
-        <p className="text-xs text-neutral-500">{tip}</p>
+        <p className="text-[10px] text-neutral-600 flex items-center gap-1">
+          <Info size={10} /> {tip}
+        </p>
       )}
       <select
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full p-3 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none cursor-pointer"
+        className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 outline-none appearance-none cursor-pointer"
       >
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1172,14 +1892,14 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
 
   if (showLayoutPicker) {
     return (
-      <div className="h-full flex flex-col bg-white">
-        <div className="p-4 border-b border-neutral-200 flex items-center gap-3">
-          <button onClick={() => setShowLayoutPicker(false)} className="p-2 hover:bg-neutral-100 rounded-lg text-neutral-600 hover:text-neutral-900 transition-colors">
+      <div className="h-full flex flex-col bg-neutral-900 border-l border-neutral-800">
+        <div className="p-4 border-b border-neutral-800 flex items-center gap-2">
+          <button onClick={() => setShowLayoutPicker(false)} className="p-1 hover:bg-neutral-800 rounded text-neutral-400 hover:text-white transition-colors">
             <ArrowLeft size={20} />
           </button>
-          <h3 className="font-semibold text-neutral-900">Choose Layout</h3>
+          <h3 className="font-bold text-white">Choose Layout</h3>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-3">
+        <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-4 custom-scrollbar">
           {options.map(opt => (
             <button
               key={opt.id}
@@ -1187,13 +1907,13 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 onSwitchLayout(opt.id);
                 setShowLayoutPicker(false);
               }}
-              className={`text-left border rounded-lg overflow-hidden transition-all group ${variant === opt.id ? 'ring-2 ring-blue-500 border-blue-500 bg-blue-50' : 'bg-white border-neutral-200 hover:border-neutral-300 hover:shadow-md'}`}
+              className={`text-left border rounded-xl overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all group ${variant === opt.id ? 'ring-2 ring-blue-600 bg-blue-900/20 border-blue-500' : 'bg-neutral-950 border-neutral-800 hover:border-neutral-700'}`}
             >
-              <div className={`aspect-video flex items-center justify-center transition-colors ${variant === opt.id ? 'bg-blue-100 text-blue-600' : 'bg-neutral-100 text-neutral-400 group-hover:bg-neutral-200 group-hover:text-neutral-600'}`}>
+              <div className={`aspect-video flex items-center justify-center transition-colors ${variant === opt.id ? 'bg-blue-900/30 text-blue-400' : 'bg-neutral-900 text-neutral-600 group-hover:bg-neutral-800 group-hover:text-neutral-500'}`}>
                 <Layout size={24} />
               </div>
               <div className="p-3">
-                <div className={`font-medium text-sm mb-1 transition-colors ${variant === opt.id ? 'text-blue-700' : 'text-neutral-700 group-hover:text-neutral-900'}`}>{opt.name}</div>
+                <div className={`font-bold text-sm mb-1 transition-colors ${variant === opt.id ? 'text-white' : 'text-neutral-300 group-hover:text-white'}`}>{opt.name}</div>
                 <div className="text-xs text-neutral-500 line-clamp-2">{opt.description}</div>
               </div>
             </button>
@@ -1206,14 +1926,14 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   if (activeItemIndex !== null && data.items && data.items[activeItemIndex]) {
     const item = data.items[activeItemIndex];
     return (
-      <div className="h-full flex flex-col bg-white">
-        <div className="p-4 border-b border-neutral-200 flex items-center gap-3">
-          <button onClick={() => setActiveItemIndex(null)} className="p-2 hover:bg-neutral-100 rounded-lg text-neutral-600 hover:text-neutral-900 transition-colors">
+      <div className="h-full flex flex-col bg-neutral-900 border-l border-neutral-800">
+        <div className="p-4 border-b border-neutral-800 flex items-center gap-2">
+          <button onClick={() => setActiveItemIndex(null)} className="p-1 hover:bg-neutral-800 rounded text-neutral-400 hover:text-white transition-colors">
             <ArrowLeft size={20} />
           </button>
-          <h3 className="font-semibold text-neutral-900">Edit Item {activeItemIndex + 1}</h3>
+          <h3 className="font-bold text-white">Edit Item {activeItemIndex + 1}</h3>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
           <Input 
             label="Title" 
             value={item.title} 
@@ -1241,43 +1961,41 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   }
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-neutral-900 border-l border-neutral-800">
       {/* Header */}
-      <div className="p-4 border-b border-neutral-200">
-        <div className="flex items-center justify-between mb-3">
+      <div className="p-4 border-b border-neutral-800">
+        <div className="flex items-center justify-between mb-2">
           <div>
-            <h3 className="font-semibold text-neutral-900">{sectionConfig.title}</h3>
-            <p className="text-xs text-neutral-500 mt-0.5">{sectionConfig.description}</p>
+            <h3 className="font-bold text-white text-sm">{sectionConfig.title}</h3>
+            <p className="text-[10px] text-neutral-500">{sectionConfig.description}</p>
           </div>
+          <span className="text-[10px] bg-neutral-800 px-2 py-0.5 rounded text-neutral-400 border border-neutral-700">{variant}</span>
         </div>
         <button 
           onClick={() => setShowLayoutPicker(true)}
-          className="w-full flex items-center justify-between p-3 bg-neutral-50 hover:bg-neutral-100 rounded-lg border border-neutral-200 hover:border-neutral-300 transition-all group"
+          className="w-full flex items-center justify-between p-3 bg-neutral-950 hover:bg-neutral-800 rounded-xl border border-neutral-800 hover:border-neutral-700 transition-all group shadow-sm"
         >
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white rounded-lg text-neutral-600 group-hover:text-neutral-900 transition-colors shadow-sm border border-neutral-200">
+            <div className="p-1.5 bg-neutral-900 rounded-lg text-neutral-400 group-hover:text-white transition-colors">
               <Layout size={16} />
             </div>
-            <div className="text-left">
-              <span className="font-medium text-sm text-neutral-700 group-hover:text-neutral-900 transition-colors block">{currentOption?.name || 'Select Layout'}</span>
-              <span className="text-xs text-neutral-400">Click to change layout</span>
-            </div>
+            <span className="font-bold text-sm text-neutral-300 group-hover:text-white transition-colors">{currentOption?.name || 'Select Layout'}</span>
           </div>
-          <ChevronRight size={16} className="text-neutral-400 group-hover:text-neutral-600 transition-colors" />
+          <ChevronRight size={16} className="text-neutral-600 group-hover:text-neutral-400 transition-colors" />
         </button>
       </div>
 
       {/* Group Tabs */}
       {sectionConfig.groups.length > 1 && (
-        <div className="flex border-b border-neutral-200 bg-neutral-50 px-2">
+        <div className="flex border-b border-neutral-800 bg-neutral-950/50">
           {sectionConfig.groups.map(group => (
             <button
               key={group.id}
               onClick={() => setActiveGroup(group.id)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors border-b-2 ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold transition-colors border-b-2 ${
                 activeGroup === group.id 
-                  ? 'text-blue-600 border-blue-600 bg-white' 
-                  : 'text-neutral-500 border-transparent hover:text-neutral-700'
+                  ? 'text-white border-blue-500 bg-blue-500/5' 
+                  : 'text-neutral-500 border-transparent hover:text-neutral-300'
               }`}
             >
               {group.icon}
@@ -1288,11 +2006,36 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
       )}
 
       {/* Main Content - Dynamic Fields */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-5">
+      <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
         
         {/* Render section-specific fields for active group */}
+        {/* Filter fields based on block type and current variant */}
         {sectionConfig.fields
           .filter(field => field.group === activeGroup)
+          .filter(field => {
+            // If this is a hero section, only show fields relevant to the current variant
+            if (blockType === 'system-hero' && variant) {
+              const variantFields = HERO_VARIANT_FIELDS[variant];
+              if (variantFields) {
+                return variantFields.includes(field.key);
+              }
+            }
+            // If this is a product grid section, filter by variant and product source
+            if (blockType === 'system-grid' && variant) {
+              const variantFields = GRID_VARIANT_FIELDS[variant];
+              if (variantFields) {
+                // Check if field is in variant fields
+                if (!variantFields.includes(field.key)) return false;
+                
+                // Additional filtering based on productSource selection
+                const productSource = data.productSource || 'all';
+                if (field.key === 'productCategory' && productSource !== 'category') return false;
+                if (field.key === 'productTag' && productSource !== 'tag') return false;
+                if (field.key === 'selectedProducts' && productSource !== 'manual') return false;
+              }
+            }
+            return true;
+          })
           .map(field => {
             const fieldValue = data[field.key];
             const fieldId = `editor-field-${field.key}`;
@@ -1300,125 +2043,139 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
             switch (field.type) {
               case 'text':
                 return (
-                  <React.Fragment key={field.key}>
-                    <Input
-                      id={fieldId}
-                      label={field.label}
-                      value={fieldValue || ''}
-                      onChange={(val) => updateField(field.key, val)}
-                      fieldKey={field.key}
-                      showAI={field.showAI}
-                      maxLength={field.maxLength}
-                      placeholder={field.placeholder}
-                      tip={field.tip}
-                      examples={field.examples}
-                    />
-                  </React.Fragment>
+                  <Input
+                    key={field.key}
+                    id={fieldId}
+                    label={field.label}
+                    value={fieldValue || ''}
+                    onChange={(val) => updateField(field.key, val)}
+                    fieldKey={field.key}
+                    showAI={field.showAI}
+                    maxLength={field.maxLength}
+                    placeholder={field.placeholder}
+                    tip={field.tip}
+                    examples={field.examples}
+                  />
                 );
 
               case 'richtext':
                 return (
-                  <React.Fragment key={field.key}>
-                    <RichText
-                      id={fieldId}
-                      label={field.label}
-                      value={fieldValue || ''}
-                      onChange={(val) => updateField(field.key, val)}
-                      fieldKey={field.key}
-                      showAI={field.showAI}
-                      maxLength={field.maxLength}
-                      tip={field.tip}
-                    />
-                  </React.Fragment>
+                  <RichText
+                    key={field.key}
+                    id={fieldId}
+                    label={field.label}
+                    value={fieldValue || ''}
+                    onChange={(val) => updateField(field.key, val)}
+                    fieldKey={field.key}
+                    showAI={field.showAI}
+                    maxLength={field.maxLength}
+                    tip={field.tip}
+                  />
                 );
 
               case 'image':
                 return (
-                  <React.Fragment key={field.key}>
-                    <ImagePicker
-                      id={fieldId}
-                      label={field.label}
-                      value={fieldValue || ''}
-                      onChange={(val) => updateField(field.key, val)}
-                      onUpload={(e) => handleImageUpload(e, field.key)}
-                      tip={field.tip}
-                    />
-                  </React.Fragment>
+                  <ImagePicker
+                    key={field.key}
+                    id={fieldId}
+                    label={field.label}
+                    value={fieldValue || ''}
+                    onChange={(val) => updateField(field.key, val)}
+                    onUpload={(e) => handleImageUpload(e, field.key)}
+                    tip={field.tip}
+                  />
                 );
 
               case 'linkSelector':
                 return (
-                  <React.Fragment key={field.key}>
-                    <LinkSelector
-                      id={fieldId}
-                      label={field.label}
-                      value={fieldValue || ''}
-                      onChange={(val) => updateField(field.key, val)}
-                      placeholder={field.placeholder}
-                    />
-                  </React.Fragment>
+                  <LinkSelector
+                    key={field.key}
+                    id={fieldId}
+                    label={field.label}
+                    value={fieldValue || ''}
+                    onChange={(val) => updateField(field.key, val)}
+                    placeholder={field.placeholder}
+                  />
                 );
 
               case 'select':
+                // For productCategory, dynamically generate options from products
+                let selectOptions = field.options || [];
+                if (field.key === 'productCategory' && products.length > 0) {
+                  const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+                  selectOptions = [
+                    { value: '', label: 'Select a category...' },
+                    ...categories.map(cat => ({ value: cat, label: cat }))
+                  ];
+                }
+                
                 return (
-                  <React.Fragment key={field.key}>
-                    <Select
-                      label={field.label}
-                      value={fieldValue || field.defaultValue || ''}
-                      onChange={(val) => updateField(field.key, val)}
-                      options={field.options || []}
-                      tip={field.tip}
-                    />
-                  </React.Fragment>
+                  <Select
+                    key={field.key}
+                    label={field.label}
+                    value={fieldValue || field.defaultValue || ''}
+                    onChange={(val) => updateField(field.key, val)}
+                    options={selectOptions}
+                    tip={field.tip}
+                  />
                 );
 
               case 'number':
                 return (
-                  <React.Fragment key={field.key}>
-                    <NumberInput
-                      label={field.label}
-                      value={fieldValue || field.defaultValue || 0}
-                      onChange={(val) => updateField(field.key, val)}
-                      placeholder={field.placeholder}
-                      tip={field.tip}
-                    />
-                  </React.Fragment>
+                  <NumberInput
+                    key={field.key}
+                    label={field.label}
+                    value={fieldValue || field.defaultValue || 0}
+                    onChange={(val) => updateField(field.key, val)}
+                    placeholder={field.placeholder}
+                    tip={field.tip}
+                  />
                 );
 
               case 'toggle':
                 return (
-                  <React.Fragment key={field.key}>
-                    <Toggle
-                      label={field.label}
-                      value={fieldValue !== undefined ? fieldValue : field.defaultValue}
-                      onChange={(val) => updateField(field.key, val)}
-                      tip={field.tip}
-                    />
-                  </React.Fragment>
+                  <Toggle
+                    key={field.key}
+                    label={field.label}
+                    value={fieldValue !== undefined ? fieldValue : field.defaultValue}
+                    onChange={(val) => updateField(field.key, val)}
+                    tip={field.tip}
+                  />
                 );
 
               case 'url':
                 return (
-                  <React.Fragment key={field.key}>
-                    <Input
-                      id={fieldId}
-                      label={field.label}
-                      value={fieldValue || ''}
-                      onChange={(val) => updateField(field.key, val)}
-                      placeholder={field.placeholder}
-                      tip={field.tip}
-                    />
-                  </React.Fragment>
+                  <Input
+                    key={field.key}
+                    id={fieldId}
+                    label={field.label}
+                    value={fieldValue || ''}
+                    onChange={(val) => updateField(field.key, val)}
+                    placeholder={field.placeholder}
+                    tip={field.tip}
+                  />
                 );
 
               case 'formBuilder':
                 return (
-                  <React.Fragment key={field.key}>
-                    <FormBuilder
-                      value={fieldValue || DEFAULT_FORM_FIELDS}
-                      onChange={(val) => updateField(field.key, val)}
-                    />
-                  </React.Fragment>
+                  <FormBuilder
+                    key={field.key}
+                    value={fieldValue || DEFAULT_FORM_FIELDS}
+                    onChange={(val) => updateField(field.key, val)}
+                  />
+                );
+
+              case 'productSelector':
+                return (
+                  <ProductSelector
+                    key={field.key}
+                    products={products}
+                    selectedIds={fieldValue || []}
+                    onChange={(val) => updateField(field.key, val)}
+                    searchQuery={productSearchQuery}
+                    onSearchChange={setProductSearchQuery}
+                    tip={field.tip}
+                  />
                 );
 
               default:
@@ -1428,13 +2185,13 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
 
         {/* Items List (Drill Down) - for sections with items */}
         {data.items && activeGroup === 'content' && (
-          <div className="space-y-4 pt-6 border-t border-neutral-200">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium text-neutral-700 flex items-center gap-2">
-                <List size={14} /> Items ({data.items.length})
+          <div className="space-y-4 pt-6 border-t border-neutral-800">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-bold text-xs uppercase tracking-widest text-neutral-500 flex items-center gap-2">
+                <List size={12} /> Items ({data.items.length})
               </h4>
-              <button onClick={addItem} className="p-2 hover:bg-blue-50 rounded-lg text-blue-600 hover:text-blue-700 transition-colors">
-                <Plus size={18} />
+              <button onClick={addItem} className="p-1.5 hover:bg-blue-500/10 rounded text-blue-500 hover:text-blue-400 transition-colors">
+                <Plus size={16} />
               </button>
             </div>
             <div className="space-y-2">
@@ -1442,19 +2199,19 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 <div key={i} className="flex items-center gap-2 group">
                   <button 
                     onClick={() => setActiveItemIndex(i)}
-                    className="flex-1 flex items-center gap-3 p-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 hover:border-neutral-300 rounded-lg text-left transition-all"
+                    className="flex-1 flex items-center gap-3 p-2 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 rounded-lg text-left transition-all group-hover:shadow-md"
                   >
-                    <div className="w-12 h-12 bg-white rounded-lg overflow-hidden shrink-0 border border-neutral-200 flex items-center justify-center text-neutral-400">
-                      {item.image ? <img src={item.image} className="w-full h-full object-cover" alt="" /> : <ImageIcon size={20} />}
+                    <div className="w-10 h-10 bg-neutral-900 rounded-md overflow-hidden shrink-0 border border-neutral-800 flex items-center justify-center text-neutral-700">
+                      {item.image ? <img src={item.image} className="w-full h-full object-cover" alt="" /> : <ImageIcon size={16} />}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium truncate text-neutral-900">{item.title || 'Untitled'}</div>
-                      <div className="text-xs text-neutral-500 truncate">Item {i + 1}</div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate text-neutral-300 group-hover:text-white transition-colors">{item.title || 'Untitled'}</div>
+                      <div className="text-[10px] text-neutral-600 truncate">Item {i + 1}</div>
                     </div>
-                    <ChevronRight size={16} className="text-neutral-400 group-hover:text-neutral-600 transition-colors" />
+                    <ChevronRight size={14} className="ml-auto text-neutral-600 group-hover:text-neutral-400 transition-colors" />
                   </button>
-                  <button onClick={() => removeItem(i)} className="p-2 text-neutral-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 rounded-lg">
-                    <Trash2 size={16} />
+                  <button onClick={() => removeItem(i)} className="p-2 text-neutral-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/10 rounded-lg">
+                    <Trash2 size={14} />
                   </button>
                 </div>
               ))}
@@ -1464,9 +2221,9 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
 
         {/* Design Settings - always available */}
         {activeGroup === sectionConfig.groups[sectionConfig.groups.length - 1]?.id && (
-          <div className="space-y-4 pt-6 border-t border-neutral-200">
-            <h4 className="text-sm font-medium text-neutral-700 flex items-center gap-2 mb-4">
-              <Palette size={14} /> Design Overrides
+          <div className="space-y-4 pt-6 border-t border-neutral-800">
+            <h4 className="font-bold text-xs uppercase tracking-widest text-neutral-500 flex items-center gap-2 mb-4">
+              <Palette size={12} /> Design Overrides
             </h4>
             
             <div className="grid grid-cols-2 gap-4">
@@ -1483,15 +2240,70 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 ]}
               />
               <Select
-                label="Padding"
+                label="Container Width"
+                value={data.style?.maxWidth || 'auto'}
+                onChange={(val) => updateStyle('maxWidth', val)}
+                options={[
+                  { value: 'auto', label: 'Auto' },
+                  { value: 'narrow', label: 'Narrow (800px)' },
+                  { value: 'medium', label: 'Medium (1200px)' },
+                  { value: 'wide', label: 'Wide (1400px)' },
+                  { value: 'full', label: 'Full Width' },
+                ]}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Select
+                label="Vertical Padding"
                 value={data.style?.padding || 'auto'}
                 onChange={(val) => updateStyle('padding', val)}
                 options={[
                   { value: 'auto', label: 'Auto' },
+                  { value: 'none', label: 'None' },
                   { value: 's', label: 'Small' },
                   { value: 'm', label: 'Medium' },
                   { value: 'l', label: 'Large' },
                   { value: 'xl', label: 'Extra Large' },
+                ]}
+              />
+              <Select
+                label="Horizontal Padding"
+                value={data.style?.paddingX || 'auto'}
+                onChange={(val) => updateStyle('paddingX', val)}
+                options={[
+                  { value: 'auto', label: 'Auto' },
+                  { value: 'none', label: 'None' },
+                  { value: 's', label: 'Small' },
+                  { value: 'm', label: 'Medium' },
+                  { value: 'l', label: 'Large' },
+                  { value: 'xl', label: 'Extra Large' },
+                ]}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Select
+                label="Section Height"
+                value={data.style?.height || 'auto'}
+                onChange={(val) => updateStyle('height', val)}
+                options={[
+                  { value: 'auto', label: 'Auto (Content)' },
+                  { value: 'sm', label: 'Small (300px)' },
+                  { value: 'md', label: 'Medium (500px)' },
+                  { value: 'lg', label: 'Large (700px)' },
+                  { value: 'screen', label: 'Full Screen' },
+                ]}
+              />
+              <Select
+                label="Image Fit"
+                value={data.style?.imageFit || 'auto'}
+                onChange={(val) => updateStyle('imageFit', val)}
+                options={[
+                  { value: 'auto', label: 'Auto' },
+                  { value: 'cover', label: 'Cover (Fill)' },
+                  { value: 'contain', label: 'Contain (Fit)' },
+                  { value: 'scale', label: 'Scale Down' },
                 ]}
               />
             </div>
@@ -1505,19 +2317,6 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 { value: 'left', label: 'Left' },
                 { value: 'center', label: 'Center' },
                 { value: 'right', label: 'Right' },
-              ]}
-            />
-
-            <Select
-              label="Max Width"
-              value={data.style?.maxWidth || 'auto'}
-              onChange={(val) => updateStyle('maxWidth', val)}
-              options={[
-                { value: 'auto', label: 'Auto' },
-                { value: 'narrow', label: 'Narrow (800px)' },
-                { value: 'medium', label: 'Medium (1200px)' },
-                { value: 'wide', label: 'Wide (1400px)' },
-                { value: 'full', label: 'Full Width' },
               ]}
             />
           </div>
