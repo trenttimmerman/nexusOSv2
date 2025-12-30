@@ -107,7 +107,7 @@ const getBlockStyleClasses = (style?: { padding?: string; paddingX?: string; max
   return classes.join(' ');
 };
 
-export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: string) => void }> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true, onSelectField }) => {
+export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: string) => void }> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true, collections = [], onSelectField }) => {
   const { addToCart, cartCount, setIsCartOpen } = useCart();
 
   // Extract design settings from config
@@ -222,8 +222,28 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
       case 'category':
         if (data?.productCategory) {
           filteredProducts = filteredProducts.filter(p => 
-            p.category.toLowerCase() === data.productCategory.toLowerCase()
+            p.category_id === data.productCategory || 
+            p.category?.toLowerCase() === data.productCategory.toLowerCase()
           );
+        }
+        break;
+      case 'collection':
+        if (data?.productCollection) {
+          // Filter by collection - this would need collection_products junction data
+          // For now, we'll filter based on collection conditions if available
+          const collection = collections?.find(c => c.id === data.productCollection);
+          if (collection) {
+            if (collection.type === 'manual' && collection.product_ids) {
+              filteredProducts = collection.product_ids
+                .map((id: string) => products.find(p => p.id === id))
+                .filter(Boolean);
+            } else if (collection.type === 'auto-category' && collection.conditions?.category_id) {
+              filteredProducts = filteredProducts.filter(p => 
+                p.category_id === collection.conditions.category_id
+              );
+            }
+            // Add more auto-collection types as needed
+          }
         }
         break;
       case 'tag':

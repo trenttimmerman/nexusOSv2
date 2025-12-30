@@ -509,4 +509,5 @@ export interface StorefrontProps {
   onToggleLock?: (blockId: string) => void;
   onSwitchLayout?: (blockId: string) => void;
   showCartDrawer?: boolean;
+  collections?: Collection[];
 }

@@ -49,12 +49,12 @@ const HERO_VARIANT_FIELDS: Record<string, string[]> = {
 
 // Product grid variant field visibility
 const GRID_VARIANT_FIELDS: Record<string, string[]> = {
-  classic: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
-  industrial: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'showStock', 'showSku', 'buttonText', 'buttonLink'],
-  focus: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
-  hype: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'showBadges', 'buttonText', 'buttonLink'],
-  magazine: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
-  glass: ['heading', 'subheading', 'productSource', 'productCategory', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
+  classic: ['heading', 'subheading', 'productSource', 'productCategory', 'productCollection', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
+  industrial: ['heading', 'subheading', 'productSource', 'productCategory', 'productCollection', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'showStock', 'showSku', 'buttonText', 'buttonLink'],
+  focus: ['heading', 'subheading', 'productSource', 'productCategory', 'productCollection', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
+  hype: ['heading', 'subheading', 'productSource', 'productCategory', 'productCollection', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'showBadges', 'buttonText', 'buttonLink'],
+  magazine: ['heading', 'subheading', 'productSource', 'productCategory', 'productCollection', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
+  glass: ['heading', 'subheading', 'productSource', 'productCategory', 'productCollection', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
 };
 
 // ============== SECTION-SPECIFIC FIELD CONFIGURATIONS ==============
@@ -486,6 +486,7 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
         options: [
           { value: 'all', label: 'All Products' },
           { value: 'category', label: 'By Category' },
+          { value: 'collection', label: 'By Collection' },
           { value: 'tag', label: 'By Tag (Featured, Sale, etc.)' },
           { value: 'manual', label: 'Manual Selection' },
         ],
@@ -493,6 +494,9 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
       { key: 'productCategory', label: 'Category', type: 'select', group: 'products',
         tip: 'Filter products by category',
         options: [{ value: '', label: 'Select a category...' }] },
+      { key: 'productCollection', label: 'Collection', type: 'select', group: 'products',
+        tip: 'Show products from a specific collection',
+        options: [{ value: '', label: 'Select a collection...' }] },
       { key: 'productTag', label: 'Tag', type: 'select', group: 'products',
         tip: 'Filter products by tag',
         options: [
@@ -608,6 +612,8 @@ interface UniversalEditorProps {
   onSwitchLayout: (newVariant: string) => void;
   pages?: { id: string; name: string; slug: string }[];
   products?: { id: string; name: string; image: string; price: number; category: string; tags?: string[] }[];
+  categories?: { id: string; name: string; slug: string; parent_id?: string }[];
+  collections?: { id: string; name: string; slug: string; type: string }[];
 }
 
 // Form field types for the form builder
@@ -646,7 +652,9 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   onUpdate,
   onSwitchLayout,
   pages = [],
-  products = []
+  products = [],
+  categories = [],
+  collections = []
 }) => {
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [showLayoutPicker, setShowLayoutPicker] = useState(false);
@@ -2101,11 +2109,26 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
               case 'select':
                 // For productCategory, dynamically generate options from products
                 let selectOptions = field.options || [];
-                if (field.key === 'productCategory' && products.length > 0) {
-                  const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+                if (field.key === 'productCategory' && categories.length > 0) {
+                  // Use the new categories from database
                   selectOptions = [
                     { value: '', label: 'Select a category...' },
-                    ...categories.map(cat => ({ value: cat, label: cat }))
+                    ...categories
+                      .filter(c => c.parent_id === undefined || c.parent_id === null) // Only top-level categories
+                      .map(cat => ({ value: cat.id, label: cat.name }))
+                  ];
+                } else if (field.key === 'productCategory' && products.length > 0) {
+                  // Fallback to legacy category extraction from products
+                  const legacyCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
+                  selectOptions = [
+                    { value: '', label: 'Select a category...' },
+                    ...legacyCategories.map(cat => ({ value: cat, label: cat }))
+                  ];
+                } else if (field.key === 'productCollection' && collections.length > 0) {
+                  // Add collection selector
+                  selectOptions = [
+                    { value: '', label: 'Select a collection...' },
+                    ...collections.map(col => ({ value: col.id, label: col.name }))
                   ];
                 }
                 

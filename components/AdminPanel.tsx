@@ -2472,6 +2472,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       updateActiveBlockData(activeBlock.id, { ...newData, variant: newVariant });
                     }}
                     products={products.map(p => ({ id: p.id, name: p.name, image: p.image, price: p.price, category: p.category, tags: p.tags }))}
+                    categories={categories}
+                    collections={collections}
                  />
                </div>
             )}
@@ -2566,6 +2568,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       pages={localPages}
                       activePageId={activePageId}
                       activeProductSlug={activeProductSlug || undefined}
+                      collections={collections}
                       previewBlock={previewBlock}
                       activeBlockId={selectedBlockId}
                       onNavigate={(path) => {
