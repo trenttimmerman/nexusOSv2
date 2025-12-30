@@ -2038,6 +2038,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 // Additional filtering based on productSource selection
                 const productSource = data.productSource || 'all';
                 if (field.key === 'productCategory' && productSource !== 'category') return false;
+                if (field.key === 'productCollection' && productSource !== 'collection') return false;
                 if (field.key === 'productTag' && productSource !== 'tag') return false;
                 if (field.key === 'selectedProducts' && productSource !== 'manual') return false;
               }
