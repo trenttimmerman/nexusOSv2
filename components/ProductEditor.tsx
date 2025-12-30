@@ -3,6 +3,7 @@ import { Product, ProductImage, ProductVariantOption, ProductVariant, ProductPag
 import { X, Upload, Plus, Trash2, Image as ImageIcon, Sparkles, Box, Search, Save, ArrowLeft, MoreHorizontal, ShoppingBag, Star, ChevronRight, Monitor, LayoutTemplate, Loader2 } from 'lucide-react';
 import { PRODUCT_PAGE_COMPONENTS, PRODUCT_PAGE_OPTIONS } from './ProductPageLibrary';
 import { supabase } from '../lib/supabaseClient';
+import { useDataContext } from '../context/DataContext';
 
 interface ProductEditorProps {
     product?: Product | null;
@@ -11,6 +12,7 @@ interface ProductEditorProps {
 }
 
 export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, onCancel }) => {
+    const { categories } = useDataContext();
     const [activeTab, setActiveTab] = useState<'general' | 'media' | 'variants' | 'seo' | 'inventory' | 'design'>('general');
 
     // Form State
@@ -23,6 +25,7 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
         image: product?.image || '',
         images: product?.images || [],
         category: product?.category || '',
+        category_id: product?.category_id,
         tags: product?.tags || [],
         sku: product?.sku || '',
         stock: product?.stock || 0,
@@ -322,12 +325,36 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                         <h3 className="font-bold text-white border-b border-neutral-800 pb-2">Organization</h3>
                                         <div>
                                             <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Category</label>
-                                            <input
-                                                value={formData.category}
-                                                onChange={(e) => handleInputChange('category', e.target.value)}
+                                            <select
+                                                value={formData.category_id || ''}
+                                                onChange={(e) => {
+                                                    const categoryId = e.target.value || undefined;
+                                                    const category = categories.find(c => c.id === categoryId);
+                                                    handleInputChange('category_id', categoryId);
+                                                    // Also update legacy category field for backward compatibility
+                                                    if (category) {
+                                                        handleInputChange('category', category.name);
+                                                    } else {
+                                                        handleInputChange('category', '');
+                                                    }
+                                                }}
                                                 className="w-full bg-black border border-neutral-800 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
-                                                placeholder="e.g. T-Shirts, Hoodies, Accessories"
-                                            />
+                                            >
+                                                <option value="">Select a category</option>
+                                                {categories
+                                                    .filter(c => c.is_visible)
+                                                    .sort((a, b) => a.display_order - b.display_order)
+                                                    .map(category => {
+                                                        // Show indentation for subcategories
+                                                        const parentCategory = categories.find(c => c.id === category.parent_id);
+                                                        const prefix = parentCategory ? `  ${parentCategory.name} → ` : '';
+                                                        return (
+                                                            <option key={category.id} value={category.id}>
+                                                                {prefix}{category.name}
+                                                            </option>
+                                                        );
+                                                    })}
+                                            </select>
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Tags</label>

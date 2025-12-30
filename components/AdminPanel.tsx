@@ -26,6 +26,8 @@ import { DomainManager } from './DomainManager';
 import { DiscountManager } from './DiscountManager';
 import { ShippingManager } from './ShippingManager';
 import { ClientManagement } from './ClientManagement';
+import { CategoryManager } from './CategoryManager';
+import { CollectionManager } from './CollectionManager';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
 
@@ -121,6 +123,7 @@ import {
   AlertTriangle,
   Repeat,
   FolderOpen,
+  FolderTree,
   CreditCard,
   MapPin,
   Globe,
@@ -1048,6 +1051,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.DASHBOARD, icon: LayoutDashboard, label: 'Command Center' },
           { id: AdminTab.ORDERS, icon: ShoppingBag, label: 'Orders' },
           { id: AdminTab.PRODUCTS, icon: Package, label: 'Products' },
+          { id: AdminTab.CATEGORIES, icon: FolderTree, label: 'Categories' },
+          { id: AdminTab.COLLECTIONS, icon: Layers, label: 'Collections' },
           { id: AdminTab.DISCOUNTS, icon: Tag, label: 'Discounts' },
           { id: AdminTab.SHIPPING, icon: Truck, label: 'Shipping' },
           { id: AdminTab.PAGES, icon: FileText, label: 'Pages' },
@@ -2726,6 +2731,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             )}
           </div>
         );
+
+      case AdminTab.CATEGORIES:
+        return <CategoryManager />;
+
+      case AdminTab.COLLECTIONS:
+        return <CollectionManager />;
 
       case AdminTab.PAGES:
         return (

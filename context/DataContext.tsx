@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Product, Page, MediaAsset, Campaign, StoreConfig } from '../types';
+import { Product, Page, MediaAsset, Campaign, StoreConfig, Category, Collection } from '../types';
 import { MOCK_PRODUCTS } from '../constants';
 
 // Defaults
@@ -109,6 +109,8 @@ const DEFAULT_STORE_CONFIG: StoreConfig = {
   pages: Page[];
   mediaAssets: MediaAsset[];
   campaigns: Campaign[];
+  categories: Category[];
+  collections: Collection[];
   storeConfig: StoreConfig;
   loading: boolean;
   refreshData: (overrideStoreId?: string, silent?: boolean) => Promise<void>;
@@ -125,6 +127,11 @@ const DEFAULT_STORE_CONFIG: StoreConfig = {
   addCampaign: (campaign: Campaign) => Promise<void>;
   updateCampaign: (id: string, updates: Partial<Campaign>) => Promise<void>;
   deleteCampaign: (id: string) => Promise<void>;
+  saveCategory: (category: Category) => Promise<void>;
+  deleteCategory: (categoryId: string) => Promise<void>;
+  reorderCategories: (categories: Category[]) => Promise<void>;
+  saveCollection: (collection: Collection) => Promise<void>;
+  deleteCollection: (collectionId: string) => Promise<void>;
   updateConfig: (config: StoreConfig) => Promise<void>;
   signOut: () => Promise<void>;
   userRole: string | null;
@@ -135,6 +142,8 @@ const DEFAULT_STORE_CONFIG: StoreConfig = {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [pages, setPages] = useState<Page[]>([]);
   const [mediaAssets, setMediaAssets] = useState<MediaAsset[]>([]);
@@ -217,11 +226,71 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setStoreId(targetStoreId);
           const currentStoreId = targetStoreId;
 
-          // 2. Products
+          // 2. Categories
+          const { data: categoriesData } = await supabase.from('categories').select('*').eq('store_id', currentStoreId).order('display_order');
+          if (categoriesData && categoriesData.length > 0) {
+            setCategories(categoriesData.map(c => ({
+              ...c,
+              parent_id: c.parent_id,
+              display_order: c.display_order,
+              is_visible: c.is_visible,
+              created_at: c.created_at,
+              updated_at: c.updated_at
+            })));
+          } else {
+            setCategories([]); // No categories yet
+          }
+
+          // 3. Collections
+          const { data: collectionsData } = await supabase.from('collections').select('*').eq('store_id', currentStoreId).order('display_order');
+          if (collectionsData && collectionsData.length > 0) {
+            // Load products for each manual collection
+            const collectionsWithProducts = await Promise.all(
+              collectionsData.map(async (collection) => {
+                if (collection.type === 'manual') {
+                  const { data: collectionProducts } = await supabase
+                    .from('collection_products')
+                    .select('product_id')
+                    .eq('collection_id', collection.id)
+                    .order('display_order');
+                  
+                  return {
+                    ...collection,
+                    is_featured: collection.is_featured,
+                    is_visible: collection.is_visible,
+                    display_order: collection.display_order,
+                    image_url: collection.image_url,
+                    seo_title: collection.seo_title,
+                    seo_description: collection.seo_description,
+                    created_at: collection.created_at,
+                    updated_at: collection.updated_at,
+                    product_ids: collectionProducts?.map(cp => cp.product_id) || []
+                  };
+                }
+                return {
+                  ...collection,
+                  is_featured: collection.is_featured,
+                  is_visible: collection.is_visible,
+                  display_order: collection.display_order,
+                  image_url: collection.image_url,
+                  seo_title: collection.seo_title,
+                  seo_description: collection.seo_description,
+                  created_at: collection.created_at,
+                  updated_at: collection.updated_at
+                };
+              })
+            );
+            setCollections(collectionsWithProducts);
+          } else {
+            setCollections([]);
+          }
+
+          // 4. Products
           const { data: productsData } = await supabase.from('products').select('*').eq('store_id', currentStoreId);
           if (productsData && productsData.length > 0) {
             setProducts(productsData.map(p => ({
               ...p,
+              category_id: p.category_id,
               compareAtPrice: p.compare_at_price,
               trackInventory: p.track_inventory,
               hasVariants: p.has_variants,
@@ -234,7 +303,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setProducts([]); // No products for this tenant yet
           }
 
-          // 3. Pages
+          // 5. Pages
           const { data: pagesData, error: pagesError } = await supabase.from('pages').select('*').eq('store_id', currentStoreId);
           console.log('[DataContext] Pages fetch:', { pagesData, pagesError, currentStoreId });
           if (pagesData && pagesData.length > 0) {
@@ -583,6 +652,148 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.from('campaigns').delete().eq('id', id);
   };
 
+  // Category Management
+  const saveCategory = async (category: Category) => {
+    if (!storeId) return;
+    
+    const dbCategory = {
+      id: category.id,
+      store_id: storeId,
+      name: category.name,
+      slug: category.slug,
+      description: category.description,
+      parent_id: category.parent_id,
+      display_order: category.display_order,
+      is_visible: category.is_visible,
+      created_at: category.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    await supabase.from('categories').upsert(dbCategory);
+    
+    // Update local state
+    setCategories(prev => {
+      const existing = prev.find(c => c.id === category.id);
+      if (existing) {
+        return prev.map(c => c.id === category.id ? category : c);
+      } else {
+        return [...prev, category];
+      }
+    });
+  };
+
+  const deleteCategory = async (categoryId: string) => {
+    if (!storeId) return;
+    
+    // First, find all child categories recursively
+    const findChildIds = (parentId: string): string[] => {
+      const children = categories.filter(c => c.parent_id === parentId);
+      return children.flatMap(c => [c.id, ...findChildIds(c.id)]);
+    };
+    
+    const idsToDelete = [categoryId, ...findChildIds(categoryId)];
+    
+    // Delete all categories and their children
+    await supabase.from('categories').delete().in('id', idsToDelete);
+    
+    // Update local state
+    setCategories(prev => prev.filter(c => !idsToDelete.includes(c.id)));
+    
+    // Optional: Clear category_id from products that used these categories
+    const { data: affectedProducts } = await supabase
+      .from('products')
+      .select('id')
+      .in('category_id', idsToDelete);
+    
+    if (affectedProducts && affectedProducts.length > 0) {
+      await supabase
+        .from('products')
+        .update({ category_id: null })
+        .in('category_id', idsToDelete);
+      
+      // Refresh products
+      await fetchAllData(storeId, true);
+    }
+  };
+
+  const reorderCategories = async (reorderedCategories: Category[]) => {
+    if (!storeId) return;
+    
+    // Update display_order for each category
+    const updates = reorderedCategories.map((cat, index) => ({
+      id: cat.id,
+      store_id: storeId,
+      display_order: index,
+      updated_at: new Date().toISOString()
+    }));
+    
+    await supabase.from('categories').upsert(updates);
+    setCategories(reorderedCategories);
+  };
+
+  // Collection Management
+  const saveCollection = async (collection: Collection) => {
+    if (!storeId) return;
+    
+    const dbCollection = {
+      id: collection.id,
+      store_id: storeId,
+      name: collection.name,
+      slug: collection.slug,
+      description: collection.description,
+      image_url: collection.image_url,
+      type: collection.type,
+      is_featured: collection.is_featured,
+      is_visible: collection.is_visible,
+      display_order: collection.display_order,
+      conditions: collection.conditions || {},
+      seo_title: collection.seo_title,
+      seo_description: collection.seo_description,
+      created_at: collection.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    await supabase.from('collections').upsert(dbCollection);
+    
+    // For manual collections, update the junction table
+    if (collection.type === 'manual' && collection.product_ids) {
+      // Delete existing product associations
+      await supabase.from('collection_products').delete().eq('collection_id', collection.id);
+      
+      // Insert new associations with display order
+      const collectionProducts = collection.product_ids.map((productId, index) => ({
+        id: Math.random().toString(36).substr(2, 9),
+        collection_id: collection.id,
+        product_id: productId,
+        display_order: index
+      }));
+      
+      if (collectionProducts.length > 0) {
+        await supabase.from('collection_products').insert(collectionProducts);
+      }
+    }
+    
+    // Update local state
+    setCollections(prev => {
+      const existing = prev.find(c => c.id === collection.id);
+      if (existing) {
+        return prev.map(c => c.id === collection.id ? collection : c);
+      } else {
+        return [...prev, collection];
+      }
+    });
+  };
+
+  const deleteCollection = async (collectionId: string) => {
+    if (!storeId) return;
+    
+    // Delete collection (cascade will handle collection_products)
+    await supabase.from('collections').delete().eq('id', collectionId);
+    
+    // Update local state
+    setCollections(prev => prev.filter(c => c.id !== collectionId));
+  };
+
   const updateConfig = async (newConfig: StoreConfig) => {
     setStoreConfig(newConfig);
     if (!storeId) return;
@@ -629,8 +840,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <DataContext.Provider value={{
-      products, pages, mediaAssets, campaigns, storeConfig, loading, refreshData: fetchAllData,
-      addProduct, updateProduct, deleteProduct, addPage, updatePage, deletePage, addAsset, deleteAsset, addCampaign, updateCampaign, deleteCampaign, updateConfig, signOut, userRole, storeId, switchStore
+      products, pages, mediaAssets, campaigns, categories, collections, storeConfig, loading, refreshData: fetchAllData,
+      addProduct, updateProduct, deleteProduct, addPage, updatePage, deletePage, addAsset, deleteAsset, addCampaign, updateCampaign, deleteCampaign, saveCategory, deleteCategory, reorderCategories, saveCollection, deleteCollection, updateConfig, signOut, userRole, storeId, switchStore
     }}>
       {children}
     </DataContext.Provider>
@@ -644,3 +855,6 @@ export const useData = () => {
   }
   return context;
 };
+
+// Alias for backward compatibility
+export const useDataContext = useData;

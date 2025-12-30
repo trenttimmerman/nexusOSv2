@@ -1,0 +1,650 @@
+import React, { useState, useEffect } from 'react';
+import { useDataContext } from '../context/DataContext';
+import { Collection, Product } from '../types';
+import { 
+  Layers, 
+  Plus, 
+  Edit2, 
+  Trash2, 
+  Save, 
+  X, 
+  Search,
+  GripVertical,
+  ArrowUp,
+  ArrowDown,
+  Eye,
+  EyeOff,
+  Star,
+  StarOff,
+  Sparkles,
+  Tag,
+  FolderTree,
+  Image as ImageIcon,
+  Upload
+} from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+
+export const CollectionManager: React.FC = () => {
+  const { collections, products, categories, saveCollection, deleteCollection } = useDataContext();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState<Partial<Collection>>({
+    name: '',
+    slug: '',
+    description: '',
+    image_url: '',
+    type: 'manual',
+    is_featured: false,
+    is_visible: true,
+    display_order: 0,
+    product_ids: [],
+    conditions: {}
+  });
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [productSearch, setProductSearch] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Auto-generate slug from name
+  useEffect(() => {
+    if (formData.name && editingId === 'new') {
+      const slug = formData.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      setFormData(prev => ({ ...prev, slug }));
+    }
+  }, [formData.name, editingId]);
+
+  const handleEdit = (collection: Collection) => {
+    setEditingId(collection.id);
+    setFormData(collection);
+    setSelectedProducts(collection.product_ids || []);
+  };
+
+  const handleNew = () => {
+    setEditingId('new');
+    setFormData({
+      name: '',
+      slug: '',
+      description: '',
+      image_url: '',
+      type: 'manual',
+      is_featured: false,
+      is_visible: true,
+      display_order: 0,
+      product_ids: [],
+      conditions: {}
+    });
+    setSelectedProducts([]);
+  };
+
+  const handleSave = async () => {
+    if (!formData.name || !formData.slug) {
+      alert('Name and slug are required');
+      return;
+    }
+
+    const collectionData: Collection = {
+      id: editingId === 'new' ? Math.random().toString(36).substr(2, 9) : editingId!,
+      name: formData.name!,
+      slug: formData.slug!,
+      description: formData.description || '',
+      image_url: formData.image_url,
+      type: formData.type || 'manual',
+      is_featured: formData.is_featured ?? false,
+      is_visible: formData.is_visible ?? true,
+      display_order: formData.display_order || 0,
+      conditions: formData.conditions || {},
+      seo_title: formData.seo_title,
+      seo_description: formData.seo_description,
+      created_at: formData.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      product_ids: formData.type === 'manual' ? selectedProducts : undefined
+    };
+
+    await saveCollection(collectionData);
+    setEditingId(null);
+    setFormData({
+      name: '',
+      slug: '',
+      description: '',
+      image_url: '',
+      type: 'manual',
+      is_featured: false,
+      is_visible: true,
+      display_order: 0,
+      product_ids: [],
+      conditions: {}
+    });
+    setSelectedProducts([]);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this collection?')) {
+      return;
+    }
+    await deleteCollection(id);
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setFormData({
+      name: '',
+      slug: '',
+      description: '',
+      image_url: '',
+      type: 'manual',
+      is_featured: false,
+      is_visible: true,
+      display_order: 0,
+      product_ids: [],
+      conditions: {}
+    });
+    setSelectedProducts([]);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `collections/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('media')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('media')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({ ...prev, image_url: publicUrl }));
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image: ' + error.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const toggleProductSelection = (productId: string) => {
+    setSelectedProducts(prev => 
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  const moveProduct = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === selectedProducts.length - 1) return;
+
+    const newProducts = [...selectedProducts];
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    [newProducts[index], newProducts[swapIndex]] = [newProducts[swapIndex], newProducts[index]];
+    setSelectedProducts(newProducts);
+  };
+
+  const filteredCollections = collections.filter(collection => {
+    if (!searchTerm) return true;
+    return collection.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           collection.slug.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+
+  const filteredProducts = products.filter(product => {
+    if (!productSearch) return true;
+    return product.name.toLowerCase().includes(productSearch.toLowerCase());
+  });
+
+  const getCollectionProductCount = (collection: Collection) => {
+    if (collection.type === 'manual') {
+      return collection.product_ids?.length || 0;
+    }
+    // For auto collections, count based on conditions
+    return products.filter(p => {
+      if (collection.type === 'auto-category' && collection.conditions?.category_id) {
+        return p.category_id === collection.conditions.category_id;
+      }
+      if (collection.type === 'auto-tag' && collection.conditions?.tags) {
+        return collection.conditions.tags.some(tag => p.tags.includes(tag));
+      }
+      return false;
+    }).length;
+  };
+
+  const renderCollectionCard = (collection: Collection) => {
+    const productCount = getCollectionProductCount(collection);
+    
+    return (
+      <div
+        key={collection.id}
+        className="group bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden hover:border-neutral-600 transition-all"
+      >
+        <div className="aspect-[16/9] relative overflow-hidden bg-neutral-800">
+          {collection.image_url ? (
+            <img
+              src={collection.image_url}
+              alt={collection.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <Layers className="w-12 h-12 text-neutral-600" />
+            </div>
+          )}
+          <div className="absolute top-2 right-2 flex gap-1">
+            {collection.is_featured && (
+              <span className="px-2 py-1 bg-yellow-500 text-black text-xs font-bold rounded">
+                Featured
+              </span>
+            )}
+            {!collection.is_visible && (
+              <span className="px-2 py-1 bg-neutral-700 text-white text-xs font-bold rounded">
+                Hidden
+              </span>
+            )}
+          </div>
+        </div>
+        
+        <div className="p-4">
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-white text-lg truncate">{collection.name}</h3>
+              <p className="text-xs text-neutral-500 font-mono">/{collection.slug}</p>
+            </div>
+            <span className="px-2 py-1 bg-neutral-800 text-neutral-400 text-xs rounded ml-2">
+              {collection.type === 'manual' ? 'Manual' : 'Auto'}
+            </span>
+          </div>
+          
+          {collection.description && (
+            <p className="text-sm text-neutral-400 mb-3 line-clamp-2">{collection.description}</p>
+          )}
+          
+          <div className="flex items-center justify-between text-xs text-neutral-500 mb-3">
+            <span>{productCount} products</span>
+            <span>Order: {collection.display_order}</span>
+          </div>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleEdit(collection)}
+              className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors"
+            >
+              <Edit2 className="w-4 h-4" />
+              Edit
+            </button>
+            <button
+              onClick={() => handleDelete(collection.id)}
+              className="px-3 py-2 bg-red-600/10 text-red-500 rounded-lg hover:bg-red-600/20 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderEditor = () => (
+    <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 mb-6">
+      <h3 className="text-xl font-bold text-white mb-4">
+        {editingId === 'new' ? 'New Collection' : 'Edit Collection'}
+      </h3>
+      
+      {/* Basic Info */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label className="block text-sm font-medium text-neutral-400 mb-2">Name *</label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Summer Collection"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-neutral-400 mb-2">Slug *</label>
+          <input
+            type="text"
+            value={formData.slug}
+            onChange={e => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+            className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="summer-collection"
+          />
+        </div>
+      </div>
+      
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-neutral-400 mb-2">Description</label>
+        <textarea
+          value={formData.description}
+          onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+          className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          rows={3}
+          placeholder="A curated selection of summer essentials"
+        />
+      </div>
+      
+      {/* Collection Image */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-neutral-400 mb-2">Collection Image</label>
+        <div className="flex gap-4">
+          {formData.image_url && (
+            <img 
+              src={formData.image_url} 
+              alt="Collection" 
+              className="w-32 h-32 object-cover rounded-lg"
+            />
+          )}
+          <label className="flex-1 flex flex-col items-center justify-center px-4 py-6 bg-black border-2 border-dashed border-neutral-700 rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
+            <Upload className="w-8 h-8 text-neutral-500 mb-2" />
+            <span className="text-sm text-neutral-500">Upload image</span>
+            <input
+              type="file"
+              onChange={handleImageUpload}
+              accept="image/*"
+              className="hidden"
+              disabled={isUploading}
+            />
+            {isUploading && <span className="text-xs text-blue-500 mt-1">Uploading...</span>}
+          </label>
+        </div>
+      </div>
+      
+      {/* Collection Type */}
+      <div className="grid grid-cols-4 gap-4 mb-4">
+        <div>
+          <label className="block text-sm font-medium text-neutral-400 mb-2">Type</label>
+          <select
+            value={formData.type}
+            onChange={e => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
+            className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="manual">Manual</option>
+            <option value="auto-category">Auto - Category</option>
+            <option value="auto-tag">Auto - Tag</option>
+            <option value="auto-newest">Auto - Newest</option>
+            <option value="auto-bestsellers">Auto - Best Sellers</option>
+          </select>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-neutral-400 mb-2">Display Order</label>
+          <input
+            type="number"
+            value={formData.display_order}
+            onChange={e => setFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
+            className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-neutral-400 mb-2">Featured</label>
+          <label className="flex items-center gap-2 px-3 py-2 bg-black border border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-900">
+            <input
+              type="checkbox"
+              checked={formData.is_featured}
+              onChange={e => setFormData(prev => ({ ...prev, is_featured: e.target.checked }))}
+              className="rounded"
+            />
+            <span className="text-sm text-white">{formData.is_featured ? 'Yes' : 'No'}</span>
+          </label>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-neutral-400 mb-2">Visible</label>
+          <label className="flex items-center gap-2 px-3 py-2 bg-black border border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-900">
+            <input
+              type="checkbox"
+              checked={formData.is_visible}
+              onChange={e => setFormData(prev => ({ ...prev, is_visible: e.target.checked }))}
+              className="rounded"
+            />
+            <span className="text-sm text-white">{formData.is_visible ? 'Yes' : 'No'}</span>
+          </label>
+        </div>
+      </div>
+      
+      {/* Auto Collection Conditions */}
+      {formData.type === 'auto-category' && (
+        <div className="mb-4 p-4 bg-black border border-neutral-700 rounded-lg">
+          <label className="block text-sm font-medium text-neutral-400 mb-2">Category</label>
+          <select
+            value={formData.conditions?.category_id || ''}
+            onChange={e => setFormData(prev => ({ 
+              ...prev, 
+              conditions: { ...prev.conditions, category_id: e.target.value }
+            }))}
+            className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select category</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+      
+      {formData.type === 'auto-tag' && (
+        <div className="mb-4 p-4 bg-black border border-neutral-700 rounded-lg">
+          <label className="block text-sm font-medium text-neutral-400 mb-2">Tags (comma-separated)</label>
+          <input
+            type="text"
+            value={formData.conditions?.tags?.join(', ') || ''}
+            onChange={e => setFormData(prev => ({ 
+              ...prev, 
+              conditions: { ...prev.conditions, tags: e.target.value.split(',').map(t => t.trim()) }
+            }))}
+            className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="sale, featured, new"
+          />
+        </div>
+      )}
+      
+      {(formData.type === 'auto-newest' || formData.type === 'auto-bestsellers') && (
+        <div className="mb-4 p-4 bg-black border border-neutral-700 rounded-lg">
+          <label className="block text-sm font-medium text-neutral-400 mb-2">Product Limit</label>
+          <input
+            type="number"
+            value={formData.conditions?.limit || 12}
+            onChange={e => setFormData(prev => ({ 
+              ...prev, 
+              conditions: { ...prev.conditions, limit: parseInt(e.target.value) || 12 }
+            }))}
+            className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      )}
+      
+      {/* Manual Product Selection */}
+      {formData.type === 'manual' && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-neutral-400 mb-2">Products ({selectedProducts.length})</label>
+          <div className="grid grid-cols-2 gap-4">
+            {/* Available Products */}
+            <div className="bg-black border border-neutral-700 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Search className="w-4 h-4 text-neutral-500" />
+                <input
+                  type="text"
+                  value={productSearch}
+                  onChange={e => setProductSearch(e.target.value)}
+                  placeholder="Search products..."
+                  className="flex-1 bg-neutral-900 border-0 text-white text-sm focus:outline-none"
+                />
+              </div>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {filteredProducts.map(product => (
+                  <label
+                    key={product.id}
+                    className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                      selectedProducts.includes(product.id)
+                        ? 'bg-blue-600/20 border border-blue-600'
+                        : 'hover:bg-neutral-800 border border-transparent'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedProducts.includes(product.id)}
+                      onChange={() => toggleProductSelection(product.id)}
+                      className="rounded"
+                    />
+                    <img 
+                      src={product.images?.[0]?.url || product.image} 
+                      alt={product.name}
+                      className="w-10 h-10 object-cover rounded"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-white truncate">{product.name}</p>
+                      <p className="text-xs text-neutral-500">${product.price}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            {/* Selected Products */}
+            <div className="bg-black border border-neutral-700 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-neutral-400 mb-3">Selected Products</h4>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {selectedProducts.map((productId, index) => {
+                  const product = products.find(p => p.id === productId);
+                  if (!product) return null;
+                  
+                  return (
+                    <div
+                      key={productId}
+                      className="flex items-center gap-2 p-2 bg-neutral-800 rounded-lg"
+                    >
+                      <div className="flex flex-col gap-1">
+                        <button
+                          onClick={() => moveProduct(index, 'up')}
+                          disabled={index === 0}
+                          className="p-0.5 hover:bg-neutral-700 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <ArrowUp className="w-3 h-3 text-neutral-400" />
+                        </button>
+                        <button
+                          onClick={() => moveProduct(index, 'down')}
+                          disabled={index === selectedProducts.length - 1}
+                          className="p-0.5 hover:bg-neutral-700 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <ArrowDown className="w-3 h-3 text-neutral-400" />
+                        </button>
+                      </div>
+                      <img 
+                        src={product.images?.[0]?.url || product.image} 
+                        alt={product.name}
+                        className="w-10 h-10 object-cover rounded"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-white truncate">{product.name}</p>
+                        <p className="text-xs text-neutral-500">#{index + 1}</p>
+                      </div>
+                      <button
+                        onClick={() => toggleProductSelection(productId)}
+                        className="p-1 hover:bg-neutral-700 rounded text-red-500"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+                {selectedProducts.length === 0 && (
+                  <p className="text-sm text-neutral-600 text-center py-8">
+                    No products selected
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Actions */}
+      <div className="flex gap-2 pt-4 border-t border-neutral-800">
+        <button
+          onClick={handleSave}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
+        >
+          <Save className="w-4 h-4" />
+          Save Collection
+        </button>
+        <button
+          onClick={handleCancel}
+          className="px-6 py-2 bg-neutral-800 text-neutral-400 rounded-lg hover:bg-neutral-700 flex items-center gap-2 transition-colors"
+        >
+          <X className="w-4 h-4" />
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="p-8 max-w-7xl mx-auto">
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Collections</h1>
+            <p className="text-neutral-400 mt-1">Curate and organize product collections</p>
+          </div>
+          <button
+            onClick={handleNew}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            New Collection
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="Search collections..."
+            className="w-full pl-10 pr-4 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
+      {editingId && renderEditor()}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {filteredCollections.length === 0 ? (
+          <div className="col-span-3 text-center py-16 bg-neutral-900/50 rounded-xl border border-neutral-800">
+            <Layers className="w-12 h-12 text-neutral-600 mx-auto mb-3" />
+            <p className="text-neutral-400">No collections yet</p>
+            <p className="text-sm text-neutral-600 mt-1">Create your first collection to organize products</p>
+          </div>
+        ) : (
+          filteredCollections
+            .sort((a, b) => a.display_order - b.display_order)
+            .map(collection => renderCollectionCard(collection))
+        )}
+      </div>
+
+      <div className="mt-6 p-4 bg-blue-600/10 border border-blue-600/20 rounded-lg">
+        <h4 className="font-medium text-blue-400 mb-2">💡 Collection Types</h4>
+        <ul className="text-sm text-blue-300/80 space-y-1">
+          <li>• <strong>Manual</strong>: Handpick specific products</li>
+          <li>• <strong>Auto - Category</strong>: Automatically include all products from a category</li>
+          <li>• <strong>Auto - Tag</strong>: Automatically include products with specific tags</li>
+          <li>• <strong>Auto - Newest</strong>: Automatically show newest products</li>
+          <li>• <strong>Auto - Best Sellers</strong>: Automatically show top-selling products</li>
+        </ul>
+      </div>
+    </div>
+  );
+};
