@@ -166,11 +166,16 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   // Hero, Card, Footer components are now determined dynamically in renderBlock to allow for variants
   const FooterComponent = FOOTER_COMPONENTS[config.footerStyle] || FOOTER_COMPONENTS['columns'];
 
-  const activePage = pages.find(p => p.id === activePageId) || pages[0];
+  // Ensure pages is always an array
+  const safePages = pages || [];
+  const activePage = safePages.find(p => p.id === activePageId) || safePages[0];
   const isSidebar = config.headerStyle === 'studio';
 
+  // Ensure collections is always an array
+  const safeCollections = Array.isArray(collections) ? collections : [];
+
   // Map Pages to NavLinks
-  const navLinks = (pages || []).map(p => {
+  const navLinks = safePages.map(p => {
     let href = '/';
     if (p.type !== 'home') {
       const cleanSlug = p.slug.startsWith('/') ? p.slug.substring(1) : p.slug;
@@ -247,10 +252,10 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         }
         break;
       case 'collection':
-        if (data?.productCollection && Array.isArray(collections) && collections.length > 0) {
+        if (data?.productCollection && safeCollections.length > 0) {
           // Filter by collection - this would need collection_products junction data
           // For now, we'll filter based on collection conditions if available
-          const collection = collections.find(c => c?.id === data.productCollection);
+          const collection = safeCollections.find(c => c?.id === data.productCollection);
           if (collection) {
             if (collection.type === 'manual' && (collection as any).product_ids) {
               const productIds = (collection as any).product_ids;
