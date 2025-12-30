@@ -198,7 +198,7 @@ const PublicStoreWrapper = () => {
 // Wrapper for Admin
 const AdminWrapper = () => {
   const { 
-    storeConfig, products, pages, mediaAssets, campaigns, loading,
+    storeConfig, products, pages, mediaAssets, campaigns, categories, collections, loading,
     updateConfig, addProduct, deleteProduct, addPage, updatePage, deletePage, 
     addAsset, deleteAsset, addCampaign, updateCampaign, deleteCampaign,
     signOut, userRole, switchStore, storeId
@@ -247,6 +247,8 @@ const AdminWrapper = () => {
       userRole={userRole}
       storeId={storeId}
       onSwitchStore={switchStore}
+      categories={categories}
+      collections={collections}
     />
   );
 };

@@ -184,7 +184,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onLogout,
   userRole,
   storeId,
-  onSwitchStore
+  onSwitchStore,
+  categories = [],
+  collections = []
 }) => {
 
   // Platform Admin State

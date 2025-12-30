@@ -413,6 +413,8 @@ export interface AdminPanelProps {
   userRole?: string | null;
   storeId?: string | null;
   onSwitchStore?: (storeId: string) => Promise<void>;
+  categories?: Category[];
+  collections?: Collection[];
 }
 
 export interface Customer {
