@@ -107,7 +107,26 @@ const getBlockStyleClasses = (style?: { padding?: string; paddingX?: string; max
   return classes.join(' ');
 };
 
-export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: string) => void }> = ({ config, products, pages, activePageId, activeProductSlug, onNavigate, previewBlock, activeBlockId, onUpdateBlock, onEditBlock, onMoveBlock, onDeleteBlock, onDuplicateBlock, showCartDrawer = true, collections = [], onSelectField }) => {
+export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: string) => void }> = (props) => {
+  const { 
+    config, 
+    products, 
+    pages, 
+    activePageId, 
+    activeProductSlug, 
+    onNavigate, 
+    previewBlock, 
+    activeBlockId, 
+    onUpdateBlock, 
+    onEditBlock, 
+    onMoveBlock, 
+    onDeleteBlock, 
+    onDuplicateBlock, 
+    showCartDrawer = true, 
+    collections = [], 
+    onSelectField 
+  } = props;
+  
   const { addToCart, cartCount, setIsCartOpen } = useCart();
 
   // Extract design settings from config
