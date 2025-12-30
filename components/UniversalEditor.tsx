@@ -612,8 +612,6 @@ interface UniversalEditorProps {
   onSwitchLayout: (newVariant: string) => void;
   pages?: { id: string; name: string; slug: string }[];
   products?: { id: string; name: string; image: string; price: number; category: string; tags?: string[] }[];
-  categories?: { id: string; name: string; slug: string; parent_id?: string }[];
-  collections?: { id: string; name: string; slug: string; type: string }[];
 }
 
 // Form field types for the form builder
@@ -652,9 +650,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   onUpdate,
   onSwitchLayout,
   pages = [],
-  products = [],
-  categories = [],
-  collections = []
+  products = []
 }) => {
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [showLayoutPicker, setShowLayoutPicker] = useState(false);
@@ -2110,26 +2106,12 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
               case 'select':
                 // For productCategory, dynamically generate options from products
                 let selectOptions = field.options || [];
-                if (field.key === 'productCategory' && categories && categories.length > 0) {
-                  // Use the new categories from database
+                if (field.key === 'productCategory' && products && products.length > 0) {
+                  // Extract unique categories from products
+                  const productCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
                   selectOptions = [
                     { value: '', label: 'Select a category...' },
-                    ...categories
-                      .filter(c => c.parent_id === undefined || c.parent_id === null) // Only top-level categories
-                      .map(cat => ({ value: cat.id, label: cat.name }))
-                  ];
-                } else if (field.key === 'productCategory' && products && products.length > 0) {
-                  // Fallback to legacy category extraction from products
-                  const legacyCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
-                  selectOptions = [
-                    { value: '', label: 'Select a category...' },
-                    ...legacyCategories.map(cat => ({ value: cat, label: cat }))
-                  ];
-                } else if (field.key === 'productCollection' && collections && collections.length > 0) {
-                  // Add collection selector
-                  selectOptions = [
-                    { value: '', label: 'Select a collection...' },
-                    ...collections.map(col => ({ value: col.id, label: col.name }))
+                    ...productCategories.map(cat => ({ value: cat, label: cat }))
                   ];
                 }
                 
