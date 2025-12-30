@@ -151,7 +151,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   const isSidebar = config.headerStyle === 'studio';
 
   // Map Pages to NavLinks
-  const navLinks = pages.map(p => {
+  const navLinks = (pages || []).map(p => {
     let href = '/';
     if (p.type !== 'home') {
       const cleanSlug = p.slug.startsWith('/') ? p.slug.substring(1) : p.slug;
