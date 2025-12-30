@@ -171,9 +171,6 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   const activePage = safePages.find(p => p.id === activePageId) || safePages[0];
   const isSidebar = config.headerStyle === 'studio';
 
-  // Ensure collections is always an array
-  const safeCollections = Array.isArray(collections) ? collections : [];
-
   // Map Pages to NavLinks
   const navLinks = safePages.map(p => {
     let href = '/';
@@ -252,24 +249,8 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         }
         break;
       case 'collection':
-        if (data?.productCollection && safeCollections.length > 0) {
-          // Filter by collection - this would need collection_products junction data
-          // For now, we'll filter based on collection conditions if available
-          const collection = safeCollections.find(c => c?.id === data.productCollection);
-          if (collection) {
-            if (collection.type === 'manual' && (collection as any).product_ids) {
-              const productIds = (collection as any).product_ids;
-              filteredProducts = productIds
-                .map((id: string) => products.find(p => p.id === id))
-                .filter(Boolean) as Product[];
-            } else if (collection.type === 'auto-category' && collection.conditions?.category_id) {
-              filteredProducts = filteredProducts.filter(p => 
-                p.category_id === collection.conditions.category_id
-              );
-            }
-            // Add more auto-collection types as needed
-          }
-        }
+        // TODO: Re-enable collection filtering once TDZ issue is resolved
+        // For now, show all products when collection is selected
         break;
       case 'tag':
         if (data?.productTag) {
