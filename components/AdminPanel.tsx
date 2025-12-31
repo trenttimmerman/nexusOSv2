@@ -1051,19 +1051,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       </div>
       <nav className="flex-1 p-4 space-y-2">
         {[
-          { id: AdminTab.DASHBOARD, icon: LayoutDashboard, label: 'Command Center' },
-          { id: AdminTab.ORDERS, icon: ShoppingBag, label: 'Orders' },
-          { id: AdminTab.PRODUCTS, icon: Package, label: 'Products' },
-          { id: AdminTab.CATEGORIES, icon: FolderTree, label: 'Categories' },
-          { id: AdminTab.COLLECTIONS, icon: Layers, label: 'Collections' },
-          { id: AdminTab.DISCOUNTS, icon: Tag, label: 'Discounts' },
-          { id: AdminTab.SHIPPING, icon: Truck, label: 'Shipping' },
-          { id: AdminTab.PAGES, icon: FileText, label: 'Pages' },
-          { id: AdminTab.MEDIA, icon: FolderOpen, label: 'Media Library' },
-          { id: AdminTab.DESIGN, icon: Palette, label: 'Design Studio' },
-          { id: AdminTab.CAMPAIGNS, icon: Megaphone, label: 'Marketing' },
-          { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' },
-          ...(userRole === 'superuser' ? [{ id: AdminTab.PLATFORM, icon: Users, label: 'Platform Admin' }] : [])
+          { id: AdminTab.DASHBOARD, icon: LayoutDashboard, label: 'Home', desc: 'Your dashboard' },
+          { id: AdminTab.ORDERS, icon: ShoppingBag, label: 'Orders', desc: 'Customer orders' },
+          { id: AdminTab.PRODUCTS, icon: Package, label: 'Products', desc: 'Your items for sale' },
+          { id: AdminTab.CATEGORIES, icon: FolderTree, label: 'Categories', desc: 'Organize products' },
+          { id: AdminTab.COLLECTIONS, icon: Layers, label: 'Collections', desc: 'Group products' },
+          { id: AdminTab.DISCOUNTS, icon: Tag, label: 'Discounts', desc: 'Coupons & sales' },
+          { id: AdminTab.SHIPPING, icon: Truck, label: 'Shipping', desc: 'Delivery options' },
+          { id: AdminTab.PAGES, icon: FileText, label: 'Website', desc: 'Build your pages' },
+          { id: AdminTab.MEDIA, icon: FolderOpen, label: 'Images', desc: 'Photos & files' },
+          { id: AdminTab.DESIGN, icon: Palette, label: 'Theme', desc: 'Colors & style' },
+          { id: AdminTab.CAMPAIGNS, icon: Megaphone, label: 'Marketing', desc: 'Promote your store' },
+          { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings', desc: 'Store settings' },
+          ...(userRole === 'superuser' ? [{ id: AdminTab.PLATFORM, icon: Users, label: 'Platform Admin', desc: 'Admin tools' }] : [])
         ].map((item) => (
           <button
             key={item.id}
@@ -1890,10 +1890,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     
                     {/* Heading Style Options */}
                     <div className="pt-3 border-t border-neutral-700">
-                      <label className="text-xs font-bold text-neutral-400 mb-3 block">Heading Style</label>
+                      <label className="text-xs font-bold text-neutral-400 mb-3 block">Title Style</label>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-[10px] text-neutral-500 mb-1 block">Letter Spacing</label>
+                          <label className="text-[10px] text-neutral-500 mb-1 block">Letter Gap</label>
                           <select
                             value={config.typography?.headingLetterSpacing || 'normal'}
                             onChange={(e) => onConfigChange({ 
@@ -1902,16 +1902,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             })}
                             className="w-full bg-black border border-neutral-700 rounded px-2 py-2 text-white text-sm focus:border-purple-500 outline-none cursor-pointer"
                           >
-                            <option value="-0.05em">Tight (-0.05em)</option>
+                            <option value="-0.05em">Tight</option>
                             <option value="-0.025em">Slightly Tight</option>
                             <option value="normal">Normal</option>
                             <option value="0.025em">Slightly Wide</option>
-                            <option value="0.05em">Wide (0.05em)</option>
-                            <option value="0.1em">Very Wide (0.1em)</option>
+                            <option value="0.05em">Wide</option>
+                            <option value="0.1em">Very Wide</option>
                           </select>
                         </div>
                         <div>
-                          <label className="text-[10px] text-neutral-500 mb-1 block">Transform</label>
+                          <label className="text-[10px] text-neutral-500 mb-1 block">Capitalization</label>
                           <select
                             value={config.typography?.headingTransform || 'none'}
                             onChange={(e) => onConfigChange({ 
@@ -1920,10 +1920,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             })}
                             className="w-full bg-black border border-neutral-700 rounded px-2 py-2 text-white text-sm focus:border-purple-500 outline-none cursor-pointer"
                           >
-                            <option value="none">None</option>
-                            <option value="uppercase">UPPERCASE</option>
-                            <option value="lowercase">lowercase</option>
-                            <option value="capitalize">Capitalize</option>
+                            <option value="none">As typed</option>
+                            <option value="uppercase">ALL CAPS</option>
+                            <option value="lowercase">all lowercase</option>
+                            <option value="capitalize">First Letter Capital</option>
                           </select>
                         </div>
                       </div>
@@ -2465,20 +2465,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const renderAddSectionLibrary = () => {
     if (!isAddSectionOpen) return null;
 
-    // Category definitions with colors
+    // Category definitions with colors - user-friendly names
     const categories = [
-      { id: 'hero', name: 'Hero Engine', desc: 'High impact entry sections', icon: LayoutTemplate, color: 'purple' },
-      { id: 'grid', name: 'Product Grid', desc: 'Inventory display systems', icon: Grid, color: 'green' },
-      { id: 'collection', name: 'Collections', desc: 'Featured products & lists', icon: ShoppingBag, color: 'emerald' },
-      { id: 'layout', name: 'Layouts', desc: 'Multi-column & banners', icon: Layout, color: 'cyan' },
-      { id: 'scroll', name: 'Scroll Sections', desc: 'Marquees and tickers', icon: Repeat, color: 'orange' },
-      { id: 'social', name: 'Social Feed', desc: 'Instagram & TikTok', icon: Share2, color: 'pink' },
-      { id: 'blog', name: 'Blog Posts', desc: 'News and articles', icon: FileText, color: 'rose' },
-      { id: 'video', name: 'Video', desc: 'Players and backgrounds', icon: Video, color: 'red' },
-      { id: 'content', name: 'Rich Content', desc: 'Text, Collapsibles, HTML', icon: Type, color: 'blue' },
-      { id: 'marketing', name: 'Marketing', desc: 'Email, Promos, Logos', icon: Megaphone, color: 'yellow' },
-      { id: 'media', name: 'Media Gallery', desc: 'Grids, Sliders, Showcases', icon: ImageIcon, color: 'indigo' },
-      { id: 'contact', name: 'Contact', desc: 'Forms and maps', icon: Mail, color: 'teal' },
+      { id: 'hero', name: '✨ Big Banner', desc: 'Eye-catching welcome section', icon: LayoutTemplate, color: 'purple' },
+      { id: 'grid', name: '🛍️ Product Display', desc: 'Show your products in a grid', icon: Grid, color: 'green' },
+      { id: 'collection', name: '⭐ Featured Items', desc: 'Highlight specific products', icon: ShoppingBag, color: 'emerald' },
+      { id: 'layout', name: '📐 Columns & Banners', desc: 'Split content into sections', icon: Layout, color: 'cyan' },
+      { id: 'scroll', name: '📜 Scrolling Text', desc: 'Animated moving text', icon: Repeat, color: 'orange' },
+      { id: 'social', name: '📱 Social Media', desc: 'Show Instagram & TikTok', icon: Share2, color: 'pink' },
+      { id: 'blog', name: '📝 Blog & News', desc: 'Articles and updates', icon: FileText, color: 'rose' },
+      { id: 'video', name: '🎬 Video', desc: 'Embed YouTube or upload', icon: Video, color: 'red' },
+      { id: 'content', name: '📄 Text & FAQ', desc: 'Text blocks, Q&A sections', icon: Type, color: 'blue' },
+      { id: 'marketing', name: '📧 Email Signup', desc: 'Newsletter & promotions', icon: Megaphone, color: 'yellow' },
+      { id: 'media', name: '🖼️ Photo Gallery', desc: 'Image grids & slideshows', icon: ImageIcon, color: 'indigo' },
+      { id: 'contact', name: '💬 Contact Form', desc: 'Let customers reach you', icon: Mail, color: 'teal' },
     ];
 
     return (
@@ -3189,9 +3189,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       case AdminTab.PAGES:
         return (
           <div className="p-8 w-full max-w-7xl mx-auto">
+            {/* First-time user helper */}
+            {pages.length <= 1 && (
+              <div className="mb-8 p-6 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-blue-500/20 rounded-xl">
+                    <Sparkles className="text-blue-400" size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-1">👋 Welcome to your Website Builder!</h3>
+                    <p className="text-neutral-300 text-sm mb-3">
+                      This is where you design your store. Click <strong>"Open in Editor"</strong> below to start customizing your homepage. 
+                      You can add sections like banners, product displays, and contact forms!
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-blue-400">
+                      <CheckCircle2 size={14} />
+                      <span>Tip: Start with the Homepage, then add more pages as you need them.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="flex justify-between items-center mb-8">
-              <div><h2 className="text-3xl font-black text-white tracking-tight">Page Management</h2><p className="text-neutral-500">Create and manage your store's content</p></div>
-              <button onClick={handleAddNewPage} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center gap-2 transition-all"><Plus size={18} /> Add Page</button>
+              <div><h2 className="text-3xl font-black text-white tracking-tight">Your Pages</h2><p className="text-neutral-500">Build and customize your store pages</p></div>
+              <button onClick={handleAddNewPage} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center gap-2 transition-all"><Plus size={18} /> Add New Page</button>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
@@ -3203,12 +3225,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
                     <div>
                       <h3 className="font-bold text-white text-lg">{page.title}</h3>
-                      <div className="flex items-center gap-2 text-xs text-neutral-500 font-mono">
-                        <span className="uppercase">{page.type}</span>
+                      <div className="flex items-center gap-2 text-xs text-neutral-500">
+                        <span className="bg-neutral-800 px-2 py-0.5 rounded">{page.type === 'home' ? '🏠 Homepage' : '📄 Page'}</span>
                         <span>•</span>
-                        <span>{page.slug}</span>
-                        <span>•</span>
-                        <span>{page.blocks?.length || 0} Sections</span>
+                        <span>{page.blocks?.length || 0} section{page.blocks?.length !== 1 ? 's' : ''}</span>
                       </div>
                     </div>
                   </div>

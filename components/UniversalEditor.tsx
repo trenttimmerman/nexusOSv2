@@ -98,52 +98,70 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
       { key: 'heading', label: 'Headline', type: 'text', group: 'content', maxLength: 60, showAI: true, 
         placeholder: 'Your main headline (30-60 chars)', 
         tip: 'Start with action verbs, focus on benefits. Keep under 60 characters.',
-        examples: ['Transform Your Morning Routine', 'Premium Quality, Everyday Prices', 'Join 10,000+ Happy Customers'] },
+        examples: ['Transform Your Morning Routine', 'Premium Quality, Everyday Prices', 'Join 10,000+ Happy Customers'],
+        defaultValue: 'REDEFINE REALITY' },
       { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', maxLength: 160, showAI: true,
         placeholder: 'Supporting text that expands on your headline',
-        tip: 'Best at 120-160 characters. Explain the value proposition.' },
+        tip: 'Best at 120-160 characters. Explain the value proposition.',
+        defaultValue: 'Elevating the standard of modern living through curated design.' },
       { key: 'badge', label: 'Badge/Label', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., ✨ New Collection, 🔥 Limited Time',
-        examples: ['✨ New Release', '🔥 Best Sellers Inside', '👗 New Season Arrivals'] },
+        examples: ['✨ New Release', '🔥 Best Sellers Inside', '👗 New Season Arrivals'],
+        defaultValue: 'New Collection 2024' },
       { key: 'topBadge', label: 'Top Badge', type: 'text', group: 'content', showAI: true,
         placeholder: 'Badge text above headline',
-        tip: 'Small text badge that appears above your headline.' },
+        tip: 'Small text badge that appears above your headline.',
+        defaultValue: 'Premium Collection' },
       { key: 'imageBadge', label: 'Image Badge', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., Best Seller, New Arrival',
-        tip: 'Badge that overlays on the main image.' },
+        tip: 'Badge that overlays on the main image.',
+        defaultValue: 'Featured' },
       { key: 'featureCardTitle', label: 'Feature Card Title', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., Free Shipping',
-        tip: 'Title for the promotional feature card.' },
+        tip: 'Title for the promotional feature card.',
+        defaultValue: 'Free Shipping' },
       { key: 'featureCardSubtitle', label: 'Feature Card Subtitle', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., On orders over $50',
-        tip: 'Subtitle text for the feature card.' },
+        tip: 'Subtitle text for the feature card.',
+        defaultValue: 'On orders over $50' },
       { key: 'marqueeText', label: 'Scrolling Marquee', type: 'text', group: 'content',
-        placeholder: 'Text that scrolls across the section' },
+        placeholder: 'Text that scrolls across the section',
+        defaultValue: 'DISCOVER THE DIFFERENCE • ELEVATE YOUR STYLE •' },
       
       // === BUTTONS GROUP ===
       { key: 'buttonText', label: 'Primary Button', type: 'text', group: 'buttons', showAI: true,
         placeholder: 'e.g., Shop Now, Get Started',
-        examples: ['Shop Now', 'Get Started', 'Learn More', 'Browse Collection'] },
+        examples: ['Shop Now', 'Get Started', 'Learn More', 'Browse Collection'],
+        defaultValue: 'Shop Now' },
       { key: 'buttonLink', label: 'Primary Button Link', type: 'linkSelector', group: 'buttons',
-        placeholder: '/shop or https://...' },
+        placeholder: '/shop or https://...',
+        defaultValue: '/shop' },
       { key: 'secondaryButtonText', label: 'Secondary Button', type: 'text', group: 'buttons',
-        placeholder: 'e.g., Learn More (optional)' },
+        placeholder: 'e.g., Learn More (optional)',
+        defaultValue: 'Learn More' },
       { key: 'secondaryButtonLink', label: 'Secondary Button Link', type: 'linkSelector', group: 'buttons',
-        placeholder: '/about or https://...' },
+        placeholder: '/about or https://...',
+        defaultValue: '/about' },
       // Typographic hero links
       { key: 'link1Label', label: 'Category 1 Label', type: 'text', group: 'buttons',
         placeholder: 'e.g., New Arrivals',
-        tip: 'First category link label.' },
+        tip: 'First category link label.',
+        defaultValue: 'New Arrivals' },
       { key: 'link1Url', label: 'Category 1 Link', type: 'linkSelector', group: 'buttons',
-        placeholder: '/new-arrivals' },
+        placeholder: '/new-arrivals',
+        defaultValue: '/collections/new' },
       { key: 'link2Label', label: 'Category 2 Label', type: 'text', group: 'buttons',
-        placeholder: 'e.g., Best Sellers' },
+        placeholder: 'e.g., Best Sellers',
+        defaultValue: 'Best Sellers' },
       { key: 'link2Url', label: 'Category 2 Link', type: 'linkSelector', group: 'buttons',
-        placeholder: '/best-sellers' },
+        placeholder: '/best-sellers',
+        defaultValue: '/collections/best-sellers' },
       { key: 'link3Label', label: 'Category 3 Label', type: 'text', group: 'buttons',
-        placeholder: 'e.g., Sale Items' },
+        placeholder: 'e.g., Sale Items',
+        defaultValue: 'Sale Items' },
       { key: 'link3Url', label: 'Category 3 Link', type: 'linkSelector', group: 'buttons',
-        placeholder: '/sale' },
+        placeholder: '/sale',
+        defaultValue: '/collections/sale' },
       
       // === MEDIA GROUP ===
       { key: 'image', label: 'Background Image', type: 'image', group: 'media',
@@ -183,9 +201,11 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     fields: [
       { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., Get in Touch, Contact Us',
-        examples: ['Get in Touch', 'Let\'s Talk', 'How Can We Help?', 'Send Us a Message'] },
+        examples: ['Get in Touch', 'Let\'s Talk', 'How Can We Help?', 'Send Us a Message'],
+        defaultValue: 'Get in Touch' },
       { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
-        placeholder: 'Brief description of what visitors can expect' },
+        placeholder: 'Brief description of what visitors can expect',
+        defaultValue: 'Have a question or want to work together? Drop us a message and we\'ll get back to you within 24 hours.' },
       { key: 'formFields', label: 'Form Fields', type: 'formBuilder', group: 'form',
         tip: 'Add, remove, and configure your form fields' },
       { key: 'submitButtonText', label: 'Submit Button Text', type: 'text', group: 'form',
@@ -197,9 +217,11 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
         placeholder: 'support@yourdomain.com',
         tip: 'Email address where form submissions will be sent' },
       { key: 'contactEmail', label: 'Display Email', type: 'text', group: 'info',
-        placeholder: 'hello@yourdomain.com' },
+        placeholder: 'hello@yourdomain.com',
+        defaultValue: 'hello@yourstore.com' },
       { key: 'contactPhone', label: 'Display Phone', type: 'text', group: 'info',
-        placeholder: '+1 (555) 123-4567' },
+        placeholder: '+1 (555) 123-4567',
+        defaultValue: '+1 (555) 123-4567' },
       { key: 'contactAddress', label: 'Display Address', type: 'richtext', group: 'info',
         placeholder: '123 Main St, City, State 12345' },
     ]
@@ -216,9 +238,11 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     fields: [
       { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., Our Products, Featured Collection',
-        examples: ['Featured Products', 'New Arrivals', 'Best Sellers', 'Shop the Collection'] },
+        examples: ['Featured Products', 'New Arrivals', 'Best Sellers', 'Shop the Collection'],
+        defaultValue: 'Featured Products' },
       { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
-        placeholder: 'Brief description of the products' },
+        placeholder: 'Brief description of the products',
+        defaultValue: 'Discover our handpicked selection of premium products.' },
       { key: 'productDisplay', label: 'Display Mode', type: 'select', group: 'products',
         options: [
           { value: 'all', label: 'All Products' },
@@ -270,8 +294,10 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     fields: [
       { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., Latest Articles, From Our Blog',
-        examples: ['Latest Articles', 'From the Blog', 'Stories & Updates', 'Read More'] },
-      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
+        examples: ['Latest Articles', 'From the Blog', 'Stories & Updates', 'Read More'],
+        defaultValue: 'From the Blog' },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
+        defaultValue: 'Insights, stories, and updates from our team.' },
       { key: 'postsToShow', label: 'Posts to Show', type: 'number', group: 'posts',
         placeholder: '6', defaultValue: 6 },
       { key: 'postCategory', label: 'Category', type: 'select', group: 'posts',
@@ -298,8 +324,10 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     ],
     fields: [
       { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
-        placeholder: 'e.g., Our Gallery, Photo Collection' },
-      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
+        placeholder: 'e.g., Our Gallery, Photo Collection',
+        defaultValue: 'Gallery' },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
+        defaultValue: 'A collection of our favorite moments and creations.' },
       { key: 'gridColumns', label: 'Grid Columns', type: 'select', group: 'layout',
         options: [
           { value: '2', label: '2 Columns' },
@@ -329,8 +357,10 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
       { id: 'video', label: 'Video Settings', icon: <ImageIcon size={12} /> },
     ],
     fields: [
-      { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true },
-      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
+      { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
+        defaultValue: 'Watch the Story' },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
+        defaultValue: 'See what makes us different.' },
       { key: 'videoUrl', label: 'Video URL', type: 'url', group: 'video',
         placeholder: 'https://youtube.com/watch?v=... or https://vimeo.com/...',
         tip: 'Paste a YouTube or Vimeo URL' },
@@ -353,16 +383,19 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     fields: [
       { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., Join Our Newsletter',
-        examples: ['Join Our Newsletter', 'Stay in the Loop', 'Get 10% Off', 'Subscribe for Updates'] },
+        examples: ['Join Our Newsletter', 'Stay in the Loop', 'Get 10% Off', 'Subscribe for Updates'],
+        defaultValue: 'Join Our Newsletter' },
       { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
-        placeholder: 'Brief description of what subscribers will receive' },
+        placeholder: 'Brief description of what subscribers will receive',
+        defaultValue: 'Subscribe to get special offers, free giveaways, and updates on new arrivals.' },
       { key: 'buttonText', label: 'Button Text', type: 'text', group: 'form',
         placeholder: 'Subscribe', defaultValue: 'Subscribe' },
       { key: 'successMessage', label: 'Success Message', type: 'text', group: 'form', showAI: true,
         placeholder: 'Thanks for subscribing!', defaultValue: 'Thanks for subscribing!' },
       { key: 'incentiveText', label: 'Incentive Text', type: 'text', group: 'content',
         placeholder: 'e.g., Get 10% off your first order',
-        tip: 'Optional incentive to encourage signups' },
+        tip: 'Optional incentive to encourage signups',
+        defaultValue: 'Get 10% off your first order' },
     ]
   },
 
@@ -374,10 +407,12 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     ],
     fields: [
       { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true,
-        placeholder: 'Section heading' },
+        placeholder: 'Section heading',
+        defaultValue: 'About Us' },
       { key: 'content', label: 'Content', type: 'richtext', group: 'content', showAI: true,
         placeholder: 'Your main content text...',
-        tip: 'Use formatting tools to style your text' },
+        tip: 'Use formatting tools to style your text',
+        defaultValue: 'Add your content here. Use the rich text editor to format your text with headings, lists, and links.' },
     ]
   },
 
@@ -2239,7 +2274,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
             return true;
           })
           .map(field => {
-            const fieldValue = data[field.key];
+            const fieldValue = data[field.key] ?? field.defaultValue;
             const fieldId = `editor-field-${field.key}`;
             const styleKey = `${field.key}_style`;
             const styleValue = data[styleKey];
@@ -2251,7 +2286,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     key={field.key}
                     id={fieldId}
                     label={field.label}
-                    value={fieldValue || ''}
+                    value={fieldValue ?? ''}
                     onChange={(val) => updateField(field.key, val)}
                     fieldKey={field.key}
                     showAI={field.showAI}
@@ -2271,7 +2306,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     key={field.key}
                     id={fieldId}
                     label={field.label}
-                    value={fieldValue || ''}
+                    value={fieldValue ?? ''}
                     onChange={(val) => updateField(field.key, val)}
                     fieldKey={field.key}
                     showAI={field.showAI}
@@ -2289,7 +2324,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     key={field.key}
                     id={fieldId}
                     label={field.label}
-                    value={fieldValue || ''}
+                    value={fieldValue ?? ''}
                     onChange={(val) => updateField(field.key, val)}
                     onUpload={(e) => handleImageUpload(e, field.key)}
                     tip={field.tip}
@@ -2302,7 +2337,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     key={field.key}
                     id={fieldId}
                     label={field.label}
-                    value={fieldValue || ''}
+                    value={fieldValue ?? ''}
                     onChange={(val) => updateField(field.key, val)}
                     placeholder={field.placeholder}
                   />
@@ -2338,7 +2373,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                   <Select
                     key={field.key}
                     label={field.label}
-                    value={fieldValue || field.defaultValue || ''}
+                    value={fieldValue ?? ''}
                     onChange={(val) => updateField(field.key, val)}
                     options={selectOptions}
                     tip={field.tip}
@@ -2374,7 +2409,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     key={field.key}
                     id={fieldId}
                     label={field.label}
-                    value={fieldValue || ''}
+                    value={fieldValue ?? ''}
                     onChange={(val) => updateField(field.key, val)}
                     placeholder={field.placeholder}
                     tip={field.tip}
