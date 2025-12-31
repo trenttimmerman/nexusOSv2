@@ -147,7 +147,8 @@ import {
   Info,
   Phone,
   MessageSquare,
-  Star
+  Star,
+  AlertCircle
 } from 'lucide-react';
 
 // Page type options for creating new pages
