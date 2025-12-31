@@ -558,29 +558,32 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Merriweather:wght@300;400;700;900&family=JetBrains+Mono:wght@300;400;500;600;700&family=Nunito+Sans:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=Lato:wght@300;400;700;900&family=Roboto:wght@300;400;500;700;900&display=swap');
         
+        /* Global Typography Overrides - These apply site-wide */
+        /* Section-level styles can override these with inline styles */
+        
         .storefront-typography h1, .storefront-typography h2, .storefront-typography h3, 
         .storefront-typography h4, .storefront-typography h5, .storefront-typography h6 {
-          font-family: var(--font-heading);
+          font-family: var(--font-heading) !important;
           color: var(--color-heading);
-          font-weight: var(--font-weight-heading);
-          letter-spacing: var(--letter-spacing-heading);
-          text-transform: var(--text-transform-heading);
+          font-weight: var(--font-weight-heading) !important;
+          letter-spacing: var(--letter-spacing-heading) !important;
+          text-transform: var(--text-transform-heading) !important;
         }
-        .storefront-typography h1 { font-size: var(--heading-scale-h1); }
-        .storefront-typography h2 { font-size: var(--heading-scale-h2); }
-        .storefront-typography h3 { font-size: var(--heading-scale-h3); }
+        .storefront-typography h1 { font-size: var(--heading-scale-h1) !important; }
+        .storefront-typography h2 { font-size: var(--heading-scale-h2) !important; }
+        .storefront-typography h3 { font-size: var(--heading-scale-h3) !important; }
         
-        .storefront-typography p, .storefront-typography span, .storefront-typography div {
-          font-family: var(--font-body);
+        .storefront-typography p, .storefront-typography span:not([style]), .storefront-typography div:not([style]) {
+          font-family: var(--font-body) !important;
           font-weight: var(--font-weight-body);
         }
         .storefront-typography {
-          font-size: var(--font-size-base);
+          font-size: var(--font-size-base) !important;
         }
-        .storefront-typography p {
+        .storefront-typography p:not([style*="color"]) {
           color: var(--color-body);
         }
-        .storefront-typography a {
+        .storefront-typography a:not([style*="color"]) {
           color: var(--color-link);
         }
         .storefront-typography a:hover {
@@ -589,6 +592,12 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         .storefront-typography .text-muted, .storefront-typography .text-neutral-500 {
           color: var(--color-muted) !important;
         }
+        
+        /* Section-level overrides - inline styles take precedence */
+        .storefront-typography [style*="font-family"] { font-family: inherit !important; }
+        .storefront-typography [style*="color"] { color: inherit !important; }
+        .storefront-typography [style*="font-size"] { font-size: inherit !important; }
+        .storefront-typography [style*="font-weight"] { font-weight: inherit !important; }
       `}</style>
       <HeaderComponent
         storeName={config.name}

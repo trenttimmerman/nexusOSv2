@@ -1644,6 +1644,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <Type size={14} /> Global Typography
                   </h4>
+                  {/* Important Note */}
+                  <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle size={14} className="text-amber-500 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs text-amber-400 font-bold mb-1">Global Override Settings</p>
+                        <p className="text-[10px] text-amber-300/80 leading-relaxed">
+                          These settings apply site-wide and will override default theme styles. 
+                          Individual sections can still have custom styles applied after these global settings are set.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                   <div className="space-y-4 bg-neutral-800/50 p-4 rounded-xl border border-neutral-700">
                     {/* Font Families */}
                     <div className="space-y-3">
