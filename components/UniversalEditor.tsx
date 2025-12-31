@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, Layout, Image as ImageIcon, Type, AlignLeft, AlignCenter, AlignRight, Palette, Plus, Trash2, ChevronRight, ArrowLeft, Check, Upload, X, Bold, Italic, Link as LinkIcon, List, Loader2, Sparkles, Wand2, Info, ChevronDown, GripVertical, Mail, Phone, MessageSquare, User, FileText, Hash, Calendar, CheckSquare, ToggleLeft, Grid, Columns, Filter, SortAsc, Lightbulb, ExternalLink, Home, ShoppingBag, Users, HelpCircle, Zap, AlertCircle } from 'lucide-react';
 import { UniversalSectionData } from '../lib/smartMapper';
+import { useData } from '../context/DataContext';
 import { supabase } from '../lib/supabaseClient';
 import { GoogleGenAI } from '@google/genai';
 
@@ -612,7 +613,6 @@ interface UniversalEditorProps {
   onSwitchLayout: (newVariant: string) => void;
   pages?: { id: string; name: string; slug: string }[];
   products?: { id: string; name: string; image: string; price: number; category: string; tags?: string[] }[];
-  categories?: { id: string; name: string; slug: string; parent_id?: string | null }[];
 }
 
 // Form field types for the form builder
@@ -651,11 +651,10 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   onUpdate,
   onSwitchLayout,
   pages = [],
-  products = [],
-  categories
+  products = []
 }) => {
-  // Create safe array to avoid TDZ issues
-  const safeCategories = categories || [];
+  // Get categories and collections from context (avoids prop drilling TDZ issues)
+  const { categories, collections } = useData();
   
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [showLayoutPicker, setShowLayoutPicker] = useState(false);
@@ -2109,13 +2108,13 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 );
 
               case 'select':
-                // For productCategory, dynamically generate options from products
+                // For productCategory, dynamically generate options from categories
                 let selectOptions = field.options || [];
-                if (field.key === 'productCategory' && safeCategories.length > 0) {
-                  // Use categories from database
+                if (field.key === 'productCategory' && categories && categories.length > 0) {
+                  // Use categories from database context
                   selectOptions = [
                     { value: '', label: 'Select a category...' },
-                    ...safeCategories
+                    ...categories
                       .filter(c => c.parent_id === undefined || c.parent_id === null)
                       .map(cat => ({ value: cat.id, label: cat.name }))
                   ];
@@ -2125,6 +2124,12 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                   selectOptions = [
                     { value: '', label: 'Select a category...' },
                     ...productCategories.map(cat => ({ value: cat, label: cat }))
+                  ];
+                } else if (field.key === 'productCollection' && collections && collections.length > 0) {
+                  // Use collections from database context
+                  selectOptions = [
+                    { value: '', label: 'Select a collection...' },
+                    ...collections.map(col => ({ value: col.id, label: col.name }))
                   ];
                 }
                 

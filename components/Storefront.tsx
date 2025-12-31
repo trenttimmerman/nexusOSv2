@@ -18,6 +18,7 @@ import { COLLECTION_COMPONENTS } from './CollectionLibrary';
 import { SectionWrapper } from './SectionWrapper';
 import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useData } from '../context/DataContext';
 import { CartDrawer } from './CartDrawer';
 
 // Style classes generator for block.data.style
@@ -123,11 +124,12 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
     onDeleteBlock, 
     onDuplicateBlock, 
     showCartDrawer = true, 
-    collections = [], 
     onSelectField 
   } = props;
   
   const { addToCart, cartCount, setIsCartOpen } = useCart();
+  // Get collections from context (avoids prop drilling TDZ issues)
+  const { collections } = useData();
 
   // Extract design settings from config
   const primaryColor = config.primaryColor || '#6366F1';
@@ -249,8 +251,27 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         }
         break;
       case 'collection':
-        // TODO: Re-enable collection filtering once TDZ issue is resolved
-        // For now, show all products when collection is selected
+        if (data?.productCollection && collections && collections.length > 0) {
+          const collection = collections.find(c => c.id === data.productCollection);
+          if (collection) {
+            if (collection.type === 'manual' && collection.product_ids) {
+              // For manual collections, use the product_ids array
+              filteredProducts = collection.product_ids
+                .map((id: string) => products.find(p => p.id === id))
+                .filter(Boolean) as Product[];
+            } else if (collection.type === 'auto-category' && collection.conditions?.category_id) {
+              // For auto-category collections, filter by category
+              filteredProducts = filteredProducts.filter(p => 
+                p.category_id === collection.conditions?.category_id
+              );
+            } else if (collection.type === 'auto-tag' && collection.conditions?.tags) {
+              // For auto-tag collections, filter by tags
+              filteredProducts = filteredProducts.filter(p => 
+                p.tags?.some(tag => collection.conditions?.tags?.includes(tag))
+              );
+            }
+          }
+        }
         break;
       case 'tag':
         if (data?.productTag) {

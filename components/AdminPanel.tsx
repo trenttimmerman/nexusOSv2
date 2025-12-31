@@ -2474,7 +2474,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       updateActiveBlockData(activeBlock.id, { ...newData, variant: newVariant });
                     }}
                     products={products.map(p => ({ id: p.id, name: p.name, image: p.image, price: p.price, category: p.category, tags: p.tags }))}
-                    categories={categories}
                  />
                </div>
             )}
