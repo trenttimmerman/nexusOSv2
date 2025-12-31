@@ -1526,7 +1526,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
           {/* Header */}
           <div className="p-4 border-b border-neutral-800 bg-neutral-950 shrink-0 flex justify-between items-center">
             <div className="flex items-center gap-3">
@@ -1535,7 +1535,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
               <div>
                 <h3 className="text-white font-bold">Site Settings</h3>
-                <p className="text-xs text-neutral-500">Brand Identity & Global Styles</p>
+                <p className="text-xs text-neutral-500">Brand Identity, Typography & Global Styles</p>
               </div>
             </div>
             <button onClick={() => setIsInterfaceModalOpen(false)} className="p-2 hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-white transition-colors">
@@ -1636,6 +1636,438 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <Sparkles size={16} />
                       Generate AI Color Palette
                     </button>
+                  </div>
+                </div>
+
+                {/* Typography Section */}
+                <div>
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Type size={14} /> Global Typography
+                  </h4>
+                  <div className="space-y-4 bg-neutral-800/50 p-4 rounded-xl border border-neutral-700">
+                    {/* Font Families */}
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs font-bold text-neutral-400 mb-2 block">Heading Font</label>
+                        <select
+                          value={config.typography?.headingFont || 'Inter'}
+                          onChange={(e) => onConfigChange({ 
+                            ...config, 
+                            typography: { ...config.typography, headingFont: e.target.value }
+                          })}
+                          className="w-full bg-black border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-purple-500 outline-none cursor-pointer"
+                        >
+                          <option value="Inter">Inter (Modern Sans)</option>
+                          <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                          <option value="DM Sans">DM Sans</option>
+                          <option value="Manrope">Manrope</option>
+                          <option value="Outfit">Outfit</option>
+                          <option value="Space Grotesk">Space Grotesk</option>
+                          <option value="Sora">Sora</option>
+                          <option value="Poppins">Poppins</option>
+                          <option value="Playfair Display">Playfair Display (Serif)</option>
+                          <option value="Cormorant Garamond">Cormorant Garamond (Serif)</option>
+                          <option value="Libre Baskerville">Libre Baskerville (Serif)</option>
+                          <option value="Merriweather">Merriweather (Serif)</option>
+                          <option value="JetBrains Mono">JetBrains Mono (Mono)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-400 mb-2 block">Body Font</label>
+                        <select
+                          value={config.typography?.bodyFont || 'Inter'}
+                          onChange={(e) => onConfigChange({ 
+                            ...config, 
+                            typography: { ...config.typography, bodyFont: e.target.value }
+                          })}
+                          className="w-full bg-black border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-purple-500 outline-none cursor-pointer"
+                        >
+                          <option value="Inter">Inter</option>
+                          <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                          <option value="DM Sans">DM Sans</option>
+                          <option value="Nunito Sans">Nunito Sans</option>
+                          <option value="Source Sans 3">Source Sans 3</option>
+                          <option value="Open Sans">Open Sans</option>
+                          <option value="Lato">Lato</option>
+                          <option value="Roboto">Roboto</option>
+                          <option value="system-ui">System UI</option>
+                        </select>
+                      </div>
+                    </div>
+                    
+                    {/* Text Colors */}
+                    <div className="pt-3 border-t border-neutral-700">
+                      <label className="text-xs font-bold text-neutral-400 mb-3 block">Text Colors</label>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-neutral-400">Headings</span>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={config.typography?.headingColor || '#ffffff'}
+                              onChange={(e) => onConfigChange({ 
+                                ...config, 
+                                typography: { ...config.typography, headingColor: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border border-neutral-600 bg-transparent"
+                            />
+                            <input
+                              type="text"
+                              value={config.typography?.headingColor || '#ffffff'}
+                              onChange={(e) => onConfigChange({ 
+                                ...config, 
+                                typography: { ...config.typography, headingColor: e.target.value }
+                              })}
+                              className="w-20 bg-black border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-400 font-mono"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-neutral-400">Body Text</span>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={config.typography?.bodyColor || '#a3a3a3'}
+                              onChange={(e) => onConfigChange({ 
+                                ...config, 
+                                typography: { ...config.typography, bodyColor: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border border-neutral-600 bg-transparent"
+                            />
+                            <input
+                              type="text"
+                              value={config.typography?.bodyColor || '#a3a3a3'}
+                              onChange={(e) => onConfigChange({ 
+                                ...config, 
+                                typography: { ...config.typography, bodyColor: e.target.value }
+                              })}
+                              className="w-20 bg-black border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-400 font-mono"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-neutral-400">Links</span>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={config.typography?.linkColor || config.primaryColor || '#3b82f6'}
+                              onChange={(e) => onConfigChange({ 
+                                ...config, 
+                                typography: { ...config.typography, linkColor: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border border-neutral-600 bg-transparent"
+                            />
+                            <input
+                              type="text"
+                              value={config.typography?.linkColor || config.primaryColor || '#3b82f6'}
+                              onChange={(e) => onConfigChange({ 
+                                ...config, 
+                                typography: { ...config.typography, linkColor: e.target.value }
+                              })}
+                              className="w-20 bg-black border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-400 font-mono"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-neutral-400">Muted Text</span>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={config.typography?.mutedColor || '#737373'}
+                              onChange={(e) => onConfigChange({ 
+                                ...config, 
+                                typography: { ...config.typography, mutedColor: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border border-neutral-600 bg-transparent"
+                            />
+                            <input
+                              type="text"
+                              value={config.typography?.mutedColor || '#737373'}
+                              onChange={(e) => onConfigChange({ 
+                                ...config, 
+                                typography: { ...config.typography, mutedColor: e.target.value }
+                              })}
+                              className="w-20 bg-black border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-400 font-mono"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Font Sizes & Scale */}
+                    <div className="pt-3 border-t border-neutral-700">
+                      <label className="text-xs font-bold text-neutral-400 mb-3 block">Size & Scale</label>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-[10px] text-neutral-500 mb-1 block">Base Font Size</label>
+                          <select
+                            value={config.typography?.baseFontSize || '16px'}
+                            onChange={(e) => onConfigChange({ 
+                              ...config, 
+                              typography: { ...config.typography, baseFontSize: e.target.value }
+                            })}
+                            className="w-full bg-black border border-neutral-700 rounded px-3 py-2 text-white text-sm focus:border-purple-500 outline-none cursor-pointer"
+                          >
+                            <option value="14px">14px (Compact)</option>
+                            <option value="15px">15px (Small)</option>
+                            <option value="16px">16px (Default)</option>
+                            <option value="17px">17px (Comfortable)</option>
+                            <option value="18px">18px (Large)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-neutral-500 mb-1 block">Heading Scale</label>
+                          <select
+                            value={config.typography?.headingScale || 'default'}
+                            onChange={(e) => onConfigChange({ 
+                              ...config, 
+                              typography: { ...config.typography, headingScale: e.target.value as any }
+                            })}
+                            className="w-full bg-black border border-neutral-700 rounded px-3 py-2 text-white text-sm focus:border-purple-500 outline-none cursor-pointer"
+                          >
+                            <option value="compact">Compact (smaller headings)</option>
+                            <option value="default">Default</option>
+                            <option value="large">Large (bigger headings)</option>
+                            <option value="dramatic">Dramatic (very large)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Font Weights */}
+                    <div className="pt-3 border-t border-neutral-700">
+                      <label className="text-xs font-bold text-neutral-400 mb-3 block">Font Weights</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] text-neutral-500 mb-1 block">Heading Weight</label>
+                          <select
+                            value={config.typography?.headingWeight || '700'}
+                            onChange={(e) => onConfigChange({ 
+                              ...config, 
+                              typography: { ...config.typography, headingWeight: e.target.value as any }
+                            })}
+                            className="w-full bg-black border border-neutral-700 rounded px-2 py-2 text-white text-sm focus:border-purple-500 outline-none cursor-pointer"
+                          >
+                            <option value="400">Regular (400)</option>
+                            <option value="500">Medium (500)</option>
+                            <option value="600">Semibold (600)</option>
+                            <option value="700">Bold (700)</option>
+                            <option value="800">Extrabold (800)</option>
+                            <option value="900">Black (900)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-neutral-500 mb-1 block">Body Weight</label>
+                          <select
+                            value={config.typography?.bodyWeight || '400'}
+                            onChange={(e) => onConfigChange({ 
+                              ...config, 
+                              typography: { ...config.typography, bodyWeight: e.target.value as any }
+                            })}
+                            className="w-full bg-black border border-neutral-700 rounded px-2 py-2 text-white text-sm focus:border-purple-500 outline-none cursor-pointer"
+                          >
+                            <option value="300">Light (300)</option>
+                            <option value="400">Regular (400)</option>
+                            <option value="500">Medium (500)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Heading Style Options */}
+                    <div className="pt-3 border-t border-neutral-700">
+                      <label className="text-xs font-bold text-neutral-400 mb-3 block">Heading Style</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] text-neutral-500 mb-1 block">Letter Spacing</label>
+                          <select
+                            value={config.typography?.headingLetterSpacing || 'normal'}
+                            onChange={(e) => onConfigChange({ 
+                              ...config, 
+                              typography: { ...config.typography, headingLetterSpacing: e.target.value }
+                            })}
+                            className="w-full bg-black border border-neutral-700 rounded px-2 py-2 text-white text-sm focus:border-purple-500 outline-none cursor-pointer"
+                          >
+                            <option value="-0.05em">Tight (-0.05em)</option>
+                            <option value="-0.025em">Slightly Tight</option>
+                            <option value="normal">Normal</option>
+                            <option value="0.025em">Slightly Wide</option>
+                            <option value="0.05em">Wide (0.05em)</option>
+                            <option value="0.1em">Very Wide (0.1em)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-neutral-500 mb-1 block">Transform</label>
+                          <select
+                            value={config.typography?.headingTransform || 'none'}
+                            onChange={(e) => onConfigChange({ 
+                              ...config, 
+                              typography: { ...config.typography, headingTransform: e.target.value as any }
+                            })}
+                            className="w-full bg-black border border-neutral-700 rounded px-2 py-2 text-white text-sm focus:border-purple-500 outline-none cursor-pointer"
+                          >
+                            <option value="none">None</option>
+                            <option value="uppercase">UPPERCASE</option>
+                            <option value="lowercase">lowercase</option>
+                            <option value="capitalize">Capitalize</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Preview */}
+                    <div className="pt-3 border-t border-neutral-700">
+                      <label className="text-xs font-bold text-neutral-400 mb-3 block">Preview</label>
+                      <div 
+                        className="p-4 rounded-lg border border-neutral-600"
+                        style={{ backgroundColor: config.backgroundColor || '#0a0a0a' }}
+                      >
+                        <h3 
+                          style={{ 
+                            fontFamily: config.typography?.headingFont || 'Inter',
+                            fontWeight: config.typography?.headingWeight || '700',
+                            color: config.typography?.headingColor || '#ffffff',
+                            letterSpacing: config.typography?.headingLetterSpacing || 'normal',
+                            textTransform: config.typography?.headingTransform || 'none',
+                            fontSize: config.typography?.headingScale === 'dramatic' ? '1.75rem' : 
+                                     config.typography?.headingScale === 'large' ? '1.5rem' :
+                                     config.typography?.headingScale === 'compact' ? '1.125rem' : '1.25rem',
+                            marginBottom: '0.5rem'
+                          }}
+                        >
+                          Your Store Headline
+                        </h3>
+                        <p 
+                          style={{ 
+                            fontFamily: config.typography?.bodyFont || 'Inter',
+                            fontWeight: config.typography?.bodyWeight || '400',
+                            color: config.typography?.bodyColor || '#a3a3a3',
+                            fontSize: config.typography?.baseFontSize || '16px',
+                            lineHeight: '1.6',
+                            marginBottom: '0.75rem'
+                          }}
+                        >
+                          This is how your body text will look across your store. It should be easy to read and complement your headings.
+                        </p>
+                        <a 
+                          href="#" 
+                          onClick={(e) => e.preventDefault()}
+                          style={{ 
+                            color: config.typography?.linkColor || config.primaryColor || '#3b82f6',
+                            fontFamily: config.typography?.bodyFont || 'Inter',
+                            fontWeight: '500',
+                            fontSize: config.typography?.baseFontSize || '16px'
+                          }}
+                        >
+                          Link Example →
+                        </a>
+                        <p 
+                          style={{ 
+                            color: config.typography?.mutedColor || '#737373',
+                            fontFamily: config.typography?.bodyFont || 'Inter',
+                            fontSize: '0.875rem',
+                            marginTop: '0.5rem'
+                          }}
+                        >
+                          Muted text for secondary information
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Quick Presets */}
+                    <div className="pt-3 border-t border-neutral-700">
+                      <label className="text-xs font-bold text-neutral-400 mb-3 block">Quick Presets</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => onConfigChange({
+                            ...config,
+                            typography: {
+                              headingFont: 'Inter',
+                              bodyFont: 'Inter',
+                              headingColor: '#ffffff',
+                              bodyColor: '#a3a3a3',
+                              linkColor: config.primaryColor || '#3b82f6',
+                              mutedColor: '#737373',
+                              baseFontSize: '16px',
+                              headingScale: 'default',
+                              headingWeight: '700',
+                              bodyWeight: '400',
+                              headingLetterSpacing: '-0.025em',
+                              headingTransform: 'none'
+                            }
+                          })}
+                          className="p-2.5 rounded-lg border border-neutral-700 hover:border-purple-500 text-xs text-neutral-300 hover:text-white transition-colors"
+                        >
+                          Modern Clean
+                        </button>
+                        <button
+                          onClick={() => onConfigChange({
+                            ...config,
+                            typography: {
+                              headingFont: 'Playfair Display',
+                              bodyFont: 'Inter',
+                              headingColor: '#ffffff',
+                              bodyColor: '#d4d4d4',
+                              linkColor: config.primaryColor || '#3b82f6',
+                              mutedColor: '#a3a3a3',
+                              baseFontSize: '17px',
+                              headingScale: 'large',
+                              headingWeight: '600',
+                              bodyWeight: '400',
+                              headingLetterSpacing: 'normal',
+                              headingTransform: 'none'
+                            }
+                          })}
+                          className="p-2.5 rounded-lg border border-neutral-700 hover:border-purple-500 text-xs text-neutral-300 hover:text-white transition-colors"
+                        >
+                          Elegant Serif
+                        </button>
+                        <button
+                          onClick={() => onConfigChange({
+                            ...config,
+                            typography: {
+                              headingFont: 'Space Grotesk',
+                              bodyFont: 'DM Sans',
+                              headingColor: '#ffffff',
+                              bodyColor: '#a3a3a3',
+                              linkColor: config.primaryColor || '#3b82f6',
+                              mutedColor: '#737373',
+                              baseFontSize: '15px',
+                              headingScale: 'compact',
+                              headingWeight: '700',
+                              bodyWeight: '400',
+                              headingLetterSpacing: '-0.05em',
+                              headingTransform: 'none'
+                            }
+                          })}
+                          className="p-2.5 rounded-lg border border-neutral-700 hover:border-purple-500 text-xs text-neutral-300 hover:text-white transition-colors"
+                        >
+                          Tech Minimal
+                        </button>
+                        <button
+                          onClick={() => onConfigChange({
+                            ...config,
+                            typography: {
+                              headingFont: 'Outfit',
+                              bodyFont: 'Outfit',
+                              headingColor: '#ffffff',
+                              bodyColor: '#d4d4d4',
+                              linkColor: config.primaryColor || '#3b82f6',
+                              mutedColor: '#a3a3a3',
+                              baseFontSize: '16px',
+                              headingScale: 'dramatic',
+                              headingWeight: '800',
+                              bodyWeight: '400',
+                              headingLetterSpacing: '-0.025em',
+                              headingTransform: 'uppercase'
+                            }
+                          })}
+                          className="p-2.5 rounded-lg border border-neutral-700 hover:border-purple-500 text-xs text-neutral-300 hover:text-white transition-colors"
+                        >
+                          Bold Statement
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

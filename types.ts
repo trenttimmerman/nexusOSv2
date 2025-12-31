@@ -138,6 +138,40 @@ export interface StoreConfig {
   logoUrl?: string;
   logoHeight?: number;
   
+  // Global Typography Settings
+  typography?: {
+    // Font Families
+    headingFont?: string;
+    bodyFont?: string;
+    accentFont?: string;
+    
+    // Global Text Colors
+    headingColor?: string;
+    bodyColor?: string;
+    linkColor?: string;
+    linkHoverColor?: string;
+    mutedColor?: string;
+    
+    // Font Sizes (base scale)
+    baseFontSize?: string;
+    headingScale?: 'compact' | 'default' | 'large' | 'dramatic';
+    
+    // Font Weights
+    headingWeight?: '400' | '500' | '600' | '700' | '800' | '900';
+    bodyWeight?: '300' | '400' | '500';
+    
+    // Line Heights
+    headingLineHeight?: string;
+    bodyLineHeight?: string;
+    
+    // Letter Spacing
+    headingLetterSpacing?: string;
+    bodyLetterSpacing?: string;
+    
+    // Text Transform
+    headingTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
+  };
+  
   // Payment Config
   paymentProvider?: 'stripe' | 'paypal' | 'square' | 'manual';
   stripePublishableKey?: string;

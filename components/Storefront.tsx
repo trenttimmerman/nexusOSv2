@@ -136,6 +136,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   const secondaryColor = config.secondaryColor || '#8B5CF6';
   const backgroundColor = config.backgroundColor || '#FFFFFF';
   const storeVibe = config.storeVibe || 'minimal';
+  const typography = config.typography || {};
 
   // Generate vibe-based classes
   const getVibeClasses = () => {
@@ -156,11 +157,37 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
     }
   };
 
+  // Calculate heading scale multipliers
+  const getHeadingScale = () => {
+    switch (typography.headingScale) {
+      case 'compact': return { h1: 2, h2: 1.5, h3: 1.25 };
+      case 'large': return { h1: 3.5, h2: 2.5, h3: 1.75 };
+      case 'dramatic': return { h1: 4.5, h2: 3, h3: 2 };
+      default: return { h1: 2.5, h2: 2, h3: 1.5 };
+    }
+  };
+  const headingScale = getHeadingScale();
+
   // CSS custom properties for design tokens
   const designTokenStyles = {
     '--store-primary': primaryColor,
     '--store-secondary': secondaryColor,
     '--store-background': backgroundColor,
+    // Typography tokens
+    '--font-heading': typography.headingFont || 'Inter, system-ui, sans-serif',
+    '--font-body': typography.bodyFont || 'Inter, system-ui, sans-serif',
+    '--color-heading': typography.headingColor || '#ffffff',
+    '--color-body': typography.bodyColor || '#a3a3a3',
+    '--color-link': typography.linkColor || primaryColor,
+    '--color-muted': typography.mutedColor || '#737373',
+    '--font-size-base': typography.baseFontSize || '16px',
+    '--font-weight-heading': typography.headingWeight || '700',
+    '--font-weight-body': typography.bodyWeight || '400',
+    '--letter-spacing-heading': typography.headingLetterSpacing || '-0.025em',
+    '--text-transform-heading': typography.headingTransform || 'none',
+    '--heading-scale-h1': `${headingScale.h1}rem`,
+    '--heading-scale-h2': `${headingScale.h2}rem`,
+    '--heading-scale-h3': `${headingScale.h3}rem`,
   } as React.CSSProperties;
 
   const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
@@ -195,7 +222,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
           const ProductComponent = PRODUCT_PAGE_COMPONENTS[product.template || 'standard'] || PRODUCT_PAGE_COMPONENTS['standard'];
           return (
               <div 
-                className={`min-h-screen flex flex-col selection:text-white ${isSidebar ? 'md:pl-64' : ''} ${getVibeClasses()}`}
+                className={`min-h-screen flex flex-col selection:text-white storefront-typography ${isSidebar ? 'md:pl-64' : ''} ${getVibeClasses()}`}
                 style={{ ...designTokenStyles, backgroundColor, color: primaryColor }}
               >
                   <HeaderComponent
@@ -524,9 +551,45 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
 
   return (
     <div 
-      className={`min-h-screen flex flex-col selection:text-white ${isSidebar ? 'md:pl-64' : ''} ${getVibeClasses()}`}
+      className={`min-h-screen flex flex-col selection:text-white storefront-typography ${isSidebar ? 'md:pl-64' : ''} ${getVibeClasses()}`}
       style={{ ...designTokenStyles, backgroundColor }}
     >
+      {/* Global Typography Styles */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Merriweather:wght@300;400;700;900&family=JetBrains+Mono:wght@300;400;500;600;700&family=Nunito+Sans:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=Lato:wght@300;400;700;900&family=Roboto:wght@300;400;500;700;900&display=swap');
+        
+        .storefront-typography h1, .storefront-typography h2, .storefront-typography h3, 
+        .storefront-typography h4, .storefront-typography h5, .storefront-typography h6 {
+          font-family: var(--font-heading);
+          color: var(--color-heading);
+          font-weight: var(--font-weight-heading);
+          letter-spacing: var(--letter-spacing-heading);
+          text-transform: var(--text-transform-heading);
+        }
+        .storefront-typography h1 { font-size: var(--heading-scale-h1); }
+        .storefront-typography h2 { font-size: var(--heading-scale-h2); }
+        .storefront-typography h3 { font-size: var(--heading-scale-h3); }
+        
+        .storefront-typography p, .storefront-typography span, .storefront-typography div {
+          font-family: var(--font-body);
+          font-weight: var(--font-weight-body);
+        }
+        .storefront-typography {
+          font-size: var(--font-size-base);
+        }
+        .storefront-typography p {
+          color: var(--color-body);
+        }
+        .storefront-typography a {
+          color: var(--color-link);
+        }
+        .storefront-typography a:hover {
+          opacity: 0.8;
+        }
+        .storefront-typography .text-muted, .storefront-typography .text-neutral-500 {
+          color: var(--color-muted) !important;
+        }
+      `}</style>
       <HeaderComponent
         storeName={config.name}
         logoUrl={config.logoUrl}
