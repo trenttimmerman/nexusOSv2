@@ -829,6 +829,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   const [isSearchingStock, setIsSearchingStock] = useState(false);
   const [stockResults, setStockResults] = useState<string[]>([]);
   const [showImageTools, setShowImageTools] = useState<string | null>(null);
+  const [openStyleEditors, setOpenStyleEditors] = useState<Set<string>>(new Set());
 
   // Stock photo search (using Unsplash API - simulated for now)
   const searchStockPhotos = async (query: string) => {
@@ -1161,9 +1162,150 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   );
   };
 
+  // Text Style Editor - collapsible panel for font size and color
+  interface TextStyle {
+    fontSize?: string;
+    color?: string;
+    fontWeight?: string;
+    textAlign?: 'left' | 'center' | 'right';
+  }
+  
+  const TextStyleEditor = ({ style, onChange, isOpen, onToggle }: {
+    style?: TextStyle;
+    onChange: (style: TextStyle) => void;
+    isOpen: boolean;
+    onToggle: () => void;
+  }) => {
+    const currentStyle = style || {};
+    
+    const fontSizes = [
+      { value: '0.75rem', label: 'XS' },
+      { value: '0.875rem', label: 'SM' },
+      { value: '1rem', label: 'Base' },
+      { value: '1.125rem', label: 'LG' },
+      { value: '1.25rem', label: 'XL' },
+      { value: '1.5rem', label: '2XL' },
+      { value: '1.875rem', label: '3XL' },
+      { value: '2.25rem', label: '4XL' },
+      { value: '3rem', label: '5XL' },
+      { value: '3.75rem', label: '6XL' },
+      { value: '4.5rem', label: '7XL' },
+      { value: '6rem', label: '8XL' },
+    ];
+
+    const fontWeights = [
+      { value: '300', label: 'Light' },
+      { value: '400', label: 'Normal' },
+      { value: '500', label: 'Medium' },
+      { value: '600', label: 'Semibold' },
+      { value: '700', label: 'Bold' },
+      { value: '800', label: 'Extra Bold' },
+    ];
+
+    return (
+      <div className="mt-2">
+        <button
+          onClick={onToggle}
+          className="flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors"
+        >
+          <Palette size={10} />
+          <span>Style Options</span>
+          <ChevronDown size={10} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+        
+        {isOpen && (
+          <div className="mt-2 p-3 bg-neutral-900 rounded-lg border border-neutral-800 space-y-3 animate-in slide-in-from-top-2 duration-200">
+            {/* Font Size */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-neutral-500 font-medium">Font Size</label>
+              <select
+                value={currentStyle.fontSize || ''}
+                onChange={(e) => onChange({ ...currentStyle, fontSize: e.target.value || undefined })}
+                className="w-full bg-neutral-800 border border-neutral-700 rounded px-2 py-1.5 text-xs text-white focus:border-blue-500 outline-none cursor-pointer"
+              >
+                <option value="">Default</option>
+                {fontSizes.map(size => (
+                  <option key={size.value} value={size.value}>{size.label} ({size.value})</option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Font Weight */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-neutral-500 font-medium">Font Weight</label>
+              <select
+                value={currentStyle.fontWeight || ''}
+                onChange={(e) => onChange({ ...currentStyle, fontWeight: e.target.value || undefined })}
+                className="w-full bg-neutral-800 border border-neutral-700 rounded px-2 py-1.5 text-xs text-white focus:border-blue-500 outline-none cursor-pointer"
+              >
+                <option value="">Default</option>
+                {fontWeights.map(weight => (
+                  <option key={weight.value} value={weight.value}>{weight.label}</option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Text Color */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-neutral-500 font-medium">Text Color</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={currentStyle.color || '#ffffff'}
+                  onChange={(e) => onChange({ ...currentStyle, color: e.target.value })}
+                  className="w-8 h-8 rounded cursor-pointer border border-neutral-700 bg-transparent p-0"
+                />
+                <input
+                  type="text"
+                  value={currentStyle.color || ''}
+                  onChange={(e) => onChange({ ...currentStyle, color: e.target.value || undefined })}
+                  className="flex-1 px-2 py-1.5 bg-neutral-800 border border-neutral-700 rounded text-xs text-white focus:border-blue-500 outline-none font-mono"
+                  placeholder="#ffffff or inherit"
+                />
+                {currentStyle.color && (
+                  <button
+                    onClick={() => onChange({ ...currentStyle, color: undefined })}
+                    className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-700 rounded transition-colors"
+                    title="Reset to default"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {/* Text Alignment */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-neutral-500 font-medium">Alignment</label>
+              <div className="flex gap-1">
+                {[
+                  { value: 'left', icon: <AlignLeft size={14} /> },
+                  { value: 'center', icon: <AlignCenter size={14} /> },
+                  { value: 'right', icon: <AlignRight size={14} /> },
+                ].map(align => (
+                  <button
+                    key={align.value}
+                    onClick={() => onChange({ ...currentStyle, textAlign: align.value as 'left' | 'center' | 'right' })}
+                    className={`flex-1 p-2 rounded border transition-colors ${
+                      currentStyle.textAlign === align.value
+                        ? 'bg-blue-500/20 border-blue-500 text-blue-400'
+                        : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-white hover:border-neutral-600'
+                    }`}
+                  >
+                    {align.icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Enhanced Rich Text with working formatting
   // Uses local state + debounce to prevent focus loss
-  const RichText = ({ id, label, value, onChange, rows = 3, tip, maxLength, showAI, fieldKey }: { 
+  const RichText = ({ id, label, value, onChange, rows = 3, tip, maxLength, showAI, fieldKey, style, onStyleChange, showStyleEditor = false }: { 
     id?: string, 
     label: string, 
     value: string, 
@@ -1172,7 +1314,10 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     tip?: string,
     maxLength?: number,
     showAI?: boolean,
-    fieldKey?: string
+    fieldKey?: string,
+    style?: { fontSize?: string; color?: string; fontWeight?: string; textAlign?: 'left' | 'center' | 'right' },
+    onStyleChange?: (style: { fontSize?: string; color?: string; fontWeight?: string; textAlign?: 'left' | 'center' | 'right' }) => void,
+    showStyleEditor?: boolean
   }) => {
     const [localValue, setLocalValue] = useState(value || '');
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -1299,6 +1444,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
           onChange={(e) => handleChange(e.target.value)}
           onBlur={() => onChange(localValue)}
           className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-neutral-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none resize-none transition-all placeholder:text-neutral-700"
+          style={style ? { color: style.color } : undefined}
           rows={rows}
           maxLength={maxLength}
           placeholder={`Enter ${label.toLowerCase()}...`}
@@ -1308,13 +1454,33 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
             {localValue?.length || 0}/{maxLength} characters
           </div>
         )}
+        {/* Style Editor */}
+        {showStyleEditor && onStyleChange && (
+          <TextStyleEditor
+            style={style}
+            onChange={onStyleChange}
+            isOpen={fieldKey ? openStyleEditors.has(fieldKey) : false}
+            onToggle={() => {
+              if (!fieldKey) return;
+              setOpenStyleEditors(prev => {
+                const newSet = new Set(prev);
+                if (newSet.has(fieldKey)) {
+                  newSet.delete(fieldKey);
+                } else {
+                  newSet.add(fieldKey);
+                }
+                return newSet;
+              });
+            }}
+          />
+        )}
       </div>
     );
   };
 
   // Enhanced Input with tips, examples, and character count
   // Uses local state to prevent focus loss on every keystroke
-  const Input = ({ label, value, onChange, id, fieldKey, showAI = false, maxLength, placeholder, tip, examples }: { 
+  const Input = ({ label, value, onChange, id, fieldKey, showAI = false, maxLength, placeholder, tip, examples, style, onStyleChange, showStyleEditor = false }: { 
     label: string, 
     value: string, 
     onChange: (val: string) => void, 
@@ -1324,7 +1490,10 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     maxLength?: number,
     placeholder?: string,
     tip?: string,
-    examples?: string[]
+    examples?: string[],
+    style?: { fontSize?: string; color?: string; fontWeight?: string; textAlign?: 'left' | 'center' | 'right' },
+    onStyleChange?: (style: { fontSize?: string; color?: string; fontWeight?: string; textAlign?: 'left' | 'center' | 'right' }) => void,
+    showStyleEditor?: boolean
   }) => {
     const [localValue, setLocalValue] = useState(value || '');
     const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -1354,6 +1523,20 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         }
       };
     }, []);
+
+    const isStyleEditorOpen = fieldKey ? openStyleEditors.has(fieldKey) : false;
+    const toggleStyleEditor = () => {
+      if (!fieldKey) return;
+      setOpenStyleEditors(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(fieldKey)) {
+          newSet.delete(fieldKey);
+        } else {
+          newSet.add(fieldKey);
+        }
+        return newSet;
+      });
+    };
     
     return (
     <div className="space-y-2">
@@ -1396,6 +1579,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         onBlur={() => onChange(localValue)} // Ensure final value is synced
         maxLength={maxLength}
         className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700"
+        style={style ? { color: style.color } : undefined}
         placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
       />
       {/* Examples dropdown */}
@@ -1421,6 +1605,15 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         <div className={`text-[10px] text-right ${(localValue?.length || 0) > maxLength * 0.9 ? 'text-yellow-500' : 'text-neutral-600'}`}>
           {localValue?.length || 0}/{maxLength}
         </div>
+      )}
+      {/* Style Editor */}
+      {showStyleEditor && onStyleChange && (
+        <TextStyleEditor
+          style={style}
+          onChange={onStyleChange}
+          isOpen={isStyleEditorOpen}
+          onToggle={toggleStyleEditor}
+        />
       )}
     </div>
   );
@@ -2048,6 +2241,8 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
           .map(field => {
             const fieldValue = data[field.key];
             const fieldId = `editor-field-${field.key}`;
+            const styleKey = `${field.key}_style`;
+            const styleValue = data[styleKey];
 
             switch (field.type) {
               case 'text':
@@ -2064,6 +2259,9 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     placeholder={field.placeholder}
                     tip={field.tip}
                     examples={field.examples}
+                    style={styleValue}
+                    onStyleChange={(style) => updateField(styleKey, style)}
+                    showStyleEditor={true}
                   />
                 );
 
@@ -2079,6 +2277,9 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     showAI={field.showAI}
                     maxLength={field.maxLength}
                     tip={field.tip}
+                    style={styleValue}
+                    onStyleChange={(style) => updateField(styleKey, style)}
+                    showStyleEditor={true}
                   />
                 );
 
