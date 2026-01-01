@@ -2359,10 +2359,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
     // Mock data for preview
     const mockLinks = [
-      { text: 'Shop', href: '#' },
-      { text: 'Collections', href: '#' },
-      { text: 'About', href: '#' },
-      { text: 'Contact', href: '#' }
+      { label: 'Shop', href: '#' },
+      { label: 'Collections', href: '#' },
+      { label: 'About', href: '#' },
+      { label: 'Contact', href: '#' }
     ];
 
     return (
