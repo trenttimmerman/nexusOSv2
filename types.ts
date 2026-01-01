@@ -136,6 +136,14 @@ export interface StoreConfig {
   logoUrl?: string;
   logoHeight?: number;
   
+  // Header Customization
+  headerBgColor?: string;
+  headerTextColor?: string;
+  headerOutlineColor?: string;
+  headerGlowEffect?: boolean;
+  headerButtonBgColor?: string;
+  headerButtonTextColor?: string;
+  
   // Payment Config
   paymentProvider?: 'stripe' | 'paypal' | 'square' | 'manual';
   stripePublishableKey?: string;

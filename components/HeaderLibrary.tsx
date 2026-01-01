@@ -14,6 +14,12 @@ interface HeaderProps {
   onLogoClick?: () => void;
   primaryColor?: string;
   secondaryColor?: string;
+  headerBgColor?: string;
+  headerTextColor?: string;
+  headerOutlineColor?: string;
+  headerGlowEffect?: boolean;
+  headerButtonBgColor?: string;
+  headerButtonTextColor?: string;
 }
 
 // Reusable Logo Helper Component
@@ -29,30 +35,62 @@ const Logo: React.FC<{storeName: string, logoUrl?: string, logoHeight?: number, 
 };
 
 // 1. The Canvas (Minimalist, Clean, Airy)
-export const HeaderCanvas: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
-  <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-[100]">
-    <div className="max-w-7xl mx-auto px-6 min-h-[5rem] py-4 flex items-center justify-between">
-      <div className="flex items-center gap-8">
-        <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-bold tracking-tight" />
-        <nav className="hidden md:flex gap-6">
-          {(links || []).map(l => (
-            <Link key={l.label} to={l.href} className="text-sm font-medium text-gray-500 hover:text-black transition-colors">
-              {l.label}
-            </Link>
-          ))}
-        </nav>
-      </div>
-      <div className="flex items-center gap-4">
-        <button className="p-2 hover:bg-gray-50 rounded-full transition-colors"><Search size={20} /></button>
-        <Link to="/account" className="p-2 hover:bg-gray-50 rounded-full transition-colors"><User size={20} /></Link>
-        <div onClick={onOpenCart} className="relative p-2 hover:bg-gray-50 rounded-full transition-colors cursor-pointer">
-          <ShoppingBag size={20} />
-          {cartCount > 0 && <span className="absolute top-0 right-0 w-4 h-4 bg-black text-white text-[10px] flex items-center justify-center rounded-full">{cartCount}</span>}
+export const HeaderCanvas: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor = '#ffffff',
+  headerTextColor = '#000000',
+  headerOutlineColor = '#f3f4f6',
+  headerGlowEffect = false,
+  headerButtonBgColor,
+  headerButtonTextColor = '#ffffff'
+}) => {
+  const bgColor = headerBgColor;
+  const textColor = headerTextColor;
+  const borderColor = headerOutlineColor;
+  const glowStyle = headerGlowEffect ? { boxShadow: `0 4px 24px ${headerBgColor}40` } : {};
+  const buttonBg = headerButtonBgColor || textColor;
+  const buttonText = headerButtonTextColor;
+
+  return (
+    <header 
+      className="w-full border-b sticky top-0 z-[100]" 
+      style={{ backgroundColor: bgColor, borderColor, ...glowStyle }}
+    >
+      <div className="max-w-7xl mx-auto px-6 min-h-[5rem] py-4 flex items-center justify-between">
+        <div className="flex items-center gap-8">
+          <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-bold tracking-tight" style={{ color: textColor }} />
+          <nav className="hidden md:flex gap-6">
+            {(links || []).map(l => (
+              <Link 
+                key={l.label} 
+                to={l.href} 
+                className="text-sm font-medium hover:opacity-70 transition-opacity"
+                style={{ color: textColor }}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <div className="flex items-center gap-4" style={{ color: textColor }}>
+          <button className="p-2 hover:opacity-70 rounded-full transition-opacity"><Search size={20} /></button>
+          <Link to="/account" className="p-2 hover:opacity-70 rounded-full transition-opacity"><User size={20} /></Link>
+          <div onClick={onOpenCart} className="relative p-2 hover:opacity-70 rounded-full transition-opacity cursor-pointer">
+            <ShoppingBag size={20} />
+            {cartCount > 0 && (
+              <span 
+                className="absolute top-0 right-0 w-4 h-4 text-[10px] flex items-center justify-center rounded-full"
+                style={{ backgroundColor: buttonBg, color: buttonText }}
+              >
+                {cartCount}
+              </span>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  </header>
-);
+    </header>
+  );
+};
 
 // 2. The Nebula (Glassmorphic, Floating, Blur)
 export const HeaderNebula: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (

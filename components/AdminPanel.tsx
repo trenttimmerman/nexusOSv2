@@ -1718,6 +1718,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       onOpenCart={() => {}}
                       primaryColor={config.primaryColor}
                       secondaryColor="#666666"
+                      headerBgColor={config.headerBgColor}
+                      headerTextColor={config.headerTextColor}
+                      headerOutlineColor={config.headerOutlineColor}
+                      headerGlowEffect={config.headerGlowEffect}
+                      headerButtonBgColor={config.headerButtonBgColor}
+                      headerButtonTextColor={config.headerButtonTextColor}
                     />
                   </div>
                   {/* Placeholder content below header */}
@@ -2204,6 +2210,128 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
                   ))}
                 </div>
+
+                {/* Header Color Customization */}
+                <div className="mt-4 space-y-3 p-4 bg-neutral-900/50 rounded-lg border border-neutral-700">
+                  <h5 className="text-xs font-bold text-white mb-3">Header Colors</h5>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Background Color */}
+                    <div>
+                      <label className="text-[10px] text-neutral-400 mb-1 block">Background</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="color" 
+                          value={config.headerBgColor || '#ffffff'}
+                          onChange={(e) => onConfigChange({ ...config, headerBgColor: e.target.value })}
+                          className="w-12 h-9 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
+                        />
+                        <input 
+                          type="text" 
+                          value={config.headerBgColor || '#ffffff'}
+                          onChange={(e) => onConfigChange({ ...config, headerBgColor: e.target.value })}
+                          className="flex-1 px-2 py-1.5 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
+                          placeholder="#ffffff"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Text Color */}
+                    <div>
+                      <label className="text-[10px] text-neutral-400 mb-1 block">Text</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="color" 
+                          value={config.headerTextColor || '#000000'}
+                          onChange={(e) => onConfigChange({ ...config, headerTextColor: e.target.value })}
+                          className="w-12 h-9 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
+                        />
+                        <input 
+                          type="text" 
+                          value={config.headerTextColor || '#000000'}
+                          onChange={(e) => onConfigChange({ ...config, headerTextColor: e.target.value })}
+                          className="flex-1 px-2 py-1.5 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
+                          placeholder="#000000"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Outline Color */}
+                    <div>
+                      <label className="text-[10px] text-neutral-400 mb-1 block">Outline (optional)</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="color" 
+                          value={config.headerOutlineColor || '#e5e5e5'}
+                          onChange={(e) => onConfigChange({ ...config, headerOutlineColor: e.target.value })}
+                          className="w-12 h-9 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
+                        />
+                        <input 
+                          type="text" 
+                          value={config.headerOutlineColor || '#e5e5e5'}
+                          onChange={(e) => onConfigChange({ ...config, headerOutlineColor: e.target.value })}
+                          className="flex-1 px-2 py-1.5 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
+                          placeholder="#e5e5e5"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Glow Effect Toggle */}
+                    <div>
+                      <label className="text-[10px] text-neutral-400 mb-1 block">Glow Effect</label>
+                      <button
+                        onClick={() => onConfigChange({ ...config, headerGlowEffect: !config.headerGlowEffect })}
+                        className={`w-full h-9 rounded border transition-all ${
+                          config.headerGlowEffect 
+                            ? 'bg-purple-600/20 border-purple-500 text-purple-400' 
+                            : 'bg-neutral-800 border-neutral-600 text-neutral-400'
+                        }`}
+                      >
+                        {config.headerGlowEffect ? 'Enabled' : 'Disabled'}
+                      </button>
+                    </div>
+
+                    {/* Button Background */}
+                    <div>
+                      <label className="text-[10px] text-neutral-400 mb-1 block">Button Background</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="color" 
+                          value={config.headerButtonBgColor || config.primaryColor}
+                          onChange={(e) => onConfigChange({ ...config, headerButtonBgColor: e.target.value })}
+                          className="w-12 h-9 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
+                        />
+                        <input 
+                          type="text" 
+                          value={config.headerButtonBgColor || config.primaryColor}
+                          onChange={(e) => onConfigChange({ ...config, headerButtonBgColor: e.target.value })}
+                          className="flex-1 px-2 py-1.5 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
+                          placeholder={config.primaryColor}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Button Text */}
+                    <div>
+                      <label className="text-[10px] text-neutral-400 mb-1 block">Button Text</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="color" 
+                          value={config.headerButtonTextColor || '#ffffff'}
+                          onChange={(e) => onConfigChange({ ...config, headerButtonTextColor: e.target.value })}
+                          className="w-12 h-9 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
+                        />
+                        <input 
+                          type="text" 
+                          value={config.headerButtonTextColor || '#ffffff'}
+                          onChange={(e) => onConfigChange({ ...config, headerButtonTextColor: e.target.value })}
+                          className="flex-1 px-2 py-1.5 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
+                          placeholder="#ffffff"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -2265,6 +2393,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 onOpenCart={() => {}}
                 primaryColor={config.primaryColor}
                 secondaryColor={config.secondaryColor}
+                headerBgColor={config.headerBgColor}
+                headerTextColor={config.headerTextColor}
+                headerOutlineColor={config.headerOutlineColor}
+                headerGlowEffect={config.headerGlowEffect}
+                headerButtonBgColor={config.headerButtonBgColor}
+                headerButtonTextColor={config.headerButtonTextColor}
               />
             </div>
 
