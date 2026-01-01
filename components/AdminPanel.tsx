@@ -4133,7 +4133,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <div className="flex-1 overflow-y-auto custom-scrollbar">
                 <div className="p-4 space-y-3">
 
-                  {/* Pages & Navigation (Kept as requested) */}
+                  {/* 1. GLOBAL SETTINGS - Global site settings */}
+                  <div className="bg-neutral-900 border border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.3)] rounded-xl overflow-hidden">
+                    <button onClick={() => setIsInterfaceModalOpen(true)} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
+                      <div className="flex items-center gap-3"><div className="p-1.5 bg-purple-900/30 text-purple-400 rounded"><Monitor size={16} /></div><span className="font-bold text-sm text-white">Global Settings</span></div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-neutral-500">{config.scrollbarStyle}</span>
+                        <ChevronRight size={14} className="text-neutral-600" />
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* Pages & Navigation */}
                   <div className="bg-neutral-900 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-xl overflow-hidden">
                     <button onClick={() => setDesignSections(prev => ({ ...prev, pages: !prev.pages }))} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
                       <div className="flex items-center gap-3"><div className="p-1.5 bg-neutral-800 rounded text-neutral-400"><FileText size={16} /></div><span className="font-bold text-sm text-white">Pages</span></div><ChevronDown size={16} className={`text-neutral-500 transition-transform ${designSections.pages ? 'rotate-180' : ''}`} />
@@ -4161,17 +4172,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <button onClick={handleAddNewPage} className="w-full flex items-center gap-2 px-4 py-3 rounded-lg text-sm text-neutral-500 hover:text-white hover:bg-white/5 border border-dashed border-neutral-800 hover:border-neutral-600 transition-all mt-2"><Plus size={14} /> Add New Page</button>
                       </div>
                     )}
-                  </div>
-
-                  {/* 1. INTERFACE - Global site settings */}
-                  <div className="bg-neutral-900 border border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.3)] rounded-xl overflow-hidden">
-                    <button onClick={() => setIsInterfaceModalOpen(true)} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
-                      <div className="flex items-center gap-3"><div className="p-1.5 bg-purple-900/30 text-purple-400 rounded"><Monitor size={16} /></div><span className="font-bold text-sm text-white">Global Settings</span></div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-neutral-500">{config.scrollbarStyle}</span>
-                        <ChevronRight size={14} className="text-neutral-600" />
-                      </div>
-                    </button>
                   </div>
 
                   {/* 2. HEADER - Fixed site header */}
