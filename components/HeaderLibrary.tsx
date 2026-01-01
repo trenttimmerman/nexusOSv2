@@ -23,15 +23,29 @@ interface HeaderProps {
 }
 
 // Reusable Logo Helper Component
-const Logo: React.FC<{storeName: string, logoUrl?: string, logoHeight?: number, className?: string, onClick?: () => void}> = ({ storeName, logoUrl, logoHeight = 32, className, onClick }) => {
+const Logo: React.FC<{storeName: string, logoUrl?: string, logoHeight?: number, className?: string, onClick?: () => void, style?: React.CSSProperties}> = ({ storeName, logoUrl, logoHeight = 32, className, onClick, style }) => {
   const content = logoUrl 
     ? <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px`, width: 'auto' }} className="object-contain" />
-    : <span className={className}>{storeName}</span>;
+    : <span className={className} style={style}>{storeName}</span>;
     
   if (onClick) {
-    return <button onClick={onClick} className="cursor-pointer">{content}</button>;
+    return <button onClick={onClick} className="cursor-pointer" style={style}>{content}</button>;
   }
   return content;
+};
+
+// Helper to get color values with defaults
+const useHeaderColors = (props: Partial<HeaderProps>) => {
+  const bgColor = props.headerBgColor || '#ffffff';
+  const textColor = props.headerTextColor || '#000000';
+  const outlineColor = props.headerOutlineColor || '#e5e5e5';
+  const glowEffect = props.headerGlowEffect || false;
+  const buttonBg = props.headerButtonBgColor || textColor;
+  const buttonText = props.headerButtonTextColor || '#ffffff';
+  
+  const glowStyle = glowEffect ? { boxShadow: `0 4px 24px ${bgColor}40` } : {};
+  
+  return { bgColor, textColor, outlineColor, glowEffect, buttonBg, buttonText, glowStyle };
 };
 
 // 1. The Canvas (Minimalist, Clean, Airy)
@@ -93,86 +107,138 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
 };
 
 // 2. The Nebula (Glassmorphic, Floating, Blur)
-export const HeaderNebula: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
-  <header className="sticky top-0 z-[100] flex justify-center px-4 pt-4">
-    <div className="bg-white/60 backdrop-blur-xl border border-white/20 shadow-lg rounded-full px-8 py-3 flex items-center gap-12 max-w-4xl w-full justify-between">
-       <div className="flex items-center gap-2">
-         {!logoUrl && <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>}
-         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="font-bold tracking-wider text-sm uppercase" />
-       </div>
-       <nav className="hidden md:flex gap-8">
-          {(links || []).map(l => (
-            <a key={l.label} href={l.href} className="text-xs font-semibold tracking-widest uppercase text-gray-600 hover:text-blue-600 transition-colors">
-              {l.label}
-            </a>
-          ))}
-       </nav>
-       <div className="flex items-center gap-4 text-gray-800">
-         <Search size={18} className="cursor-pointer hover:text-blue-600" />
-         <div onClick={onOpenCart} className="relative cursor-pointer hover:text-blue-600">
-            <ShoppingBag size={18} />
-            {cartCount > 0 && <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full"></span>}
+export const HeaderNebula: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor = '#ffffff',
+  headerTextColor = '#000000',
+  headerOutlineColor = '#e5e5e5',
+  headerGlowEffect = false,
+  headerButtonBgColor,
+  headerButtonTextColor = '#ffffff'
+}) => {
+  const bgColor = `${headerBgColor}99`; // 60% opacity
+  const textColor = headerTextColor;
+  const borderColor = `${headerOutlineColor}33`; // 20% opacity
+  const glowStyle = headerGlowEffect ? { boxShadow: `0 8px 32px ${headerBgColor}40` } : {};
+  const buttonBg = headerButtonBgColor || textColor;
+  const buttonText = headerButtonTextColor;
+
+  return (
+    <header className="sticky top-0 z-[100] flex justify-center px-4 pt-4">
+      <div 
+        className="backdrop-blur-xl border shadow-lg rounded-full px-8 py-3 flex items-center gap-12 max-w-4xl w-full justify-between"
+        style={{ backgroundColor: bgColor, borderColor, ...glowStyle }}
+      >
+         <div className="flex items-center gap-2">
+           {!logoUrl && <div className="w-3 h-3 rounded-full animate-pulse" style={{ backgroundColor: buttonBg }}></div>}
+           <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="font-bold tracking-wider text-sm uppercase" />
          </div>
-       </div>
-    </div>
-  </header>
-);
+         <nav className="hidden md:flex gap-8">
+            {(links || []).map(l => (
+              <a key={l.label} href={l.href} className="text-xs font-semibold tracking-widest uppercase hover:opacity-70 transition-opacity" style={{ color: textColor }}>
+                {l.label}
+              </a>
+            ))}
+         </nav>
+         <div className="flex items-center gap-4" style={{ color: textColor }}>
+           <Search size={18} className="cursor-pointer hover:opacity-70" />
+           <div onClick={onOpenCart} className="relative cursor-pointer hover:opacity-70">
+              <ShoppingBag size={18} />
+              {cartCount > 0 && <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full" style={{ backgroundColor: buttonBg }}></span>}
+           </div>
+         </div>
+      </div>
+    </header>
+  );
+};
 
 // 3. The Bunker (Brutalist, High Contrast, Bold)
-export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
-  <header className="w-full bg-yellow-400 border-b-4 border-black sticky top-0 z-50 font-mono">
-    <div className="w-full bg-black text-yellow-400 text-xs py-1 px-2 overflow-hidden whitespace-nowrap">
-       <div className="animate-marquee inline-block">
-         FREE SHIPPING WORLDWIDE — 0% TRANSACTION FEES — NEXUS COMMERCE OS — BUILD THE FUTURE — 
-         FREE SHIPPING WORLDWIDE — 0% TRANSACTION FEES — NEXUS COMMERCE OS — BUILD THE FUTURE —
-       </div>
-    </div>
-    <div className="grid grid-cols-[auto_1fr_auto] min-h-[4rem] divide-x-4 divide-black">
-      <div className="px-6 py-2 flex items-center bg-white">
-        <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-black uppercase italic transform -skew-x-12" />
+export const HeaderBunker: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor = '#facc15',
+  headerTextColor = '#000000',
+  headerOutlineColor = '#000000',
+  headerGlowEffect = false,
+  headerButtonBgColor,
+  headerButtonTextColor = '#facc15'
+}) => {
+  const bgColor = headerBgColor;
+  const textColor = headerTextColor;
+  const borderColor = headerOutlineColor;
+  const glowStyle = headerGlowEffect ? { boxShadow: `0 4px 24px ${headerBgColor}60` } : {};
+  const buttonBg = headerButtonBgColor || textColor;
+  const buttonText = headerButtonTextColor;
+
+  return (
+    <header className="w-full border-b-4 sticky top-0 z-50 font-mono" style={{ backgroundColor: bgColor, borderColor, ...glowStyle }}>
+      <div className="w-full text-xs py-1 px-2 overflow-hidden whitespace-nowrap" style={{ backgroundColor: borderColor, color: bgColor }}>
+         <div className="animate-marquee inline-block">
+           FREE SHIPPING WORLDWIDE — 0% TRANSACTION FEES — NEXUS COMMERCE OS — BUILD THE FUTURE — 
+           FREE SHIPPING WORLDWIDE — 0% TRANSACTION FEES — NEXUS COMMERCE OS — BUILD THE FUTURE —
+         </div>
       </div>
-      <nav className="hidden md:flex items-stretch justify-center bg-yellow-400">
-        <div className="flex w-full h-full divide-x-4 divide-black border-l-0">
-          {(links || []).map(l => (
-            <a key={l.label} href={l.href} className="flex-1 flex items-center justify-center text-sm font-bold uppercase hover:bg-black hover:text-yellow-400 transition-colors px-4 py-2">
-              {l.label}
-            </a>
-          ))}
+      <div className="grid grid-cols-[auto_1fr_auto] min-h-[4rem]" style={{ borderColor }}>
+        <div className="px-6 py-2 flex items-center border-r-4" style={{ backgroundColor: headerButtonTextColor || '#ffffff', borderColor }}>
+          <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-black uppercase italic transform -skew-x-12" style={{ color: textColor }} />
         </div>
-      </nav>
-      <div className="px-6 py-2 flex items-center justify-center gap-6 bg-white">
-        <User size={24} className="stroke-[3]" />
-        <div onClick={onOpenCart} className="relative cursor-pointer">
-           <ShoppingBag size={24} className="stroke-[3]" />
-           <span className="absolute -top-2 -right-2 bg-black text-yellow-400 text-xs font-bold px-1 border-2 border-black">{cartCount}</span>
+        <nav className="hidden md:flex items-stretch justify-center">
+          <div className="flex w-full h-full">
+            {(links || []).map((l, i) => (
+              <a key={l.label} href={l.href} className="flex-1 flex items-center justify-center text-sm font-bold uppercase hover:opacity-80 transition-opacity px-4 py-2" style={{ color: textColor, borderLeft: i > 0 ? `4px solid ${borderColor}` : 'none' }}>
+                {l.label}
+              </a>
+            ))}
+          </div>
+        </nav>
+        <div className="px-6 py-2 flex items-center justify-center gap-6 border-l-4" style={{ backgroundColor: headerButtonTextColor || '#ffffff', borderColor, color: textColor }}>
+          <User size={24} className="stroke-[3]" />
+          <div onClick={onOpenCart} className="relative cursor-pointer">
+             <ShoppingBag size={24} className="stroke-[3]" />
+             <span className="absolute -top-2 -right-2 text-xs font-bold px-1 border-2" style={{ backgroundColor: buttonBg, color: buttonText, borderColor }}>{cartCount}</span>
+          </div>
         </div>
       </div>
-    </div>
-  </header>
-);
+    </header>
+  );
+};
 
 // 4. The Orbit (Dynamic Island style, Dark)
-export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => {
+export const HeaderOrbit: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor = '#171717',
+  headerTextColor = '#ffffff',
+  headerOutlineColor = '#404040',
+  headerGlowEffect = false,
+  headerButtonBgColor,
+  headerButtonTextColor = '#000000'
+}) => {
   const [expanded, setExpanded] = useState(false);
+  const bgColor = headerBgColor;
+  const textColor = headerTextColor;
+  const borderColor = headerOutlineColor;
+  const glowStyle = headerGlowEffect ? { boxShadow: `0 8px 32px ${headerBgColor}80` } : { boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)' };
+  const buttonBg = headerButtonBgColor || headerButtonTextColor;
+  const buttonText = headerButtonTextColor;
 
   return (
     <header className="sticky top-0 z-[100] flex justify-center pointer-events-none pt-6">
       <div 
-        className={`pointer-events-auto bg-neutral-900 text-white shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] overflow-hidden ${expanded ? 'w-[600px] h-auto rounded-3xl' : 'w-[400px] min-h-[3.5rem] py-2 rounded-full'}`}
+        className={`pointer-events-auto shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] overflow-hidden ${expanded ? 'w-[600px] h-auto rounded-3xl' : 'w-[400px] min-h-[3.5rem] py-2 rounded-full'}`}
+        style={{ backgroundColor: bgColor, color: textColor, ...glowStyle }}
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
       >
         <div className="w-full flex items-center justify-between px-6">
            <div className="flex items-center gap-2 py-1">
-             {!logoUrl && <div className="w-2 h-2 bg-green-500 rounded-full"></div>}
+             {!logoUrl && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: buttonBg }}></div>}
              <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="font-bold" />
            </div>
            
            {!expanded && (
-             <div className="flex items-center gap-4 text-sm text-neutral-400">
+             <div className="flex items-center gap-4 text-sm" style={{ color: `${textColor}99` }}>
                 <span>Menu</span>
-                <div className="w-px h-4 bg-neutral-700"></div>
-                <span onClick={onOpenCart} className="flex items-center gap-1 text-white cursor-pointer"><ShoppingBag size={14}/> {cartCount}</span>
+                <div className="w-px h-4" style={{ backgroundColor: borderColor }}></div>
+                <span onClick={onOpenCart} className="flex items-center gap-1 cursor-pointer" style={{ color: textColor }}><ShoppingBag size={14}/> {cartCount}</span>
              </div>
            )}
         </div>
@@ -180,18 +246,18 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
         {expanded && (
           <div className="px-6 pb-6 pt-2 grid grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-4 duration-300">
              <div className="flex flex-col gap-3">
-                <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Navigation</span>
+                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: `${textColor}66` }}>Navigation</span>
                 {(links || []).map(l => (
-                  <a key={l.label} href={l.href} className="text-lg font-medium hover:text-green-400 transition-colors">{l.label}</a>
+                  <a key={l.label} href={l.href} className="text-lg font-medium hover:opacity-70 transition-opacity" style={{ color: textColor }}>{l.label}</a>
                 ))}
              </div>
              <div className="flex flex-col gap-3">
-                <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Account</span>
-                <a href="#" className="text-sm text-neutral-300 hover:text-white">Orders</a>
-                <a href="#" className="text-sm text-neutral-300 hover:text-white">Wishlist</a>
-                <div className="mt-auto pt-4 border-t border-neutral-800 flex justify-between items-center">
-                  <span className="text-sm text-neutral-400">Cart ({cartCount})</span>
-                  <button onClick={onOpenCart} className="bg-white text-black px-4 py-1.5 rounded-full text-xs font-bold">Checkout</button>
+                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: `${textColor}66` }}>Account</span>
+                <a href="#" className="text-sm hover:opacity-100 transition-opacity" style={{ color: `${textColor}cc` }}>Orders</a>
+                <a href="#" className="text-sm hover:opacity-100 transition-opacity" style={{ color: `${textColor}cc` }}>Wishlist</a>
+                <div className="mt-auto pt-4 border-t flex justify-between items-center" style={{ borderColor }}>
+                  <span className="text-sm" style={{ color: `${textColor}99` }}>Cart ({cartCount})</span>
+                  <button onClick={onOpenCart} className="px-4 py-1.5 rounded-full text-xs font-bold" style={{ backgroundColor: buttonBg, color: buttonText }}>Checkout</button>
                 </div>
              </div>
           </div>
