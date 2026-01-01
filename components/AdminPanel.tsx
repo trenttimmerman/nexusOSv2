@@ -547,10 +547,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   }, [activeTab, userRole]);
 
-  // Collapse sidebar when entering Design tab
+  // Collapse sidebar when entering Design tab, expand when leaving
   useEffect(() => {
     if (activeTab === AdminTab.DESIGN) {
       setIsSidebarCollapsed(true);
+    } else {
+      setIsSidebarCollapsed(false);
     }
   }, [activeTab]);
 
