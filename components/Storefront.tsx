@@ -113,6 +113,14 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                       links={navLinks}
                       cartCount={cartCount}
                       onOpenCart={() => setIsCartOpen(true)}
+                      primaryColor={config.primaryColor}
+                      secondaryColor={config.secondaryColor}
+                      headerBgColor={config.headerBgColor}
+                      headerTextColor={config.headerTextColor}
+                      headerOutlineColor={config.headerOutlineColor}
+                      headerGlowEffect={config.headerGlowEffect}
+                      headerButtonBgColor={config.headerButtonBgColor}
+                      headerButtonTextColor={config.headerButtonTextColor}
                   />
                   <main className="flex-1">
                       <ProductComponent product={product} onAddToCart={addToCart} />
@@ -323,6 +331,12 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         onOpenCart={() => setIsCartOpen(true)}
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
+        headerBgColor={config.headerBgColor}
+        headerTextColor={config.headerTextColor}
+        headerOutlineColor={config.headerOutlineColor}
+        headerGlowEffect={config.headerGlowEffect}
+        headerButtonBgColor={config.headerButtonBgColor}
+        headerButtonTextColor={config.headerButtonTextColor}
       />
 
       <main className="flex-1">
