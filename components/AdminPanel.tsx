@@ -2368,7 +2368,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     return (
       <div 
         className="fixed inset-0 z-[250] pointer-events-none"
-        onMouseLeave={() => setPreviewingHeaderId(null)}
       >
         <div className="absolute top-20 left-1/2 -translate-x-1/2 w-full max-w-6xl pointer-events-auto">
           <div className="bg-neutral-900/95 backdrop-blur-xl border-2 border-purple-500/50 rounded-xl shadow-2xl overflow-hidden animate-in slide-in-from-top-4 duration-200">
