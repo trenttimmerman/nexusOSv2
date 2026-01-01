@@ -4848,15 +4848,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       View Live
                     </a>
                   )}
-                  {/* Brand Settings Button */}
-                  <button 
-                    onClick={() => setShowBrandSettings(true)}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg text-xs font-bold transition-all"
-                  >
-                    <Palette size={14} />
-                    Brand
-                  </button>
-                  {/* Version History Button */}
+                  {/* Version History Button */
                   <button 
                     onClick={() => {
                       fetchPageVersions();
@@ -5174,7 +5166,113 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
                   </div>
 
-                  {/* Contact Information */}
+                  {/* Logo Management */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <ImageIcon size={18} className="text-blue-500"/>
+                      Logo Management
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setLogoMode('text')}
+                          className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                            logoMode === 'text'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                          }`}
+                        >
+                          <Type size={16} className="inline mr-2" />
+                          Text Logo
+                        </button>
+                        <button
+                          onClick={() => setLogoMode('image')}
+                          className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                            logoMode === 'image'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                          }`}
+                        >
+                          <ImageIcon size={16} className="inline mr-2" />
+                          Image Logo
+                        </button>
+                      </div>
+
+                      {logoMode === 'image' && (
+                        <div>
+                          {config.logoUrl ? (
+                            <div className="space-y-3">
+                              <div className="bg-neutral-950 border border-neutral-700 rounded-lg p-4 flex items-center justify-center">
+                                <img 
+                                  src={config.logoUrl} 
+                                  alt="Logo" 
+                                  style={{ height: `${config.logoHeight || 32}px` }}
+                                  className="object-contain"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-bold text-neutral-500 uppercase block mb-2">Logo Height (px)</label>
+                                <input
+                                  type="range"
+                                  min="20"
+                                  max="80"
+                                  value={config.logoHeight || 32}
+                                  onChange={e => onConfigChange({ ...config, logoHeight: parseInt(e.target.value) })}
+                                  className="w-full"
+                                />
+                                <div className="flex justify-between text-xs text-neutral-500 mt-1">
+                                  <span>20px</span>
+                                  <span className="text-white font-bold">{config.logoHeight || 32}px</span>
+                                  <span>80px</span>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <label className="flex-1 cursor-pointer">
+                                  <div className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold text-center transition-colors">
+                                    {isUploadingLogo ? <Loader2 size={16} className="animate-spin mx-auto" /> : <>Change Logo</>}
+                                  </div>
+                                  <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={isUploadingLogo} />
+                                </label>
+                                <button
+                                  onClick={() => onConfigChange({ ...config, logoUrl: '' })}
+                                  className="px-4 py-2 bg-red-600/20 border border-red-600/50 hover:bg-red-600/30 text-red-400 rounded-lg text-sm font-bold transition-colors"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <label className="block cursor-pointer">
+                              <div className="border-2 border-dashed border-neutral-700 hover:border-neutral-500 rounded-lg p-8 text-center transition-colors">
+                                {isUploadingLogo ? (
+                                  <Loader2 size={32} className="mx-auto text-blue-500 animate-spin mb-2" />
+                                ) : (
+                                  <Upload size={32} className="mx-auto text-neutral-500 mb-2" />
+                                )}
+                                <p className="text-sm font-bold text-white mb-1">
+                                  {isUploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                                </p>
+                                <p className="text-xs text-neutral-500">
+                                  PNG, JPG, or SVG (recommended: transparent background)
+                                </p>
+                              </div>
+                              <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={isUploadingLogo} />
+                            </label>
+                          )}
+                        </div>
+                      )}
+
+                      {logoMode === 'text' && (
+                        <div className="bg-neutral-950 border border-neutral-700 rounded-lg p-4">
+                          <p className="text-sm text-neutral-400">
+                            Using text mode. Your store name "<span className="text-white font-bold">{config.name}</span>" will be displayed as the logo.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Contact Information */
                   <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
                     <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4">Contact Information</h4>
                     <div><label className="text-xs font-bold text-neutral-500 uppercase">Support Email</label><input value={config.supportEmail || ''} onChange={e => onConfigChange({ ...config, supportEmail: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="support@example.com" /></div>
