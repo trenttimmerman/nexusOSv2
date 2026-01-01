@@ -1,3 +1,18 @@
+/**
+ * Header Library - Customizable Header Components
+ * 
+ * ALL HEADERS MUST SUPPORT COLOR CUSTOMIZATION:
+ * - All headers accept: headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+ * - All headers must call: const colors = useHeaderColors({ ...colorProps });
+ * - Apply colors using inline styles:
+ *   - Main background: style={{ backgroundColor: colors.bgColor }}
+ *   - Text color: style={{ color: colors.textColor }}
+ *   - Borders: style={{ borderColor: colors.outlineColor }}
+ *   - Glow effect: style={colors.glowStyle}
+ *   - Buttons/badges: style={{ backgroundColor: colors.buttonBg, color: colors.buttonText }}
+ * 
+ * See HeaderCanvas, HeaderNebula, HeaderBunker, HeaderOrbit, HeaderProtocol, and HeaderHorizon for reference implementations.
+ */
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
