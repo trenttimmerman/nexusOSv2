@@ -2138,19 +2138,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
                   <ArrowDownAZ size={16} className="text-blue-500" /> Scrollbar Style
                 </h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {SCROLLBAR_OPTIONS.slice(0, 8).map((opt) => (
                     <button 
                       key={opt.id} 
                       onClick={() => onConfigChange({ ...config, scrollbarStyle: opt.id as ScrollbarStyleId })} 
-                      className={`text-left p-3 rounded-lg border transition-all ${
+                      className={`text-left rounded-lg border transition-all overflow-hidden ${
                         config.scrollbarStyle === opt.id 
                           ? 'bg-blue-600/20 border-blue-500 text-white ring-2 ring-blue-500/50' 
                           : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-500'
                       }`}
                     >
-                      <div className="font-bold text-sm mb-0.5">{opt.name}</div>
-                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                      {/* Scrollbar Preview */}
+                      <div className="h-20 bg-neutral-950 relative overflow-hidden">
+                        <div className="absolute right-0 top-0 bottom-0 w-3 flex items-center justify-center">
+                          <div className={`scrollbar-${opt.id} w-2 h-16 rounded-full`} style={{
+                            background: opt.id === 'native' ? '#666' : 
+                                      opt.id === 'minimal' ? '#444' :
+                                      opt.id === 'hidden' ? 'transparent' :
+                                      opt.id === 'nexus' ? '#8B5CF6' :
+                                      opt.id === 'glow' ? '#06b6d4' :
+                                      opt.id === 'gradient-sunset' ? 'linear-gradient(to bottom, #f97316, #ec4899)' :
+                                      opt.id === 'gradient-ocean' ? 'linear-gradient(to bottom, #0ea5e9, #6366f1)' :
+                                      opt.id === 'glass' ? 'rgba(255,255,255,0.1)' : '#666',
+                            boxShadow: opt.id === 'glow' ? '0 0 10px #06b6d4' : 'none',
+                            backdropFilter: opt.id.includes('glass') ? 'blur(10px)' : 'none'
+                          }}></div>
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <div className="font-bold text-sm mb-0.5">{opt.name}</div>
+                        <div className="text-[10px] opacity-60">{opt.description}</div>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -4147,7 +4166,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   {/* 1. INTERFACE - Global site settings */}
                   <div className="bg-neutral-900 border border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.3)] rounded-xl overflow-hidden">
                     <button onClick={() => setIsInterfaceModalOpen(true)} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
-                      <div className="flex items-center gap-3"><div className="p-1.5 bg-purple-900/30 text-purple-400 rounded"><Monitor size={16} /></div><span className="font-bold text-sm text-white">Interface</span></div>
+                      <div className="flex items-center gap-3"><div className="p-1.5 bg-purple-900/30 text-purple-400 rounded"><Monitor size={16} /></div><span className="font-bold text-sm text-white">Global Settings</span></div>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] text-neutral-500">{config.scrollbarStyle}</span>
                         <ChevronRight size={14} className="text-neutral-600" />
