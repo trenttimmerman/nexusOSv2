@@ -268,26 +268,30 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({
 }
 
 // 5. The Protocol (Cyberpunk/Brutalist)
-export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => {
+export const HeaderProtocol: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => {
+  const colors = useHeaderColors({ headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor });
   return (
-    <header className="sticky top-0 z-50 bg-yellow-400 border-b-4 border-black font-mono">
+    <header className="sticky top-0 z-50 border-b-4 font-mono" style={{ backgroundColor: colors.bgColor, borderColor: colors.outlineColor, ...colors.glowStyle }}>
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-black uppercase tracking-tighter" />
+          <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-black uppercase tracking-tighter" style={{ color: colors.textColor }} />
           <nav className="hidden md:flex gap-6">
             {(links || []).map(l => (
-              <a key={l.label} href={l.href} className="text-sm font-bold uppercase hover:underline decoration-2 underline-offset-4">{l.label}</a>
+              <a key={l.label} href={l.href} className="text-sm font-bold uppercase hover:underline decoration-2 underline-offset-4" style={{ color: colors.textColor }}>{l.label}</a>
             ))}
           </nav>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="hidden md:block px-2 py-1 bg-black text-yellow-400 text-xs font-bold">
+        <div className="flex items-center gap-4" style={{ color: colors.textColor }}>
+          <div className="hidden md:block px-2 py-1 text-xs font-bold" style={{ backgroundColor: colors.buttonBg, color: colors.buttonText }}>
             SYS.ONLINE
           </div>
-          <div onClick={onOpenCart} className="relative cursor-pointer border-2 border-black p-1 hover:bg-black hover:text-yellow-400 transition-colors">
+          <div onClick={onOpenCart} className="relative cursor-pointer border-2 p-1 hover:opacity-70 transition-opacity" style={{ borderColor: colors.outlineColor }}>
             <ShoppingBag size={20} />
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 text-[10px] font-bold w-5 h-5 flex items-center justify-center" style={{ backgroundColor: colors.buttonBg, color: colors.buttonText }}>
                 {cartCount}
               </span>
             )}
@@ -297,7 +301,10 @@ export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
     </header>
   );
 }// 6. The Horizon (Double Decker, Editorial)
-export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderHorizon: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="w-full sticky top-0 z-50">
     <div className="bg-neutral-900 text-white py-2 px-6 flex justify-between items-center text-xs font-medium tracking-wide">
       <div className="flex gap-4">
@@ -340,7 +347,10 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 );
 
 // 7. The Studio (Sidebar Navigation)
-export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderStudio: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 bg-neutral-50 border-r border-neutral-200 flex-col p-8 z-50">
     <div className="mb-12">
       <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight || 48} className="text-2xl font-black tracking-tighter uppercase leading-none" />
@@ -374,7 +384,10 @@ export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 8. The Terminal (Developer focused, command line)
-export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderTerminal: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="w-full bg-[#1e1e1e] text-[#d4d4d4] font-mono sticky top-0 z-50 border-b border-[#3c3c3c]">
     <div className="flex items-center h-10 px-4 bg-[#252526] text-xs border-b border-[#1e1e1e]">
        <div className="flex gap-2 mr-4">
@@ -411,7 +424,10 @@ export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
 );
 
 // 9. The Portfolio (Split Screen, Big Typography)
-export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderPortfolio: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="w-full bg-white sticky top-0 z-50 mix-blend-difference text-white">
      <div className="grid grid-cols-2 md:grid-cols-4 min-h-[5rem] border-b border-white/20">
         <div className="flex items-center px-6 py-2 border-r border-white/20">
@@ -436,7 +452,10 @@ export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, log
 );
 
 // 10. The Venture (Utility First, Search Dominant)
-export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderVenture: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="w-full bg-neutral-100 border-b border-neutral-200 sticky top-0 z-50">
     <div className="max-w-[1600px] mx-auto p-2">
        <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-2 flex items-center justify-between gap-4 min-h-[4rem]">
@@ -478,7 +497,10 @@ export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 );
 
 // 11. Metro (Tiles, Windows Phone Vibe)
-export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderMetro: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="w-full sticky top-0 z-50 bg-white shadow-sm">
     <div className="grid grid-cols-6 md:grid-cols-12 min-h-[4rem] divide-x divide-neutral-100 border-b border-neutral-100">
       <div className="col-span-2 md:col-span-3 flex items-center justify-center bg-blue-600 text-white font-bold text-xl tracking-tighter overflow-hidden py-2 px-4">
@@ -501,7 +523,10 @@ export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 12. Modul (Swiss Style, Grid)
-export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderModul: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="w-full border-b border-black sticky top-0 z-50 bg-white font-sans">
     <div className="flex min-h-[3.5rem]">
       <div className="w-48 border-r border-black flex items-center px-4 py-2 font-bold text-lg shrink-0">
@@ -526,7 +551,10 @@ export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 13. Luxe (Serif, Elegant, Centered)
-export const HeaderLuxe: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderLuxe: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="w-full bg-[#faf9f6] sticky top-0 z-50 border-b border-[#e5e5e5]">
     <div className="max-w-7xl mx-auto px-8">
        <div className="min-h-[6rem] py-4 flex flex-col items-center justify-center relative">
@@ -558,7 +586,10 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
 );
 
 // 14. Gullwing (Symmetrical Split)
-export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderGullwing: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="w-full bg-white sticky top-0 z-50 shadow-sm">
     <div className="max-w-7xl mx-auto min-h-[5rem] py-4 px-8 flex items-center justify-between">
        <nav className="flex-1 flex justify-end gap-8 pr-12">
@@ -587,7 +618,10 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
 );
 
 // 15. Pop (Neo-Brutalist, Soft)
-export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderPop: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="w-full bg-[#F3F4F6] sticky top-0 z-50 p-4">
      <div className="bg-white border-2 border-black rounded-xl min-h-[4rem] py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center px-4 justify-between">
         <div className="bg-[#FF90E8] border-2 border-black px-4 py-1 rounded-full font-black text-sm uppercase transform -rotate-2">
@@ -615,7 +649,10 @@ export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeigh
 );
 
 // 16. Stark (High Contrast, Black & White)
-export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderStark: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="w-full bg-black text-white sticky top-0 z-50">
      <div className="flex flex-col md:flex-row items-center justify-between p-6">
         <div className="mb-4 md:mb-0">
@@ -640,7 +677,10 @@ export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 17. Offset (Asymmetrical)
-export const HeaderOffset: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderOffset: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="w-full bg-white sticky top-0 z-50 pt-4 px-4 pb-0">
      <div className="flex justify-between items-start mb-4">
         <Logo storeName={`${storeName}.`} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-bold" />
@@ -664,7 +704,10 @@ export const HeaderOffset: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 18. Ticker (Stock Market Vibe)
-export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderTicker: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="w-full sticky top-0 z-50 bg-white">
      <div className="bg-blue-600 text-white text-xs font-mono py-1 overflow-hidden whitespace-nowrap">
         <div className="animate-marquee inline-block">
@@ -691,7 +734,10 @@ export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 19. Noir (Dark Mode, Glow)
-export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderNoir: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="w-full bg-[#050505] text-neutral-400 sticky top-0 z-50 border-b border-white/5 shadow-[0_0_15px_rgba(0,0,0,1)]">
      <div className="max-w-7xl mx-auto min-h-[5rem] py-4 px-6 flex items-center justify-between">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-white text-2xl font-light tracking-[0.2em] shadow-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" />
@@ -714,7 +760,10 @@ export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
 );
 
 // 20. Ghost (Interaction based)
-export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderGhost: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => (
   <header className="sticky top-0 left-0 right-0 z-[100] group hover:bg-white/90 hover:backdrop-blur-md transition-all duration-500 py-6 hover:py-4 px-8 flex justify-between items-center">
      <div className="mix-blend-difference text-white group-hover:text-black transition-colors duration-500">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-xl font-bold" />
@@ -740,7 +789,11 @@ export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 21. Pilot (SaaS, Clean, Corporate)
-export const HeaderPilot: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => {
+export const HeaderPilot: React.FC<HeaderProps> = ({ 
+  storeName, logoUrl, logoHeight, links, cartCount, onOpenCart,
+  headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor
+}) => {
+  const colors = useHeaderColors({ headerBgColor, headerTextColor, headerOutlineColor, headerGlowEffect, headerButtonBgColor, headerButtonTextColor });
     return (
         <header className="bg-white shadow-md sticky top-0 z-50 w-full">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
