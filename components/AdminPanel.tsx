@@ -4320,7 +4320,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             )}
 
             {/* RIGHT COLUMN: LIVE CANVAS */}
-            <div className={`flex-1 bg-[#111] flex flex-col relative transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${isAnyModalOpen ? 'pl-96' : ''}`}>
+            <div className="flex-1 bg-[#111] flex flex-col relative overflow-hidden">
               <div className="h-12 border-b border-neutral-800 bg-neutral-900 flex items-center justify-between px-6 shrink-0 z-10">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
