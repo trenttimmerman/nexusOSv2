@@ -2185,8 +2185,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   {HEADER_OPTIONS.map((opt) => (
                     <div key={opt.id} className="relative group">
                       <button 
-                        onClick={() => onConfigChange({ ...config, headerStyle: opt.id as HeaderStyleId })} 
-                        onMouseEnter={() => setPreviewingHeaderId(opt.id as HeaderStyleId)}
+                        onClick={() => {
+                          onConfigChange({ ...config, headerStyle: opt.id as HeaderStyleId });
+                          setPreviewingHeaderId(opt.id as HeaderStyleId);
+                        }}
                         className={`w-full text-left rounded-lg border transition-all p-4 ${
                           config.headerStyle === opt.id 
                             ? 'bg-blue-600/20 border-blue-500 text-white ring-2 ring-blue-500/50' 
@@ -2196,7 +2198,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <div className="font-bold text-sm mb-1">{opt.name}</div>
                         <div className="text-[10px] opacity-60 leading-tight">{opt.description}</div>
                         <div className="mt-2 text-[9px] font-bold text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                          Hover to preview →
+                          Click to preview →
                         </div>
                       </button>
                     </div>
