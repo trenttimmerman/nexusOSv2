@@ -450,7 +450,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Platform Admin State
   const [tenants, setTenants] = useState<any[]>([]);
   const [isLoadingTenants, setIsLoadingTenants] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isCreateTenantOpen, setIsCreateTenantOpen] = useState(false);
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
@@ -546,6 +546,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       fetchTenants();
     }
   }, [activeTab, userRole]);
+
+  // Collapse sidebar when entering Design tab
+  useEffect(() => {
+    if (activeTab === AdminTab.DESIGN) {
+      setIsSidebarCollapsed(true);
+    }
+  }, [activeTab]);
 
   const fetchTenants = async () => {
     setIsLoadingTenants(true);
