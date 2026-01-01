@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, Layout, Image as ImageIcon, Type, AlignLeft, AlignCenter, AlignRight, Palette, Plus, Trash2, ChevronRight, ArrowLeft, Check, Upload, X, Bold, Italic, Link as LinkIcon, List, Loader2, Sparkles, Wand2, Info, ChevronDown, GripVertical, Mail, Phone, MessageSquare, User, FileText, Hash, Calendar, CheckSquare, ToggleLeft, Grid, Columns, Filter, SortAsc, Lightbulb, ExternalLink, Home, ShoppingBag, Users, HelpCircle, Zap, AlertCircle } from 'lucide-react';
 import { UniversalSectionData } from '../lib/smartMapper';
-import { useData } from '../context/DataContext';
 import { supabase } from '../lib/supabaseClient';
 import { GoogleGenAI } from '@google/genai';
 
@@ -37,25 +36,6 @@ const ALL_OPTIONS: Record<string, any[]> = {
   'system-collapsible': COLLAPSIBLE_OPTIONS,
   'system-logo-list': LOGO_LIST_OPTIONS,
   'system-promo': PROMO_BANNER_OPTIONS,
-};
-
-// Hero variant field visibility - defines which fields appear for each hero style
-const HERO_VARIANT_FIELDS: Record<string, string[]> = {
-  impact: ['heading', 'badge', 'buttonText', 'buttonLink', 'secondaryButtonText', 'secondaryButtonLink', 'image', 'overlayOpacity'],
-  split: ['heading', 'subheading', 'buttonText', 'buttonLink', 'image', 'overlayOpacity'],
-  kinetik: ['heading', 'buttonText', 'buttonLink', 'marqueeText', 'image', 'overlayOpacity'],
-  grid: ['heading', 'subheading', 'buttonText', 'buttonLink', 'secondaryButtonText', 'secondaryButtonLink', 'imageBadge', 'featureCardTitle', 'featureCardSubtitle', 'image', 'sideImage', 'overlayOpacity'],
-  typographic: ['heading', 'subheading', 'topBadge', 'link1Label', 'link1Url', 'link1Image', 'link2Label', 'link2Url', 'link2Image', 'link3Label', 'link3Url', 'link3Image'],
-};
-
-// Product grid variant field visibility
-const GRID_VARIANT_FIELDS: Record<string, string[]> = {
-  classic: ['heading', 'subheading', 'productSource', 'productCategory', 'productCollection', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
-  industrial: ['heading', 'subheading', 'productSource', 'productCategory', 'productCollection', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'showStock', 'showSku', 'buttonText', 'buttonLink'],
-  focus: ['heading', 'subheading', 'productSource', 'productCategory', 'productCollection', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
-  hype: ['heading', 'subheading', 'productSource', 'productCategory', 'productCollection', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'showBadges', 'buttonText', 'buttonLink'],
-  magazine: ['heading', 'subheading', 'productSource', 'productCategory', 'productCollection', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
-  glass: ['heading', 'subheading', 'productSource', 'productCategory', 'productCollection', 'productTag', 'selectedProducts', 'columns', 'limit', 'sortBy', 'showPrices', 'showQuickAdd', 'buttonText', 'buttonLink'],
 };
 
 // ============== SECTION-SPECIFIC FIELD CONFIGURATIONS ==============
@@ -94,99 +74,27 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
       { id: 'extras', label: 'Extras', icon: <Zap size={12} /> },
     ],
     fields: [
-      // === CONTENT GROUP ===
       { key: 'heading', label: 'Headline', type: 'text', group: 'content', maxLength: 60, showAI: true, 
         placeholder: 'Your main headline (30-60 chars)', 
         tip: 'Start with action verbs, focus on benefits. Keep under 60 characters.',
-        examples: ['Transform Your Morning Routine', 'Premium Quality, Everyday Prices', 'Join 10,000+ Happy Customers'],
-        defaultValue: 'REDEFINE REALITY' },
+        examples: ['Transform Your Morning Routine', 'Premium Quality, Everyday Prices', 'Join 10,000+ Happy Customers'] },
       { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', maxLength: 160, showAI: true,
         placeholder: 'Supporting text that expands on your headline',
-        tip: 'Best at 120-160 characters. Explain the value proposition.',
-        defaultValue: 'Elevating the standard of modern living through curated design.' },
-      { key: 'badge', label: 'Badge/Label', type: 'text', group: 'content', showAI: true,
-        placeholder: 'e.g., ✨ New Collection, 🔥 Limited Time',
-        examples: ['✨ New Release', '🔥 Best Sellers Inside', '👗 New Season Arrivals'],
-        defaultValue: 'New Collection 2024' },
-      { key: 'topBadge', label: 'Top Badge', type: 'text', group: 'content', showAI: true,
-        placeholder: 'Badge text above headline',
-        tip: 'Small text badge that appears above your headline.',
-        defaultValue: 'Premium Collection' },
-      { key: 'imageBadge', label: 'Image Badge', type: 'text', group: 'content', showAI: true,
-        placeholder: 'e.g., Best Seller, New Arrival',
-        tip: 'Badge that overlays on the main image.',
-        defaultValue: 'Featured' },
-      { key: 'featureCardTitle', label: 'Feature Card Title', type: 'text', group: 'content', showAI: true,
-        placeholder: 'e.g., Free Shipping',
-        tip: 'Title for the promotional feature card.',
-        defaultValue: 'Free Shipping' },
-      { key: 'featureCardSubtitle', label: 'Feature Card Subtitle', type: 'text', group: 'content', showAI: true,
-        placeholder: 'e.g., On orders over $50',
-        tip: 'Subtitle text for the feature card.',
-        defaultValue: 'On orders over $50' },
-      { key: 'marqueeText', label: 'Scrolling Marquee', type: 'text', group: 'content',
-        placeholder: 'Text that scrolls across the section',
-        defaultValue: 'DISCOVER THE DIFFERENCE • ELEVATE YOUR STYLE •' },
-      
-      // === BUTTONS GROUP ===
-      { key: 'buttonText', label: 'Primary Button', type: 'text', group: 'buttons', showAI: true,
-        placeholder: 'e.g., Shop Now, Get Started',
-        examples: ['Shop Now', 'Get Started', 'Learn More', 'Browse Collection'],
-        defaultValue: 'Shop Now' },
-      { key: 'buttonLink', label: 'Primary Button Link', type: 'linkSelector', group: 'buttons',
-        placeholder: '/shop or https://...',
-        defaultValue: '/shop' },
-      { key: 'secondaryButtonText', label: 'Secondary Button', type: 'text', group: 'buttons',
-        placeholder: 'e.g., Learn More (optional)',
-        defaultValue: 'Learn More' },
-      { key: 'secondaryButtonLink', label: 'Secondary Button Link', type: 'linkSelector', group: 'buttons',
-        placeholder: '/about or https://...',
-        defaultValue: '/about' },
-      // Typographic hero links
-      { key: 'link1Label', label: 'Category 1 Label', type: 'text', group: 'buttons',
-        placeholder: 'e.g., New Arrivals',
-        tip: 'First category link label.',
-        defaultValue: 'New Arrivals' },
-      { key: 'link1Url', label: 'Category 1 Link', type: 'linkSelector', group: 'buttons',
-        placeholder: '/new-arrivals',
-        defaultValue: '/collections/new' },
-      { key: 'link2Label', label: 'Category 2 Label', type: 'text', group: 'buttons',
-        placeholder: 'e.g., Best Sellers',
-        defaultValue: 'Best Sellers' },
-      { key: 'link2Url', label: 'Category 2 Link', type: 'linkSelector', group: 'buttons',
-        placeholder: '/best-sellers',
-        defaultValue: '/collections/best-sellers' },
-      { key: 'link3Label', label: 'Category 3 Label', type: 'text', group: 'buttons',
-        placeholder: 'e.g., Sale Items',
-        defaultValue: 'Sale Items' },
-      { key: 'link3Url', label: 'Category 3 Link', type: 'linkSelector', group: 'buttons',
-        placeholder: '/sale',
-        defaultValue: '/collections/sale' },
-      
-      // === MEDIA GROUP ===
+        tip: 'Best at 120-160 characters. Explain the value proposition.' },
       { key: 'image', label: 'Background Image', type: 'image', group: 'media',
         tip: 'Recommended: 1920x1080px, under 500KB. High contrast works best.' },
-      { key: 'sideImage', label: 'Side Image', type: 'image', group: 'media',
-        tip: 'Secondary image for grid-style heroes.' },
-      { key: 'link1Image', label: 'Category 1 Image', type: 'image', group: 'media',
-        tip: 'Image for the first category link.' },
-      { key: 'link2Image', label: 'Category 2 Image', type: 'image', group: 'media',
-        tip: 'Image for the second category link.' },
-      { key: 'link3Image', label: 'Category 3 Image', type: 'image', group: 'media',
-        tip: 'Image for the third category link.' },
-      { key: 'overlayOpacity', label: 'Image Darkness', type: 'select', group: 'media',
-        tip: 'How dark the overlay on the background image should be.',
-        options: [
-          { value: '0', label: 'None (0%)' },
-          { value: '0.1', label: 'Very Light (10%)' },
-          { value: '0.2', label: 'Light (20%)' },
-          { value: '0.3', label: 'Medium Light (30%)' },
-          { value: '0.4', label: 'Medium (40%)' },
-          { value: '0.5', label: 'Medium Dark (50%)' },
-          { value: '0.6', label: 'Dark (60%)' },
-          { value: '0.7', label: 'Very Dark (70%)' },
-        ],
-        defaultValue: '0.4' },
+      { key: 'buttonText', label: 'Primary Button', type: 'text', group: 'buttons', showAI: true,
+        placeholder: 'e.g., Shop Now, Get Started',
+        examples: ['Shop Now', 'Get Started', 'Learn More', 'Browse Collection'] },
+      { key: 'buttonLink', label: 'Button Link', type: 'linkSelector', group: 'buttons',
+        placeholder: '/shop or https://...' },
+      { key: 'secondaryButtonText', label: 'Secondary Button', type: 'text', group: 'buttons',
+        placeholder: 'e.g., Learn More (optional)' },
+      { key: 'badge', label: 'Badge/Label', type: 'text', group: 'extras', showAI: true,
+        placeholder: 'e.g., ✨ New Collection, 🔥 Limited Time',
+        examples: ['✨ New Release', '🔥 Best Sellers Inside', '👗 New Season Arrivals'] },
+      { key: 'marqueeText', label: 'Scrolling Marquee', type: 'text', group: 'extras',
+        placeholder: 'Text that scrolls across the section' },
     ]
   },
 
@@ -201,11 +109,9 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     fields: [
       { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., Get in Touch, Contact Us',
-        examples: ['Get in Touch', 'Let\'s Talk', 'How Can We Help?', 'Send Us a Message'],
-        defaultValue: 'Get in Touch' },
+        examples: ['Get in Touch', 'Let\'s Talk', 'How Can We Help?', 'Send Us a Message'] },
       { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
-        placeholder: 'Brief description of what visitors can expect',
-        defaultValue: 'Have a question or want to work together? Drop us a message and we\'ll get back to you within 24 hours.' },
+        placeholder: 'Brief description of what visitors can expect' },
       { key: 'formFields', label: 'Form Fields', type: 'formBuilder', group: 'form',
         tip: 'Add, remove, and configure your form fields' },
       { key: 'submitButtonText', label: 'Submit Button Text', type: 'text', group: 'form',
@@ -217,11 +123,9 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
         placeholder: 'support@yourdomain.com',
         tip: 'Email address where form submissions will be sent' },
       { key: 'contactEmail', label: 'Display Email', type: 'text', group: 'info',
-        placeholder: 'hello@yourdomain.com',
-        defaultValue: 'hello@yourstore.com' },
+        placeholder: 'hello@yourdomain.com' },
       { key: 'contactPhone', label: 'Display Phone', type: 'text', group: 'info',
-        placeholder: '+1 (555) 123-4567',
-        defaultValue: '+1 (555) 123-4567' },
+        placeholder: '+1 (555) 123-4567' },
       { key: 'contactAddress', label: 'Display Address', type: 'richtext', group: 'info',
         placeholder: '123 Main St, City, State 12345' },
     ]
@@ -238,11 +142,9 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     fields: [
       { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., Our Products, Featured Collection',
-        examples: ['Featured Products', 'New Arrivals', 'Best Sellers', 'Shop the Collection'],
-        defaultValue: 'Featured Products' },
+        examples: ['Featured Products', 'New Arrivals', 'Best Sellers', 'Shop the Collection'] },
       { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
-        placeholder: 'Brief description of the products',
-        defaultValue: 'Discover our handpicked selection of premium products.' },
+        placeholder: 'Brief description of the products' },
       { key: 'productDisplay', label: 'Display Mode', type: 'select', group: 'products',
         options: [
           { value: 'all', label: 'All Products' },
@@ -294,10 +196,8 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     fields: [
       { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., Latest Articles, From Our Blog',
-        examples: ['Latest Articles', 'From the Blog', 'Stories & Updates', 'Read More'],
-        defaultValue: 'From the Blog' },
-      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
-        defaultValue: 'Insights, stories, and updates from our team.' },
+        examples: ['Latest Articles', 'From the Blog', 'Stories & Updates', 'Read More'] },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
       { key: 'postsToShow', label: 'Posts to Show', type: 'number', group: 'posts',
         placeholder: '6', defaultValue: 6 },
       { key: 'postCategory', label: 'Category', type: 'select', group: 'posts',
@@ -324,10 +224,8 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     ],
     fields: [
       { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
-        placeholder: 'e.g., Our Gallery, Photo Collection',
-        defaultValue: 'Gallery' },
-      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
-        defaultValue: 'A collection of our favorite moments and creations.' },
+        placeholder: 'e.g., Our Gallery, Photo Collection' },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
       { key: 'gridColumns', label: 'Grid Columns', type: 'select', group: 'layout',
         options: [
           { value: '2', label: '2 Columns' },
@@ -357,10 +255,8 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
       { id: 'video', label: 'Video Settings', icon: <ImageIcon size={12} /> },
     ],
     fields: [
-      { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
-        defaultValue: 'Watch the Story' },
-      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
-        defaultValue: 'See what makes us different.' },
+      { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true },
+      { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true },
       { key: 'videoUrl', label: 'Video URL', type: 'url', group: 'video',
         placeholder: 'https://youtube.com/watch?v=... or https://vimeo.com/...',
         tip: 'Paste a YouTube or Vimeo URL' },
@@ -383,19 +279,16 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     fields: [
       { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., Join Our Newsletter',
-        examples: ['Join Our Newsletter', 'Stay in the Loop', 'Get 10% Off', 'Subscribe for Updates'],
-        defaultValue: 'Join Our Newsletter' },
+        examples: ['Join Our Newsletter', 'Stay in the Loop', 'Get 10% Off', 'Subscribe for Updates'] },
       { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
-        placeholder: 'Brief description of what subscribers will receive',
-        defaultValue: 'Subscribe to get special offers, free giveaways, and updates on new arrivals.' },
+        placeholder: 'Brief description of what subscribers will receive' },
       { key: 'buttonText', label: 'Button Text', type: 'text', group: 'form',
         placeholder: 'Subscribe', defaultValue: 'Subscribe' },
       { key: 'successMessage', label: 'Success Message', type: 'text', group: 'form', showAI: true,
         placeholder: 'Thanks for subscribing!', defaultValue: 'Thanks for subscribing!' },
       { key: 'incentiveText', label: 'Incentive Text', type: 'text', group: 'content',
         placeholder: 'e.g., Get 10% off your first order',
-        tip: 'Optional incentive to encourage signups',
-        defaultValue: 'Get 10% off your first order' },
+        tip: 'Optional incentive to encourage signups' },
     ]
   },
 
@@ -407,12 +300,10 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     ],
     fields: [
       { key: 'heading', label: 'Heading', type: 'text', group: 'content', showAI: true,
-        placeholder: 'Section heading',
-        defaultValue: 'About Us' },
+        placeholder: 'Section heading' },
       { key: 'content', label: 'Content', type: 'richtext', group: 'content', showAI: true,
         placeholder: 'Your main content text...',
-        tip: 'Use formatting tools to style your text',
-        defaultValue: 'Add your content here. Use the rich text editor to format your text with headings, lists, and links.' },
+        tip: 'Use formatting tools to style your text' },
     ]
   },
 
@@ -500,62 +391,15 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
     description: 'Display products in a customizable grid layout',
     groups: [
       { id: 'content', label: 'Content', icon: <Type size={12} /> },
-      { id: 'products', label: 'Products', icon: <ShoppingBag size={12} /> },
-      { id: 'settings', label: 'Layout', icon: <Grid size={12} /> },
-      { id: 'style', label: 'Style', icon: <Palette size={12} /> },
+      { id: 'settings', label: 'Grid Settings', icon: <Grid size={12} /> },
+      { id: 'style', label: 'Card Style', icon: <Palette size={12} /> },
     ],
     fields: [
-      // === CONTENT GROUP ===
       { key: 'heading', label: 'Section Heading', type: 'text', group: 'content', showAI: true,
         placeholder: 'e.g., Featured Products, Best Sellers',
         examples: ['Featured Products', 'New Arrivals', 'Best Sellers', 'Shop the Collection'] },
       { key: 'subheading', label: 'Subheading', type: 'richtext', group: 'content', showAI: true,
         placeholder: 'Optional description for the grid section' },
-      { key: 'buttonText', label: 'View All Button', type: 'text', group: 'content',
-        placeholder: 'View All Products' },
-      { key: 'buttonLink', label: 'View All Link', type: 'linkSelector', group: 'content',
-        placeholder: '/shop' },
-      
-      // === PRODUCTS GROUP ===
-      { key: 'productSource', label: 'Product Source', type: 'select', group: 'products',
-        tip: 'Choose which products to display in this grid',
-        options: [
-          { value: 'all', label: 'All Products' },
-          { value: 'category', label: 'By Category' },
-          { value: 'collection', label: 'By Collection' },
-          { value: 'tag', label: 'By Tag (Featured, Sale, etc.)' },
-          { value: 'manual', label: 'Manual Selection' },
-        ],
-        defaultValue: 'all' },
-      { key: 'productCategory', label: 'Category', type: 'select', group: 'products',
-        tip: 'Filter products by category',
-        options: [{ value: '', label: 'Select a category...' }] },
-      { key: 'productCollection', label: 'Collection', type: 'select', group: 'products',
-        tip: 'Show products from a specific collection',
-        options: [{ value: '', label: 'Select a collection...' }] },
-      { key: 'productTag', label: 'Tag', type: 'select', group: 'products',
-        tip: 'Filter products by tag',
-        options: [
-          { value: '', label: 'Select a tag...' },
-          { value: 'featured', label: 'Featured' },
-          { value: 'new', label: 'New Arrival' },
-          { value: 'sale', label: 'On Sale' },
-          { value: 'bestseller', label: 'Best Seller' },
-        ] },
-      { key: 'selectedProducts', label: 'Select Products', type: 'productSelector', group: 'products',
-        tip: 'Manually choose which products to display' },
-      { key: 'sortBy', label: 'Sort By', type: 'select', group: 'products',
-        options: [
-          { value: 'newest', label: 'Newest First' },
-          { value: 'oldest', label: 'Oldest First' },
-          { value: 'price-asc', label: 'Price: Low to High' },
-          { value: 'price-desc', label: 'Price: High to Low' },
-          { value: 'name-asc', label: 'Name: A to Z' },
-          { value: 'name-desc', label: 'Name: Z to A' },
-        ],
-        defaultValue: 'newest' },
-      
-      // === SETTINGS/LAYOUT GROUP ===
       { key: 'columns', label: 'Columns', type: 'select', group: 'settings',
         options: [
           { value: '2', label: '2 Columns' },
@@ -564,20 +408,16 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
           { value: '5', label: '5 Columns' },
         ],
         defaultValue: '4' },
-      { key: 'limit', label: 'Max Products', type: 'number', group: 'settings',
+      { key: 'limit', label: 'Products to Show', type: 'number', group: 'settings',
         placeholder: '8', defaultValue: 8,
         tip: 'Maximum number of products to display' },
-      
-      // === STYLE GROUP ===
       { key: 'showPrices', label: 'Show Prices', type: 'toggle', group: 'style', defaultValue: true },
       { key: 'showQuickAdd', label: 'Show Quick Add', type: 'toggle', group: 'style', defaultValue: true,
         tip: 'Show add to cart button on hover' },
-      { key: 'showStock', label: 'Show Stock Count', type: 'toggle', group: 'style', defaultValue: false,
-        tip: 'Display inventory count (Industrial style)' },
-      { key: 'showSku', label: 'Show SKU', type: 'toggle', group: 'style', defaultValue: false,
-        tip: 'Display product SKU (Industrial style)' },
-      { key: 'showBadges', label: 'Show Badges', type: 'toggle', group: 'style', defaultValue: true,
-        tip: 'Display New Drop, Low Stock badges (Hype style)' },
+      { key: 'buttonText', label: 'View All Button', type: 'text', group: 'content',
+        placeholder: 'View All Products' },
+      { key: 'buttonLink', label: 'View All Link', type: 'linkSelector', group: 'content',
+        placeholder: '/shop' },
     ]
   },
 
@@ -647,7 +487,6 @@ interface UniversalEditorProps {
   onUpdate: (data: UniversalSectionData) => void;
   onSwitchLayout: (newVariant: string) => void;
   pages?: { id: string; name: string; slug: string }[];
-  products?: { id: string; name: string; image: string; price: number; category: string; tags?: string[] }[];
 }
 
 // Form field types for the form builder
@@ -685,17 +524,12 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   activeField,
   onUpdate,
   onSwitchLayout,
-  pages = [],
-  products = []
+  pages = []
 }) => {
-  // Get categories and collections from context (avoids prop drilling TDZ issues)
-  const { categories, collections } = useData();
-  
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [showLayoutPicker, setShowLayoutPicker] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState<string | null>(null);
-  const [productSearchQuery, setProductSearchQuery] = useState('');
   
   // AI Content Generation (simulated for now - would connect to OpenAI/Claude in production)
   const generateAIContent = async (field: string, context?: string) => {
@@ -786,12 +620,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   const currentOption = options.find(o => o.id === variant);
 
   const updateField = (key: string, value: any) => {
-    // Convert overlayOpacity from string to number for hero sections
-    let processedValue = value;
-    if (key === 'overlayOpacity' && typeof value === 'string') {
-      processedValue = parseFloat(value);
-    }
-    onUpdate({ ...data, [key]: processedValue });
+    onUpdate({ ...data, [key]: value });
   };
 
   const updateStyle = (key: string, value: any) => {
@@ -864,7 +693,6 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   const [isSearchingStock, setIsSearchingStock] = useState(false);
   const [stockResults, setStockResults] = useState<string[]>([]);
   const [showImageTools, setShowImageTools] = useState<string | null>(null);
-  const [openStyleEditors, setOpenStyleEditors] = useState<Set<string>>(new Set());
 
   // Stock photo search (using Unsplash API - simulated for now)
   const searchStockPhotos = async (query: string) => {
@@ -959,51 +787,6 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     ];
     const randomAlt = altTexts[Math.floor(Math.random() * altTexts.length)];
     updateField(`${fieldKey}Alt`, randomAlt);
-  };
-
-  // Simple text input with local state to prevent focus loss
-  const DebouncedInput = ({ value, onChange, placeholder, className }: {
-    value: string;
-    onChange: (val: string) => void;
-    placeholder?: string;
-    className?: string;
-  }) => {
-    const [localValue, setLocalValue] = useState(value || '');
-    const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
-
-    React.useEffect(() => {
-      setLocalValue(value || '');
-    }, [value]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = e.target.value;
-      setLocalValue(newValue);
-      
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-      debounceRef.current = setTimeout(() => {
-        onChange(newValue);
-      }, 300);
-    };
-
-    React.useEffect(() => {
-      return () => {
-        if (debounceRef.current) {
-          clearTimeout(debounceRef.current);
-        }
-      };
-    }, []);
-
-    return (
-      <input 
-        type="text" 
-        value={localValue}
-        onChange={handleChange}
-        className={className}
-        placeholder={placeholder}
-      />
-    );
   };
 
   // Enhanced Image Picker with preview, dimensions, alt text, stock photos, AI tools
@@ -1176,9 +959,10 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
           {/* Alt text input with AI generation */}
           <div className="p-2 border-t border-neutral-800">
             <div className="flex gap-2">
-              <DebouncedInput 
+              <input 
+                type="text" 
                 value={data[`${fieldKey}Alt`] || ''}
-                onChange={(val) => updateField(`${fieldKey}Alt`, val)}
+                onChange={(e) => updateField(`${fieldKey}Alt`, e.target.value)}
                 className="flex-1 p-2 bg-neutral-900 text-xs text-neutral-400 rounded border border-neutral-800 focus:outline-none focus:border-blue-500"
                 placeholder="Alt text for accessibility"
               />
@@ -1197,150 +981,9 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
   );
   };
 
-  // Text Style Editor - collapsible panel for font size and color
-  interface TextStyle {
-    fontSize?: string;
-    color?: string;
-    fontWeight?: string;
-    textAlign?: 'left' | 'center' | 'right';
-  }
-  
-  const TextStyleEditor = ({ style, onChange, isOpen, onToggle }: {
-    style?: TextStyle;
-    onChange: (style: TextStyle) => void;
-    isOpen: boolean;
-    onToggle: () => void;
-  }) => {
-    const currentStyle = style || {};
-    
-    const fontSizes = [
-      { value: '0.75rem', label: 'XS' },
-      { value: '0.875rem', label: 'SM' },
-      { value: '1rem', label: 'Base' },
-      { value: '1.125rem', label: 'LG' },
-      { value: '1.25rem', label: 'XL' },
-      { value: '1.5rem', label: '2XL' },
-      { value: '1.875rem', label: '3XL' },
-      { value: '2.25rem', label: '4XL' },
-      { value: '3rem', label: '5XL' },
-      { value: '3.75rem', label: '6XL' },
-      { value: '4.5rem', label: '7XL' },
-      { value: '6rem', label: '8XL' },
-    ];
-
-    const fontWeights = [
-      { value: '300', label: 'Light' },
-      { value: '400', label: 'Normal' },
-      { value: '500', label: 'Medium' },
-      { value: '600', label: 'Semibold' },
-      { value: '700', label: 'Bold' },
-      { value: '800', label: 'Extra Bold' },
-    ];
-
-    return (
-      <div className="mt-2">
-        <button
-          onClick={onToggle}
-          className="flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors"
-        >
-          <Palette size={10} />
-          <span>Style Options</span>
-          <ChevronDown size={10} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        </button>
-        
-        {isOpen && (
-          <div className="mt-2 p-3 bg-neutral-900 rounded-lg border border-neutral-800 space-y-3 animate-in slide-in-from-top-2 duration-200">
-            {/* Font Size */}
-            <div className="space-y-1.5">
-              <label className="text-[10px] text-neutral-500 font-medium">Font Size</label>
-              <select
-                value={currentStyle.fontSize || ''}
-                onChange={(e) => onChange({ ...currentStyle, fontSize: e.target.value || undefined })}
-                className="w-full bg-neutral-800 border border-neutral-700 rounded px-2 py-1.5 text-xs text-white focus:border-blue-500 outline-none cursor-pointer"
-              >
-                <option value="">Default</option>
-                {fontSizes.map(size => (
-                  <option key={size.value} value={size.value}>{size.label} ({size.value})</option>
-                ))}
-              </select>
-            </div>
-            
-            {/* Font Weight */}
-            <div className="space-y-1.5">
-              <label className="text-[10px] text-neutral-500 font-medium">Font Weight</label>
-              <select
-                value={currentStyle.fontWeight || ''}
-                onChange={(e) => onChange({ ...currentStyle, fontWeight: e.target.value || undefined })}
-                className="w-full bg-neutral-800 border border-neutral-700 rounded px-2 py-1.5 text-xs text-white focus:border-blue-500 outline-none cursor-pointer"
-              >
-                <option value="">Default</option>
-                {fontWeights.map(weight => (
-                  <option key={weight.value} value={weight.value}>{weight.label}</option>
-                ))}
-              </select>
-            </div>
-            
-            {/* Text Color */}
-            <div className="space-y-1.5">
-              <label className="text-[10px] text-neutral-500 font-medium">Text Color</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={currentStyle.color || '#ffffff'}
-                  onChange={(e) => onChange({ ...currentStyle, color: e.target.value })}
-                  className="w-8 h-8 rounded cursor-pointer border border-neutral-700 bg-transparent p-0"
-                />
-                <input
-                  type="text"
-                  value={currentStyle.color || ''}
-                  onChange={(e) => onChange({ ...currentStyle, color: e.target.value || undefined })}
-                  className="flex-1 px-2 py-1.5 bg-neutral-800 border border-neutral-700 rounded text-xs text-white focus:border-blue-500 outline-none font-mono"
-                  placeholder="#ffffff or inherit"
-                />
-                {currentStyle.color && (
-                  <button
-                    onClick={() => onChange({ ...currentStyle, color: undefined })}
-                    className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-700 rounded transition-colors"
-                    title="Reset to default"
-                  >
-                    <X size={12} />
-                  </button>
-                )}
-              </div>
-            </div>
-            
-            {/* Text Alignment */}
-            <div className="space-y-1.5">
-              <label className="text-[10px] text-neutral-500 font-medium">Alignment</label>
-              <div className="flex gap-1">
-                {[
-                  { value: 'left', icon: <AlignLeft size={14} /> },
-                  { value: 'center', icon: <AlignCenter size={14} /> },
-                  { value: 'right', icon: <AlignRight size={14} /> },
-                ].map(align => (
-                  <button
-                    key={align.value}
-                    onClick={() => onChange({ ...currentStyle, textAlign: align.value as 'left' | 'center' | 'right' })}
-                    className={`flex-1 p-2 rounded border transition-colors ${
-                      currentStyle.textAlign === align.value
-                        ? 'bg-blue-500/20 border-blue-500 text-blue-400'
-                        : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-white hover:border-neutral-600'
-                    }`}
-                  >
-                    {align.icon}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   // Enhanced Rich Text with working formatting
   // Uses local state + debounce to prevent focus loss
-  const RichText = ({ id, label, value, onChange, rows = 3, tip, maxLength, showAI, fieldKey, style, onStyleChange, showStyleEditor = false }: { 
+  const RichText = ({ id, label, value, onChange, rows = 3, tip, maxLength, showAI, fieldKey }: { 
     id?: string, 
     label: string, 
     value: string, 
@@ -1349,10 +992,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     tip?: string,
     maxLength?: number,
     showAI?: boolean,
-    fieldKey?: string,
-    style?: { fontSize?: string; color?: string; fontWeight?: string; textAlign?: 'left' | 'center' | 'right' },
-    onStyleChange?: (style: { fontSize?: string; color?: string; fontWeight?: string; textAlign?: 'left' | 'center' | 'right' }) => void,
-    showStyleEditor?: boolean
+    fieldKey?: string
   }) => {
     const [localValue, setLocalValue] = useState(value || '');
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -1479,7 +1119,6 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
           onChange={(e) => handleChange(e.target.value)}
           onBlur={() => onChange(localValue)}
           className="w-full p-3 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-neutral-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none resize-none transition-all placeholder:text-neutral-700"
-          style={style ? { color: style.color } : undefined}
           rows={rows}
           maxLength={maxLength}
           placeholder={`Enter ${label.toLowerCase()}...`}
@@ -1489,33 +1128,13 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
             {localValue?.length || 0}/{maxLength} characters
           </div>
         )}
-        {/* Style Editor */}
-        {showStyleEditor && onStyleChange && (
-          <TextStyleEditor
-            style={style}
-            onChange={onStyleChange}
-            isOpen={fieldKey ? openStyleEditors.has(fieldKey) : false}
-            onToggle={() => {
-              if (!fieldKey) return;
-              setOpenStyleEditors(prev => {
-                const newSet = new Set(prev);
-                if (newSet.has(fieldKey)) {
-                  newSet.delete(fieldKey);
-                } else {
-                  newSet.add(fieldKey);
-                }
-                return newSet;
-              });
-            }}
-          />
-        )}
       </div>
     );
   };
 
   // Enhanced Input with tips, examples, and character count
   // Uses local state to prevent focus loss on every keystroke
-  const Input = ({ label, value, onChange, id, fieldKey, showAI = false, maxLength, placeholder, tip, examples, style, onStyleChange, showStyleEditor = false }: { 
+  const Input = ({ label, value, onChange, id, fieldKey, showAI = false, maxLength, placeholder, tip, examples }: { 
     label: string, 
     value: string, 
     onChange: (val: string) => void, 
@@ -1525,10 +1144,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     maxLength?: number,
     placeholder?: string,
     tip?: string,
-    examples?: string[],
-    style?: { fontSize?: string; color?: string; fontWeight?: string; textAlign?: 'left' | 'center' | 'right' },
-    onStyleChange?: (style: { fontSize?: string; color?: string; fontWeight?: string; textAlign?: 'left' | 'center' | 'right' }) => void,
-    showStyleEditor?: boolean
+    examples?: string[]
   }) => {
     const [localValue, setLocalValue] = useState(value || '');
     const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -1558,20 +1174,6 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         }
       };
     }, []);
-
-    const isStyleEditorOpen = fieldKey ? openStyleEditors.has(fieldKey) : false;
-    const toggleStyleEditor = () => {
-      if (!fieldKey) return;
-      setOpenStyleEditors(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(fieldKey)) {
-          newSet.delete(fieldKey);
-        } else {
-          newSet.add(fieldKey);
-        }
-        return newSet;
-      });
-    };
     
     return (
     <div className="space-y-2">
@@ -1614,7 +1216,6 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         onBlur={() => onChange(localValue)} // Ensure final value is synced
         maxLength={maxLength}
         className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-neutral-700"
-        style={style ? { color: style.color } : undefined}
         placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
       />
       {/* Examples dropdown */}
@@ -1640,15 +1241,6 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
         <div className={`text-[10px] text-right ${(localValue?.length || 0) > maxLength * 0.9 ? 'text-yellow-500' : 'text-neutral-600'}`}>
           {localValue?.length || 0}/{maxLength}
         </div>
-      )}
-      {/* Style Editor */}
-      {showStyleEditor && onStyleChange && (
-        <TextStyleEditor
-          style={style}
-          onChange={onStyleChange}
-          isOpen={isStyleEditorOpen}
-          onToggle={toggleStyleEditor}
-        />
       )}
     </div>
   );
@@ -1904,154 +1496,6 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
     );
   };
 
-  // Product Selector Component - allows manual selection of products to display
-  const ProductSelector = ({ 
-    products, 
-    selectedIds, 
-    onChange, 
-    searchQuery, 
-    onSearchChange,
-    tip 
-  }: { 
-    products: { id: string; name: string; image: string; price: number; category: string; tags?: string[] }[];
-    selectedIds: string[];
-    onChange: (ids: string[]) => void;
-    searchQuery: string;
-    onSearchChange: (q: string) => void;
-    tip?: string;
-  }) => {
-    const filteredProducts = products.filter(p => 
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const toggleProduct = (productId: string) => {
-      if (selectedIds.includes(productId)) {
-        onChange(selectedIds.filter(id => id !== productId));
-      } else {
-        onChange([...selectedIds, productId]);
-      }
-    };
-
-    const moveProduct = (productId: string, direction: 'up' | 'down') => {
-      const index = selectedIds.indexOf(productId);
-      if (index === -1) return;
-      const newIndex = direction === 'up' ? index - 1 : index + 1;
-      if (newIndex < 0 || newIndex >= selectedIds.length) return;
-      const newIds = [...selectedIds];
-      [newIds[index], newIds[newIndex]] = [newIds[newIndex], newIds[index]];
-      onChange(newIds);
-    };
-
-    return (
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-bold uppercase text-neutral-500">Select Products</label>
-          <span className="text-[10px] text-neutral-600">{selectedIds.length} selected</span>
-        </div>
-        {tip && <p className="text-[10px] text-neutral-600">{tip}</p>}
-        
-        {/* Selected Products List */}
-        {selectedIds.length > 0 && (
-          <div className="space-y-2 p-3 bg-neutral-950 rounded-lg border border-neutral-800">
-            <span className="text-[10px] font-bold uppercase text-neutral-500">Display Order</span>
-            {selectedIds.map((id, index) => {
-              const product = products.find(p => p.id === id);
-              if (!product) return null;
-              return (
-                <div key={id} className="flex items-center gap-2 group">
-                  <div className="flex flex-col">
-                    <button 
-                      onClick={() => moveProduct(id, 'up')} 
-                      disabled={index === 0}
-                      className="p-0.5 text-neutral-600 hover:text-white disabled:opacity-30"
-                    >
-                      <ChevronLeft size={10} className="rotate-90" />
-                    </button>
-                    <button 
-                      onClick={() => moveProduct(id, 'down')} 
-                      disabled={index === selectedIds.length - 1}
-                      className="p-0.5 text-neutral-600 hover:text-white disabled:opacity-30"
-                    >
-                      <ChevronRight size={10} className="rotate-90" />
-                    </button>
-                  </div>
-                  <div className="w-8 h-8 bg-neutral-800 rounded overflow-hidden flex-shrink-0">
-                    {product.image && <img src={product.image} alt="" className="w-full h-full object-cover" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs text-neutral-300 truncate">{product.name}</div>
-                    <div className="text-[10px] text-neutral-600">${product.price.toFixed(2)}</div>
-                  </div>
-                  <button 
-                    onClick={() => toggleProduct(id)}
-                    className="p-1 text-neutral-600 hover:text-red-400 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-all"
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Search */}
-        <div className="relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search products..."
-            className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600"
-          />
-          {searchQuery && (
-            <button 
-              onClick={() => onSearchChange('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-white"
-            >
-              <X size={14} />
-            </button>
-          )}
-        </div>
-
-        {/* Product Grid */}
-        <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto custom-scrollbar">
-          {filteredProducts.length === 0 ? (
-            <div className="col-span-2 text-center py-8 text-neutral-600 text-sm">
-              {products.length === 0 ? 'No products found' : 'No matching products'}
-            </div>
-          ) : (
-            filteredProducts.map(product => {
-              const isSelected = selectedIds.includes(product.id);
-              return (
-                <button
-                  key={product.id}
-                  onClick={() => toggleProduct(product.id)}
-                  className={`relative p-2 rounded-lg border transition-all text-left ${
-                    isSelected 
-                      ? 'border-blue-500 bg-blue-500/10' 
-                      : 'border-neutral-800 bg-neutral-950 hover:border-neutral-700'
-                  }`}
-                >
-                  {isSelected && (
-                    <div className="absolute top-1 right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                      <Check size={10} className="text-white" />
-                    </div>
-                  )}
-                  <div className="w-full aspect-square bg-neutral-800 rounded mb-2 overflow-hidden">
-                    {product.image && <img src={product.image} alt="" className="w-full h-full object-cover" />}
-                  </div>
-                  <div className="text-[10px] text-neutral-300 truncate">{product.name}</div>
-                  <div className="text-[10px] text-neutral-600">${product.price.toFixed(2)}</div>
-                </button>
-              );
-            })
-          )}
-        </div>
-      </div>
-    );
-  };
-
   // Toggle Component
   const Toggle = ({ label, value, onChange, tip }: { label: string, value: boolean, onChange: (val: boolean) => void, tip?: string }) => (
     <div className="flex items-center justify-between py-2">
@@ -2245,39 +1689,11 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
       <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
         
         {/* Render section-specific fields for active group */}
-        {/* Filter fields based on block type and current variant */}
         {sectionConfig.fields
           .filter(field => field.group === activeGroup)
-          .filter(field => {
-            // If this is a hero section, only show fields relevant to the current variant
-            if (blockType === 'system-hero' && variant) {
-              const variantFields = HERO_VARIANT_FIELDS[variant];
-              if (variantFields) {
-                return variantFields.includes(field.key);
-              }
-            }
-            // If this is a product grid section, filter by variant and product source
-            if (blockType === 'system-grid' && variant) {
-              const variantFields = GRID_VARIANT_FIELDS[variant];
-              if (variantFields) {
-                // Check if field is in variant fields
-                if (!variantFields.includes(field.key)) return false;
-                
-                // Additional filtering based on productSource selection
-                const productSource = data.productSource || 'all';
-                if (field.key === 'productCategory' && productSource !== 'category') return false;
-                if (field.key === 'productCollection' && productSource !== 'collection') return false;
-                if (field.key === 'productTag' && productSource !== 'tag') return false;
-                if (field.key === 'selectedProducts' && productSource !== 'manual') return false;
-              }
-            }
-            return true;
-          })
           .map(field => {
-            const fieldValue = data[field.key] ?? field.defaultValue;
+            const fieldValue = data[field.key];
             const fieldId = `editor-field-${field.key}`;
-            const styleKey = `${field.key}_style`;
-            const styleValue = data[styleKey];
 
             switch (field.type) {
               case 'text':
@@ -2286,7 +1702,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     key={field.key}
                     id={fieldId}
                     label={field.label}
-                    value={fieldValue ?? ''}
+                    value={fieldValue || ''}
                     onChange={(val) => updateField(field.key, val)}
                     fieldKey={field.key}
                     showAI={field.showAI}
@@ -2294,9 +1710,6 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     placeholder={field.placeholder}
                     tip={field.tip}
                     examples={field.examples}
-                    style={styleValue}
-                    onStyleChange={(style) => updateField(styleKey, style)}
-                    showStyleEditor={true}
                   />
                 );
 
@@ -2306,15 +1719,12 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     key={field.key}
                     id={fieldId}
                     label={field.label}
-                    value={fieldValue ?? ''}
+                    value={fieldValue || ''}
                     onChange={(val) => updateField(field.key, val)}
                     fieldKey={field.key}
                     showAI={field.showAI}
                     maxLength={field.maxLength}
                     tip={field.tip}
-                    style={styleValue}
-                    onStyleChange={(style) => updateField(styleKey, style)}
-                    showStyleEditor={true}
                   />
                 );
 
@@ -2324,7 +1734,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     key={field.key}
                     id={fieldId}
                     label={field.label}
-                    value={fieldValue ?? ''}
+                    value={fieldValue || ''}
                     onChange={(val) => updateField(field.key, val)}
                     onUpload={(e) => handleImageUpload(e, field.key)}
                     tip={field.tip}
@@ -2337,45 +1747,20 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     key={field.key}
                     id={fieldId}
                     label={field.label}
-                    value={fieldValue ?? ''}
+                    value={fieldValue || ''}
                     onChange={(val) => updateField(field.key, val)}
                     placeholder={field.placeholder}
                   />
                 );
 
               case 'select':
-                // For productCategory, dynamically generate options from categories
-                let selectOptions = field.options || [];
-                if (field.key === 'productCategory' && categories && categories.length > 0) {
-                  // Use categories from database context
-                  selectOptions = [
-                    { value: '', label: 'Select a category...' },
-                    ...categories
-                      .filter(c => c.parent_id === undefined || c.parent_id === null)
-                      .map(cat => ({ value: cat.id, label: cat.name }))
-                  ];
-                } else if (field.key === 'productCategory' && products && products.length > 0) {
-                  // Fallback to extracting categories from products
-                  const productCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
-                  selectOptions = [
-                    { value: '', label: 'Select a category...' },
-                    ...productCategories.map(cat => ({ value: cat, label: cat }))
-                  ];
-                } else if (field.key === 'productCollection' && collections && collections.length > 0) {
-                  // Use collections from database context
-                  selectOptions = [
-                    { value: '', label: 'Select a collection...' },
-                    ...collections.map(col => ({ value: col.id, label: col.name }))
-                  ];
-                }
-                
                 return (
                   <Select
                     key={field.key}
                     label={field.label}
-                    value={fieldValue ?? ''}
+                    value={fieldValue || field.defaultValue || ''}
                     onChange={(val) => updateField(field.key, val)}
-                    options={selectOptions}
+                    options={field.options || []}
                     tip={field.tip}
                   />
                 );
@@ -2409,7 +1794,7 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     key={field.key}
                     id={fieldId}
                     label={field.label}
-                    value={fieldValue ?? ''}
+                    value={fieldValue || ''}
                     onChange={(val) => updateField(field.key, val)}
                     placeholder={field.placeholder}
                     tip={field.tip}
@@ -2422,19 +1807,6 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                     key={field.key}
                     value={fieldValue || DEFAULT_FORM_FIELDS}
                     onChange={(val) => updateField(field.key, val)}
-                  />
-                );
-
-              case 'productSelector':
-                return (
-                  <ProductSelector
-                    key={field.key}
-                    products={products}
-                    selectedIds={fieldValue || []}
-                    onChange={(val) => updateField(field.key, val)}
-                    searchQuery={productSearchQuery}
-                    onSearchChange={setProductSearchQuery}
-                    tip={field.tip}
                   />
                 );
 
@@ -2500,70 +1872,15 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 ]}
               />
               <Select
-                label="Container Width"
-                value={data.style?.maxWidth || 'auto'}
-                onChange={(val) => updateStyle('maxWidth', val)}
-                options={[
-                  { value: 'auto', label: 'Auto' },
-                  { value: 'narrow', label: 'Narrow (800px)' },
-                  { value: 'medium', label: 'Medium (1200px)' },
-                  { value: 'wide', label: 'Wide (1400px)' },
-                  { value: 'full', label: 'Full Width' },
-                ]}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <Select
-                label="Vertical Padding"
+                label="Padding"
                 value={data.style?.padding || 'auto'}
                 onChange={(val) => updateStyle('padding', val)}
                 options={[
                   { value: 'auto', label: 'Auto' },
-                  { value: 'none', label: 'None' },
                   { value: 's', label: 'Small' },
                   { value: 'm', label: 'Medium' },
                   { value: 'l', label: 'Large' },
                   { value: 'xl', label: 'Extra Large' },
-                ]}
-              />
-              <Select
-                label="Horizontal Padding"
-                value={data.style?.paddingX || 'auto'}
-                onChange={(val) => updateStyle('paddingX', val)}
-                options={[
-                  { value: 'auto', label: 'Auto' },
-                  { value: 'none', label: 'None' },
-                  { value: 's', label: 'Small' },
-                  { value: 'm', label: 'Medium' },
-                  { value: 'l', label: 'Large' },
-                  { value: 'xl', label: 'Extra Large' },
-                ]}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <Select
-                label="Section Height"
-                value={data.style?.height || 'auto'}
-                onChange={(val) => updateStyle('height', val)}
-                options={[
-                  { value: 'auto', label: 'Auto (Content)' },
-                  { value: 'sm', label: 'Small (300px)' },
-                  { value: 'md', label: 'Medium (500px)' },
-                  { value: 'lg', label: 'Large (700px)' },
-                  { value: 'screen', label: 'Full Screen' },
-                ]}
-              />
-              <Select
-                label="Image Fit"
-                value={data.style?.imageFit || 'auto'}
-                onChange={(val) => updateStyle('imageFit', val)}
-                options={[
-                  { value: 'auto', label: 'Auto' },
-                  { value: 'cover', label: 'Cover (Fill)' },
-                  { value: 'contain', label: 'Contain (Fit)' },
-                  { value: 'scale', label: 'Scale Down' },
                 ]}
               />
             </div>
@@ -2577,6 +1894,19 @@ export const UniversalEditor: React.FC<UniversalEditorProps> = ({
                 { value: 'left', label: 'Left' },
                 { value: 'center', label: 'Center' },
                 { value: 'right', label: 'Right' },
+              ]}
+            />
+
+            <Select
+              label="Max Width"
+              value={data.style?.maxWidth || 'auto'}
+              onChange={(val) => updateStyle('maxWidth', val)}
+              options={[
+                { value: 'auto', label: 'Auto' },
+                { value: 'narrow', label: 'Narrow (800px)' },
+                { value: 'medium', label: 'Medium (1200px)' },
+                { value: 'wide', label: 'Wide (1400px)' },
+                { value: 'full', label: 'Full Width' },
               ]}
             />
           </div>

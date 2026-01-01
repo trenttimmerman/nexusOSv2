@@ -816,6 +816,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
   const [systemModalType, setSystemModalType] = useState<'hero' | 'grid' | 'footer' | null>(null);
   const [isInterfaceModalOpen, setIsInterfaceModalOpen] = useState(false);
+  const [previewingHeaderId, setPreviewingHeaderId] = useState<HeaderStyleId | null>(null);
 
   // ADD SECTION STATES
   const [isAddSectionOpen, setIsAddSectionOpen] = useState(false);
@@ -2180,88 +2181,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
                   <PanelTop size={16} className="text-blue-500" /> Header Style
                 </h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {HEADER_OPTIONS.map((opt) => (
-                    <button 
-                      key={opt.id} 
-                      onClick={() => onConfigChange({ ...config, headerStyle: opt.id as HeaderStyleId })} 
-                      className={`text-left rounded-lg border transition-all overflow-hidden ${
-                        config.headerStyle === opt.id 
-                          ? 'bg-blue-600/20 border-blue-500 text-white ring-2 ring-blue-500/50' 
-                          : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-500'
-                      }`}
-                    >
-                      {/* Header Preview */}
-                      <div className="h-16 bg-neutral-950 relative overflow-hidden border-b border-neutral-800/50">
-                        <svg viewBox="0 0 200 60" className="w-full h-full">
-                          <rect fill="#0a0a0a" width="200" height="60"/>
-                          {/* Logo/Brand */}
-                          {opt.id === 'minimal' && (
-                            <>
-                              <circle fill="#3b82f6" cx="20" cy="30" r="8"/>
-                              <rect fill="#6b7280" x="35" y="26" width="30" height="3" rx="1.5"/>
-                              <rect fill="#3b82f6" x="150" y="26" width="20" height="3" rx="1.5"/>
-                              <rect fill="#3b82f6" x="175" y="26" width="20" height="3" rx="1.5"/>
-                            </>
-                          )}
-                          {opt.id === 'centered' && (
-                            <>
-                              <rect fill="#3b82f6" x="85" y="20" width="30" height="4" rx="2"/>
-                              <rect fill="#6b7280" x="70" y="36" width="15" height="2" rx="1"/>
-                              <rect fill="#6b7280" x="90" y="36" width="20" height="2" rx="1"/>
-                              <rect fill="#6b7280" x="115" y="36" width="15" height="2" rx="1"/>
-                            </>
-                          )}
-                          {opt.id === 'split' && (
-                            <>
-                              <circle fill="#3b82f6" cx="25" cy="30" r="10"/>
-                              <rect fill="#6b7280" x="45" y="26" width="35" height="3" rx="1.5"/>
-                              <rect fill="#3b82f6" x="135" y="22" width="25" height="6" rx="3"/>
-                              <rect fill="#6b7280" x="165" y="26" width="15" height="3" rx="1.5"/>
-                            </>
-                          )}
-                          {opt.id === 'floating' && (
-                            <>
-                              <rect fill="#1a1a1a" x="10" y="15" width="180" height="30" rx="15"/>
-                              <circle fill="#3b82f6" cx="30" cy="30" r="6"/>
-                              <rect fill="#6b7280" x="75" y="27" width="15" height="2" rx="1"/>
-                              <rect fill="#6b7280" x="95" y="27" width="20" height="2" rx="1"/>
-                              <rect fill="#6b7280" x="120" y="27" width="15" height="2" rx="1"/>
-                              <rect fill="#3b82f6" x="155" y="23" width="20" height="8" rx="4"/>
-                            </>
-                          )}
-                          {opt.id === 'transparent' && (
-                            <>
-                              <circle fill="#3b82f6" cx="20" cy="20" r="6"/>
-                              <rect fill="#6b7280" x="35" y="17" width="25" height="2" rx="1"/>
-                              <rect fill="#3b82f6" x="150" y="15" width="18" height="6" rx="3"/>
-                              <rect fill="#6b7280" x="173" y="17" width="15" height="2" rx="1"/>
-                            </>
-                          )}
-                          {opt.id === 'mega' && (
-                            <>
-                              <rect fill="#3b82f6" x="15" y="10" width="40" height="5" rx="2.5"/>
-                              <rect fill="#6b7280" x="15" y="25" width="20" height="2" rx="1"/>
-                              <rect fill="#6b7280" x="40" y="25" width="25" height="2" rx="1"/>
-                              <rect fill="#6b7280" x="70" y="25" width="20" height="2" rx="1"/>
-                              <rect fill="#6b7280" x="95" y="25" width="25" height="2" rx="1"/>
-                              <rect fill="#3b82f6" x="155" y="22" width="30" height="6" rx="3"/>
-                            </>
-                          )}
-                          {(!opt.id || !['minimal', 'centered', 'split', 'floating', 'transparent', 'mega'].includes(opt.id)) && (
-                            <>
-                              <circle fill="#3b82f6" cx="20" cy="30" r="8"/>
-                              <rect fill="#6b7280" x="35" y="26" width="30" height="3" rx="1.5"/>
-                              <rect fill="#3b82f6" x="150" y="26" width="20" height="3" rx="1.5"/>
-                            </>
-                          )}
-                        </svg>
-                      </div>
-                      <div className="p-3">
-                        <div className="font-bold text-sm mb-0.5">{opt.name}</div>
-                        <div className="text-[10px] opacity-60">{opt.description}</div>
-                      </div>
-                    </button>
+                    <div key={opt.id} className="relative group">
+                      <button 
+                        onClick={() => onConfigChange({ ...config, headerStyle: opt.id as HeaderStyleId })} 
+                        onMouseEnter={() => setPreviewingHeaderId(opt.id as HeaderStyleId)}
+                        className={`w-full text-left rounded-lg border transition-all p-4 ${
+                          config.headerStyle === opt.id 
+                            ? 'bg-blue-600/20 border-blue-500 text-white ring-2 ring-blue-500/50' 
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-500'
+                        }`}
+                      >
+                        <div className="font-bold text-sm mb-1">{opt.name}</div>
+                        <div className="text-[10px] opacity-60 leading-tight">{opt.description}</div>
+                        <div className="mt-2 text-[9px] font-bold text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                          Hover to preview →
+                        </div>
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -2276,6 +2214,71 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             >
               Done
             </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Header Preview Popup (renders actual header component)
+  const renderHeaderPreview = () => {
+    if (!previewingHeaderId) return null;
+
+    const HeaderComponent = HEADER_COMPONENTS[previewingHeaderId];
+    if (!HeaderComponent) return null;
+
+    // Mock data for preview
+    const mockLinks = [
+      { text: 'Shop', href: '#' },
+      { text: 'Collections', href: '#' },
+      { text: 'About', href: '#' },
+      { text: 'Contact', href: '#' }
+    ];
+
+    return (
+      <div 
+        className="fixed inset-0 z-[250] pointer-events-none"
+        onMouseLeave={() => setPreviewingHeaderId(null)}
+      >
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-full max-w-6xl pointer-events-auto">
+          <div className="bg-neutral-900/95 backdrop-blur-xl border-2 border-purple-500/50 rounded-xl shadow-2xl overflow-hidden animate-in slide-in-from-top-4 duration-200">
+            {/* Preview Label */}
+            <div className="bg-purple-600 px-4 py-2 text-white text-xs font-bold flex items-center justify-between">
+              <span>HEADER PREVIEW: {HEADER_OPTIONS.find(h => h.id === previewingHeaderId)?.name}</span>
+              <button 
+                onClick={() => setPreviewingHeaderId(null)}
+                className="p-1 hover:bg-white/20 rounded transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+            
+            {/* Actual Header Component */}
+            <div className="bg-white">
+              <HeaderComponent
+                storeName={config.name || 'My Store'}
+                logoUrl={config.logoUrl}
+                links={mockLinks}
+                cartCount={3}
+                onOpenCart={() => {}}
+                primaryColor={config.primaryColor}
+                secondaryColor={config.secondaryColor}
+              />
+            </div>
+
+            {/* Apply Button */}
+            <div className="bg-neutral-950 px-4 py-3 flex justify-center border-t border-neutral-800">
+              <button
+                onClick={() => {
+                  onConfigChange({ ...config, headerStyle: previewingHeaderId as HeaderStyleId });
+                  setPreviewingHeaderId(null);
+                }}
+                className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold text-sm transition-colors flex items-center gap-2"
+              >
+                <Check size={16} />
+                Apply This Header
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -5775,6 +5778,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     <div className="flex h-screen bg-nexus-black text-white font-sans overflow-hidden">
       {renderSidebar()}
       {renderInterfaceModal()}
+      {renderHeaderPreview()}
       {renderBlockArchitect()}
       {renderHeaderModal()}
       {renderSystemBlockModal()}

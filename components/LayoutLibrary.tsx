@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { EditableText, EditableImage } from './HeroLibrary';
+import { EditableText } from './HeroLibrary';
 import { ArrowRight, Image as ImageIcon, Layout, Columns, Grid, Check, Plus, Minus, ChevronDown, Star, Shield, Truck, RefreshCw, MessageSquare } from 'lucide-react';
 
 export const LAYOUT_OPTIONS = [
@@ -24,12 +24,18 @@ export const LAYOUT_COMPONENTS: Record<string, React.FC<any>> = {
       <div className={`flex flex-col md:flex-row gap-12 items-center ${data?.reverse ? 'md:flex-row-reverse' : ''}`}>
         <div className="flex-1 w-full">
           <div className="aspect-[4/3] bg-gray-100 rounded-2xl overflow-hidden relative group">
-            <EditableImage 
+            <img 
               src={data?.image || DEFAULT_IMG} 
-              onChange={(val) => onUpdate?.({ ...data, image: val })}
-              isEditable={isEditable}
-              className="w-full h-full"
+              alt="Feature" 
+              className="w-full h-full object-cover"
             />
+            {isEditable && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="bg-white text-black px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2">
+                  <ImageIcon size={16} /> Change Image
+                </button>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex-1 text-center md:text-left">
@@ -134,11 +140,10 @@ export const LAYOUT_COMPONENTS: Record<string, React.FC<any>> = {
 
   'layout-banner': ({ data, isEditable, onUpdate }) => (
     <div className="relative h-[400px] w-full overflow-hidden">
-      <EditableImage 
+      <img 
         src={data?.image || DEFAULT_IMG} 
-        onChange={(val) => onUpdate?.({ ...data, image: val })}
-        isEditable={isEditable}
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 w-full h-full object-cover"
+        alt="Banner"
       />
       <div className="absolute inset-0 bg-black/40" />
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-6">
