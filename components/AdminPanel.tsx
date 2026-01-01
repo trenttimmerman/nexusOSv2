@@ -2174,6 +2174,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   ))}
                 </div>
               </div>
+
+              {/* Header Style Section */}
+              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700 md:col-span-2">
+                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                  <PanelTop size={16} className="text-blue-500" /> Header Style
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {HEADER_OPTIONS.map((opt) => (
+                    <button 
+                      key={opt.id} 
+                      onClick={() => onConfigChange({ ...config, headerStyle: opt.id as HeaderStyleId })} 
+                      className={`text-left p-3 rounded-lg border transition-all ${
+                        config.headerStyle === opt.id 
+                          ? 'bg-blue-600/20 border-blue-500 text-white ring-2 ring-blue-500/50' 
+                          : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-500'
+                      }`}
+                    >
+                      <div className="font-bold text-sm mb-0.5">{opt.name}</div>
+                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
           
@@ -4174,18 +4197,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     )}
                   </div>
 
-                  {/* 2. HEADER - Fixed site header */}
-                  <div className="bg-neutral-900 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.2)] rounded-xl overflow-hidden">
-                    <button onClick={() => setIsHeaderModalOpen(true)} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
-                      <div className="flex items-center gap-3"><div className="p-1.5 bg-blue-900/30 text-blue-400 rounded"><PanelTop size={16} /></div><span className="font-bold text-sm text-white">Header</span></div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-neutral-500">{HEADER_OPTIONS.find(h => h.id === config.headerStyle)?.name}</span>
-                        <ChevronRight size={14} className="text-neutral-600" />
-                      </div>
-                    </button>
-                  </div>
-
-                  {/* 3. BODY - Page content blocks */}
+                  {/* 2. BODY - Page content blocks */}
                   <div className="bg-neutral-900 border border-orange-500/50 shadow-[0_0_20px_rgba(249,115,22,0.3)] rounded-xl overflow-hidden">
                     <button onClick={() => setDesignSections(prev => ({ ...prev, pageSections: !prev.pageSections }))} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
                       <div className="flex items-center gap-3"><div className="p-1.5 bg-orange-900/30 text-orange-400 rounded"><Layers size={16} /></div><span className="font-bold text-sm text-white">Body</span></div>
@@ -4293,7 +4305,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     )}
                   </div>
 
-                  {/* 4. FOOTER - Fixed site footer */}
+                  {/* 3. FOOTER - Fixed site footer */}
                   <div className="bg-neutral-900 border border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)] rounded-xl overflow-hidden">
                     <button onClick={() => { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
                       <div className="flex items-center gap-3"><div className="p-1.5 bg-emerald-900/30 text-emerald-400 rounded"><PanelBottom size={16} /></div><span className="font-bold text-sm text-white">Footer</span></div>
