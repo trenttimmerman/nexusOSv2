@@ -2185,14 +2185,82 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <button 
                       key={opt.id} 
                       onClick={() => onConfigChange({ ...config, headerStyle: opt.id as HeaderStyleId })} 
-                      className={`text-left p-3 rounded-lg border transition-all ${
+                      className={`text-left rounded-lg border transition-all overflow-hidden ${
                         config.headerStyle === opt.id 
                           ? 'bg-blue-600/20 border-blue-500 text-white ring-2 ring-blue-500/50' 
                           : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-500'
                       }`}
                     >
-                      <div className="font-bold text-sm mb-0.5">{opt.name}</div>
-                      <div className="text-[10px] opacity-60">{opt.description}</div>
+                      {/* Header Preview */}
+                      <div className="h-16 bg-neutral-950 relative overflow-hidden border-b border-neutral-800/50">
+                        <svg viewBox="0 0 200 60" className="w-full h-full">
+                          <rect fill="#0a0a0a" width="200" height="60"/>
+                          {/* Logo/Brand */}
+                          {opt.id === 'minimal' && (
+                            <>
+                              <circle fill="#3b82f6" cx="20" cy="30" r="8"/>
+                              <rect fill="#6b7280" x="35" y="26" width="30" height="3" rx="1.5"/>
+                              <rect fill="#3b82f6" x="150" y="26" width="20" height="3" rx="1.5"/>
+                              <rect fill="#3b82f6" x="175" y="26" width="20" height="3" rx="1.5"/>
+                            </>
+                          )}
+                          {opt.id === 'centered' && (
+                            <>
+                              <rect fill="#3b82f6" x="85" y="20" width="30" height="4" rx="2"/>
+                              <rect fill="#6b7280" x="70" y="36" width="15" height="2" rx="1"/>
+                              <rect fill="#6b7280" x="90" y="36" width="20" height="2" rx="1"/>
+                              <rect fill="#6b7280" x="115" y="36" width="15" height="2" rx="1"/>
+                            </>
+                          )}
+                          {opt.id === 'split' && (
+                            <>
+                              <circle fill="#3b82f6" cx="25" cy="30" r="10"/>
+                              <rect fill="#6b7280" x="45" y="26" width="35" height="3" rx="1.5"/>
+                              <rect fill="#3b82f6" x="135" y="22" width="25" height="6" rx="3"/>
+                              <rect fill="#6b7280" x="165" y="26" width="15" height="3" rx="1.5"/>
+                            </>
+                          )}
+                          {opt.id === 'floating' && (
+                            <>
+                              <rect fill="#1a1a1a" x="10" y="15" width="180" height="30" rx="15"/>
+                              <circle fill="#3b82f6" cx="30" cy="30" r="6"/>
+                              <rect fill="#6b7280" x="75" y="27" width="15" height="2" rx="1"/>
+                              <rect fill="#6b7280" x="95" y="27" width="20" height="2" rx="1"/>
+                              <rect fill="#6b7280" x="120" y="27" width="15" height="2" rx="1"/>
+                              <rect fill="#3b82f6" x="155" y="23" width="20" height="8" rx="4"/>
+                            </>
+                          )}
+                          {opt.id === 'transparent' && (
+                            <>
+                              <circle fill="#3b82f6" cx="20" cy="20" r="6"/>
+                              <rect fill="#6b7280" x="35" y="17" width="25" height="2" rx="1"/>
+                              <rect fill="#3b82f6" x="150" y="15" width="18" height="6" rx="3"/>
+                              <rect fill="#6b7280" x="173" y="17" width="15" height="2" rx="1"/>
+                            </>
+                          )}
+                          {opt.id === 'mega' && (
+                            <>
+                              <rect fill="#3b82f6" x="15" y="10" width="40" height="5" rx="2.5"/>
+                              <rect fill="#6b7280" x="15" y="25" width="20" height="2" rx="1"/>
+                              <rect fill="#6b7280" x="40" y="25" width="25" height="2" rx="1"/>
+                              <rect fill="#6b7280" x="70" y="25" width="20" height="2" rx="1"/>
+                              <rect fill="#6b7280" x="95" y="25" width="25" height="2" rx="1"/>
+                              <rect fill="#3b82f6" x="155" y="22" width="30" height="6" rx="3"/>
+                            </>
+                          )}
+                          {(!opt.id || !['minimal', 'centered', 'split', 'floating', 'transparent', 'mega'].includes(opt.id)) && (
+                            <>
+                              <circle fill="#3b82f6" cx="20" cy="30" r="8"/>
+                              <rect fill="#6b7280" x="35" y="26" width="30" height="3" rx="1.5"/>
+                              <rect fill="#3b82f6" x="150" y="26" width="20" height="3" rx="1.5"/>
+                            </>
+                          )}
+                        </svg>
+                      </div>
+                      <div className="p-3">
+                        <div className="font-bold text-sm mb-0.5">{opt.name}</div>
+                        <div className="text-[10px] opacity-60">{opt.description}</div>
+                      </div>
                     </button>
                   ))}
                 </div>
