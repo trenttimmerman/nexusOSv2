@@ -129,6 +129,11 @@ export interface StoreConfig {
   footerStyle: FooterStyleId;
   scrollbarStyle: ScrollbarStyleId;
   
+  // Header Colors
+  headerBackgroundColor?: string;
+  headerTextColor?: string;
+  headerAccentColor?: string;
+  
   // Footer Colors
   footerBackgroundColor?: string;
   footerTextColor?: string;
