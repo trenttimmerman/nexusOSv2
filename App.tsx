@@ -94,9 +94,9 @@ const PublicStoreWrapper = () => {
         const { data: productsData } = await supabase
           .from('products').select('*').eq('store_id', store.id);
         
-        // Load pages
+        // Load pages - order by display_order for navigation
         const { data: pagesData } = await supabase
-          .from('pages').select('*').eq('store_id', store.id);
+          .from('pages').select('*').eq('store_id', store.id).order('display_order');
 
         console.log('[PublicStore] Loaded store:', { storeSlug, storeId: store.id, pagesCount: pagesData?.length });
         

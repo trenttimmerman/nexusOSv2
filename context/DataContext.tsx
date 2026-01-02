@@ -303,8 +303,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setProducts([]); // No products for this tenant yet
           }
 
-          // 5. Pages
-          const { data: pagesData, error: pagesError } = await supabase.from('pages').select('*').eq('store_id', currentStoreId);
+          // 5. Pages - order by display_order for navigation
+          const { data: pagesData, error: pagesError } = await supabase.from('pages').select('*').eq('store_id', currentStoreId).order('display_order');
           console.log('[DataContext] Pages fetch:', { pagesData, pagesError, currentStoreId });
           if (pagesData && pagesData.length > 0) {
             console.log('[DataContext] Loading', pagesData.length, 'pages from database');

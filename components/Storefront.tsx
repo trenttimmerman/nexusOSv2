@@ -200,8 +200,13 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   const activePage = safePages.find(p => p.id === activePageId) || safePages[0];
   const isSidebar = config.headerStyle === 'studio';
 
+  // Sort pages by display_order for navigation, filter out hidden pages
+  const sortedVisiblePages = [...safePages]
+    .filter(p => p.type !== 'hidden')
+    .sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
+
   // Map Pages to NavLinks
-  const navLinks = safePages.map(p => {
+  const navLinks = sortedVisiblePages.map(p => {
     let href = '/';
     if (p.type !== 'home') {
       const cleanSlug = p.slug.startsWith('/') ? p.slug.substring(1) : p.slug;
