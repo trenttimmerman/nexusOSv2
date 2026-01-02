@@ -478,7 +478,7 @@ const PILOT_DEFAULTS: HeaderData = {
   ctaBackgroundColor: '#4f46e5',
   ctaHoverColor: '#4338ca', // indigo-700
   ctaTextColor: '#ffffff',
-  ctaText: 'Get Started',
+  ctaText: 'Sign In',
   cartBadgeColor: '#4f46e5',
   cartBadgeTextColor: '#ffffff',
   sticky: true,
