@@ -607,11 +607,13 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
           color: var(--color-muted) !important;
         }
         
-        /* Section-level overrides - inline styles take precedence */
-        .storefront-typography [style*="font-family"] { font-family: inherit !important; }
-        .storefront-typography [style*="color"] { color: inherit !important; }
-        .storefront-typography [style*="font-size"] { font-size: inherit !important; }
-        .storefront-typography [style*="font-weight"] { font-weight: inherit !important; }
+        /* Section-level overrides for content blocks only - NOT headers/footers */
+        /* These help normalize typography in rich text/content sections */
+        .storefront-typography main [style*="font-family"] { font-family: inherit !important; }
+        .storefront-typography main p[style*="color"], 
+        .storefront-typography main span[style*="color"] { color: inherit !important; }
+        .storefront-typography main [style*="font-size"] { font-size: inherit !important; }
+        .storefront-typography main [style*="font-weight"] { font-weight: inherit !important; }
       `}</style>
       <HeaderComponent
         storeName={config.name}
