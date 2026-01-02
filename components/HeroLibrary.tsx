@@ -1,6 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowRight, Play, Star, Upload, Image as ImageIcon, Wand2, Loader2, Sparkles, Type, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Palette, Minus, Plus, Check } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
 
 interface TextStyles {
   fontSize?: string;
@@ -41,11 +42,11 @@ interface HeroProps {
 }
 
 export const HERO_FIELDS: Record<string, string[]> = {
-  impact: ['heading', 'image', 'buttonText', 'badge', 'secondaryButtonText'],
-  split: ['heading', 'subheading', 'image', 'buttonText', 'topLabel', 'floatingCardTitle', 'floatingCardPrice'],
-  kinetik: ['heading', 'image', 'buttonText', 'marqueeText'],
-  grid: ['heading', 'subheading', 'image', 'buttonText', 'secondaryButtonText', 'imageBadge', 'featureCardTitle', 'featureCardSubtitle'],
-  typographic: ['heading', 'subheading', 'topBadge', 'link1Label', 'link2Label', 'link3Label']
+  impact: ['heading', 'badge', 'buttonText', 'secondaryButtonText', 'image', 'overlayOpacity'],
+  split: ['heading', 'subheading', 'buttonText', 'image', 'overlayOpacity'],
+  kinetik: ['heading', 'buttonText', 'marqueeText', 'image', 'overlayOpacity'],
+  grid: ['heading', 'subheading', 'buttonText', 'secondaryButtonText', 'imageBadge', 'featureCardTitle', 'featureCardSubtitle', 'image', 'sideImage', 'overlayOpacity'],
+  typographic: ['heading', 'subheading', 'topBadge', 'link1Label', 'link2Label', 'link3Label', 'link1Image', 'link2Image', 'link3Image']
 };
 
 // --- EDITABLE HELPERS ---
@@ -188,15 +189,47 @@ export const EditableImage: React.FC<{
   onSelect?: () => void;
 }> = ({ src, onChange, isEditable, className, alt, overlayOpacity = 0, onOverlayOpacityChange, elementId, onSelect }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // In a real app, we would upload to Supabase here.
-    // For now, we'll use a local URL to show immediate feedback.
-    const localUrl = URL.createObjectURL(file);
-    onChange(localUrl);
+    setIsUploading(true);
+    try {
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `hero_${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `public/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('media')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        // Fallback to local URL if upload fails
+        const localUrl = URL.createObjectURL(file);
+        onChange(localUrl);
+        return;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('media')
+        .getPublicUrl(filePath);
+
+      console.log('[EditableImage] Uploaded to:', publicUrl);
+      onChange(publicUrl);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      // Fallback to local URL
+      const localUrl = URL.createObjectURL(file);
+      onChange(localUrl);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -211,6 +244,15 @@ export const EditableImage: React.FC<{
       }}
       className={`relative group ${className} ${isEditable ? 'focus:outline-none focus:shadow-[0_0_0_4px_rgba(59,130,246,0.5),0_0_30px_rgba(59,130,246,0.6)] focus:z-50 rounded-lg transition-all duration-300' : ''}`}
     >
+      {/* Upload loading overlay */}
+      {isUploading && (
+        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-30">
+          <div className="flex flex-col items-center gap-2 text-white">
+            <Loader2 className="animate-spin" size={32} />
+            <span className="text-sm font-medium">Uploading...</span>
+          </div>
+        </div>
+      )}
       {src ? (
         <>
           <img src={src} className="w-full h-full object-cover" alt={alt} />
@@ -220,7 +262,7 @@ export const EditableImage: React.FC<{
               style={{ opacity: overlayOpacity }}
             />
           )}
-          {isEditable && (
+          {isEditable && !isUploading && (
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-20">
               <button 
                 onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}

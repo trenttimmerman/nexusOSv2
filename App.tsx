@@ -46,7 +46,18 @@ const StorefrontWrapper = () => {
       pages={pages || []}
       activePageId={activePageId}
       activeProductSlug={productSlug}
-      onNavigate={(path) => navigate(path)}
+      onNavigate={(path) => {
+        // Handle relative paths - prepend /store for this wrapper
+        if (path === '/') {
+          navigate('/store');
+        } else if (path.startsWith('/products/')) {
+          navigate(`/store${path}`);
+        } else if (path.startsWith('/pages/')) {
+          navigate(`/store${path}`);
+        } else {
+          navigate(path);
+        }
+      }}
     />
   );
 };
@@ -87,6 +98,51 @@ const PublicStoreWrapper = () => {
         const { data: pagesData } = await supabase
           .from('pages').select('*').eq('store_id', store.id);
 
+        console.log('[PublicStore] Loaded store:', { storeSlug, storeId: store.id, pagesCount: pagesData?.length });
+        
+        // Default home page blocks for new/empty stores
+        const defaultHomeBlocks = [
+          {
+            id: 'default-hero',
+            type: 'system-hero',
+            name: 'Hero',
+            variant: storeConfig?.hero_style || 'impact',
+            content: '',
+            data: {
+              heading: `Welcome to ${storeConfig?.name || store.name || 'Our Store'}`,
+              subheading: 'Discover our collection of amazing products.',
+              buttonText: 'Shop Now',
+              buttonLink: '/shop',
+              image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop'
+            }
+          },
+          {
+            id: 'default-products',
+            type: 'system-grid',
+            name: 'Featured Products',
+            variant: storeConfig?.product_card_style || 'classic',
+            content: '',
+            data: {
+              heading: 'Featured Products',
+              subheading: 'Check out our latest arrivals',
+              productSource: 'all',
+              limit: 8,
+              columns: '4'
+            }
+          }
+        ];
+        
+        // Ensure blocks is always an array (handle null/undefined from DB)
+        // If a page has no blocks, provide defaults for home page
+        const normalizedPages = (pagesData || []).map(p => {
+          const blocks = Array.isArray(p.blocks) ? p.blocks : [];
+          // If home page has no blocks, use defaults
+          if ((p.type === 'home' || p.slug === '/') && blocks.length === 0) {
+            return { ...p, blocks: defaultHomeBlocks };
+          }
+          return { ...p, blocks };
+        });
+
         // Build store config - prioritize store_config table, fallback to stores.settings
         const config = {
           name: storeConfig?.name || store.name || 'Store',
@@ -108,9 +164,12 @@ const PublicStoreWrapper = () => {
 
         setStoreData(config);
         setProducts(productsData || []);
-        setPages(pagesData?.length ? pagesData : [
-          { id: 'home', title: 'Home', slug: '/', type: 'home', blocks: [] }
-        ]);
+        
+        // If no pages at all, create a default home page with blocks
+        const finalPages = normalizedPages.length ? normalizedPages : [
+          { id: 'default-home', title: 'Home', slug: '/', type: 'home', blocks: defaultHomeBlocks }
+        ];
+        setPages(finalPages);
         setLoading(false);
       } catch (err) {
         console.error('Error loading store:', err);
@@ -142,7 +201,10 @@ const PublicStoreWrapper = () => {
   }
 
   // Resolve Active Page ID from URL Slug
-  let activePageId = 'home';
+  // Default to the home page's actual ID (not the literal 'home')
+  const homePage = pages.find(p => p.type === 'home' || p.slug === '/');
+  let activePageId = homePage?.id || 'home';
+  
   if (slug) {
     const foundPage = pages.find(p => 
       p.slug === slug || 
@@ -151,6 +213,8 @@ const PublicStoreWrapper = () => {
     );
     if (foundPage) activePageId = foundPage.id;
   }
+  
+  console.log('[PublicStore] Active page resolved:', { activePageId, slug, homePageId: homePage?.id });
 
   return (
     <Storefront
@@ -159,7 +223,18 @@ const PublicStoreWrapper = () => {
       pages={pages || []}
       activePageId={activePageId}
       activeProductSlug={productSlug}
-      onNavigate={(path) => navigate(`/s/${storeSlug}${path}`)}
+      onNavigate={(path) => {
+        // Handle relative paths - prepend /s/:storeSlug for public stores
+        if (path === '/') {
+          navigate(`/s/${storeSlug}`);
+        } else if (path.startsWith('/products/')) {
+          navigate(`/s/${storeSlug}${path}`);
+        } else if (path.startsWith('/pages/')) {
+          navigate(`/s/${storeSlug}${path}`);
+        } else {
+          navigate(`/s/${storeSlug}${path}`);
+        }
+      }}
     />
   );
 };
@@ -168,7 +243,7 @@ const PublicStoreWrapper = () => {
 // Wrapper for Admin
 const AdminWrapper = () => {
   const { 
-    storeConfig, products, pages, mediaAssets, campaigns, loading,
+    storeConfig, products, pages, mediaAssets, campaigns, categories, collections, loading,
     updateConfig, addProduct, deleteProduct, addPage, updatePage, deletePage, 
     addAsset, deleteAsset, addCampaign, updateCampaign, deleteCampaign,
     signOut, userRole, switchStore, storeId
@@ -179,9 +254,11 @@ const AdminWrapper = () => {
 
   // Sync activePageId with actual home page ID if it's still 'home'
   React.useEffect(() => {
+    console.log('[AdminWrapper] Syncing activePageId:', { activePageId, pagesCount: pages?.length, pageIds: pages?.map(p => p.id) });
     if (activePageId === 'home' && pages && pages.length > 0) {
       const homePage = pages.find(p => p.type === 'home');
       if (homePage && homePage.id !== 'home') {
+        console.log('[AdminWrapper] Updating activePageId from "home" to:', homePage.id);
         setActivePageId(homePage.id);
       }
     }
@@ -215,6 +292,8 @@ const AdminWrapper = () => {
       userRole={userRole}
       storeId={storeId}
       onSwitchStore={switchStore}
+      categories={categories}
+      collections={collections}
     />
   );
 };

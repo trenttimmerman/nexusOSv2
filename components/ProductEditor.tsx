@@ -3,7 +3,7 @@ import { Product, ProductImage, ProductVariantOption, ProductVariant, ProductPag
 import { X, Upload, Plus, Trash2, Image as ImageIcon, Sparkles, Box, Search, Save, ArrowLeft, MoreHorizontal, ShoppingBag, Star, ChevronRight, Monitor, LayoutTemplate, Loader2 } from 'lucide-react';
 import { PRODUCT_PAGE_COMPONENTS, PRODUCT_PAGE_OPTIONS } from './ProductPageLibrary';
 import { supabase } from '../lib/supabaseClient';
-import { useData } from '../context/DataContext';
+import { useDataContext } from '../context/DataContext';
 
 interface ProductEditorProps {
     product?: Product | null;
@@ -12,7 +12,7 @@ interface ProductEditorProps {
 }
 
 export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, onCancel }) => {
-    const { categories } = useData();
+    const { categories } = useDataContext();
     const [activeTab, setActiveTab] = useState<'general' | 'media' | 'variants' | 'seo' | 'inventory' | 'design'>('general');
 
     // Form State

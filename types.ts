@@ -8,6 +8,8 @@ export enum AdminTab {
   DASHBOARD = 'DASHBOARD',
   ORDERS = 'ORDERS',
   PRODUCTS = 'PRODUCTS',
+  CATEGORIES = 'CATEGORIES',
+  COLLECTIONS = 'COLLECTIONS',
   PAGES = 'PAGES',
   MEDIA = 'MEDIA',
   DESIGN = 'DESIGN',
@@ -136,13 +138,39 @@ export interface StoreConfig {
   logoUrl?: string;
   logoHeight?: number;
   
-  // Header Customization
-  headerBgColor?: string;
-  headerTextColor?: string;
-  headerOutlineColor?: string;
-  headerGlowEffect?: boolean;
-  headerButtonBgColor?: string;
-  headerButtonTextColor?: string;
+  // Global Typography Settings
+  typography?: {
+    // Font Families
+    headingFont?: string;
+    bodyFont?: string;
+    accentFont?: string;
+    
+    // Global Text Colors
+    headingColor?: string;
+    bodyColor?: string;
+    linkColor?: string;
+    linkHoverColor?: string;
+    mutedColor?: string;
+    
+    // Font Sizes (base scale)
+    baseFontSize?: string;
+    headingScale?: 'compact' | 'default' | 'large' | 'dramatic';
+    
+    // Font Weights
+    headingWeight?: '400' | '500' | '600' | '700' | '800' | '900';
+    bodyWeight?: '300' | '400' | '500';
+    
+    // Line Heights
+    headingLineHeight?: string;
+    bodyLineHeight?: string;
+    
+    // Letter Spacing
+    headingLetterSpacing?: string;
+    bodyLetterSpacing?: string;
+    
+    // Text Transform
+    headingTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
+  };
   
   // Payment Config
   paymentProvider?: 'stripe' | 'paypal' | 'square' | 'manual';
@@ -208,6 +236,44 @@ export interface StoreConfig {
   };
 }
 
+export interface Category {
+  id: string;
+  store_id?: string;
+  name: string;
+  slug: string;
+  description?: string;
+  parent_id?: string | null;
+  display_order: number;
+  is_visible: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Collection {
+  id: string;
+  store_id?: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image_url?: string;
+  type: 'manual' | 'auto-category' | 'auto-tag' | 'auto-newest' | 'auto-bestsellers';
+  is_featured: boolean;
+  is_visible: boolean;
+  display_order: number;
+  conditions?: {
+    category_id?: string;
+    tags?: string[];
+    min_price?: number;
+    max_price?: number;
+    limit?: number;
+  };
+  seo_title?: string;
+  seo_description?: string;
+  created_at: string;
+  updated_at: string;
+  product_ids?: string[]; // For manual collections
+}
+
 export interface ProductImage {
   id: string;
   url: string;
@@ -250,7 +316,8 @@ export interface Product {
   image: string; // Legacy/Primary fallback
   images: ProductImage[];
 
-  category: string;
+  category: string; // Legacy text field (deprecated)
+  category_id?: string; // New foreign key to categories table
   tags: string[];
 
   // Inventory & Variants
@@ -380,6 +447,8 @@ export interface AdminPanelProps {
   userRole?: string | null;
   storeId?: string | null;
   onSwitchStore?: (storeId: string) => Promise<void>;
+  categories?: Category[];
+  collections?: Collection[];
 }
 
 export interface Customer {
@@ -476,4 +545,5 @@ export interface StorefrontProps {
   onToggleLock?: (blockId: string) => void;
   onSwitchLayout?: (blockId: string) => void;
   showCartDrawer?: boolean;
+  collections?: Collection[];
 }
