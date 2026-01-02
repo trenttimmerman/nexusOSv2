@@ -844,6 +844,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [logoMode, setLogoMode] = useState<'text' | 'image'>(config.logoUrl ? 'image' : 'text');
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
+  // SEO Generation State
+  const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
+
   // Live Preview State
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile' | 'tablet'>('desktop');
   const [previewOrientation, setPreviewOrientation] = useState<'portrait' | 'landscape'>('portrait');
@@ -2130,6 +2133,235 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <Sparkles size={16} />
                     Generate AI Color Palette
                   </button>
+                </div>
+              </div>
+
+              {/* SEO Section */}
+              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700 md:col-span-2">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Search size={16} className="text-green-500" /> SEO & Meta Tags
+                  </h4>
+                  <button
+                    onClick={async () => {
+                      if (!genAI) {
+                        showToast('AI not available - check API key', 'error');
+                        return;
+                      }
+                      setIsGeneratingSEO(true);
+                      try {
+                        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                        const prompt = `You are an expert SEO specialist. Generate comprehensive SEO metadata for an online store.
+
+Store Name: ${config.name || 'Online Store'}
+Store Type: ${config.storeType || 'ecommerce'}
+Primary Color: ${config.primaryColor}
+
+Generate a JSON object with this exact structure:
+{
+  "metaTitle": "string (50-60 chars, include brand name, primary keyword)",
+  "metaDescription": "string (150-160 chars, compelling, include call-to-action)",
+  "metaKeywords": ["array", "of", "5-10", "relevant", "keywords"],
+  "ogTitle": "string (same as metaTitle or slightly different for social)",
+  "ogDescription": "string (can be longer, more engaging for social sharing)",
+  "twitterTitle": "string (optimized for Twitter)",
+  "twitterDescription": "string (optimized for Twitter, under 200 chars)",
+  "structuredData": {
+    "type": "Store",
+    "priceRange": "$$"
+  }
+}
+
+Make it professional, SEO-optimized, and specific to the store name.
+Return ONLY the JSON object, no markdown.`;
+
+                        const result = await model.generateContent(prompt);
+                        const response = await result.response;
+                        const text = response.text().trim();
+                        
+                        const jsonStr = text.replace(/```json\n?|\n?```/g, '');
+                        const seoData = JSON.parse(jsonStr);
+                        
+                        onConfigChange({ 
+                          ...config, 
+                          seo: {
+                            ...config.seo,
+                            ...seoData,
+                            robotsIndex: true,
+                            robotsFollow: true,
+                            twitterCard: 'summary_large_image'
+                          }
+                        });
+                        showToast('SEO generated successfully!', 'success');
+                      } catch (error) {
+                        console.error('SEO generation error:', error);
+                        showToast('Failed to generate SEO', 'error');
+                      } finally {
+                        setIsGeneratingSEO(false);
+                      }
+                    }}
+                    disabled={isGeneratingSEO}
+                    className="px-3 py-1.5 flex items-center gap-2 bg-gradient-to-r from-green-600/20 to-emerald-600/20 hover:from-green-600/30 hover:to-emerald-600/30 border border-green-500/30 rounded-lg text-green-300 text-xs font-bold transition-colors disabled:opacity-50"
+                  >
+                    {isGeneratingSEO ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Sparkles size={14} />
+                    )}
+                    {isGeneratingSEO ? 'Generating...' : 'AI Generate SEO'}
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  {/* Meta Title */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-neutral-400">Meta Title</label>
+                      <span className={`text-[10px] ${(config.seo?.metaTitle?.length || 0) > 60 ? 'text-red-400' : 'text-neutral-500'}`}>
+                        {config.seo?.metaTitle?.length || 0}/60
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      value={config.seo?.metaTitle || ''}
+                      onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, metaTitle: e.target.value } })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-green-500 outline-none"
+                      placeholder="Your Store - Premium Products & Fast Shipping"
+                    />
+                  </div>
+
+                  {/* Meta Description */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-neutral-400">Meta Description</label>
+                      <span className={`text-[10px] ${(config.seo?.metaDescription?.length || 0) > 160 ? 'text-red-400' : 'text-neutral-500'}`}>
+                        {config.seo?.metaDescription?.length || 0}/160
+                      </span>
+                    </div>
+                    <textarea
+                      value={config.seo?.metaDescription || ''}
+                      onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, metaDescription: e.target.value } })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-green-500 outline-none resize-none h-20"
+                      placeholder="Discover our curated collection of premium products. Free shipping on orders over $50. Shop now!"
+                    />
+                  </div>
+
+                  {/* Keywords */}
+                  <div>
+                    <label className="text-xs font-bold text-neutral-400 mb-1 block">Meta Keywords</label>
+                    <input
+                      type="text"
+                      value={config.seo?.metaKeywords?.join(', ') || ''}
+                      onChange={(e) => onConfigChange({ 
+                        ...config, 
+                        seo: { ...config.seo, metaKeywords: e.target.value.split(',').map(k => k.trim()).filter(k => k) } 
+                      })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-green-500 outline-none"
+                      placeholder="ecommerce, online store, premium products, fast shipping"
+                    />
+                    <p className="text-[10px] text-neutral-500 mt-1">Separate keywords with commas</p>
+                  </div>
+
+                  {/* Social Preview */}
+                  <div className="pt-3 border-t border-neutral-700">
+                    <h5 className="text-xs font-bold text-neutral-400 mb-3 flex items-center gap-2">
+                      <Globe size={14} /> Social Sharing Preview
+                    </h5>
+                    
+                    {/* Google Preview */}
+                    <div className="bg-white rounded-lg p-4 mb-3">
+                      <p className="text-[13px] text-blue-600 hover:underline cursor-pointer truncate font-medium">
+                        {config.seo?.metaTitle || config.name || 'Your Store Name'}
+                      </p>
+                      <p className="text-xs text-green-700 truncate">https://yourstore.com</p>
+                      <p className="text-xs text-gray-600 line-clamp-2 mt-1">
+                        {config.seo?.metaDescription || 'Add a meta description to improve your search engine visibility...'}
+                      </p>
+                    </div>
+
+                    {/* OG Title & Description */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[10px] text-neutral-500 mb-1 block">OG Title (Social)</label>
+                        <input
+                          type="text"
+                          value={config.seo?.ogTitle || ''}
+                          onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, ogTitle: e.target.value } })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-white text-xs focus:border-green-500 outline-none"
+                          placeholder={config.seo?.metaTitle || 'Social title'}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-neutral-500 mb-1 block">OG Image URL</label>
+                        <input
+                          type="text"
+                          value={config.seo?.ogImage || ''}
+                          onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, ogImage: e.target.value } })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-white text-xs focus:border-green-500 outline-none"
+                          placeholder="https://... (1200x630 recommended)"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Advanced SEO */}
+                  <div className="pt-3 border-t border-neutral-700">
+                    <h5 className="text-xs font-bold text-neutral-400 mb-3 flex items-center gap-2">
+                      <Settings size={14} /> Advanced Settings
+                    </h5>
+                    <div className="grid grid-cols-2 gap-3">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.seo?.robotsIndex !== false}
+                          onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, robotsIndex: e.target.checked } })}
+                          className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                        />
+                        <span className="text-xs text-neutral-300">Allow Search Indexing</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.seo?.robotsFollow !== false}
+                          onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, robotsFollow: e.target.checked } })}
+                          className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                        />
+                        <span className="text-xs text-neutral-300">Allow Link Following</span>
+                      </label>
+                    </div>
+                    <div className="mt-3">
+                      <label className="text-[10px] text-neutral-500 mb-1 block">Canonical URL (optional)</label>
+                      <input
+                        type="text"
+                        value={config.seo?.canonicalUrl || ''}
+                        onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, canonicalUrl: e.target.value } })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-white text-xs focus:border-green-500 outline-none"
+                        placeholder="https://yourstore.com"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mt-3">
+                      <div>
+                        <label className="text-[10px] text-neutral-500 mb-1 block">Google Verification</label>
+                        <input
+                          type="text"
+                          value={config.seo?.googleSiteVerification || ''}
+                          onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, googleSiteVerification: e.target.value } })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-white text-xs focus:border-green-500 outline-none"
+                          placeholder="Verification code"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-neutral-500 mb-1 block">Bing Verification</label>
+                        <input
+                          type="text"
+                          value={config.seo?.bingSiteVerification || ''}
+                          onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, bingSiteVerification: e.target.value } })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-white text-xs focus:border-green-500 outline-none"
+                          placeholder="Verification code"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 

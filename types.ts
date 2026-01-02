@@ -129,6 +129,32 @@ export interface StoreConfig {
   footerStyle: FooterStyleId;
   scrollbarStyle: ScrollbarStyleId;
   
+  // SEO - Global Site SEO
+  seo?: {
+    metaTitle?: string;           // <title> tag - 50-60 chars
+    metaDescription?: string;     // <meta description> - 150-160 chars
+    metaKeywords?: string[];      // <meta keywords> - for reference
+    ogTitle?: string;             // Open Graph title
+    ogDescription?: string;       // Open Graph description
+    ogImage?: string;             // Open Graph image URL (1200x630)
+    twitterCard?: 'summary' | 'summary_large_image';
+    twitterTitle?: string;
+    twitterDescription?: string;
+    twitterImage?: string;
+    canonicalUrl?: string;        // Canonical URL
+    robotsIndex?: boolean;        // Allow indexing
+    robotsFollow?: boolean;       // Allow following links
+    structuredData?: {            // JSON-LD structured data
+      type?: 'Store' | 'Organization' | 'LocalBusiness';
+      priceRange?: string;        // e.g. "$$" or "$10-$100"
+      address?: string;
+      telephone?: string;
+      openingHours?: string[];
+    };
+    googleSiteVerification?: string;
+    bingSiteVerification?: string;
+  };
+  
   // Footer Colors
   footerBackgroundColor?: string;
   footerTextColor?: string;
