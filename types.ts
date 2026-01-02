@@ -124,6 +124,7 @@ export interface StoreConfig {
   tagline?: string; // Store tagline/description
   currency: string;
   headerStyle: HeaderStyleId;
+  headerData?: Record<string, any>; // Per-header customization data
   heroStyle: HeroStyleId;
   productCardStyle: ProductCardStyleId;
   footerStyle: FooterStyleId;

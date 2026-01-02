@@ -1,6 +1,26 @@
 import React from 'react';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Search, User } from 'lucide-react';
 import { NavLink } from '../types';
+
+// Header customization data structure
+export interface HeaderData {
+  // Visibility toggles
+  showSearch?: boolean;
+  showAccount?: boolean;
+  showCart?: boolean;
+  // Colors
+  backgroundColor?: string;
+  borderColor?: string;
+  textColor?: string;
+  textHoverColor?: string;
+  cartBadgeColor?: string;
+  cartBadgeTextColor?: string;
+  // Layout
+  sticky?: boolean;
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
+  paddingX?: string;
+  paddingY?: string;
+}
 
 interface HeaderProps {
   storeName: string;
@@ -13,9 +33,190 @@ interface HeaderProps {
   onLinkClick?: (href: string) => void;
   primaryColor?: string;
   secondaryColor?: string;
+  data?: HeaderData; // Per-header customization
 }
 
-// Placeholder header - all headers archived to HeaderLibrary.archive.tsx
+// Default values for HeaderCanvas
+const CANVAS_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  backgroundColor: '#ffffff',
+  borderColor: '#f3f4f6',
+  textColor: '#6b7280',
+  textHoverColor: '#000000',
+  cartBadgeColor: '#000000',
+  cartBadgeTextColor: '#ffffff',
+  sticky: true,
+  maxWidth: '7xl',
+  paddingX: '24px',
+  paddingY: '16px',
+};
+
+// Reusable Logo component
+const Logo: React.FC<{
+  storeName: string;
+  logoUrl?: string;
+  logoHeight?: number;
+  className?: string;
+  onClick?: () => void;
+}> = ({ storeName, logoUrl, logoHeight = 32, className, onClick }) => {
+  const content = logoUrl ? (
+    <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px`, width: 'auto' }} className="object-contain" />
+  ) : (
+    <span className={className}>{storeName}</span>
+  );
+
+  if (onClick) {
+    return <button onClick={onClick} className="cursor-pointer">{content}</button>;
+  }
+  return <>{content}</>;
+};
+
+// Reusable NavItem component
+const NavItem: React.FC<{
+  link: NavLink;
+  className?: string;
+  style?: React.CSSProperties;
+  hoverColor?: string;
+  onClick?: (href: string) => void;
+}> = ({ link, className, style, hoverColor, onClick }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
+  
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      e.preventDefault();
+      onClick(link.href);
+    }
+  };
+
+  return (
+    <a
+      href={link.href}
+      onClick={handleClick}
+      className={className}
+      style={{
+        ...style,
+        color: isHovered && hoverColor ? hoverColor : style?.color,
+        transition: 'color 0.15s ease',
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {link.label}
+    </a>
+  );
+};
+
+// 1. HeaderCanvas - "Classic Clean" (Minimalist, Clean, Airy)
+export const HeaderCanvas: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  // Merge defaults with customization
+  const settings = { ...CANVAS_DEFAULTS, ...data };
+  
+  const maxWidthClass = settings.maxWidth === 'full' ? 'max-w-full' : `max-w-${settings.maxWidth}`;
+
+  return (
+    <header
+      className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-[100]`}
+      style={{
+        backgroundColor: settings.backgroundColor,
+        borderBottom: `1px solid ${settings.borderColor}`,
+      }}
+    >
+      <div
+        className={`${maxWidthClass} mx-auto flex items-center justify-between`}
+        style={{
+          paddingLeft: settings.paddingX,
+          paddingRight: settings.paddingX,
+          paddingTop: settings.paddingY,
+          paddingBottom: settings.paddingY,
+          minHeight: '5rem',
+        }}
+      >
+        {/* Left: Logo + Navigation */}
+        <div className="flex items-center gap-8">
+          <Logo
+            storeName={storeName}
+            logoUrl={logoUrl}
+            logoHeight={logoHeight}
+            className="text-2xl font-bold tracking-tight"
+            onClick={onLogoClick}
+          />
+          <nav className="hidden md:flex gap-6">
+            {(links || []).map((link) => (
+              <NavItem
+                key={link.href}
+                link={link}
+                onClick={onLinkClick}
+                className="text-sm font-medium"
+                style={{ color: settings.textColor }}
+                hoverColor={settings.textHoverColor}
+              />
+            ))}
+          </nav>
+        </div>
+
+        {/* Right: Icons */}
+        <div className="flex items-center gap-2">
+          {settings.showSearch && (
+            <button
+              className="p-2 rounded-full transition-colors"
+              style={{ color: settings.textColor }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+            >
+              <Search size={20} />
+            </button>
+          )}
+          {settings.showAccount && (
+            <button
+              className="p-2 rounded-full transition-colors"
+              style={{ color: settings.textColor }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+            >
+              <User size={20} />
+            </button>
+          )}
+          {settings.showCart && (
+            <button
+              onClick={onOpenCart}
+              className="relative p-2 rounded-full transition-colors"
+              style={{ color: settings.textColor }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+            >
+              <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <span
+                  className="absolute top-0 right-0 w-4 h-4 text-[10px] flex items-center justify-center rounded-full"
+                  style={{
+                    backgroundColor: settings.cartBadgeColor,
+                    color: settings.cartBadgeTextColor,
+                  }}
+                >
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// Placeholder for other headers (to be rebuilt one by one)
 const PlaceholderHeader: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-white border-b border-gray-200 sticky top-0 z-[100]">
     <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -50,8 +251,7 @@ const PlaceholderHeader: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
   </header>
 );
 
-// All exports point to placeholder - restore from HeaderLibrary.archive.tsx as needed
-export const HeaderCanvas = PlaceholderHeader;
+// Other headers still use placeholder - restore from HeaderLibrary.archive.tsx as needed
 export const HeaderNebula = PlaceholderHeader;
 export const HeaderBunker = PlaceholderHeader;
 export const HeaderOrbit = PlaceholderHeader;
@@ -122,7 +322,13 @@ export const HEADER_OPTIONS = [
 ];
 
 export const HEADER_FIELDS: Record<string, string[]> = {
-  canvas: [], nebula: [], bunker: [], orbit: [], protocol: [], horizon: [],
+  canvas: [
+    'showSearch', 'showAccount', 'showCart',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth', 'paddingX', 'paddingY'
+  ],
+  nebula: [], bunker: [], orbit: [], protocol: [], horizon: [],
   studio: [], terminal: [], portfolio: [], venture: [], metro: [], modul: [],
   luxe: [], gullwing: [], pop: [], stark: [], offset: [], ticker: [],
   noir: [], ghost: [], pilot: [],

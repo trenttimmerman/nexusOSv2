@@ -70,6 +70,7 @@ import {
   Settings,
   TrendingUp,
   Users,
+  User,
   DollarSign,
   Zap,
   ShoppingBag,
@@ -2041,10 +2042,134 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <p className="text-sm text-neutral-400">Customize your store's header</p>
                   </div>
                 </div>
-                <div className="text-center py-16 bg-neutral-800/30 rounded-xl border border-neutral-700/50">
-                  <PanelTop size={48} className="text-neutral-600 mx-auto mb-4" />
-                  <p className="text-neutral-400">Header customization coming soon</p>
-                  <p className="text-xs text-neutral-500 mt-2">Using default header</p>
+                
+                {/* Current Header Selection */}
+                <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50 mb-6">
+                  <label className="text-sm font-bold text-white mb-3 block">Header Design</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {HEADER_OPTIONS.slice(0, 6).map((option) => (
+                      <button
+                        key={option.id}
+                        onClick={() => onConfigChange({ ...config, headerStyle: option.id as any })}
+                        className={`p-4 rounded-xl border-2 transition-all text-left ${
+                          config.headerStyle === option.id
+                            ? 'border-blue-500 bg-blue-500/10'
+                            : 'border-neutral-700 hover:border-neutral-500'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={`text-sm font-bold ${config.headerStyle === option.id ? 'text-blue-400' : 'text-white'}`}>
+                            {option.name}
+                          </span>
+                          {config.headerStyle === option.id && (
+                            <Check size={16} className="text-blue-400" />
+                          )}
+                        </div>
+                        <p className="text-xs text-neutral-500">{option.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Header Customization */}
+                <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="text-sm font-bold text-white">Customize Header</label>
+                    <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded-lg">
+                      {HEADER_OPTIONS.find(h => h.id === config.headerStyle)?.name || 'Canvas'}
+                    </span>
+                  </div>
+                  
+                  {/* Show/Hide Controls */}
+                  <div className="space-y-3 mb-6">
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Show/Hide Elements</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { key: 'showSearch', label: 'Search', icon: Search },
+                        { key: 'showAccount', label: 'Account', icon: User },
+                        { key: 'showCart', label: 'Cart', icon: ShoppingBag },
+                      ].map(({ key, label, icon: Icon }) => (
+                        <button
+                          key={key}
+                          onClick={() => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, [key]: !(config.headerData?.[key] ?? true) }
+                          })}
+                          className={`flex items-center gap-2 p-3 rounded-lg border transition-colors ${
+                            (config.headerData?.[key] ?? true)
+                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                          }`}
+                        >
+                          <Icon size={16} />
+                          <span className="text-sm">{label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Color Controls */}
+                  <div className="space-y-3 mb-6">
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Colors</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { key: 'backgroundColor', label: 'Background', defaultValue: '#ffffff' },
+                        { key: 'borderColor', label: 'Border', defaultValue: '#f3f4f6' },
+                        { key: 'textColor', label: 'Text', defaultValue: '#6b7280' },
+                        { key: 'textHoverColor', label: 'Text Hover', defaultValue: '#000000' },
+                      ].map(({ key, label, defaultValue }) => (
+                        <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                          <input
+                            type="color"
+                            value={config.headerData?.[key] ?? defaultValue}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              headerData: { ...config.headerData, [key]: e.target.value }
+                            })}
+                            className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                          />
+                          <span className="text-sm text-neutral-300">{label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Layout Controls */}
+                  <div className="space-y-3">
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Layout</p>
+                    <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                      <button
+                        onClick={() => onConfigChange({
+                          ...config,
+                          headerData: { ...config.headerData, sticky: !(config.headerData?.sticky ?? true) }
+                        })}
+                        className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                          (config.headerData?.sticky ?? true)
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-neutral-700 text-neutral-400'
+                        }`}
+                      >
+                        {(config.headerData?.sticky ?? true) ? 'Sticky' : 'Static'}
+                      </button>
+                      <span className="text-sm text-neutral-400">Header position on scroll</span>
+                    </div>
+                    <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                      <label className="text-sm text-neutral-300 mb-2 block">Content Width</label>
+                      <select
+                        value={config.headerData?.maxWidth ?? '7xl'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          headerData: { ...config.headerData, maxWidth: e.target.value }
+                        })}
+                        className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
+                      >
+                        <option value="5xl">Narrow</option>
+                        <option value="6xl">Medium</option>
+                        <option value="7xl">Wide</option>
+                        <option value="full">Full Width</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

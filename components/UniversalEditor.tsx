@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Layout, Image as ImageIcon, Type, AlignLeft, AlignCenter, AlignRight, Palette, Plus, Trash2, ChevronRight, ArrowLeft, Check, Upload, X, Bold, Italic, Link as LinkIcon, List, Loader2, Sparkles, Wand2, Info, ChevronDown, GripVertical, Mail, Phone, MessageSquare, User, FileText, Hash, Calendar, CheckSquare, ToggleLeft, Grid, Columns, Filter, SortAsc, Lightbulb, ExternalLink, Home, ShoppingBag, Users, HelpCircle, Zap, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Layout, Image as ImageIcon, Type, AlignLeft, AlignCenter, AlignRight, Palette, Plus, Trash2, ChevronRight, ArrowLeft, Check, Upload, X, Bold, Italic, Link as LinkIcon, List, Loader2, Sparkles, Wand2, Info, ChevronDown, GripVertical, Mail, Phone, MessageSquare, User, FileText, Hash, Calendar, CheckSquare, ToggleLeft, Grid, Columns, Filter, SortAsc, Lightbulb, ExternalLink, Home, ShoppingBag, Users, HelpCircle, Zap, AlertCircle, Eye } from 'lucide-react';
 import { UniversalSectionData } from '../lib/smartMapper';
 import { useData } from '../context/DataContext';
 import { supabase } from '../lib/supabaseClient';
@@ -616,6 +616,81 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
         placeholder: 'Shop Now' },
       { key: 'dismissible', label: 'Can Dismiss', type: 'toggle', group: 'style', defaultValue: true,
         tip: 'Allow visitors to close the banner' },
+    ]
+  },
+
+  // ============ HEADER CONFIGURATIONS ============
+  'system-header-canvas': {
+    title: 'Header: Classic Clean',
+    description: 'Simple, elegant header with logo, navigation, and action icons',
+    groups: [
+      { id: 'visibility', label: 'Show/Hide', icon: <Eye size={12} /> },
+      { id: 'colors', label: 'Colors', icon: <Palette size={12} /> },
+      { id: 'layout', label: 'Layout', icon: <Grid size={12} /> },
+    ],
+    fields: [
+      // === VISIBILITY GROUP ===
+      { key: 'showSearch', label: 'Show Search Icon', type: 'toggle', group: 'visibility',
+        tip: 'Display the search icon in the header',
+        defaultValue: true },
+      { key: 'showAccount', label: 'Show Account Icon', type: 'toggle', group: 'visibility',
+        tip: 'Display the user account icon',
+        defaultValue: true },
+      { key: 'showCart', label: 'Show Cart Icon', type: 'toggle', group: 'visibility',
+        tip: 'Display the shopping cart icon with badge',
+        defaultValue: true },
+
+      // === COLORS GROUP ===
+      { key: 'backgroundColor', label: 'Background Color', type: 'color', group: 'colors',
+        tip: 'Header background color',
+        defaultValue: '#ffffff' },
+      { key: 'borderColor', label: 'Border Color', type: 'color', group: 'colors',
+        tip: 'Bottom border color',
+        defaultValue: '#f3f4f6' },
+      { key: 'textColor', label: 'Text Color', type: 'color', group: 'colors',
+        tip: 'Navigation link color',
+        defaultValue: '#6b7280' },
+      { key: 'textHoverColor', label: 'Text Hover Color', type: 'color', group: 'colors',
+        tip: 'Color when hovering over links',
+        defaultValue: '#000000' },
+      { key: 'cartBadgeColor', label: 'Cart Badge Color', type: 'color', group: 'colors',
+        tip: 'Background color of the cart count badge',
+        defaultValue: '#000000' },
+      { key: 'cartBadgeTextColor', label: 'Cart Badge Text', type: 'color', group: 'colors',
+        tip: 'Text color of the cart count badge',
+        defaultValue: '#ffffff' },
+
+      // === LAYOUT GROUP ===
+      { key: 'sticky', label: 'Sticky Header', type: 'toggle', group: 'layout',
+        tip: 'Header stays at top when scrolling',
+        defaultValue: true },
+      { key: 'maxWidth', label: 'Content Width', type: 'select', group: 'layout',
+        tip: 'Maximum width of header content',
+        options: [
+          { value: '5xl', label: 'Narrow (5xl)' },
+          { value: '6xl', label: 'Medium (6xl)' },
+          { value: '7xl', label: 'Wide (7xl)' },
+          { value: 'full', label: 'Full Width' },
+        ],
+        defaultValue: '7xl' },
+      { key: 'paddingX', label: 'Horizontal Padding', type: 'select', group: 'layout',
+        tip: 'Space on left and right sides',
+        options: [
+          { value: '16px', label: 'Small (16px)' },
+          { value: '24px', label: 'Medium (24px)' },
+          { value: '32px', label: 'Large (32px)' },
+          { value: '48px', label: 'Extra Large (48px)' },
+        ],
+        defaultValue: '24px' },
+      { key: 'paddingY', label: 'Vertical Padding', type: 'select', group: 'layout',
+        tip: 'Space on top and bottom',
+        options: [
+          { value: '12px', label: 'Small (12px)' },
+          { value: '16px', label: 'Medium (16px)' },
+          { value: '20px', label: 'Large (20px)' },
+          { value: '24px', label: 'Extra Large (24px)' },
+        ],
+        defaultValue: '16px' },
     ]
   },
 };

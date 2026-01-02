@@ -236,6 +236,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                       onLinkClick={(href) => onNavigate?.(href)}
                       primaryColor={primaryColor}
                       secondaryColor={secondaryColor}
+                      data={config.headerData}
                   />
                   <main className="flex-1 pt-20">
                       {/* Back to shop button */}
@@ -618,6 +619,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         onLinkClick={(href) => onNavigate?.(href)}
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
+        data={config.headerData}
       />
 
       <main className="flex-1 pt-20">
