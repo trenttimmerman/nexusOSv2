@@ -4860,6 +4860,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                     >
                                       <Edit3 size={12} />
                                     </button>
+                                    {page.type !== 'home' && (
+                                      <button 
+                                        onClick={(e) => { 
+                                          e.stopPropagation(); 
+                                          if (confirm(`Delete "${page.title}"? This cannot be undone.`)) {
+                                            onDeletePage(page.id);
+                                            if (activePageId === page.id) {
+                                              const homePage = localPages.find(p => p.type === 'home');
+                                              if (homePage) onSetActivePage(homePage.id);
+                                            }
+                                          }
+                                        }} 
+                                        className="p-1 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors" 
+                                        title="Delete page"
+                                      >
+                                        <Trash2 size={12} />
+                                      </button>
+                                    )}
                                     {isActive && <span className="text-[9px] bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20 font-bold">EDIT</span>}
                                   </div>
                                 </div>
