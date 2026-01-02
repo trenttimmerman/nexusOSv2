@@ -1585,175 +1585,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     </div>
   );
 
-  // --- HEADER CONFIG MODAL (Full-screen with preview) ---
+  // --- HEADER CONFIG MODAL (Disabled - Coming Soon) ---
   const renderHeaderModal = () => {
     if (!isHeaderModalOpen) return null;
     
-    // Get the current header component for preview
-    const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
-    const navLinks = pages.map(p => ({
-      label: p.title,
-      href: p.type === 'home' ? '/' : `/${p.slug}`,
-      active: p.id === activePageId,
-    }));
-    
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
-          {/* Modal Header */}
-          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-600/20 rounded-lg">
-                <PanelTop size={20} className="text-blue-400" />
-              </div>
-              <div>
-                <h3 className="text-white font-bold">Header Studio</h3>
-                <p className="text-xs text-neutral-500">Choose a navigation style for your store</p>
-              </div>
-            </div>
-            <button 
-              onClick={() => setIsHeaderModalOpen(false)} 
-              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
-            >
-              <X size={20} />
-            </button>
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
+          <div className="p-3 bg-blue-600/20 rounded-xl w-fit mx-auto mb-4">
+            <PanelTop size={32} className="text-blue-400" />
           </div>
-          
-          {/* Modal Content - Split View */}
-          <div className="flex-1 flex overflow-hidden">
-            {/* Left Panel - Style Selection */}
-            <div className="w-80 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0">
-              <div className="p-4 border-b border-neutral-800">
-                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <Sparkles size={14} /> Branding
-                </h4>
-                <div className="space-y-3 bg-neutral-900 p-3 rounded-xl border border-neutral-800">
-                  <div className="flex bg-black p-1 rounded-lg border border-neutral-800">
-                    <button 
-                      onClick={() => { setLogoMode('text'); onConfigChange({ ...config, logoUrl: '' }); }} 
-                      className={`flex-1 py-2 rounded text-xs font-bold ${logoMode === 'text' ? 'bg-neutral-800 text-white' : 'text-neutral-500'}`}
-                    >
-                      Text Logo
-                    </button>
-                    <button 
-                      onClick={() => setLogoMode('image')} 
-                      className={`flex-1 py-2 rounded text-xs font-bold ${logoMode === 'image' ? 'bg-neutral-800 text-white' : 'text-neutral-500'}`}
-                    >
-                      Image Logo
-                    </button>
-                  </div>
-                  {logoMode === 'image' && (
-                    <div className="space-y-2">
-                      <label className={`flex items-center justify-center gap-2 w-full p-3 border border-dashed border-neutral-700 rounded bg-black cursor-pointer hover:border-blue-500 ${isUploadingLogo ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                        {isUploadingLogo ? <Loader2 size={14} className="animate-spin text-neutral-400" /> : <Upload size={14} className="text-neutral-400" />}
-                        <span className="text-xs text-neutral-400">{isUploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
-                        <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" disabled={isUploadingLogo} />
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-neutral-500">Size:</span>
-                        <input 
-                          type="range" min="20" max="120" 
-                          value={config.logoHeight || 32} 
-                          onChange={(e) => onConfigChange({ ...config, logoHeight: parseInt(e.target.value) })} 
-                          className="flex-1 h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-blue-600" 
-                        />
-                        <span className="text-[10px] text-neutral-400 w-8">{config.logoHeight || 32}px</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
-                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <LayoutTemplate size={14} /> Header Styles
-                </h4>
-                {renderSortControls(modalSort, setModalSort)}
-                <div className="grid grid-cols-1 gap-2 mt-3">
-                  {sortItems(HEADER_OPTIONS, modalSort).map((header) => (
-                    <button 
-                      key={header.id} 
-                      onClick={() => onConfigChange({ ...config, headerStyle: header.id as HeaderStyleId })} 
-                      className={`text-left p-3 rounded-lg border transition-all relative ${
-                        config.headerStyle === header.id 
-                          ? 'bg-blue-600/20 border-blue-500 text-white ring-2 ring-blue-500/50' 
-                          : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600 hover:bg-neutral-800/50'
-                      }`}
-                    >
-                      {(header as any).recommended && (
-                        <span className="absolute -top-2 -right-2 text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">★ TOP</span>
-                      )}
-                      <div className="font-bold text-sm mb-0.5">{header.name}</div>
-                      <div className="text-[11px] opacity-60">{header.description}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            {/* Right Panel - Live Preview */}
-            <div className="flex-1 bg-neutral-800 flex flex-col">
-              <div className="p-3 border-b border-neutral-700 bg-neutral-900 flex items-center justify-between">
-                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Live Preview</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                  <span className="text-[10px] text-neutral-500">Updates instantly</span>
-                </div>
-              </div>
-              <div className="flex-1 overflow-hidden p-6 flex items-start justify-center bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px]">
-                <div className="w-full max-w-4xl bg-white rounded-lg shadow-2xl overflow-hidden border border-neutral-600">
-                  {/* Simulated browser chrome */}
-                  <div className="bg-neutral-200 px-3 py-2 flex items-center gap-2 border-b border-neutral-300">
-                    <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                    </div>
-                    <div className="flex-1 bg-white rounded px-3 py-1 text-xs text-neutral-500 ml-2">
-                      {config.slug ? `yourstore.com` : 'yourstore.com'}
-                    </div>
-                  </div>
-                  {/* Header Preview */}
-                  <div className="relative">
-                    <HeaderComponent
-                      storeName={config.name || 'Your Store'}
-                      logoUrl={config.logoUrl}
-                      logoHeight={config.logoHeight}
-                      links={navLinks}
-                      cartCount={2}
-                      onOpenCart={() => {}}
-                      primaryColor={config.primaryColor}
-                      secondaryColor="#666666"
-                    />
-                  </div>
-                  {/* Placeholder content below header */}
-                  <div className="p-8 bg-gradient-to-b from-neutral-50 to-white min-h-[200px]">
-                    <div className="max-w-2xl mx-auto text-center">
-                      <div className="h-8 bg-neutral-200 rounded w-3/4 mx-auto mb-4"></div>
-                      <div className="h-4 bg-neutral-100 rounded w-1/2 mx-auto mb-6"></div>
-                      <div className="flex gap-4 justify-center">
-                        <div className="h-10 w-32 bg-neutral-900 rounded"></div>
-                        <div className="h-10 w-32 bg-neutral-200 rounded"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Modal Footer */}
-          <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-between items-center shrink-0">
-            <p className="text-xs text-neutral-500">
-              Current: <span className="text-white font-medium">{HEADER_OPTIONS.find(h => h.id === config.headerStyle)?.name || 'Default'}</span>
-            </p>
-            <button 
-              onClick={() => setIsHeaderModalOpen(false)}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-sm transition-colors"
-            >
-              Done
-            </button>
-          </div>
+          <h3 className="text-white font-bold text-xl mb-2">Header Studio</h3>
+          <p className="text-neutral-400 text-sm mb-6">Header customization coming soon</p>
+          <button 
+            onClick={() => setIsHeaderModalOpen(false)}
+            className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-sm transition-colors"
+          >
+            Close
+          </button>
         </div>
       </div>
     );
@@ -2268,155 +2117,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
 
-              {/* Header Style Section */}
+              {/* Header Style Section - Coming Soon */}
               <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700 md:col-span-2">
                 <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
                   <PanelTop size={16} className="text-blue-500" /> Header Style
                 </h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {HEADER_OPTIONS.map((opt) => (
-                    <div key={opt.id} className="relative group">
-                      <button 
-                        onClick={() => {
-                          onConfigChange({ ...config, headerStyle: opt.id as HeaderStyleId });
-                          setPreviewingHeaderId(opt.id as HeaderStyleId);
-                        }}
-                        className={`w-full text-left rounded-lg border transition-all p-4 ${
-                          config.headerStyle === opt.id 
-                            ? 'bg-blue-600/20 border-blue-500 text-white ring-2 ring-blue-500/50' 
-                            : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-500'
-                        }`}
-                      >
-                        <div className="font-bold text-sm mb-1">{opt.name}</div>
-                        <div className="text-[10px] opacity-60 leading-tight">{opt.description}</div>
-                        <div className="mt-2 text-[9px] font-bold text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                          Click to preview →
-                        </div>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Header Color Customization */}
-                <div className="mt-4 space-y-3 p-4 bg-neutral-900/50 rounded-lg border border-neutral-700">
-                  <h5 className="text-xs font-bold text-white mb-3">Header Colors</h5>
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Background Color */}
-                    <div>
-                      <label className="text-[10px] text-neutral-400 mb-1 block">Background</label>
-                      <div className="flex gap-2">
-                        <input 
-                          type="color" 
-                          value={config.headerBgColor || '#ffffff'}
-                          onChange={(e) => onConfigChange({ ...config, headerBgColor: e.target.value })}
-                          className="w-12 h-9 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
-                        />
-                        <input 
-                          type="text" 
-                          value={config.headerBgColor || '#ffffff'}
-                          onChange={(e) => onConfigChange({ ...config, headerBgColor: e.target.value })}
-                          className="flex-1 px-2 py-1.5 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
-                          placeholder="#ffffff"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Text Color */}
-                    <div>
-                      <label className="text-[10px] text-neutral-400 mb-1 block">Text</label>
-                      <div className="flex gap-2">
-                        <input 
-                          type="color" 
-                          value={config.headerTextColor || '#000000'}
-                          onChange={(e) => onConfigChange({ ...config, headerTextColor: e.target.value })}
-                          className="w-12 h-9 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
-                        />
-                        <input 
-                          type="text" 
-                          value={config.headerTextColor || '#000000'}
-                          onChange={(e) => onConfigChange({ ...config, headerTextColor: e.target.value })}
-                          className="flex-1 px-2 py-1.5 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
-                          placeholder="#000000"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Outline Color */}
-                    <div>
-                      <label className="text-[10px] text-neutral-400 mb-1 block">Outline (optional)</label>
-                      <div className="flex gap-2">
-                        <input 
-                          type="color" 
-                          value={config.headerOutlineColor || '#e5e5e5'}
-                          onChange={(e) => onConfigChange({ ...config, headerOutlineColor: e.target.value })}
-                          className="w-12 h-9 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
-                        />
-                        <input 
-                          type="text" 
-                          value={config.headerOutlineColor || '#e5e5e5'}
-                          onChange={(e) => onConfigChange({ ...config, headerOutlineColor: e.target.value })}
-                          className="flex-1 px-2 py-1.5 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
-                          placeholder="#e5e5e5"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Glow Effect Toggle */}
-                    <div>
-                      <label className="text-[10px] text-neutral-400 mb-1 block">Glow Effect</label>
-                      <button
-                        onClick={() => onConfigChange({ ...config, headerGlowEffect: !config.headerGlowEffect })}
-                        className={`w-full h-9 rounded border transition-all ${
-                          config.headerGlowEffect 
-                            ? 'bg-purple-600/20 border-purple-500 text-purple-400' 
-                            : 'bg-neutral-800 border-neutral-600 text-neutral-400'
-                        }`}
-                      >
-                        {config.headerGlowEffect ? 'Enabled' : 'Disabled'}
-                      </button>
-                    </div>
-
-                    {/* Button Background */}
-                    <div>
-                      <label className="text-[10px] text-neutral-400 mb-1 block">Button Background</label>
-                      <div className="flex gap-2">
-                        <input 
-                          type="color" 
-                          value={config.headerButtonBgColor || config.primaryColor}
-                          onChange={(e) => onConfigChange({ ...config, headerButtonBgColor: e.target.value })}
-                          className="w-12 h-9 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
-                        />
-                        <input 
-                          type="text" 
-                          value={config.headerButtonBgColor || config.primaryColor}
-                          onChange={(e) => onConfigChange({ ...config, headerButtonBgColor: e.target.value })}
-                          className="flex-1 px-2 py-1.5 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
-                          placeholder={config.primaryColor}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Button Text */}
-                    <div>
-                      <label className="text-[10px] text-neutral-400 mb-1 block">Button Text</label>
-                      <div className="flex gap-2">
-                        <input 
-                          type="color" 
-                          value={config.headerButtonTextColor || '#ffffff'}
-                          onChange={(e) => onConfigChange({ ...config, headerButtonTextColor: e.target.value })}
-                          className="w-12 h-9 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
-                        />
-                        <input 
-                          type="text" 
-                          value={config.headerButtonTextColor || '#ffffff'}
-                          onChange={(e) => onConfigChange({ ...config, headerButtonTextColor: e.target.value })}
-                          className="flex-1 px-2 py-1.5 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
-                          placeholder="#ffffff"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                <div className="text-center py-8 text-neutral-500">
+                  <p className="text-sm">Header customization coming soon</p>
+                  <p className="text-xs mt-1 opacity-60">Using default header</p>
                 </div>
               </div>
             </div>
