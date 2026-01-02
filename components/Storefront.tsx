@@ -233,6 +233,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                       cartCount={cartCount}
                       onOpenCart={() => setIsCartOpen(true)}
                       onLogoClick={() => onNavigate?.('/')}
+                      onLinkClick={(href) => onNavigate?.(href)}
                   />
                   <main className="flex-1 pt-20">
                       {/* Back to shop button */}
@@ -606,6 +607,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         links={navLinks}
         cartCount={cartCount}
         onOpenCart={() => setIsCartOpen(true)}
+        onLinkClick={(href) => onNavigate?.(href)}
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
       />

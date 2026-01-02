@@ -12,9 +12,26 @@ interface HeaderProps {
   cartCount: number;
   onOpenCart?: () => void;
   onLogoClick?: () => void;
+  onLinkClick?: (href: string) => void;
   primaryColor?: string;
   secondaryColor?: string;
 }
+
+// Reusable NavItem component that handles click-based navigation
+const NavItem: React.FC<{link: NavLink, className?: string, onClick?: (href: string) => void, children?: React.ReactNode}> = ({ link, className, onClick, children }) => {
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      e.preventDefault();
+      onClick(link.href);
+    }
+  };
+  
+  return (
+    <a href={link.href} onClick={handleClick} className={className}>
+      {children || link.label}
+    </a>
+  );
+};
 
 // Reusable Logo Helper Component
 const Logo: React.FC<{storeName: string, logoUrl?: string, logoHeight?: number, className?: string, onClick?: () => void}> = ({ storeName, logoUrl, logoHeight = 32, className, onClick }) => {
@@ -29,22 +46,20 @@ const Logo: React.FC<{storeName: string, logoUrl?: string, logoHeight?: number, 
 };
 
 // 1. The Canvas (Minimalist, Clean, Airy)
-export const HeaderCanvas: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderCanvas: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-[100]">
     <div className="max-w-7xl mx-auto px-6 min-h-[5rem] py-4 flex items-center justify-between">
       <div className="flex items-center gap-8">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-bold tracking-tight" />
         <nav className="hidden md:flex gap-6">
           {(links || []).map(l => (
-            <Link key={l.label} to={l.href} className="text-sm font-medium text-gray-500 hover:text-black transition-colors">
-              {l.label}
-            </Link>
+            <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-sm font-medium text-gray-500 hover:text-black transition-colors" />
           ))}
         </nav>
       </div>
       <div className="flex items-center gap-4">
         <button className="p-2 hover:bg-gray-50 rounded-full transition-colors"><Search size={20} /></button>
-        <Link to="/account" className="p-2 hover:bg-gray-50 rounded-full transition-colors"><User size={20} /></Link>
+        <button className="p-2 hover:bg-gray-50 rounded-full transition-colors"><User size={20} /></button>
         <div onClick={onOpenCart} className="relative p-2 hover:bg-gray-50 rounded-full transition-colors cursor-pointer">
           <ShoppingBag size={20} />
           {cartCount > 0 && <span className="absolute top-0 right-0 w-4 h-4 bg-black text-white text-[10px] flex items-center justify-center rounded-full">{cartCount}</span>}
@@ -55,7 +70,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 2. The Nebula (Glassmorphic, Floating, Blur)
-export const HeaderNebula: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderNebula: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="sticky top-0 z-[100] flex justify-center px-4 pt-4">
     <div className="bg-white/60 backdrop-blur-xl border border-white/20 shadow-lg rounded-full px-8 py-3 flex items-center gap-12 max-w-4xl w-full justify-between">
        <div className="flex items-center gap-2">
@@ -64,9 +79,7 @@ export const HeaderNebula: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
        </div>
        <nav className="hidden md:flex gap-8">
           {(links || []).map(l => (
-            <a key={l.label} href={l.href} className="text-xs font-semibold tracking-widest uppercase text-gray-600 hover:text-blue-600 transition-colors">
-              {l.label}
-            </a>
+            <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-xs font-semibold tracking-widest uppercase text-gray-600 hover:text-blue-600 transition-colors" />
           ))}
        </nav>
        <div className="flex items-center gap-4 text-gray-800">
@@ -81,7 +94,7 @@ export const HeaderNebula: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 3. The Bunker (Brutalist, High Contrast, Bold)
-export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-yellow-400 border-b-4 border-black sticky top-0 z-50 font-mono">
     <div className="w-full bg-black text-yellow-400 text-xs py-1 px-2 overflow-hidden whitespace-nowrap">
        <div className="animate-marquee inline-block">
@@ -96,9 +109,7 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
       <nav className="hidden md:flex items-stretch justify-center bg-yellow-400">
         <div className="flex w-full h-full divide-x-4 divide-black border-l-0">
           {(links || []).map(l => (
-            <a key={l.label} href={l.href} className="flex-1 flex items-center justify-center text-sm font-bold uppercase hover:bg-black hover:text-yellow-400 transition-colors px-4 py-2">
-              {l.label}
-            </a>
+            <NavItem key={l.label} link={l} onClick={onLinkClick} className="flex-1 flex items-center justify-center text-sm font-bold uppercase hover:bg-black hover:text-yellow-400 transition-colors px-4 py-2" />
           ))}
         </div>
       </nav>
@@ -114,7 +125,7 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 4. The Orbit (Dynamic Island style, Dark)
-export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => {
+export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -144,7 +155,7 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
              <div className="flex flex-col gap-3">
                 <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Navigation</span>
                 {(links || []).map(l => (
-                  <a key={l.label} href={l.href} className="text-lg font-medium hover:text-green-400 transition-colors">{l.label}</a>
+                  <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-lg font-medium hover:text-green-400 transition-colors" />
                 ))}
              </div>
              <div className="flex flex-col gap-3">
@@ -164,7 +175,7 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 }
 
 // 5. The Protocol (Cyberpunk/Brutalist)
-export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => {
+export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => {
   return (
     <header className="sticky top-0 z-50 bg-yellow-400 border-b-4 border-black font-mono">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -172,7 +183,7 @@ export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
           <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-black uppercase tracking-tighter" />
           <nav className="hidden md:flex gap-6">
             {(links || []).map(l => (
-              <a key={l.label} href={l.href} className="text-sm font-bold uppercase hover:underline decoration-2 underline-offset-4">{l.label}</a>
+              <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-sm font-bold uppercase hover:underline decoration-2 underline-offset-4" />
             ))}
           </nav>
         </div>
@@ -193,7 +204,7 @@ export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
     </header>
   );
 }// 6. The Horizon (Double Decker, Editorial)
-export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full sticky top-0 z-50">
     <div className="bg-neutral-900 text-white py-2 px-6 flex justify-between items-center text-xs font-medium tracking-wide">
       <div className="flex gap-4">
@@ -210,7 +221,7 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
        <Menu size={24} className="md:hidden" />
        <nav className="hidden md:flex gap-8">
           {(links || []).slice(0, 2).map(l => (
-            <a key={l.label} href={l.href} className="text-sm font-bold uppercase tracking-wider hover:underline underline-offset-4">{l.label}</a>
+            <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-sm font-bold uppercase tracking-wider hover:underline underline-offset-4" />
           ))}
        </nav>
        
@@ -220,7 +231,7 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 
        <nav className="hidden md:flex gap-8">
           {(links || []).slice(2).map(l => (
-            <a key={l.label} href={l.href} className="text-sm font-bold uppercase tracking-wider hover:underline underline-offset-4">{l.label}</a>
+            <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-sm font-bold uppercase tracking-wider hover:underline underline-offset-4" />
           ))}
        </nav>
        
@@ -236,7 +247,7 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 );
 
 // 7. The Studio (Sidebar Navigation)
-export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 bg-neutral-50 border-r border-neutral-200 flex-col p-8 z-50">
     <div className="mb-12">
       <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight || 48} className="text-2xl font-black tracking-tighter uppercase leading-none" />
@@ -244,9 +255,7 @@ export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
     
     <nav className="flex flex-col gap-6 flex-1">
        {(links || []).map(l => (
-         <Link key={l.label} to={l.href} className="text-lg font-medium text-neutral-500 hover:text-black hover:pl-2 transition-all duration-300">
-           {l.label}
-         </Link>
+         <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-lg font-medium text-neutral-500 hover:text-black hover:pl-2 transition-all duration-300" />
        ))}
     </nav>
 
@@ -270,7 +279,7 @@ export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 8. The Terminal (Developer focused, command line)
-export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-[#1e1e1e] text-[#d4d4d4] font-mono sticky top-0 z-50 border-b border-[#3c3c3c]">
     <div className="flex items-center h-10 px-4 bg-[#252526] text-xs border-b border-[#1e1e1e]">
        <div className="flex gap-2 mr-4">
@@ -291,10 +300,10 @@ export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
 
        <nav className="flex gap-6 text-sm">
           {(links || []).map(l => (
-             <a key={l.label} href={l.href} className="hover:text-white transition-colors flex gap-1">
+             <NavItem key={l.label} link={l} onClick={onLinkClick} className="hover:text-white transition-colors flex gap-1">
                <span className="text-[#c586c0]">import</span>
                <span>{l.label}</span>
-             </a>
+             </NavItem>
           ))}
        </nav>
 
@@ -307,7 +316,7 @@ export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
 );
 
 // 9. The Portfolio (Split Screen, Big Typography)
-export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-white sticky top-0 z-50 mix-blend-difference text-white">
      <div className="grid grid-cols-2 md:grid-cols-4 min-h-[5rem] border-b border-white/20">
         <div className="flex items-center px-6 py-2 border-r border-white/20">
@@ -318,9 +327,7 @@ export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, log
         </div>
         <div className="hidden md:flex items-center border-r border-white/20">
            {(links || []).slice(0, 3).map(l => (
-              <a key={l.label} href={l.href} className="flex-1 h-full flex items-center justify-center hover:bg-white hover:text-black transition-colors text-xs uppercase font-bold border-r border-white/20 last:border-none">
-                 {l.label}
-              </a>
+              <NavItem key={l.label} link={l} onClick={onLinkClick} className="flex-1 h-full flex items-center justify-center hover:bg-white hover:text-black transition-colors text-xs uppercase font-bold border-r border-white/20 last:border-none" />
            ))}
         </div>
         <div onClick={onOpenCart} className="flex items-center justify-between px-6 py-2 cursor-pointer hover:bg-white hover:text-black transition-colors">
@@ -332,7 +339,7 @@ export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, log
 );
 
 // 10. The Venture (Utility First, Search Dominant)
-export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-neutral-100 border-b border-neutral-200 sticky top-0 z-50">
     <div className="max-w-[1600px] mx-auto p-2">
        <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-2 flex items-center justify-between gap-4 min-h-[4rem]">
@@ -357,7 +364,7 @@ export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
           <div className="flex items-center gap-1 pr-2">
              <nav className="hidden md:flex items-center mr-4">
                 {(links || []).map(l => (
-                  <a key={l.label} href={l.href} className="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-black rounded-lg hover:bg-neutral-50 transition-colors">{l.label}</a>
+                  <NavItem key={l.label} link={l} onClick={onLinkClick} className="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-black rounded-lg hover:bg-neutral-50 transition-colors" />
                 ))}
              </nav>
              <button onClick={onOpenCart} className="relative p-2.5 hover:bg-neutral-100 rounded-xl transition-colors text-neutral-700">
@@ -374,16 +381,14 @@ export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 );
 
 // 11. Metro (Tiles, Windows Phone Vibe)
-export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full sticky top-0 z-50 bg-white shadow-sm">
     <div className="grid grid-cols-6 md:grid-cols-12 min-h-[4rem] divide-x divide-neutral-100 border-b border-neutral-100">
       <div className="col-span-2 md:col-span-3 flex items-center justify-center bg-blue-600 text-white font-bold text-xl tracking-tighter overflow-hidden py-2 px-4">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} />
       </div>
       {(links || []).map(l => (
-        <a key={l.label} href={l.href} className="hidden md:flex col-span-2 items-center justify-center text-sm font-bold uppercase text-neutral-500 hover:bg-neutral-50 hover:text-black transition-colors py-2">
-          {l.label}
-        </a>
+        <NavItem key={l.label} link={l} onClick={onLinkClick} className="hidden md:flex col-span-2 items-center justify-center text-sm font-bold uppercase text-neutral-500 hover:bg-neutral-50 hover:text-black transition-colors py-2" />
       ))}
       <div className="col-span-2 md:col-span-1 flex items-center justify-center hover:bg-neutral-50 cursor-pointer py-2">
          <Search size={20} className="text-neutral-600" />
@@ -397,7 +402,7 @@ export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 12. Modul (Swiss Style, Grid)
-export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full border-b border-black sticky top-0 z-50 bg-white font-sans">
     <div className="flex min-h-[3.5rem]">
       <div className="w-48 border-r border-black flex items-center px-4 py-2 font-bold text-lg shrink-0">
@@ -405,9 +410,7 @@ export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
       </div>
       <nav className="flex-1 flex overflow-hidden">
          {(links || []).map(l => (
-           <a key={l.label} href={l.href} className="flex-1 border-r border-black flex items-center justify-center text-xs font-bold uppercase tracking-widest hover:bg-neutral-100 transition-colors px-2 py-2">
-              {l.label}
-           </a>
+           <NavItem key={l.label} link={l} onClick={onLinkClick} className="flex-1 border-r border-black flex items-center justify-center text-xs font-bold uppercase tracking-widest hover:bg-neutral-100 transition-colors px-2 py-2" />
          ))}
       </nav>
       <div className="w-14 border-r border-black flex items-center justify-center hover:bg-neutral-100 cursor-pointer py-2">
@@ -422,7 +425,7 @@ export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 13. Luxe (Serif, Elegant, Centered)
-export const HeaderLuxe: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderLuxe: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-[#faf9f6] sticky top-0 z-50 border-b border-[#e5e5e5]">
     <div className="max-w-7xl mx-auto px-8">
        <div className="min-h-[6rem] py-4 flex flex-col items-center justify-center relative">
@@ -444,9 +447,7 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
        </div>
        <nav className="h-10 border-t border-[#e5e5e5] flex items-center justify-center gap-12">
           {(links || []).map(l => (
-            <a key={l.label} href={l.href} className="text-xs font-medium uppercase tracking-widest text-neutral-500 hover:text-[#d4af37] transition-colors">
-               {l.label}
-            </a>
+            <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-xs font-medium uppercase tracking-widest text-neutral-500 hover:text-[#d4af37] transition-colors" />
           ))}
        </nav>
     </div>
@@ -454,12 +455,12 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
 );
 
 // 14. Gullwing (Symmetrical Split)
-export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-white sticky top-0 z-50 shadow-sm">
     <div className="max-w-7xl mx-auto min-h-[5rem] py-4 px-8 flex items-center justify-between">
        <nav className="flex-1 flex justify-end gap-8 pr-12">
           {(links || []).slice(0, 2).map(l => (
-             <a key={l.label} href={l.href} className="text-sm font-bold text-neutral-600 hover:text-black transition-colors">{l.label}</a>
+             <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-sm font-bold text-neutral-600 hover:text-black transition-colors" />
           ))}
        </nav>
        
@@ -470,7 +471,7 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
        <div className="flex-1 flex justify-between items-center pl-12">
           <nav className="flex gap-8">
              {(links || []).slice(2).map(l => (
-                <a key={l.label} href={l.href} className="text-sm font-bold text-neutral-600 hover:text-black transition-colors">{l.label}</a>
+                <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-sm font-bold text-neutral-600 hover:text-black transition-colors" />
              ))}
           </nav>
           <div onClick={onOpenCart} className="flex items-center gap-4 cursor-pointer hover:text-neutral-600 transition-colors">
@@ -483,7 +484,7 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
 );
 
 // 15. Pop (Neo-Brutalist, Soft)
-export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-[#F3F4F6] sticky top-0 z-50 p-4">
      <div className="bg-white border-2 border-black rounded-xl min-h-[4rem] py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center px-4 justify-between">
         <div className="bg-[#FF90E8] border-2 border-black px-4 py-1 rounded-full font-black text-sm uppercase transform -rotate-2">
@@ -492,9 +493,7 @@ export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeigh
 
         <nav className="hidden md:flex gap-2">
            {(links || []).map(l => (
-              <a key={l.label} href={l.href} className="px-4 py-1.5 rounded-lg border-2 border-transparent hover:border-black hover:bg-[#23A094] hover:text-white font-bold text-sm transition-all">
-                 {l.label}
-              </a>
+              <NavItem key={l.label} link={l} onClick={onLinkClick} className="px-4 py-1.5 rounded-lg border-2 border-transparent hover:border-black hover:bg-[#23A094] hover:text-white font-bold text-sm transition-all" />
            ))}
         </nav>
 
@@ -511,7 +510,7 @@ export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeigh
 );
 
 // 16. Stark (High Contrast, Black & White)
-export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-black text-white sticky top-0 z-50">
      <div className="flex flex-col md:flex-row items-center justify-between p-6">
         <div className="mb-4 md:mb-0">
@@ -520,7 +519,7 @@ export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
         <div className="flex flex-col md:items-end gap-2">
            <nav className="flex gap-6">
               {(links || []).map(l => (
-                 <a key={l.label} href={l.href} className="text-sm font-medium hover:underline decoration-2 underline-offset-4">{l.label}</a>
+                 <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-sm font-medium hover:underline decoration-2 underline-offset-4" />
               ))}
            </nav>
            <div className="flex items-center gap-2 text-xs text-neutral-400">
@@ -536,7 +535,7 @@ export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 17. Offset (Asymmetrical)
-export const HeaderOffset: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderOffset: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-white sticky top-0 z-50 pt-4 px-4 pb-0">
      <div className="flex justify-between items-start mb-4">
         <Logo storeName={`${storeName}.`} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-bold" />
@@ -551,7 +550,7 @@ export const HeaderOffset: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
      <div className="flex justify-end">
         <nav className="bg-neutral-100 rounded-t-xl px-8 py-3 flex gap-8">
            {(links || []).map(l => (
-              <a key={l.label} href={l.href} className="text-sm font-medium text-neutral-600 hover:text-black">{l.label}</a>
+              <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-sm font-medium text-neutral-600 hover:text-black" />
            ))}
         </nav>
      </div>
@@ -560,7 +559,7 @@ export const HeaderOffset: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 18. Ticker (Stock Market Vibe)
-export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full sticky top-0 z-50 bg-white">
      <div className="bg-blue-600 text-white text-xs font-mono py-1 overflow-hidden whitespace-nowrap">
         <div className="animate-marquee inline-block">
@@ -574,9 +573,7 @@ export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
         </div>
         <nav className="hidden md:flex gap-6 h-full">
            {(links || []).map(l => (
-              <a key={l.label} href={l.href} className="h-full flex items-center border-b-2 border-transparent hover:border-blue-600 text-sm font-medium transition-colors px-2">
-                 {l.label}
-              </a>
+              <NavItem key={l.label} link={l} onClick={onLinkClick} className="h-full flex items-center border-b-2 border-transparent hover:border-blue-600 text-sm font-medium transition-colors px-2" />
            ))}
         </nav>
         <button onClick={onOpenCart} className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-xs font-bold flex items-center gap-1 hover:bg-blue-200 transition-colors">
@@ -587,15 +584,13 @@ export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 19. Noir (Dark Mode, Glow)
-export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-[#050505] text-neutral-400 sticky top-0 z-50 border-b border-white/5 shadow-[0_0_15px_rgba(0,0,0,1)]">
      <div className="max-w-7xl mx-auto min-h-[5rem] py-4 px-6 flex items-center justify-between">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-white text-2xl font-light tracking-[0.2em] shadow-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" />
         <nav className="hidden md:flex gap-8">
            {(links || []).map(l => (
-              <a key={l.label} href={l.href} className="text-sm font-light hover:text-white transition-colors hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
-                 {l.label}
-              </a>
+              <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-sm font-light hover:text-white transition-colors hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
            ))}
         </nav>
         <div className="flex items-center gap-6">
@@ -610,7 +605,7 @@ export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
 );
 
 // 20. Ghost (Interaction based)
-export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => (
+export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="sticky top-0 left-0 right-0 z-[100] group hover:bg-white/90 hover:backdrop-blur-md transition-all duration-500 py-6 hover:py-4 px-8 flex justify-between items-center">
      <div className="mix-blend-difference text-white group-hover:text-black transition-colors duration-500">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-xl font-bold" />
@@ -618,9 +613,7 @@ export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 
      <nav className="opacity-0 group-hover:opacity-100 translate-y-[-10px] group-hover:translate-y-0 transition-all duration-500 flex gap-8">
         {(links || []).map(l => (
-           <a key={l.label} href={l.href} className="text-sm font-bold text-black hover:text-blue-600 transition-colors">
-              {l.label}
-           </a>
+           <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-sm font-bold text-black hover:text-blue-600 transition-colors" />
         ))}
      </nav>
 
@@ -636,7 +629,7 @@ export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 21. Pilot (SaaS, Clean, Corporate)
-export const HeaderPilot: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart }) => {
+export const HeaderPilot: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => {
     return (
         <header className="bg-white shadow-md sticky top-0 z-50 w-full">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -654,9 +647,7 @@ export const HeaderPilot: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
                     {/* Middle section: Navigation Links */}
                     <nav className="hidden md:flex space-x-8">
                         {(links || []).map(l => (
-                             <Link key={l.label} to={l.href} className="text-gray-600 hover:text-indigo-600 transition-colors font-medium text-sm">
-                                {l.label}
-                             </Link>
+                             <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-gray-600 hover:text-indigo-600 transition-colors font-medium text-sm" />
                         ))}
                     </nav>
 
