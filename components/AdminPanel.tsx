@@ -818,6 +818,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isInterfaceModalOpen, setIsInterfaceModalOpen] = useState(false);
   const [previewingHeaderId, setPreviewingHeaderId] = useState<HeaderStyleId | null>(null);
   const [settingsTab, setSettingsTab] = useState<'identity' | 'typography' | 'colors' | 'seo' | 'header' | 'scrollbar'>('identity');
+  const [previewingScrollbar, setPreviewingScrollbar] = useState<string | null>(null);
 
   // ADD SECTION STATES
   const [isAddSectionOpen, setIsAddSectionOpen] = useState(false);
@@ -2806,7 +2807,7 @@ Return ONLY the JSON object, no markdown.`;
 
             {/* Scrollbar Tab */}
             {settingsTab === 'scrollbar' && (
-              <div className="max-w-5xl mx-auto">
+              <div className="max-w-6xl mx-auto">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-3 bg-indigo-600/20 rounded-xl">
                     <ArrowDownAZ size={24} className="text-indigo-400" />
@@ -2817,40 +2818,94 @@ Return ONLY the JSON object, no markdown.`;
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {SCROLLBAR_OPTIONS.slice(0, 8).map((opt) => (
-                    <button 
-                      key={opt.id} 
-                      onClick={() => onConfigChange({ ...config, scrollbarStyle: opt.id as ScrollbarStyleId })} 
-                      className={`text-left rounded-xl border-2 transition-all overflow-hidden ${
-                        config.scrollbarStyle === opt.id 
-                          ? 'bg-indigo-600/20 border-indigo-500 text-white ring-2 ring-indigo-500/30' 
-                          : 'bg-neutral-800/30 border-neutral-700/50 text-neutral-400 hover:border-neutral-600'
-                      }`}
-                    >
-                      {/* Scrollbar Preview */}
-                      <div className="h-24 bg-neutral-950 relative overflow-hidden">
-                        <div className="absolute right-0 top-0 bottom-0 w-4 flex items-center justify-center">
-                          <div className={`scrollbar-${opt.id} w-2.5 h-20 rounded-full`} style={{
-                            background: opt.id === 'native' ? '#666' : 
-                                      opt.id === 'minimal' ? '#444' :
-                                      opt.id === 'hidden' ? 'transparent' :
-                                      opt.id === 'nexus' ? '#8B5CF6' :
-                                      opt.id === 'glow' ? '#06b6d4' :
-                                      opt.id === 'gradient-sunset' ? 'linear-gradient(to bottom, #f97316, #ec4899)' :
-                                      opt.id === 'gradient-ocean' ? 'linear-gradient(to bottom, #0ea5e9, #6366f1)' :
-                                      opt.id === 'glass' ? 'rgba(255,255,255,0.1)' : '#666',
-                            boxShadow: opt.id === 'glow' ? '0 0 10px #06b6d4' : 'none',
-                            backdropFilter: opt.id.includes('glass') ? 'blur(10px)' : 'none'
-                          }}></div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Scrollbar Options Grid */}
+                  <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {SCROLLBAR_OPTIONS.slice(0, 12).map((opt) => (
+                      <button 
+                        key={opt.id} 
+                        onClick={() => onConfigChange({ ...config, scrollbarStyle: opt.id as ScrollbarStyleId })}
+                        onMouseEnter={() => setPreviewingScrollbar(opt.id)}
+                        onMouseLeave={() => setPreviewingScrollbar(null)}
+                        className={`text-left rounded-xl border-2 transition-all overflow-hidden ${
+                          config.scrollbarStyle === opt.id 
+                            ? 'bg-indigo-600/20 border-indigo-500 text-white ring-2 ring-indigo-500/30' 
+                            : 'bg-neutral-800/30 border-neutral-700/50 text-neutral-400 hover:border-neutral-500'
+                        }`}
+                      >
+                        <div className="p-3">
+                          <div className="font-bold text-sm mb-0.5">{opt.name}</div>
+                          <div className="text-[10px] opacity-60">{opt.description}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Live Preview Panel */}
+                  <div className="lg:col-span-1">
+                    <div className="sticky top-0">
+                      <div className="bg-neutral-800/50 rounded-xl border border-neutral-700 overflow-hidden">
+                        <div className="p-3 border-b border-neutral-700 bg-neutral-900/50">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-neutral-400">Live Preview</span>
+                            <span className="text-[10px] px-2 py-0.5 bg-indigo-600/20 text-indigo-400 rounded-full">
+                              {previewingScrollbar 
+                                ? SCROLLBAR_OPTIONS.find(o => o.id === previewingScrollbar)?.name 
+                                : SCROLLBAR_OPTIONS.find(o => o.id === config.scrollbarStyle)?.name || 'Native'}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Scrollable Preview Area */}
+                        <div 
+                          className={`h-80 overflow-y-auto p-4 bg-neutral-950 scrollbar-${previewingScrollbar || config.scrollbarStyle || 'native'}`}
+                        >
+                          <div className="space-y-4">
+                            <div className="bg-neutral-800/50 rounded-lg p-4">
+                              <h4 className="text-white font-bold mb-2">Featured Products</h4>
+                              <p className="text-neutral-400 text-sm">Scroll to see the scrollbar in action</p>
+                            </div>
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                              <div key={i} className="bg-neutral-800/30 rounded-lg p-3 flex items-center gap-3">
+                                <div className="w-12 h-12 bg-neutral-700 rounded-lg flex items-center justify-center">
+                                  <Package size={20} className="text-neutral-500" />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="text-sm text-white font-medium">Product Item {i}</div>
+                                  <div className="text-xs text-neutral-500">$99.00</div>
+                                </div>
+                              </div>
+                            ))}
+                            <div className="bg-neutral-800/50 rounded-lg p-4 text-center">
+                              <p className="text-neutral-500 text-xs">End of content</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Preview Info */}
+                        <div className="p-3 border-t border-neutral-700 bg-neutral-900/50">
+                          <p className="text-[10px] text-neutral-500 text-center">
+                            Hover over options to preview • Click to apply
+                          </p>
                         </div>
                       </div>
-                      <div className="p-4">
-                        <div className="font-bold text-base mb-1">{opt.name}</div>
-                        <div className="text-xs opacity-60">{opt.description}</div>
+
+                      {/* Current Selection */}
+                      <div className="mt-4 p-4 bg-neutral-800/30 rounded-xl border border-neutral-700/50">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-xs text-neutral-500">Currently Applied</div>
+                            <div className="text-white font-bold">
+                              {SCROLLBAR_OPTIONS.find(o => o.id === config.scrollbarStyle)?.name || 'Native'}
+                            </div>
+                          </div>
+                          <div className="w-10 h-10 bg-indigo-600/20 rounded-lg flex items-center justify-center">
+                            <CheckCircle2 size={20} className="text-indigo-400" />
+                          </div>
+                        </div>
                       </div>
-                    </button>
-                  ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
