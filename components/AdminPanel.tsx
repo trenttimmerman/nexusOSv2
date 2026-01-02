@@ -1984,6 +1984,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           {/* Modal Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Header Style Section - Coming Soon */}
+              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700 md:col-span-2">
+                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                  <PanelTop size={16} className="text-blue-500" /> Header Style
+                </h4>
+                <div className="text-center py-8 text-neutral-500">
+                  <p className="text-sm">Header customization coming soon</p>
+                  <p className="text-xs mt-1 opacity-60">Using default header</p>
+                </div>
+              </div>
+
               {/* Site Identity Section */}
               <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700">
                 <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
@@ -2117,16 +2128,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
 
-              {/* Header Style Section - Coming Soon */}
-              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700 md:col-span-2">
-                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                  <PanelTop size={16} className="text-blue-500" /> Header Style
-                </h4>
-                <div className="text-center py-8 text-neutral-500">
-                  <p className="text-sm">Header customization coming soon</p>
-                  <p className="text-xs mt-1 opacity-60">Using default header</p>
-                </div>
-              </div>
             </div>
           </div>
           
