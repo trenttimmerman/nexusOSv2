@@ -2046,28 +2046,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 {/* Current Header Selection */}
                 <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50 mb-6">
                   <label className="text-sm font-bold text-white mb-3 block">Header Design</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {HEADER_OPTIONS.slice(0, 6).map((option) => (
-                      <button
-                        key={option.id}
-                        onClick={() => onConfigChange({ ...config, headerStyle: option.id as any })}
-                        className={`p-4 rounded-xl border-2 transition-all text-left ${
-                          config.headerStyle === option.id
-                            ? 'border-blue-500 bg-blue-500/10'
-                            : 'border-neutral-700 hover:border-neutral-500'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className={`text-sm font-bold ${config.headerStyle === option.id ? 'text-blue-400' : 'text-white'}`}>
-                            {option.name}
-                          </span>
-                          {config.headerStyle === option.id && (
-                            <Check size={16} className="text-blue-400" />
-                          )}
-                        </div>
-                        <p className="text-xs text-neutral-500">{option.description}</p>
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-1 gap-3">
+                    {/* Only Canvas is currently available */}
+                    <div className="p-4 rounded-xl border-2 border-blue-500 bg-blue-500/10">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-bold text-blue-400">Classic Clean</span>
+                        <Check size={16} className="text-blue-400" />
+                      </div>
+                      <p className="text-xs text-neutral-500">Simple and elegant</p>
+                    </div>
+                    <p className="text-xs text-neutral-500 mt-2">More header styles coming soon...</p>
                   </div>
                 </div>
 
