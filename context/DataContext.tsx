@@ -49,16 +49,7 @@ const DEFAULT_PAGES: Page[] = [
     slug: '/',
     type: 'home',
     content: '',
-    blocks: [
-      {
-        id: 'scroll-demo',
-        type: 'system-scroll',
-        name: 'Partner Logos',
-        variant: 'logo-marquee',
-        content: '',
-        data: {}
-      }
-    ]
+    blocks: []
   },
   {
     id: 'about',

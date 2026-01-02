@@ -1356,7 +1356,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const deleteBlock = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this section? This action can be undone with Ctrl+Z.')) return;
     
+    // Find the block to ensure it exists
+    const blockToDelete = activePage.blocks.find(b => b.id === id);
+    if (!blockToDelete) {
+      console.warn('[deleteBlock] Block not found:', id);
+      return;
+    }
+    
     const updatedBlocks = activePage.blocks.filter(b => b.id !== id);
+    console.log('[deleteBlock] Deleting block:', { id, blockName: blockToDelete.name, remainingBlocks: updatedBlocks.length });
     
     // Update local state immediately for responsiveness
     setLocalPages(prev => prev.map(p => {
@@ -1369,6 +1377,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     // Persist to database immediately
     try {
       await onUpdatePage(activePageId, { blocks: updatedBlocks });
+      console.log('[deleteBlock] Successfully saved to database');
       showToast('Section deleted', 'success');
     } catch (error) {
       console.error('Failed to delete section:', error);
