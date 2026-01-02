@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
-import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas } from './HeaderLibrary';
+import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas, HeaderNebula } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
@@ -2059,20 +2059,37 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <span className="text-xs text-neutral-500">Changes update instantly</span>
                   </div>
                   <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100">
-                    <HeaderCanvas
-                      storeName={config.name || 'Your Store'}
-                      logoUrl={config.logoUrl}
-                      logoHeight={config.logoHeight || 32}
-                      links={[
-                        { label: 'Shop', href: '/shop', active: false },
-                        { label: 'About', href: '/about', active: false },
-                        { label: 'Contact', href: '/contact', active: false },
-                      ]}
-                      cartCount={2}
-                      onOpenCart={() => {}}
-                      onLinkClick={() => {}}
-                      data={config.headerData}
-                    />
+                    {config.headerStyle === 'nebula' ? (
+                      <HeaderNebula
+                        storeName={config.name || 'Your Store'}
+                        logoUrl={config.logoUrl}
+                        logoHeight={config.logoHeight || 32}
+                        links={[
+                          { label: 'Shop', href: '/shop', active: false },
+                          { label: 'About', href: '/about', active: false },
+                          { label: 'Contact', href: '/contact', active: false },
+                        ]}
+                        cartCount={2}
+                        onOpenCart={() => {}}
+                        onLinkClick={() => {}}
+                        data={config.headerData}
+                      />
+                    ) : (
+                      <HeaderCanvas
+                        storeName={config.name || 'Your Store'}
+                        logoUrl={config.logoUrl}
+                        logoHeight={config.logoHeight || 32}
+                        links={[
+                          { label: 'Shop', href: '/shop', active: false },
+                          { label: 'About', href: '/about', active: false },
+                          { label: 'Contact', href: '/contact', active: false },
+                        ]}
+                        cartCount={2}
+                        onOpenCart={() => {}}
+                        onLinkClick={() => {}}
+                        data={config.headerData}
+                      />
+                    )}
                   </div>
                 </div>
                 
@@ -2080,14 +2097,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50 mb-6">
                   <label className="text-sm font-bold text-white mb-3 block">Header Design</label>
                   <div className="grid grid-cols-1 gap-3">
-                    {/* Only Canvas is currently available */}
-                    <div className="p-4 rounded-xl border-2 border-blue-500 bg-blue-500/10">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-bold text-blue-400">Classic Clean</span>
-                        <Check size={16} className="text-blue-400" />
-                      </div>
-                      <p className="text-xs text-neutral-500">Simple and elegant</p>
-                    </div>
+                    {/* Available headers */}
+                    {[
+                      { id: 'canvas', name: 'Classic Clean', description: 'Simple and elegant' },
+                      { id: 'nebula', name: 'Modern Glass', description: 'Frosted glass effect' },
+                    ].map((header) => (
+                      <button
+                        key={header.id}
+                        onClick={() => onConfigChange({ ...config, headerStyle: header.id as any, headerData: {} })}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          config.headerStyle === header.id
+                            ? 'border-blue-500 bg-blue-500/10'
+                            : 'border-neutral-700 hover:border-neutral-600'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={`text-sm font-bold ${config.headerStyle === header.id ? 'text-blue-400' : 'text-white'}`}>
+                            {header.name}
+                          </span>
+                          {config.headerStyle === header.id && <Check size={16} className="text-blue-400" />}
+                        </div>
+                        <p className="text-xs text-neutral-500">{header.description}</p>
+                      </button>
+                    ))}
                     <p className="text-xs text-neutral-500 mt-2">More header styles coming soon...</p>
                   </div>
                 </div>
