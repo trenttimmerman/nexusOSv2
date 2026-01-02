@@ -947,6 +947,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   
   // Navigation Builder State
   const [showNavBuilder, setShowNavBuilder] = useState(false);
+  const [navDraggedItem, setNavDraggedItem] = useState<string | null>(null);
+  const [navDragOverItem, setNavDragOverItem] = useState<string | null>(null);
+  const [editingNavItem, setEditingNavItem] = useState<string | null>(null);
+  const [editNavTitle, setEditNavTitle] = useState('');
+  const [editNavSlug, setEditNavSlug] = useState('');
   
   // Add New Page Modal State
   const [isAddPageModalOpen, setIsAddPageModalOpen] = useState(false);
@@ -3862,12 +3867,114 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const renderNavBuilder = () => {
     if (!showNavBuilder) return null;
     
-    const navItems = localPages.filter(p => p.type !== 'hidden').map(p => ({
-      id: p.id,
-      label: p.title,
-      href: p.type === 'home' ? '/' : `/${p.slug}`,
-      type: p.type
-    }));
+    // Get pages sorted by display_order if available, otherwise by current array order
+    const sortedPages = [...localPages]
+      .filter(p => p.type !== 'hidden')
+      .sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
+    
+    const handleDragStart = (e: React.DragEvent, pageId: string) => {
+      setNavDraggedItem(pageId);
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', pageId);
+      // Add a slight delay to show the dragging state
+      setTimeout(() => {
+        const element = document.getElementById(`nav-item-${pageId}`);
+        if (element) element.style.opacity = '0.5';
+      }, 0);
+    };
+    
+    const handleDragEnd = (e: React.DragEvent) => {
+      const element = document.getElementById(`nav-item-${navDraggedItem}`);
+      if (element) element.style.opacity = '1';
+      setNavDraggedItem(null);
+      setNavDragOverItem(null);
+    };
+    
+    const handleDragOver = (e: React.DragEvent, pageId: string) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (pageId !== navDraggedItem) {
+        setNavDragOverItem(pageId);
+      }
+    };
+    
+    const handleDragLeave = (e: React.DragEvent) => {
+      setNavDragOverItem(null);
+    };
+    
+    const handleDrop = (e: React.DragEvent, targetPageId: string) => {
+      e.preventDefault();
+      if (!navDraggedItem || navDraggedItem === targetPageId) return;
+      
+      // Reorder pages
+      const draggedIndex = sortedPages.findIndex(p => p.id === navDraggedItem);
+      const targetIndex = sortedPages.findIndex(p => p.id === targetPageId);
+      
+      if (draggedIndex === -1 || targetIndex === -1) return;
+      
+      // Create new order
+      const newOrder = [...sortedPages];
+      const [removed] = newOrder.splice(draggedIndex, 1);
+      newOrder.splice(targetIndex, 0, removed);
+      
+      // Update display_order for all pages
+      const updatedPages = newOrder.map((page, index) => ({
+        ...page,
+        display_order: index
+      }));
+      
+      // Update local state
+      setLocalPages(prev => {
+        const hiddenPages = prev.filter(p => p.type === 'hidden');
+        return [...updatedPages, ...hiddenPages];
+      });
+      
+      // Save to database
+      updatedPages.forEach((page, index) => {
+        onUpdatePage(page.id, { display_order: index });
+      });
+      
+      setNavDraggedItem(null);
+      setNavDragOverItem(null);
+    };
+    
+    const startEditing = (page: any) => {
+      setEditingNavItem(page.id);
+      setEditNavTitle(page.title);
+      setEditNavSlug(page.slug?.replace(/^\//, '') || '');
+    };
+    
+    const saveEditing = () => {
+      if (!editingNavItem) return;
+      
+      const page = localPages.find(p => p.id === editingNavItem);
+      if (!page) return;
+      
+      const newSlug = page.type === 'home' ? '/' : `/${editNavSlug.replace(/^\//, '')}`;
+      
+      // Update local state
+      setLocalPages(prev => prev.map(p => 
+        p.id === editingNavItem 
+          ? { ...p, title: editNavTitle, slug: newSlug }
+          : p
+      ));
+      
+      // Save to database
+      onUpdatePage(editingNavItem, { 
+        title: editNavTitle, 
+        slug: newSlug 
+      });
+      
+      setEditingNavItem(null);
+      setEditNavTitle('');
+      setEditNavSlug('');
+    };
+    
+    const cancelEditing = () => {
+      setEditingNavItem(null);
+      setEditNavTitle('');
+      setEditNavSlug('');
+    };
     
     return (
       <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -3877,32 +3984,107 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <h2 className="text-xl font-bold text-white">Navigation Menu</h2>
               <p className="text-neutral-500 text-sm">Configure your site navigation</p>
             </div>
-            <button onClick={() => setShowNavBuilder(false)} className="text-neutral-400 hover:text-white">
+            <button onClick={() => { setShowNavBuilder(false); cancelEditing(); }} className="text-neutral-400 hover:text-white">
               <X size={20} />
             </button>
           </div>
           
           <div className="p-4 space-y-2 max-h-[50vh] overflow-y-auto custom-scrollbar">
-            <p className="text-xs text-neutral-500 mb-3">Drag to reorder. Pages are automatically included in navigation.</p>
-            {navItems.map((item, index) => (
+            <p className="text-xs text-neutral-500 mb-3">Drag to reorder. Click Edit to rename pages.</p>
+            {sortedPages.map((page, index) => (
               <div 
-                key={item.id}
-                className="flex items-center gap-3 p-3 bg-neutral-800 border border-neutral-700 rounded-lg group"
+                key={page.id}
+                id={`nav-item-${page.id}`}
+                draggable={editingNavItem !== page.id}
+                onDragStart={(e) => handleDragStart(e, page.id)}
+                onDragEnd={handleDragEnd}
+                onDragOver={(e) => handleDragOver(e, page.id)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, page.id)}
+                className={`flex items-center gap-3 p-3 bg-neutral-800 border rounded-lg group transition-all ${
+                  navDragOverItem === page.id 
+                    ? 'border-blue-500 bg-blue-500/10' 
+                    : 'border-neutral-700'
+                } ${navDraggedItem === page.id ? 'opacity-50' : ''}`}
               >
-                <GripVertical size={14} className="text-neutral-600" />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-white">{item.label}</div>
-                  <div className="text-[10px] text-neutral-500 font-mono">{item.href}</div>
+                <div className="cursor-grab active:cursor-grabbing">
+                  <GripVertical size={14} className="text-neutral-500 hover:text-neutral-300" />
                 </div>
-                <button 
-                  onClick={() => {
-                    setActivePageId(item.id);
-                    setShowNavBuilder(false);
-                  }}
-                  className="text-xs text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  Edit
-                </button>
+                
+                {editingNavItem === page.id ? (
+                  <div className="flex-1 space-y-2">
+                    <input
+                      type="text"
+                      value={editNavTitle}
+                      onChange={(e) => setEditNavTitle(e.target.value)}
+                      className="w-full bg-black border border-neutral-600 rounded px-2 py-1 text-sm text-white focus:border-blue-500 outline-none"
+                      placeholder="Page title"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveEditing();
+                        if (e.key === 'Escape') cancelEditing();
+                      }}
+                    />
+                    {page.type !== 'home' && (
+                      <div className="flex items-center gap-1">
+                        <span className="text-neutral-500 text-xs">/</span>
+                        <input
+                          type="text"
+                          value={editNavSlug}
+                          onChange={(e) => setEditNavSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                          className="flex-1 bg-black border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 font-mono focus:border-blue-500 outline-none"
+                          placeholder="page-slug"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveEditing();
+                            if (e.key === 'Escape') cancelEditing();
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div className="flex gap-2 justify-end">
+                      <button 
+                        onClick={cancelEditing}
+                        className="px-2 py-1 text-xs text-neutral-400 hover:text-white"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        onClick={saveEditing}
+                        className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-500"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-white truncate">{page.title}</div>
+                      <div className="text-[10px] text-neutral-500 font-mono truncate">
+                        {page.type === 'home' ? '/' : `/${page.slug?.replace(/^\//, '') || ''}`}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={() => startEditing(page)}
+                        className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded"
+                        title="Edit page"
+                      >
+                        <Edit3 size={12} />
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setActivePageId(page.id);
+                          setShowNavBuilder(false);
+                        }}
+                        className="p-1.5 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded"
+                        title="Open in editor"
+                      >
+                        <ExternalLink size={12} />
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>

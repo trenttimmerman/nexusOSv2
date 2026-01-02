@@ -392,6 +392,7 @@ export interface Page {
   content: string; // Deprecated
   blocks: PageBlock[];
   type: 'home' | 'custom';
+  display_order?: number;
 }
 
 export interface MediaAsset {
