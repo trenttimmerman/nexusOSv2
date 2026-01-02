@@ -148,6 +148,7 @@ const PublicStoreWrapper = () => {
           name: storeConfig?.name || store.name || 'Store',
           currency: storeConfig?.currency || store.settings?.currency || 'USD',
           headerStyle: storeConfig?.header_style || store.settings?.headerStyle || 'canvas',
+          headerData: storeConfig?.header_data || store.settings?.headerData || {},
           heroStyle: storeConfig?.hero_style || store.settings?.heroStyle || 'impact',
           productCardStyle: storeConfig?.product_card_style || store.settings?.productCardStyle || 'classic',
           footerStyle: storeConfig?.footer_style || store.settings?.footerStyle || 'columns',
