@@ -393,6 +393,8 @@ export interface Page {
   blocks: PageBlock[];
   type: 'home' | 'custom';
   display_order?: number;
+  link_type?: 'page' | 'products' | 'collections' | 'contact' | 'external';
+  external_url?: string;
 }
 
 export interface MediaAsset {

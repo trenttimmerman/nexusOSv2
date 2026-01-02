@@ -945,13 +945,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   }, [showVersionHistory, activePageId]);
   
-  // Navigation Builder State
+  // Navigation Builder State (used in Pages & Navigation panel)
   const [showNavBuilder, setShowNavBuilder] = useState(false);
-  const [navDraggedItem, setNavDraggedItem] = useState<string | null>(null);
-  const [navDragOverItem, setNavDragOverItem] = useState<string | null>(null);
-  const [editingNavItem, setEditingNavItem] = useState<string | null>(null);
-  const [editNavTitle, setEditNavTitle] = useState('');
-  const [editNavSlug, setEditNavSlug] = useState('');
+  const [pageDraggedItem, setPageDraggedItem] = useState<string | null>(null);
+  const [pageDragOverItem, setPageDragOverItem] = useState<string | null>(null);
+  const [editingPageItem, setEditingPageItem] = useState<string | null>(null);
+  const [editPageTitle, setEditPageTitle] = useState('');
+  const [editPageSlug, setEditPageSlug] = useState('');
+  const [pageLinkDropdownOpen, setPageLinkDropdownOpen] = useState<string | null>(null);
   
   // Add New Page Modal State
   const [isAddPageModalOpen, setIsAddPageModalOpen] = useState(false);
@@ -3873,7 +3874,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       .sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
     
     const handleDragStart = (e: React.DragEvent, pageId: string) => {
-      setNavDraggedItem(pageId);
+      setPageDraggedItem(pageId);
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', pageId);
       // Add a slight delay to show the dragging state
@@ -3884,30 +3885,30 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
     
     const handleDragEnd = (e: React.DragEvent) => {
-      const element = document.getElementById(`nav-item-${navDraggedItem}`);
+      const element = document.getElementById(`nav-item-${pageDraggedItem}`);
       if (element) element.style.opacity = '1';
-      setNavDraggedItem(null);
-      setNavDragOverItem(null);
+      setPageDraggedItem(null);
+      setPageDragOverItem(null);
     };
     
     const handleDragOver = (e: React.DragEvent, pageId: string) => {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
-      if (pageId !== navDraggedItem) {
-        setNavDragOverItem(pageId);
+      if (pageId !== pageDraggedItem) {
+        setPageDragOverItem(pageId);
       }
     };
     
     const handleDragLeave = (e: React.DragEvent) => {
-      setNavDragOverItem(null);
+      setPageDragOverItem(null);
     };
     
     const handleDrop = (e: React.DragEvent, targetPageId: string) => {
       e.preventDefault();
-      if (!navDraggedItem || navDraggedItem === targetPageId) return;
+      if (!pageDraggedItem || pageDraggedItem === targetPageId) return;
       
       // Reorder pages
-      const draggedIndex = sortedPages.findIndex(p => p.id === navDraggedItem);
+      const draggedIndex = sortedPages.findIndex(p => p.id === pageDraggedItem);
       const targetIndex = sortedPages.findIndex(p => p.id === targetPageId);
       
       if (draggedIndex === -1 || targetIndex === -1) return;
@@ -3934,46 +3935,46 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         onUpdatePage(page.id, { display_order: index });
       });
       
-      setNavDraggedItem(null);
-      setNavDragOverItem(null);
+      setPageDraggedItem(null);
+      setPageDragOverItem(null);
     };
     
     const startEditing = (page: any) => {
-      setEditingNavItem(page.id);
-      setEditNavTitle(page.title);
-      setEditNavSlug(page.slug?.replace(/^\//, '') || '');
+      setEditingPageItem(page.id);
+      setEditPageTitle(page.title);
+      setEditPageSlug(page.slug?.replace(/^\//, '') || '');
     };
     
     const saveEditing = () => {
-      if (!editingNavItem) return;
+      if (!editingPageItem) return;
       
-      const page = localPages.find(p => p.id === editingNavItem);
+      const page = localPages.find(p => p.id === editingPageItem);
       if (!page) return;
       
-      const newSlug = page.type === 'home' ? '/' : `/${editNavSlug.replace(/^\//, '')}`;
+      const newSlug = page.type === 'home' ? '/' : `/${editPageSlug.replace(/^\//, '')}`;
       
       // Update local state
       setLocalPages(prev => prev.map(p => 
-        p.id === editingNavItem 
-          ? { ...p, title: editNavTitle, slug: newSlug }
+        p.id === editingPageItem 
+          ? { ...p, title: editPageTitle, slug: newSlug }
           : p
       ));
       
       // Save to database
-      onUpdatePage(editingNavItem, { 
-        title: editNavTitle, 
+      onUpdatePage(editingPageItem, { 
+        title: editPageTitle, 
         slug: newSlug 
       });
       
-      setEditingNavItem(null);
-      setEditNavTitle('');
-      setEditNavSlug('');
+      setEditingPageItem(null);
+      setEditPageTitle('');
+      setEditPageSlug('');
     };
     
     const cancelEditing = () => {
-      setEditingNavItem(null);
-      setEditNavTitle('');
-      setEditNavSlug('');
+      setEditingPageItem(null);
+      setEditPageTitle('');
+      setEditPageSlug('');
     };
     
     return (
@@ -3995,28 +3996,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <div 
                 key={page.id}
                 id={`nav-item-${page.id}`}
-                draggable={editingNavItem !== page.id}
+                draggable={editingPageItem !== page.id}
                 onDragStart={(e) => handleDragStart(e, page.id)}
                 onDragEnd={handleDragEnd}
                 onDragOver={(e) => handleDragOver(e, page.id)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, page.id)}
                 className={`flex items-center gap-3 p-3 bg-neutral-800 border rounded-lg group transition-all ${
-                  navDragOverItem === page.id 
+                  pageDragOverItem === page.id 
                     ? 'border-blue-500 bg-blue-500/10' 
                     : 'border-neutral-700'
-                } ${navDraggedItem === page.id ? 'opacity-50' : ''}`}
+                } ${pageDraggedItem === page.id ? 'opacity-50' : ''}`}
               >
                 <div className="cursor-grab active:cursor-grabbing">
                   <GripVertical size={14} className="text-neutral-500 hover:text-neutral-300" />
                 </div>
                 
-                {editingNavItem === page.id ? (
+                {editingPageItem === page.id ? (
                   <div className="flex-1 space-y-2">
                     <input
                       type="text"
-                      value={editNavTitle}
-                      onChange={(e) => setEditNavTitle(e.target.value)}
+                      value={editPageTitle}
+                      onChange={(e) => setEditPageTitle(e.target.value)}
                       className="w-full bg-black border border-neutral-600 rounded px-2 py-1 text-sm text-white focus:border-blue-500 outline-none"
                       placeholder="Page title"
                       autoFocus
@@ -4030,8 +4031,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <span className="text-neutral-500 text-xs">/</span>
                         <input
                           type="text"
-                          value={editNavSlug}
-                          onChange={(e) => setEditNavSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                          value={editPageSlug}
+                          onChange={(e) => setEditPageSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                           className="flex-1 bg-black border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 font-mono focus:border-blue-500 outline-none"
                           placeholder="page-slug"
                           onKeyDown={(e) => {
@@ -4683,23 +4684,184 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   {/* Pages & Navigation */}
                   <div className="bg-neutral-900 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-xl overflow-hidden">
                     <button onClick={() => setDesignSections(prev => ({ ...prev, pages: !prev.pages }))} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
-                      <div className="flex items-center gap-3"><div className="p-1.5 bg-neutral-800 rounded text-neutral-400"><FileText size={16} /></div><span className="font-bold text-sm text-white">Pages</span></div><ChevronDown size={16} className={`text-neutral-500 transition-transform ${designSections.pages ? 'rotate-180' : ''}`} />
+                      <div className="flex items-center gap-3"><div className="p-1.5 bg-neutral-800 rounded text-neutral-400"><FileText size={16} /></div><span className="font-bold text-sm text-white">Pages & Navigation</span></div><ChevronDown size={16} className={`text-neutral-500 transition-transform ${designSections.pages ? 'rotate-180' : ''}`} />
                     </button>
                     {designSections.pages && (
                       <div className="p-2 border-t border-neutral-800 bg-black/20 space-y-1">
-                        {pages.map(page => {
+                        <p className="text-[10px] text-neutral-500 px-2 mb-2">Drag to reorder navigation. Click edit to rename.</p>
+                        {[...localPages]
+                          .filter(p => p.type !== 'hidden')
+                          .sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999))
+                          .map((page, index) => {
                           const isActive = activePageId === page.id;
+                          const isEditing = editingPageItem === page.id;
+                          const isDragging = pageDraggedItem === page.id;
+                          const isDragOver = pageDragOverItem === page.id;
+                          
                           return (
-                            <div key={page.id} className={`rounded-lg transition-colors ${isActive ? 'bg-neutral-900 border border-neutral-800' : ''}`}>
-                              <button onClick={() => { onSetActivePage(page.id); setSelectedBlockId(null); setShowPageProperties(false); }} className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm transition-colors ${isActive ? 'text-blue-400' : 'text-neutral-400 hover:bg-white/5 hover:text-white'}`}>
-                                <div className="flex items-center gap-3">{page.type === 'home' ? <Home size={14} /> : <FileText size={14} />}<span className="font-medium">{page.type === 'home' ? 'Home' : (page.title || 'Untitled')}</span>{page.type === 'home' && <span className="text-[9px] bg-neutral-800 text-neutral-500 px-1.5 py-0.5 rounded ml-1">Landing</span>}</div>
-                                <div className="flex items-center gap-2">{isActive && (<button onClick={(e) => { e.stopPropagation(); setShowPageProperties(!showPageProperties); }} className={`p-1 rounded hover:bg-neutral-800 transition-colors ${showPageProperties ? 'text-white bg-neutral-800' : 'text-neutral-500'}`} title="Page Properties"><Settings size={12} /></button>)}{isActive && <span className="text-[10px] bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20 font-bold">EDIT</span>}</div>
-                              </button>
-                              {isActive && showPageProperties && (
-                                <div className="px-4 pb-4 pt-0 space-y-3 animate-in slide-in-from-top-2">
-                                  <div className="h-px bg-neutral-800 w-full mb-3"></div>
-                                  <div><label className="text-[10px] text-neutral-500 uppercase font-bold">Page Title</label><input value={page.title} onChange={(e) => onUpdatePage(page.id, { title: e.target.value })} className="w-full bg-black border border-neutral-700 rounded p-1.5 text-white text-xs mt-1 focus:border-blue-500 outline-none" /></div>
-                                  {page.type === 'custom' && (<div><label className="text-[10px] text-neutral-500 uppercase font-bold">URL Slug</label><input value={page.slug} onChange={(e) => onUpdatePage(page.id, { slug: e.target.value })} className="w-full bg-black border border-neutral-700 rounded p-1.5 text-neutral-400 font-mono text-xs mt-1 focus:border-blue-500 outline-none" /></div>)}
+                            <div 
+                              key={page.id}
+                              draggable={!isEditing}
+                              onDragStart={(e) => {
+                                setPageDraggedItem(page.id);
+                                e.dataTransfer.effectAllowed = 'move';
+                              }}
+                              onDragEnd={() => {
+                                setPageDraggedItem(null);
+                                setPageDragOverItem(null);
+                              }}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                if (page.id !== pageDraggedItem) setPageDragOverItem(page.id);
+                              }}
+                              onDragLeave={() => setPageDragOverItem(null)}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                if (!pageDraggedItem || pageDraggedItem === page.id) return;
+                                
+                                const sortedPages = [...localPages]
+                                  .filter(p => p.type !== 'hidden')
+                                  .sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
+                                
+                                const draggedIndex = sortedPages.findIndex(p => p.id === pageDraggedItem);
+                                const targetIndex = sortedPages.findIndex(p => p.id === page.id);
+                                
+                                if (draggedIndex === -1 || targetIndex === -1) return;
+                                
+                                const newOrder = [...sortedPages];
+                                const [removed] = newOrder.splice(draggedIndex, 1);
+                                newOrder.splice(targetIndex, 0, removed);
+                                
+                                const updatedPages = newOrder.map((p, idx) => ({ ...p, display_order: idx }));
+                                
+                                setLocalPages(prev => {
+                                  const hiddenPages = prev.filter(p => p.type === 'hidden');
+                                  return [...updatedPages, ...hiddenPages];
+                                });
+                                
+                                updatedPages.forEach((p, idx) => onUpdatePage(p.id, { display_order: idx }));
+                                setPageDraggedItem(null);
+                                setPageDragOverItem(null);
+                              }}
+                              className={`rounded-lg transition-all ${isActive ? 'bg-neutral-900 border border-neutral-700' : 'border border-transparent'} ${isDragOver ? 'border-blue-500 bg-blue-500/10' : ''} ${isDragging ? 'opacity-50' : ''}`}
+                            >
+                              {isEditing ? (
+                                <div className="p-3 space-y-2">
+                                  <div>
+                                    <label className="text-[10px] text-neutral-500 uppercase font-bold">Title</label>
+                                    <input
+                                      type="text"
+                                      value={editPageTitle}
+                                      onChange={(e) => setEditPageTitle(e.target.value)}
+                                      className="w-full bg-black border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-blue-500 outline-none mt-1"
+                                      autoFocus
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          const newSlug = page.type === 'home' ? '/' : `/${editPageSlug.replace(/^\//, '')}`;
+                                          setLocalPages(prev => prev.map(p => p.id === page.id ? { ...p, title: editPageTitle, slug: newSlug } : p));
+                                          onUpdatePage(page.id, { title: editPageTitle, slug: newSlug });
+                                          setEditingPageItem(null);
+                                        }
+                                        if (e.key === 'Escape') setEditingPageItem(null);
+                                      }}
+                                    />
+                                  </div>
+                                  {page.type !== 'home' && (
+                                    <div>
+                                      <label className="text-[10px] text-neutral-500 uppercase font-bold">URL Slug</label>
+                                      <div className="flex items-center gap-1 mt-1">
+                                        <span className="text-neutral-500 text-xs">/</span>
+                                        <input
+                                          type="text"
+                                          value={editPageSlug}
+                                          onChange={(e) => setEditPageSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                                          className="flex-1 bg-black border border-neutral-600 rounded px-2 py-1.5 text-xs text-neutral-400 font-mono focus:border-blue-500 outline-none"
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+                                  {/* Link Selector Dropdown */}
+                                  <div>
+                                    <label className="text-[10px] text-neutral-500 uppercase font-bold">Link To</label>
+                                    <select
+                                      value={page.link_type || 'page'}
+                                      onChange={(e) => {
+                                        const linkType = e.target.value;
+                                        setLocalPages(prev => prev.map(p => p.id === page.id ? { ...p, link_type: linkType } : p));
+                                        onUpdatePage(page.id, { link_type: linkType });
+                                      }}
+                                      className="w-full bg-black border border-neutral-600 rounded px-2 py-1.5 text-xs text-white focus:border-blue-500 outline-none mt-1"
+                                    >
+                                      <option value="page">This Page</option>
+                                      <option value="products">All Products</option>
+                                      <option value="collections">Collections</option>
+                                      <option value="contact">Contact</option>
+                                      <option value="external">External URL</option>
+                                    </select>
+                                  </div>
+                                  {page.link_type === 'external' && (
+                                    <div>
+                                      <label className="text-[10px] text-neutral-500 uppercase font-bold">External URL</label>
+                                      <input
+                                        type="url"
+                                        value={page.external_url || ''}
+                                        onChange={(e) => {
+                                          setLocalPages(prev => prev.map(p => p.id === page.id ? { ...p, external_url: e.target.value } : p));
+                                          onUpdatePage(page.id, { external_url: e.target.value });
+                                        }}
+                                        className="w-full bg-black border border-neutral-600 rounded px-2 py-1.5 text-xs text-neutral-400 focus:border-blue-500 outline-none mt-1"
+                                        placeholder="https://..."
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="flex gap-2 justify-end pt-2">
+                                    <button onClick={() => setEditingPageItem(null)} className="px-2 py-1 text-xs text-neutral-400 hover:text-white">Cancel</button>
+                                    <button 
+                                      onClick={() => {
+                                        const newSlug = page.type === 'home' ? '/' : `/${editPageSlug.replace(/^\//, '')}`;
+                                        setLocalPages(prev => prev.map(p => p.id === page.id ? { ...p, title: editPageTitle, slug: newSlug } : p));
+                                        onUpdatePage(page.id, { title: editPageTitle, slug: newSlug });
+                                        setEditingPageItem(null);
+                                      }}
+                                      className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-500"
+                                    >Save</button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div 
+                                  className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors cursor-pointer ${isActive ? 'text-blue-400' : 'text-neutral-400 hover:bg-white/5 hover:text-white'}`}
+                                >
+                                  <div className="cursor-grab active:cursor-grabbing p-1 -ml-1 hover:bg-neutral-800 rounded">
+                                    <GripVertical size={12} className="text-neutral-600" />
+                                  </div>
+                                  <div 
+                                    className="flex-1 flex items-center gap-2 min-w-0"
+                                    onClick={() => { onSetActivePage(page.id); setSelectedBlockId(null); }}
+                                  >
+                                    {page.type === 'home' ? <Home size={14} /> : <FileText size={14} />}
+                                    <span className="font-medium truncate">{page.title || 'Untitled'}</span>
+                                    {page.type === 'home' && <span className="text-[9px] bg-neutral-800 text-neutral-500 px-1.5 py-0.5 rounded">Landing</span>}
+                                    {page.link_type && page.link_type !== 'page' && (
+                                      <span className="text-[9px] bg-purple-900/30 text-purple-400 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                        <Link size={8} />{page.link_type}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <button 
+                                      onClick={(e) => { 
+                                        e.stopPropagation(); 
+                                        setEditingPageItem(page.id);
+                                        setEditPageTitle(page.title);
+                                        setEditPageSlug(page.slug?.replace(/^\//, '') || '');
+                                      }} 
+                                      className="p-1 text-neutral-500 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors" 
+                                      title="Edit page"
+                                    >
+                                      <Edit3 size={12} />
+                                    </button>
+                                    {isActive && <span className="text-[9px] bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20 font-bold">EDIT</span>}
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -4998,14 +5160,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     className="p-1.5 text-neutral-500 hover:text-white transition-colors"
                   >
                     <HelpCircle size={14} />
-                  </button>
-                  {/* Navigation Builder */}
-                  <button 
-                    onClick={() => setShowNavBuilder(true)}
-                    title="Edit Navigation"
-                    className="p-1.5 text-neutral-500 hover:text-white transition-colors"
-                  >
-                    <List size={14} />
                   </button>
                 </div>
                 
