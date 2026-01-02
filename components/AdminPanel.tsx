@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
-import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas, HeaderNebula, HeaderLuxe } from './HeaderLibrary';
+import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas, HeaderNebula, HeaderLuxe, HeaderPilot } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
@@ -2089,6 +2089,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         onLinkClick={() => {}}
                         data={config.headerData}
                       />
+                    ) : config.headerStyle === 'pilot' ? (
+                      <HeaderPilot
+                        storeName={config.name || 'Your Store'}
+                        logoUrl={config.logoUrl}
+                        logoHeight={config.logoHeight || 32}
+                        links={[
+                          { label: 'Shop', href: '/shop', active: false },
+                          { label: 'About', href: '/about', active: false },
+                          { label: 'Contact', href: '/contact', active: false },
+                        ]}
+                        cartCount={2}
+                        onOpenCart={() => {}}
+                        onLinkClick={() => {}}
+                        data={config.headerData}
+                      />
                     ) : (
                       <HeaderCanvas
                         storeName={config.name || 'Your Store'}
@@ -2117,6 +2132,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       { id: 'canvas', name: 'Classic Clean', description: 'Simple and elegant' },
                       { id: 'nebula', name: 'Modern Glass', description: 'Frosted glass effect' },
                       { id: 'luxe', name: 'Luxury Elegant', description: 'High-end with gold accents' },
+                      { id: 'pilot', name: 'Professional', description: 'SaaS/tech with CTA button' },
                     ].map((header) => (
                       <button
                         key={header.id}

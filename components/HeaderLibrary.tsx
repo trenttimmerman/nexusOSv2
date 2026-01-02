@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Search, User, Menu } from 'lucide-react';
+import { ShoppingBag, Search, User, Menu, Hexagon } from 'lucide-react';
 import { NavLink } from '../types';
 
 // Header customization data structure
@@ -466,6 +466,138 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
   );
 };
 
+// Default values for HeaderPilot
+const PILOT_DEFAULTS: HeaderData = {
+  showCart: true,
+  showCTA: true,
+  showLogoBadge: true, // Hexagon icon next to logo
+  backgroundColor: '#ffffff',
+  textColor: '#4b5563', // gray-600
+  textHoverColor: '#4f46e5', // indigo-600
+  accentColor: '#4f46e5', // indigo-600
+  ctaBackgroundColor: '#4f46e5',
+  ctaHoverColor: '#4338ca', // indigo-700
+  ctaTextColor: '#ffffff',
+  ctaText: 'Get Started',
+  cartBadgeColor: '#4f46e5',
+  cartBadgeTextColor: '#ffffff',
+  sticky: true,
+  maxWidth: '7xl',
+};
+
+// 4. HeaderPilot - "Professional" (SaaS/Tech style with CTA button)
+export const HeaderPilot: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...PILOT_DEFAULTS, ...data };
+  const maxWidthClass = settings.maxWidth === 'full' ? 'max-w-full' : `max-w-${settings.maxWidth}`;
+
+  return (
+    <header 
+      className={`shadow-md ${settings.sticky ? 'sticky top-0' : ''} z-[100] w-full`}
+      style={{ backgroundColor: settings.backgroundColor }}
+    >
+      <div className={`${maxWidthClass} mx-auto px-4 sm:px-6 lg:px-8`}>
+        <div className="flex justify-between items-center min-h-[4rem] py-3">
+          {/* Left: Logo with optional badge */}
+          <button onClick={onLogoClick} className="flex-shrink-0 flex items-center gap-2 cursor-pointer">
+            {settings.showLogoBadge && !logoUrl && (
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: settings.accentColor, color: '#ffffff' }}
+              >
+                <Hexagon size={20} />
+              </div>
+            )}
+            <Logo 
+              storeName={storeName} 
+              logoUrl={logoUrl} 
+              logoHeight={logoHeight} 
+              className="text-xl font-bold text-gray-800"
+            />
+          </button>
+
+          {/* Center: Navigation */}
+          <nav className="hidden md:flex space-x-8">
+            {(links || []).map((link) => (
+              <NavItem
+                key={link.href}
+                link={link}
+                onClick={onLinkClick}
+                className="font-medium text-sm transition-colors"
+                style={{ color: settings.textColor }}
+                hoverColor={settings.textHoverColor}
+              />
+            ))}
+          </nav>
+
+          {/* Right: Cart + CTA */}
+          <div className="hidden md:flex items-center gap-4">
+            {settings.showCart && (
+              <button 
+                onClick={onOpenCart} 
+                className="relative cursor-pointer transition-colors"
+                style={{ color: settings.textColor }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+              >
+                <ShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <span 
+                    className="absolute -top-2 -right-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
+            {settings.showCTA && (
+              <a 
+                href="#" 
+                className="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                style={{ backgroundColor: settings.ctaBackgroundColor, color: settings.ctaTextColor }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = settings.ctaHoverColor!)}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = settings.ctaBackgroundColor!)}
+              >
+                {settings.ctaText}
+              </a>
+            )}
+          </div>
+
+          {/* Mobile: Cart + Menu */}
+          <div className="md:hidden flex items-center gap-4">
+            {settings.showCart && (
+              <button onClick={onOpenCart} className="relative cursor-pointer" style={{ color: settings.textColor }}>
+                <ShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <span 
+                    className="absolute -top-2 -right-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
+            <button style={{ color: settings.textColor }}>
+              <Menu size={24} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
 // Placeholder for other headers (to be rebuilt one by one)
 const PlaceholderHeader: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-white border-b border-gray-200 sticky top-0 z-[100]">
@@ -519,7 +651,6 @@ export const HeaderOffset = PlaceholderHeader;
 export const HeaderTicker = PlaceholderHeader;
 export const HeaderNoir = PlaceholderHeader;
 export const HeaderGhost = PlaceholderHeader;
-export const HeaderPilot = PlaceholderHeader;
 
 export const HEADER_COMPONENTS: Record<string, React.FC<HeaderProps>> = {
   canvas: HeaderCanvas,
@@ -586,6 +717,13 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showMenu', 'showSearch', 'showAccount', 'showCart', 'showTagline',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'taglineColor', 'taglineText', 'cartBadgeColor',
+    'sticky', 'maxWidth'
+  ],
+  pilot: [
+    'showCart', 'showCTA', 'showLogoBadge',
+    'backgroundColor', 'textColor', 'textHoverColor', 'accentColor',
+    'ctaBackgroundColor', 'ctaHoverColor', 'ctaTextColor', 'ctaText',
+    'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
   bunker: [], orbit: [], protocol: [], horizon: [],
