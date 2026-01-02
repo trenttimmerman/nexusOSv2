@@ -294,8 +294,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setProducts([]); // No products for this tenant yet
           }
 
-          // 5. Pages - order by display_order for navigation
-          const { data: pagesData, error: pagesError } = await supabase.from('pages').select('*').eq('store_id', currentStoreId).order('display_order');
+          // 5. Pages - fetch all, sort by display_order in JS (column may not exist in DB yet)
+          const { data: pagesData, error: pagesError } = await supabase.from('pages').select('*').eq('store_id', currentStoreId);
           console.log('[DataContext] Pages fetch:', { pagesData, pagesError, currentStoreId });
           if (pagesData && pagesData.length > 0) {
             console.log('[DataContext] Loading', pagesData.length, 'pages from database');

@@ -191,7 +191,6 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   } as React.CSSProperties;
 
   const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
-  console.log('[Storefront] Header:', { headerStyle: config.headerStyle, hasComponent: !!HeaderComponent, componentName: HeaderComponent?.name });
   // Hero, Card, Footer components are now determined dynamically in renderBlock to allow for variants
   const FooterComponent = FOOTER_COMPONENTS[config.footerStyle] || FOOTER_COMPONENTS['columns'];
 
