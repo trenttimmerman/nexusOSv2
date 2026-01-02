@@ -2013,7 +2013,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <img 
                             src={config.logoUrl} 
                             alt="Logo" 
-                            className="h-14 w-auto object-contain bg-neutral-900 rounded-lg p-2 border border-neutral-700"
+                            style={{ height: `${config.logoHeight || 40}px` }}
+                            className="w-auto object-contain bg-neutral-900 rounded-lg p-2 border border-neutral-700"
                           />
                           <button
                             onClick={() => onConfigChange({ ...config, logoUrl: '' })}
@@ -2037,6 +2038,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" disabled={isUploadingLogo} />
                       </label>
                     </div>
+                    {/* Logo Size Slider */}
+                    {config.logoUrl && (
+                      <div className="flex items-center gap-3 mt-3">
+                        <span className="text-[10px] text-neutral-500 w-8">Size</span>
+                        <input 
+                          type="range" 
+                          min="20" 
+                          max="100" 
+                          value={config.logoHeight || 40} 
+                          onChange={(e) => onConfigChange({ ...config, logoHeight: parseInt(e.target.value) })} 
+                          className="flex-1 h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500" 
+                        />
+                        <span className="text-[10px] text-neutral-400 w-10 text-right">{config.logoHeight || 40}px</span>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Store Name */}
