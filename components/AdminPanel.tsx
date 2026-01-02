@@ -2001,6 +2001,42 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <Star size={16} className="text-yellow-500" /> Site Identity
                 </h4>
                 <div className="space-y-4">
+                  {/* Logo Upload */}
+                  <div>
+                    <label className="text-xs font-bold text-neutral-400 mb-2 block">Logo</label>
+                    <div className="flex items-center gap-3">
+                      {config.logoUrl ? (
+                        <div className="relative group">
+                          <img 
+                            src={config.logoUrl} 
+                            alt="Logo" 
+                            className="h-14 w-auto object-contain bg-neutral-900 rounded-lg p-2 border border-neutral-700"
+                          />
+                          <button
+                            onClick={() => onConfigChange({ ...config, logoUrl: '' })}
+                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="h-14 w-14 bg-neutral-900 rounded-lg border border-neutral-700 flex items-center justify-center">
+                          <ImageIcon size={20} className="text-neutral-600" />
+                        </div>
+                      )}
+                      <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-dashed border-neutral-600 rounded-lg cursor-pointer hover:border-purple-500 hover:bg-neutral-900/50 transition-colors ${isUploadingLogo ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        {isUploadingLogo ? (
+                          <Loader2 size={14} className="animate-spin text-neutral-400" />
+                        ) : (
+                          <Upload size={14} className="text-neutral-400" />
+                        )}
+                        <span className="text-xs text-neutral-400">{isUploadingLogo ? 'Uploading...' : config.logoUrl ? 'Change Logo' : 'Upload Logo'}</span>
+                        <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" disabled={isUploadingLogo} />
+                      </label>
+                    </div>
+                  </div>
+                  
+                  {/* Store Name */}
                   <div>
                     <label className="text-xs font-bold text-neutral-400 mb-2 block">Store Name</label>
                     <input
@@ -2011,15 +2047,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       placeholder="Your Store Name"
                     />
                   </div>
+                  
+                  {/* Currency */}
                   <div>
-                    <label className="text-xs font-bold text-neutral-400 mb-2 block">Tagline</label>
-                    <input
-                      type="text"
-                      value={config.tagline || ''}
-                      onChange={(e) => onConfigChange({ ...config, tagline: e.target.value })}
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-purple-500 outline-none"
-                      placeholder="A short description of your business"
-                    />
+                    <label className="text-xs font-bold text-neutral-400 mb-2 block">Currency</label>
+                    <select
+                      value={config.currency || 'USD'}
+                      onChange={(e) => onConfigChange({ ...config, currency: e.target.value })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-purple-500 outline-none cursor-pointer"
+                    >
+                      <option value="USD">USD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="GBP">GBP (£)</option>
+                      <option value="CAD">CAD ($)</option>
+                      <option value="AUD">AUD ($)</option>
+                      <option value="JPY">JPY (¥)</option>
+                      <option value="CNY">CNY (¥)</option>
+                      <option value="INR">INR (₹)</option>
+                      <option value="MXN">MXN ($)</option>
+                      <option value="BRL">BRL (R$)</option>
+                    </select>
                   </div>
                 </div>
               </div>
