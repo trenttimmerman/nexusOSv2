@@ -2219,6 +2219,153 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
                   </div>
 
+                  {/* Button/CTA Controls - only show for headers with CTA */}
+                  {(config.headerStyle === 'pilot') && (
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Button / CTA</p>
+                      
+                      {/* Button Text */}
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-sm text-neutral-300 mb-2 block">Button Text</label>
+                        <input
+                          type="text"
+                          value={config.headerData?.ctaText ?? 'Sign In'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, ctaText: e.target.value }
+                          })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
+                          placeholder="Sign In"
+                        />
+                      </div>
+                      
+                      {/* Button Colors */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: 'ctaBackgroundColor', label: 'Button Color', defaultValue: '#4f46e5' },
+                          { key: 'ctaHoverColor', label: 'Button Hover', defaultValue: '#4338ca' },
+                          { key: 'ctaTextColor', label: 'Button Text', defaultValue: '#ffffff' },
+                          { key: 'cartBadgeColor', label: 'Badge Color', defaultValue: '#4f46e5' },
+                        ].map(({ key, label, defaultValue }) => (
+                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={config.headerData?.[key] ?? defaultValue}
+                              onChange={(e) => onConfigChange({
+                                ...config,
+                                headerData: { ...config.headerData, [key]: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-sm text-neutral-300">{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Show/Hide CTA */}
+                      <button
+                        onClick={() => onConfigChange({
+                          ...config,
+                          headerData: { ...config.headerData, showCTA: !(config.headerData?.showCTA ?? true) }
+                        })}
+                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
+                          (config.headerData?.showCTA ?? true)
+                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                        }`}
+                      >
+                        <span className="text-sm">{(config.headerData?.showCTA ?? true) ? 'Button Visible' : 'Button Hidden'}</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Luxe-specific Controls */}
+                  {(config.headerStyle === 'luxe') && (
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Tagline</p>
+                      
+                      {/* Tagline Text */}
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-sm text-neutral-300 mb-2 block">Tagline Text</label>
+                        <input
+                          type="text"
+                          value={config.headerData?.taglineText ?? 'Est. 2024 • Paris'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, taglineText: e.target.value }
+                          })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
+                          placeholder="Est. 2024 • Paris"
+                        />
+                      </div>
+                      
+                      {/* Accent Color */}
+                      <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <input
+                          type="color"
+                          value={config.headerData?.accentColor ?? '#d4af37'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, accentColor: e.target.value }
+                          })}
+                          className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                        />
+                        <span className="text-sm text-neutral-300">Accent Color (Gold)</span>
+                      </div>
+                      
+                      {/* Show/Hide Tagline */}
+                      <button
+                        onClick={() => onConfigChange({
+                          ...config,
+                          headerData: { ...config.headerData, showTagline: !(config.headerData?.showTagline ?? true) }
+                        })}
+                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
+                          (config.headerData?.showTagline ?? true)
+                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                        }`}
+                      >
+                        <span className="text-sm">{(config.headerData?.showTagline ?? true) ? 'Tagline Visible' : 'Tagline Hidden'}</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Nebula-specific Controls */}
+                  {(config.headerStyle === 'nebula') && (
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Glass Effect</p>
+                      
+                      {/* Accent Color */}
+                      <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <input
+                          type="color"
+                          value={config.headerData?.accentColor ?? '#3b82f6'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, accentColor: e.target.value }
+                          })}
+                          className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                        />
+                        <span className="text-sm text-neutral-300">Accent Color (Blue)</span>
+                      </div>
+                      
+                      {/* Show/Hide Indicator Dot */}
+                      <button
+                        onClick={() => onConfigChange({
+                          ...config,
+                          headerData: { ...config.headerData, showIndicatorDot: !(config.headerData?.showIndicatorDot ?? true) }
+                        })}
+                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
+                          (config.headerData?.showIndicatorDot ?? true)
+                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                        }`}
+                      >
+                        <span className="text-sm">{(config.headerData?.showIndicatorDot ?? true) ? 'Indicator Dot Visible' : 'Indicator Dot Hidden'}</span>
+                      </button>
+                    </div>
+                  )}
+
                   {/* Layout Controls */}
                   <div className="space-y-3">
                     <p className="text-xs text-neutral-400 uppercase tracking-wide">Layout</p>
