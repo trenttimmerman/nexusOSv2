@@ -1688,87 +1688,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </button>
                   ))}
                 </div>
-                
-                {/* Header Colors Section */}
-                <div className="mt-6 pt-4 border-t border-neutral-800">
-                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <Palette size={14} /> Header Colors
-                  </h4>
-                  <div className="space-y-3">
-                    {/* Background Color */}
-                    <div>
-                      <label className="text-[11px] text-neutral-500 mb-1 block">Background</label>
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="color" 
-                          value={config.headerBackgroundColor || '#ffffff'} 
-                          onChange={(e) => onConfigChange({ ...config, headerBackgroundColor: e.target.value })} 
-                          className="w-8 h-8 rounded cursor-pointer border border-neutral-700" 
-                        />
-                        <input 
-                          type="text" 
-                          value={config.headerBackgroundColor || '#ffffff'} 
-                          onChange={(e) => onConfigChange({ ...config, headerBackgroundColor: e.target.value })} 
-                          placeholder="#ffffff" 
-                          className="flex-1 px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-xs text-white" 
-                        />
-                      </div>
-                    </div>
-                    
-                    {/* Text Color */}
-                    <div>
-                      <label className="text-[11px] text-neutral-500 mb-1 block">Text</label>
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="color" 
-                          value={config.headerTextColor || '#000000'} 
-                          onChange={(e) => onConfigChange({ ...config, headerTextColor: e.target.value })} 
-                          className="w-8 h-8 rounded cursor-pointer border border-neutral-700" 
-                        />
-                        <input 
-                          type="text" 
-                          value={config.headerTextColor || '#000000'} 
-                          onChange={(e) => onConfigChange({ ...config, headerTextColor: e.target.value })} 
-                          placeholder="#000000" 
-                          className="flex-1 px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-xs text-white" 
-                        />
-                      </div>
-                    </div>
-                    
-                    {/* Accent Color */}
-                    <div>
-                      <label className="text-[11px] text-neutral-500 mb-1 block">Accent</label>
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="color" 
-                          value={config.headerAccentColor || '#3b82f6'} 
-                          onChange={(e) => onConfigChange({ ...config, headerAccentColor: e.target.value })} 
-                          className="w-8 h-8 rounded cursor-pointer border border-neutral-700" 
-                        />
-                        <input 
-                          type="text" 
-                          value={config.headerAccentColor || '#3b82f6'} 
-                          onChange={(e) => onConfigChange({ ...config, headerAccentColor: e.target.value })} 
-                          placeholder="#3b82f6" 
-                          className="flex-1 px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-xs text-white" 
-                        />
-                      </div>
-                    </div>
-                    
-                    {/* Reset Button */}
-                    <button 
-                      onClick={() => onConfigChange({ 
-                        ...config, 
-                        headerBackgroundColor: undefined, 
-                        headerTextColor: undefined, 
-                        headerAccentColor: undefined 
-                      })}
-                      className="w-full mt-2 px-3 py-1.5 text-[11px] text-neutral-400 hover:text-white border border-neutral-700 hover:border-neutral-600 rounded transition-colors"
-                    >
-                      Reset to Default Colors
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
             
@@ -1803,9 +1722,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       links={navLinks}
                       cartCount={2}
                       onOpenCart={() => {}}
-                      backgroundColor={config.headerBackgroundColor}
-                      textColor={config.headerTextColor}
-                      accentColor={config.headerAccentColor}
+                      primaryColor={config.primaryColor}
+                      secondaryColor="#666666"
                     />
                   </div>
                   {/* Placeholder content below header */}

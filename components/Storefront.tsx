@@ -234,9 +234,8 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                       onOpenCart={() => setIsCartOpen(true)}
                       onLogoClick={() => onNavigate?.('/')}
                       onLinkClick={(href) => onNavigate?.(href)}
-                      backgroundColor={config.headerBackgroundColor}
-                      textColor={config.headerTextColor}
-                      accentColor={config.headerAccentColor}
+                      primaryColor={primaryColor}
+                      secondaryColor={secondaryColor}
                   />
                   <main className="flex-1 pt-20">
                       {/* Back to shop button */}
@@ -617,9 +616,8 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         cartCount={cartCount}
         onOpenCart={() => setIsCartOpen(true)}
         onLinkClick={(href) => onNavigate?.(href)}
-        backgroundColor={config.headerBackgroundColor}
-        textColor={config.headerTextColor}
-        accentColor={config.headerAccentColor}
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
       />
 
       <main className="flex-1 pt-20">
