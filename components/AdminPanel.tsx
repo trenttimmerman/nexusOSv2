@@ -2052,13 +2052,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
                 </div>
 
-                {/* Live Preview */}
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-3">
+                {/* Live Preview - Sticky */}
+                <div className="sticky top-0 z-10 bg-neutral-900 pb-4 -mx-6 px-6 pt-2 -mt-2">
+                  <div className="flex items-center justify-between mb-2">
                     <p className="text-xs text-neutral-400 uppercase tracking-wide">Live Preview</p>
                     <span className="text-xs text-neutral-500">Changes update instantly</span>
                   </div>
-                  <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100">
+                  <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100 shadow-lg">
                     {config.headerStyle === 'nebula' ? (
                       <HeaderNebula
                         storeName={config.name || 'Your Store'}
@@ -2124,36 +2124,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
                 
                 {/* Current Header Selection */}
-                <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50 mb-6">
+                <div className="bg-neutral-800/30 p-4 rounded-xl border border-neutral-700/50 mb-6">
                   <label className="text-sm font-bold text-white mb-3 block">Header Design</label>
-                  <div className="grid grid-cols-1 gap-3">
+                  <div className="grid grid-cols-4 gap-2">
                     {/* Available headers */}
                     {[
-                      { id: 'canvas', name: 'Classic Clean', description: 'Simple and elegant' },
-                      { id: 'nebula', name: 'Modern Glass', description: 'Frosted glass effect' },
-                      { id: 'luxe', name: 'Luxury Elegant', description: 'High-end with gold accents' },
-                      { id: 'pilot', name: 'Professional', description: 'SaaS/tech with CTA button' },
+                      { id: 'canvas', name: 'Classic' },
+                      { id: 'nebula', name: 'Glass' },
+                      { id: 'luxe', name: 'Luxury' },
+                      { id: 'pilot', name: 'Pro' },
                     ].map((header) => (
                       <button
                         key={header.id}
                         onClick={() => onConfigChange({ ...config, headerStyle: header.id as any, headerData: {} })}
-                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        className={`p-2 rounded-lg border-2 text-center transition-all ${
                           config.headerStyle === header.id
                             ? 'border-blue-500 bg-blue-500/10'
                             : 'border-neutral-700 hover:border-neutral-600'
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className={`text-sm font-bold ${config.headerStyle === header.id ? 'text-blue-400' : 'text-white'}`}>
-                            {header.name}
-                          </span>
-                          {config.headerStyle === header.id && <Check size={16} className="text-blue-400" />}
-                        </div>
-                        <p className="text-xs text-neutral-500">{header.description}</p>
+                        <span className={`text-xs font-bold ${config.headerStyle === header.id ? 'text-blue-400' : 'text-white'}`}>
+                          {header.name}
+                        </span>
                       </button>
                     ))}
-                    <p className="text-xs text-neutral-500 mt-2">More header styles coming soon...</p>
                   </div>
+                  <p className="text-xs text-neutral-500 mt-2">More styles coming soon...</p>
                 </div>
 
                 {/* Header Customization */}
