@@ -216,6 +216,116 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
   );
 };
 
+// Default values for HeaderNebula
+const NEBULA_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: false, // Nebula doesn't show account by default
+  showCart: true,
+  backgroundColor: 'rgba(255, 255, 255, 0.6)', // Glass effect
+  borderColor: 'rgba(255, 255, 255, 0.2)',
+  textColor: '#4b5563', // gray-600
+  textHoverColor: '#2563eb', // blue-600
+  accentColor: '#3b82f6', // blue-500 for dot indicator
+  cartBadgeColor: '#3b82f6',
+  cartBadgeTextColor: '#ffffff',
+  sticky: true,
+  maxWidth: '4xl',
+  blurIntensity: 'xl', // backdrop-blur intensity
+  showIndicatorDot: true, // animated dot next to logo
+};
+
+// 2. HeaderNebula - "Modern Glass" (Floating pill, frosted glass)
+export const HeaderNebula: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  // Merge defaults with customization
+  const settings = { ...NEBULA_DEFAULTS, ...data };
+  
+  const maxWidthClass = settings.maxWidth === 'full' ? 'max-w-full' : `max-w-${settings.maxWidth}`;
+  const blurClass = `backdrop-blur-${settings.blurIntensity || 'xl'}`;
+
+  return (
+    <header className={`${settings.sticky ? 'sticky top-0' : ''} z-[100] flex justify-center px-4 pt-4`}>
+      <div 
+        className={`${blurClass} shadow-lg rounded-full px-8 py-3 flex items-center gap-12 ${maxWidthClass} w-full justify-between`}
+        style={{
+          backgroundColor: settings.backgroundColor,
+          border: `1px solid ${settings.borderColor}`,
+        }}
+      >
+        {/* Left: Logo with optional indicator dot */}
+        <button onClick={onLogoClick} className="flex items-center gap-2 cursor-pointer">
+          {settings.showIndicatorDot && !logoUrl && (
+            <div 
+              className="w-3 h-3 rounded-full animate-pulse"
+              style={{ backgroundColor: settings.accentColor }}
+            />
+          )}
+          <Logo 
+            storeName={storeName} 
+            logoUrl={logoUrl} 
+            logoHeight={logoHeight} 
+            className="font-bold tracking-wider text-sm uppercase"
+          />
+        </button>
+
+        {/* Center: Navigation */}
+        <nav className="hidden md:flex gap-8">
+          {(links || []).map((link) => (
+            <NavItem
+              key={link.href}
+              link={link}
+              onClick={onLinkClick}
+              className="text-xs font-semibold tracking-widest uppercase transition-colors"
+              style={{ color: settings.textColor }}
+              hoverColor={settings.textHoverColor}
+            />
+          ))}
+        </nav>
+
+        {/* Right: Icons */}
+        <div className="flex items-center gap-4" style={{ color: settings.textColor }}>
+          {settings.showSearch && (
+            <button
+              className="cursor-pointer transition-colors"
+              style={{ color: settings.textColor }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+            >
+              <Search size={18} />
+            </button>
+          )}
+          {settings.showCart && (
+            <button 
+              onClick={onOpenCart} 
+              className="relative cursor-pointer transition-colors"
+              style={{ color: settings.textColor }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+            >
+              <ShoppingBag size={18} />
+              {cartCount > 0 && (
+                <span 
+                  className="absolute -top-1 -right-1 w-3 h-3 rounded-full"
+                  style={{ backgroundColor: settings.cartBadgeColor }}
+                />
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
 // Placeholder for other headers (to be rebuilt one by one)
 const PlaceholderHeader: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-white border-b border-gray-200 sticky top-0 z-[100]">
@@ -252,7 +362,6 @@ const PlaceholderHeader: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
 );
 
 // Other headers still use placeholder - restore from HeaderLibrary.archive.tsx as needed
-export const HeaderNebula = PlaceholderHeader;
 export const HeaderBunker = PlaceholderHeader;
 export const HeaderOrbit = PlaceholderHeader;
 export const HeaderProtocol = PlaceholderHeader;
@@ -328,7 +437,13 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth', 'paddingX', 'paddingY'
   ],
-  nebula: [], bunker: [], orbit: [], protocol: [], horizon: [],
+  nebula: [
+    'showSearch', 'showCart', 'showIndicatorDot',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor', 'cartBadgeColor',
+    'sticky', 'maxWidth', 'blurIntensity'
+  ],
+  bunker: [], orbit: [], protocol: [], horizon: [],
   studio: [], terminal: [], portfolio: [], venture: [], metro: [], modul: [],
   luxe: [], gullwing: [], pop: [], stark: [], offset: [], ticker: [],
   noir: [], ghost: [], pilot: [],
