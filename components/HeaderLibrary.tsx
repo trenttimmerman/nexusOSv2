@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Search, User } from 'lucide-react';
+import { ShoppingBag, Search, User, Menu } from 'lucide-react';
 import { NavLink } from '../types';
 
 // Header customization data structure
@@ -326,6 +326,146 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
   );
 };
 
+// Default values for HeaderLuxe
+const LUXE_DEFAULTS: HeaderData = {
+  showMenu: true,
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  showTagline: true,
+  backgroundColor: '#faf9f6', // Cream/off-white
+  borderColor: '#e5e5e5',
+  textColor: '#737373', // neutral-500
+  textHoverColor: '#000000',
+  accentColor: '#d4af37', // Gold
+  taglineColor: '#a3a3a3', // neutral-400
+  taglineText: 'Est. 2024 • Paris',
+  cartBadgeColor: '#d4af37',
+  sticky: true,
+  maxWidth: '7xl',
+};
+
+// 3. HeaderLuxe - "Luxury Elegant" (High-end, centered logo, gold accents)
+export const HeaderLuxe: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  // Merge defaults with customization
+  const settings = { ...LUXE_DEFAULTS, ...data };
+  
+  const maxWidthClass = settings.maxWidth === 'full' ? 'max-w-full' : `max-w-${settings.maxWidth}`;
+
+  return (
+    <header 
+      className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-[100]`}
+      style={{ 
+        backgroundColor: settings.backgroundColor,
+        borderBottom: `1px solid ${settings.borderColor}`,
+      }}
+    >
+      <div className={`${maxWidthClass} mx-auto px-8`}>
+        {/* Main Header Row */}
+        <div className="min-h-[6rem] py-4 flex flex-col items-center justify-center relative">
+          {/* Left Icons */}
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-6">
+            {settings.showMenu && (
+              <button
+                className="transition-colors cursor-pointer"
+                style={{ color: settings.textColor }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+              >
+                <Menu size={20} />
+              </button>
+            )}
+            {settings.showSearch && (
+              <button
+                className="transition-colors cursor-pointer"
+                style={{ color: settings.textColor }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+              >
+                <Search size={20} />
+              </button>
+            )}
+          </div>
+          
+          {/* Center: Logo + Tagline */}
+          <button onClick={onLogoClick} className="cursor-pointer text-center">
+            <Logo 
+              storeName={storeName} 
+              logoUrl={logoUrl} 
+              logoHeight={logoHeight} 
+              className="font-serif text-3xl italic tracking-wide"
+            />
+            {settings.showTagline && !logoUrl && (
+              <span 
+                className="text-[10px] uppercase tracking-[0.3em] mt-1 block"
+                style={{ color: settings.taglineColor }}
+              >
+                {settings.taglineText}
+              </span>
+            )}
+          </button>
+
+          {/* Right: Account + Cart */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-6">
+            {settings.showAccount && (
+              <button
+                className="text-xs font-serif italic cursor-pointer hidden md:block transition-colors"
+                style={{ color: settings.textColor }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+              >
+                Account
+              </button>
+            )}
+            {settings.showCart && (
+              <button 
+                onClick={onOpenCart} 
+                className="relative cursor-pointer"
+                style={{ color: settings.textColor }}
+              >
+                <ShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <span 
+                    className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
+                    style={{ backgroundColor: settings.cartBadgeColor }}
+                  />
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+        
+        {/* Navigation Row */}
+        <nav 
+          className="h-10 flex items-center justify-center gap-12"
+          style={{ borderTop: `1px solid ${settings.borderColor}` }}
+        >
+          {(links || []).map((link) => (
+            <NavItem
+              key={link.href}
+              link={link}
+              onClick={onLinkClick}
+              className="text-xs font-medium uppercase tracking-widest transition-colors"
+              style={{ color: settings.textColor }}
+              hoverColor={settings.accentColor}
+            />
+          ))}
+        </nav>
+      </div>
+    </header>
+  );
+};
+
 // Placeholder for other headers (to be rebuilt one by one)
 const PlaceholderHeader: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-white border-b border-gray-200 sticky top-0 z-[100]">
@@ -372,7 +512,6 @@ export const HeaderPortfolio = PlaceholderHeader;
 export const HeaderVenture = PlaceholderHeader;
 export const HeaderMetro = PlaceholderHeader;
 export const HeaderModul = PlaceholderHeader;
-export const HeaderLuxe = PlaceholderHeader;
 export const HeaderGullwing = PlaceholderHeader;
 export const HeaderPop = PlaceholderHeader;
 export const HeaderStark = PlaceholderHeader;
@@ -442,6 +581,12 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor',
     'sticky', 'maxWidth', 'blurIntensity'
+  ],
+  luxe: [
+    'showMenu', 'showSearch', 'showAccount', 'showCart', 'showTagline',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor', 'taglineColor', 'taglineText', 'cartBadgeColor',
+    'sticky', 'maxWidth'
   ],
   bunker: [], orbit: [], protocol: [], horizon: [],
   studio: [], terminal: [], portfolio: [], venture: [], metro: [], modul: [],
