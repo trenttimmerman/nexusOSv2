@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
-import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS } from './HeaderLibrary';
+import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
@@ -2040,6 +2040,30 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <div>
                     <h3 className="text-xl font-bold text-white">Header Style</h3>
                     <p className="text-sm text-neutral-400">Customize your store's header</p>
+                  </div>
+                </div>
+
+                {/* Live Preview */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Live Preview</p>
+                    <span className="text-xs text-neutral-500">Changes update instantly</span>
+                  </div>
+                  <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100">
+                    <HeaderCanvas
+                      storeName={config.name || 'Your Store'}
+                      logoUrl={config.logoUrl}
+                      logoHeight={config.logoHeight || 32}
+                      links={[
+                        { label: 'Shop', href: '/shop', active: false },
+                        { label: 'About', href: '/about', active: false },
+                        { label: 'Contact', href: '/contact', active: false },
+                      ]}
+                      cartCount={2}
+                      onOpenCart={() => {}}
+                      onLinkClick={() => {}}
+                      data={config.headerData}
+                    />
                   </div>
                 </div>
                 
