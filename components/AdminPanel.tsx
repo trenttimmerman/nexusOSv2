@@ -817,6 +817,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [systemModalType, setSystemModalType] = useState<'hero' | 'grid' | 'footer' | null>(null);
   const [isInterfaceModalOpen, setIsInterfaceModalOpen] = useState(false);
   const [previewingHeaderId, setPreviewingHeaderId] = useState<HeaderStyleId | null>(null);
+  const [settingsTab, setSettingsTab] = useState<'identity' | 'typography' | 'colors' | 'seo' | 'header' | 'scrollbar'>('identity');
 
   // ADD SECTION STATES
   const [isAddSectionOpen, setIsAddSectionOpen] = useState(false);
@@ -1958,178 +1959,288 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       </div>
     );
   };
-  // --- INTERFACE MODAL (Full-screen) ---
+  // --- INTERFACE MODAL (Full-screen with Tabs) ---
   const renderInterfaceModal = () => {
     if (!isInterfaceModalOpen) return null;
     
+    const tabs = [
+      { id: 'identity', label: 'Identity', icon: Star, color: 'yellow' },
+      { id: 'typography', label: 'Typography', icon: Type, color: 'cyan' },
+      { id: 'colors', label: 'Colors', icon: Palette, color: 'pink' },
+      { id: 'seo', label: 'SEO', icon: Search, color: 'green' },
+      { id: 'header', label: 'Header', icon: PanelTop, color: 'blue' },
+      { id: 'scrollbar', label: 'Scrollbar', icon: ArrowDownAZ, color: 'indigo' },
+    ] as const;
+    
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
           {/* Modal Header */}
-          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-600/20 rounded-lg">
-                <Monitor size={20} className="text-purple-400" />
+          <div className="p-4 border-b border-neutral-800 bg-neutral-950 shrink-0">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-600/20 rounded-lg">
+                  <Monitor size={20} className="text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-bold">Site Settings</h3>
+                  <p className="text-xs text-neutral-500">Brand & Global Styles</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-white font-bold">Site Settings</h3>
-                <p className="text-xs text-neutral-500">Brand & Global Styles</p>
-              </div>
+              <button 
+                onClick={() => setIsInterfaceModalOpen(false)} 
+                className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
             </div>
-            <button 
-              onClick={() => setIsInterfaceModalOpen(false)} 
-              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
-            >
-              <X size={20} />
-            </button>
+            
+            {/* Tab Navigation */}
+            <div className="flex gap-1 bg-neutral-800/50 p-1 rounded-xl">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = settingsTab === tab.id;
+                const colorClasses: Record<string, string> = {
+                  yellow: 'text-yellow-400',
+                  cyan: 'text-cyan-400',
+                  pink: 'text-pink-400',
+                  green: 'text-green-400',
+                  blue: 'text-blue-400',
+                  indigo: 'text-indigo-400',
+                };
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSettingsTab(tab.id as any)}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      isActive 
+                        ? 'bg-neutral-700 text-white shadow-lg' 
+                        : 'text-neutral-400 hover:text-white hover:bg-neutral-700/50'
+                    }`}
+                  >
+                    <Icon size={16} className={isActive ? colorClasses[tab.color] : ''} />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
           
           {/* Modal Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Header Style Section - Coming Soon */}
-              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700 md:col-span-2">
-                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                  <PanelTop size={16} className="text-blue-500" /> Header Style
-                </h4>
-                <div className="text-center py-8 text-neutral-500">
-                  <p className="text-sm">Header customization coming soon</p>
-                  <p className="text-xs mt-1 opacity-60">Using default header</p>
+            {/* Header Tab */}
+            {settingsTab === 'header' && (
+              <div className="max-w-4xl mx-auto">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-3 bg-blue-600/20 rounded-xl">
+                    <PanelTop size={24} className="text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Header Style</h3>
+                    <p className="text-sm text-neutral-400">Customize your store's header</p>
+                  </div>
+                </div>
+                <div className="text-center py-16 bg-neutral-800/30 rounded-xl border border-neutral-700/50">
+                  <PanelTop size={48} className="text-neutral-600 mx-auto mb-4" />
+                  <p className="text-neutral-400">Header customization coming soon</p>
+                  <p className="text-xs text-neutral-500 mt-2">Using default header</p>
                 </div>
               </div>
+            )}
 
-              {/* Site Identity Section */}
-              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700">
-                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                  <Star size={16} className="text-yellow-500" /> Site Identity
-                </h4>
-                <div className="space-y-4">
-                  {/* Logo Upload */}
+            {/* Identity Tab */}
+            {settingsTab === 'identity' && (
+              <div className="max-w-2xl mx-auto">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-3 bg-yellow-600/20 rounded-xl">
+                    <Star size={24} className="text-yellow-400" />
+                  </div>
                   <div>
-                    <label className="text-xs font-bold text-neutral-400 mb-2 block">Logo</label>
-                    <div className="flex items-center gap-3">
+                    <h3 className="text-xl font-bold text-white">Site Identity</h3>
+                    <p className="text-sm text-neutral-400">Your store's brand and basic info</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  {/* Logo Upload */}
+                  <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50">
+                    <label className="text-sm font-bold text-white mb-4 block">Logo</label>
+                    <div className="flex items-start gap-4">
                       {config.logoUrl ? (
                         <div className="relative group">
-                          <img 
-                            src={config.logoUrl} 
-                            alt="Logo" 
-                            style={{ height: `${config.logoHeight || 40}px` }}
-                            className="w-auto object-contain bg-neutral-900 rounded-lg p-2 border border-neutral-700"
-                          />
+                          <div className="bg-neutral-900 rounded-xl p-4 border border-neutral-700">
+                            <img 
+                              src={config.logoUrl} 
+                              alt="Logo" 
+                              style={{ height: `${config.logoHeight || 40}px` }}
+                              className="w-auto object-contain"
+                            />
+                          </div>
                           <button
                             onClick={() => onConfigChange({ ...config, logoUrl: '' })}
-                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <X size={12} />
+                            <X size={14} />
                           </button>
                         </div>
                       ) : (
-                        <div className="h-14 w-14 bg-neutral-900 rounded-lg border border-neutral-700 flex items-center justify-center">
-                          <ImageIcon size={20} className="text-neutral-600" />
+                        <div className="h-24 w-24 bg-neutral-900 rounded-xl border border-neutral-700 flex items-center justify-center">
+                          <ImageIcon size={32} className="text-neutral-600" />
                         </div>
                       )}
-                      <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-dashed border-neutral-600 rounded-lg cursor-pointer hover:border-purple-500 hover:bg-neutral-900/50 transition-colors ${isUploadingLogo ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                        {isUploadingLogo ? (
-                          <Loader2 size={14} className="animate-spin text-neutral-400" />
-                        ) : (
-                          <Upload size={14} className="text-neutral-400" />
-                        )}
-                        <span className="text-xs text-neutral-400">{isUploadingLogo ? 'Uploading...' : config.logoUrl ? 'Change Logo' : 'Upload Logo'}</span>
-                        <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" disabled={isUploadingLogo} />
-                      </label>
+                      <div className="flex-1 space-y-3">
+                        <label className={`flex items-center justify-center gap-2 py-3 px-6 border border-dashed border-neutral-600 rounded-xl cursor-pointer hover:border-purple-500 hover:bg-neutral-800/50 transition-colors ${isUploadingLogo ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                          {isUploadingLogo ? (
+                            <Loader2 size={18} className="animate-spin text-neutral-400" />
+                          ) : (
+                            <Upload size={18} className="text-neutral-400" />
+                          )}
+                          <span className="text-sm text-neutral-400">{isUploadingLogo ? 'Uploading...' : config.logoUrl ? 'Change Logo' : 'Upload Logo'}</span>
+                          <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" disabled={isUploadingLogo} />
+                        </label>
+                        <p className="text-xs text-neutral-500">Recommended: PNG or SVG with transparent background</p>
+                      </div>
                     </div>
                     {/* Logo Size Slider */}
                     {config.logoUrl && (
-                      <div className="flex items-center gap-3 mt-3">
-                        <span className="text-[10px] text-neutral-500 w-8">Size</span>
+                      <div className="flex items-center gap-4 mt-4 pt-4 border-t border-neutral-700/50">
+                        <span className="text-sm text-neutral-400 w-24">Logo Size</span>
                         <input 
                           type="range" 
                           min="20" 
                           max="100" 
                           value={config.logoHeight || 40} 
                           onChange={(e) => onConfigChange({ ...config, logoHeight: parseInt(e.target.value) })} 
-                          className="flex-1 h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500" 
+                          className="flex-1 h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-yellow-500" 
                         />
-                        <span className="text-[10px] text-neutral-400 w-10 text-right">{config.logoHeight || 40}px</span>
+                        <span className="text-sm text-neutral-300 w-16 text-right font-mono">{config.logoHeight || 40}px</span>
                       </div>
                     )}
                   </div>
                   
                   {/* Store Name */}
-                  <div>
-                    <label className="text-xs font-bold text-neutral-400 mb-2 block">Store Name</label>
+                  <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50">
+                    <label className="text-sm font-bold text-white mb-3 block">Store Name</label>
                     <input
                       type="text"
                       value={config.name || ''}
                       onChange={(e) => onConfigChange({ ...config, name: e.target.value })}
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-purple-500 outline-none"
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3 text-white text-base focus:border-yellow-500 outline-none"
                       placeholder="Your Store Name"
                     />
+                    <p className="text-xs text-neutral-500 mt-2">This appears in your browser tab and meta tags</p>
                   </div>
                   
                   {/* Currency */}
-                  <div>
-                    <label className="text-xs font-bold text-neutral-400 mb-2 block">Currency</label>
+                  <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50">
+                    <label className="text-sm font-bold text-white mb-3 block">Currency</label>
                     <select
                       value={config.currency || 'USD'}
                       onChange={(e) => onConfigChange({ ...config, currency: e.target.value })}
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-purple-500 outline-none cursor-pointer"
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3 text-white text-base focus:border-yellow-500 outline-none cursor-pointer"
                     >
-                      <option value="USD">USD ($)</option>
-                      <option value="EUR">EUR (€)</option>
-                      <option value="GBP">GBP (£)</option>
-                      <option value="CAD">CAD ($)</option>
-                      <option value="AUD">AUD ($)</option>
-                      <option value="JPY">JPY (¥)</option>
-                      <option value="CNY">CNY (¥)</option>
-                      <option value="INR">INR (₹)</option>
-                      <option value="MXN">MXN ($)</option>
-                      <option value="BRL">BRL (R$)</option>
+                      <option value="USD">USD ($) - US Dollar</option>
+                      <option value="EUR">EUR (€) - Euro</option>
+                      <option value="GBP">GBP (£) - British Pound</option>
+                      <option value="CAD">CAD ($) - Canadian Dollar</option>
+                      <option value="AUD">AUD ($) - Australian Dollar</option>
+                      <option value="JPY">JPY (¥) - Japanese Yen</option>
+                      <option value="CNY">CNY (¥) - Chinese Yuan</option>
+                      <option value="INR">INR (₹) - Indian Rupee</option>
+                      <option value="MXN">MXN ($) - Mexican Peso</option>
+                      <option value="BRL">BRL (R$) - Brazilian Real</option>
                     </select>
+                    <p className="text-xs text-neutral-500 mt-2">Used for displaying product prices</p>
                   </div>
                 </div>
               </div>
+            )}
               
-              {/* Brand Colors Section */}
-              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700">
-                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                  <Palette size={16} className="text-pink-500" /> Brand Colors
-                </h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-neutral-300">Primary Color</span>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={config.primaryColor || '#3B82F6'}
-                        onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
-                        className="w-10 h-10 rounded-lg cursor-pointer border-2 border-neutral-600 bg-transparent"
-                      />
-                      <input
-                        type="text"
-                        value={config.primaryColor || '#3B82F6'}
-                        onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
-                        className="w-24 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-300 font-mono"
-                      />
+            {/* Colors Tab */}
+            {settingsTab === 'colors' && (
+              <div className="max-w-2xl mx-auto">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-3 bg-pink-600/20 rounded-xl">
+                    <Palette size={24} className="text-pink-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Brand Colors</h3>
+                    <p className="text-sm text-neutral-400">Define your store's color palette</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  {/* Primary Color */}
+                  <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <label className="text-sm font-bold text-white block">Primary Color</label>
+                        <p className="text-xs text-neutral-500 mt-1">Used for buttons, links, and accents</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="color"
+                          value={config.primaryColor || '#3B82F6'}
+                          onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
+                          className="w-14 h-14 rounded-xl cursor-pointer border-2 border-neutral-600 bg-transparent"
+                        />
+                        <input
+                          type="text"
+                          value={config.primaryColor || '#3B82F6'}
+                          onChange={(e) => onConfigChange({ ...config, primaryColor: e.target.value })}
+                          className="w-28 bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-300 font-mono"
+                        />
+                      </div>
+                    </div>
+                    {/* Primary color preview */}
+                    <div className="flex gap-2 mt-4">
+                      <div className="flex-1 h-12 rounded-lg" style={{ backgroundColor: config.primaryColor || '#3B82F6' }}></div>
+                      <div className="flex-1 h-12 rounded-lg" style={{ backgroundColor: config.primaryColor || '#3B82F6', opacity: 0.7 }}></div>
+                      <div className="flex-1 h-12 rounded-lg" style={{ backgroundColor: config.primaryColor || '#3B82F6', opacity: 0.4 }}></div>
+                      <div className="flex-1 h-12 rounded-lg" style={{ backgroundColor: config.primaryColor || '#3B82F6', opacity: 0.2 }}></div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-neutral-300">Accent Color</span>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={config.accentColor || '#8B5CF6'}
-                        onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
-                        className="w-10 h-10 rounded-lg cursor-pointer border-2 border-neutral-600 bg-transparent"
-                      />
-                      <input
-                        type="text"
-                        value={config.accentColor || '#8B5CF6'}
-                        onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
-                        className="w-24 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-300 font-mono"
-                      />
+                  
+                  {/* Accent Color */}
+                  <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <label className="text-sm font-bold text-white block">Accent Color</label>
+                        <p className="text-xs text-neutral-500 mt-1">Secondary color for highlights and gradients</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="color"
+                          value={config.accentColor || '#8B5CF6'}
+                          onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
+                          className="w-14 h-14 rounded-xl cursor-pointer border-2 border-neutral-600 bg-transparent"
+                        />
+                        <input
+                          type="text"
+                          value={config.accentColor || '#8B5CF6'}
+                          onChange={(e) => onConfigChange({ ...config, accentColor: e.target.value })}
+                          className="w-28 bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-300 font-mono"
+                        />
+                      </div>
+                    </div>
+                    {/* Accent color preview */}
+                    <div className="flex gap-2 mt-4">
+                      <div className="flex-1 h-12 rounded-lg" style={{ backgroundColor: config.accentColor || '#8B5CF6' }}></div>
+                      <div className="flex-1 h-12 rounded-lg" style={{ backgroundColor: config.accentColor || '#8B5CF6', opacity: 0.7 }}></div>
+                      <div className="flex-1 h-12 rounded-lg" style={{ backgroundColor: config.accentColor || '#8B5CF6', opacity: 0.4 }}></div>
+                      <div className="flex-1 h-12 rounded-lg" style={{ backgroundColor: config.accentColor || '#8B5CF6', opacity: 0.2 }}></div>
                     </div>
                   </div>
+
+                  {/* Gradient Preview */}
+                  <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50">
+                    <label className="text-sm font-bold text-white mb-4 block">Gradient Preview</label>
+                    <div 
+                      className="h-24 rounded-xl"
+                      style={{ background: `linear-gradient(135deg, ${config.primaryColor || '#3B82F6'}, ${config.accentColor || '#8B5CF6'})` }}
+                    ></div>
+                  </div>
+
                   {/* AI Color Suggestions */}
                   <button 
                     onClick={() => {
@@ -2139,35 +2250,45 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         { primary: '#F59E0B', accent: '#EF4444' },
                         { primary: '#EC4899', accent: '#8B5CF6' },
                         { primary: '#000000', accent: '#EAB308' },
+                        { primary: '#0EA5E9', accent: '#6366F1' },
+                        { primary: '#D946EF', accent: '#F97316' },
+                        { primary: '#84CC16', accent: '#22D3EE' },
                       ];
                       const random = palettes[Math.floor(Math.random() * palettes.length)];
                       onConfigChange({ ...config, primaryColor: random.primary, accentColor: random.accent });
                       showToast('New color palette applied!', 'success');
                     }}
-                    className="w-full py-2.5 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 hover:from-purple-600/30 hover:to-pink-600/30 border border-purple-500/30 rounded-lg text-purple-300 text-sm font-bold transition-colors"
+                    className="w-full py-4 flex items-center justify-center gap-3 bg-gradient-to-r from-purple-600/20 to-pink-600/20 hover:from-purple-600/30 hover:to-pink-600/30 border border-purple-500/30 rounded-xl text-purple-300 font-bold transition-colors"
                   >
-                    <Sparkles size={16} />
+                    <Sparkles size={20} />
                     Generate AI Color Palette
                   </button>
                 </div>
               </div>
-
-              {/* Typography Section */}
-              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700 md:col-span-2">
-                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                  <Type size={16} className="text-cyan-500" /> Typography
-                </h4>
+            )}
+            {/* Typography Tab */}
+            {settingsTab === 'typography' && (
+              <div className="max-w-5xl mx-auto">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-3 bg-cyan-600/20 rounded-xl">
+                    <Type size={24} className="text-cyan-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Typography</h3>
+                    <p className="text-sm text-neutral-400">Fonts, sizes, and text styling</p>
+                  </div>
+                </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Left Column - Font Families */}
-                  <div className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Column - Font Families & Scale */}
+                  <div className="space-y-5">
                     {/* Heading Font */}
-                    <div>
-                      <label className="text-xs font-bold text-neutral-400 mb-2 block">Heading Font</label>
+                    <div className="bg-neutral-800/30 p-5 rounded-xl border border-neutral-700/50">
+                      <label className="text-sm font-bold text-white mb-3 block">Heading Font</label>
                       <select
                         value={config.typography?.headingFont || 'Inter, system-ui, sans-serif'}
                         onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, headingFont: e.target.value } })}
-                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-cyan-500 outline-none cursor-pointer"
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3 text-white text-base focus:border-cyan-500 outline-none cursor-pointer"
                       >
                         <optgroup label="Sans Serif">
                           <option value="Inter, system-ui, sans-serif">Inter</option>
@@ -2197,12 +2318,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
 
                     {/* Body Font */}
-                    <div>
-                      <label className="text-xs font-bold text-neutral-400 mb-2 block">Body Font</label>
+                    <div className="bg-neutral-800/30 p-5 rounded-xl border border-neutral-700/50">
+                      <label className="text-sm font-bold text-white mb-3 block">Body Font</label>
                       <select
                         value={config.typography?.bodyFont || 'Inter, system-ui, sans-serif'}
                         onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, bodyFont: e.target.value } })}
-                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-cyan-500 outline-none cursor-pointer"
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3 text-white text-base focus:border-cyan-500 outline-none cursor-pointer"
                       >
                         <optgroup label="Sans Serif">
                           <option value="Inter, system-ui, sans-serif">Inter</option>
@@ -2232,17 +2353,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
 
                     {/* Heading Scale */}
-                    <div>
-                      <label className="text-xs font-bold text-neutral-400 mb-2 block">Heading Scale</label>
+                    <div className="bg-neutral-800/30 p-5 rounded-xl border border-neutral-700/50">
+                      <label className="text-sm font-bold text-white mb-3 block">Heading Scale</label>
                       <div className="grid grid-cols-4 gap-2">
                         {(['compact', 'default', 'large', 'dramatic'] as const).map((scale) => (
                           <button
                             key={scale}
                             onClick={() => onConfigChange({ ...config, typography: { ...config.typography, headingScale: scale } })}
-                            className={`px-3 py-2 rounded-lg text-xs font-bold capitalize transition-all ${
+                            className={`px-4 py-3 rounded-xl text-sm font-bold capitalize transition-all ${
                               (config.typography?.headingScale || 'default') === scale
-                                ? 'bg-cyan-600/20 border border-cyan-500 text-cyan-300'
-                                : 'bg-neutral-900 border border-neutral-700 text-neutral-400 hover:border-neutral-600'
+                                ? 'bg-cyan-600/20 border-2 border-cyan-500 text-cyan-300'
+                                : 'bg-neutral-900 border-2 border-neutral-700 text-neutral-400 hover:border-neutral-600'
                             }`}
                           >
                             {scale}
@@ -2252,67 +2373,72 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
 
                     {/* Base Font Size */}
-                    <div>
-                      <label className="text-xs font-bold text-neutral-400 mb-2 block">Base Font Size</label>
-                      <div className="flex items-center gap-3">
+                    <div className="bg-neutral-800/30 p-5 rounded-xl border border-neutral-700/50">
+                      <label className="text-sm font-bold text-white mb-3 block">Base Font Size</label>
+                      <div className="flex items-center gap-4">
+                        <span className="text-xs text-neutral-500">14px</span>
                         <input
                           type="range"
                           min="14"
                           max="20"
                           value={parseInt(config.typography?.baseFontSize || '16')}
                           onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, baseFontSize: `${e.target.value}px` } })}
-                          className="flex-1 h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                          className="flex-1 h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                         />
-                        <span className="text-xs text-neutral-400 w-12 text-right">{config.typography?.baseFontSize || '16px'}</span>
+                        <span className="text-xs text-neutral-500">20px</span>
+                        <span className="text-sm text-white font-mono bg-neutral-900 px-3 py-1.5 rounded-lg border border-neutral-700">{config.typography?.baseFontSize || '16px'}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Right Column - Weights, Colors, Transform */}
-                  <div className="space-y-4">
-                    {/* Heading Weight */}
-                    <div>
-                      <label className="text-xs font-bold text-neutral-400 mb-2 block">Heading Weight</label>
-                      <select
-                        value={config.typography?.headingWeight || '700'}
-                        onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, headingWeight: e.target.value as any } })}
-                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-cyan-500 outline-none cursor-pointer"
-                      >
-                        <option value="400">Regular (400)</option>
-                        <option value="500">Medium (500)</option>
-                        <option value="600">Semibold (600)</option>
-                        <option value="700">Bold (700)</option>
-                        <option value="800">Extra Bold (800)</option>
-                        <option value="900">Black (900)</option>
-                      </select>
-                    </div>
-
-                    {/* Body Weight */}
-                    <div>
-                      <label className="text-xs font-bold text-neutral-400 mb-2 block">Body Weight</label>
-                      <select
-                        value={config.typography?.bodyWeight || '400'}
-                        onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, bodyWeight: e.target.value as any } })}
-                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-cyan-500 outline-none cursor-pointer"
-                      >
-                        <option value="300">Light (300)</option>
-                        <option value="400">Regular (400)</option>
-                        <option value="500">Medium (500)</option>
-                      </select>
+                  <div className="space-y-5">
+                    {/* Font Weights */}
+                    <div className="bg-neutral-800/30 p-5 rounded-xl border border-neutral-700/50">
+                      <label className="text-sm font-bold text-white mb-3 block">Font Weights</label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs text-neutral-400 mb-2 block">Heading Weight</label>
+                          <select
+                            value={config.typography?.headingWeight || '700'}
+                            onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, headingWeight: e.target.value as any } })}
+                            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-cyan-500 outline-none cursor-pointer"
+                          >
+                            <option value="400">Regular (400)</option>
+                            <option value="500">Medium (500)</option>
+                            <option value="600">Semibold (600)</option>
+                            <option value="700">Bold (700)</option>
+                            <option value="800">Extra Bold (800)</option>
+                            <option value="900">Black (900)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-neutral-400 mb-2 block">Body Weight</label>
+                          <select
+                            value={config.typography?.bodyWeight || '400'}
+                            onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, bodyWeight: e.target.value as any } })}
+                            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-cyan-500 outline-none cursor-pointer"
+                          >
+                            <option value="300">Light (300)</option>
+                            <option value="400">Regular (400)</option>
+                            <option value="500">Medium (500)</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Heading Transform */}
-                    <div>
-                      <label className="text-xs font-bold text-neutral-400 mb-2 block">Heading Style</label>
+                    <div className="bg-neutral-800/30 p-5 rounded-xl border border-neutral-700/50">
+                      <label className="text-sm font-bold text-white mb-3 block">Heading Style</label>
                       <div className="grid grid-cols-4 gap-2">
                         {(['none', 'uppercase', 'lowercase', 'capitalize'] as const).map((transform) => (
                           <button
                             key={transform}
                             onClick={() => onConfigChange({ ...config, typography: { ...config.typography, headingTransform: transform } })}
-                            className={`px-2 py-2 rounded-lg text-[10px] font-bold capitalize transition-all ${
+                            className={`px-3 py-2.5 rounded-lg text-xs font-bold capitalize transition-all ${
                               (config.typography?.headingTransform || 'none') === transform
-                                ? 'bg-cyan-600/20 border border-cyan-500 text-cyan-300'
-                                : 'bg-neutral-900 border border-neutral-700 text-neutral-400 hover:border-neutral-600'
+                                ? 'bg-cyan-600/20 border-2 border-cyan-500 text-cyan-300'
+                                : 'bg-neutral-900 border-2 border-neutral-700 text-neutral-400 hover:border-neutral-600'
                             }`}
                           >
                             {transform === 'none' ? 'Normal' : transform}
@@ -2322,76 +2448,77 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
 
                     {/* Text Colors */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[10px] text-neutral-500 mb-1 block">Heading Color</label>
-                        <div className="flex gap-2">
-                          <input
-                            type="color"
-                            value={config.typography?.headingColor || '#ffffff'}
-                            onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, headingColor: e.target.value } })}
-                            className="w-10 h-9 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
-                          />
-                          <input
-                            type="text"
-                            value={config.typography?.headingColor || '#ffffff'}
-                            onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, headingColor: e.target.value } })}
-                            className="flex-1 px-2 py-1.5 bg-neutral-900 border border-neutral-700 rounded text-xs text-white font-mono"
-                          />
+                    <div className="bg-neutral-800/30 p-5 rounded-xl border border-neutral-700/50">
+                      <label className="text-sm font-bold text-white mb-4 block">Text Colors</label>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-neutral-400">Heading Color</span>
+                          <div className="flex gap-2">
+                            <input
+                              type="color"
+                              value={config.typography?.headingColor || '#ffffff'}
+                              onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, headingColor: e.target.value } })}
+                              className="w-10 h-10 rounded-lg border border-neutral-600 bg-neutral-800 cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              value={config.typography?.headingColor || '#ffffff'}
+                              onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, headingColor: e.target.value } })}
+                              className="w-24 px-2 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-xs text-white font-mono"
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <label className="text-[10px] text-neutral-500 mb-1 block">Body Color</label>
-                        <div className="flex gap-2">
-                          <input
-                            type="color"
-                            value={config.typography?.bodyColor || '#a3a3a3'}
-                            onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, bodyColor: e.target.value } })}
-                            className="w-10 h-9 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
-                          />
-                          <input
-                            type="text"
-                            value={config.typography?.bodyColor || '#a3a3a3'}
-                            onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, bodyColor: e.target.value } })}
-                            className="flex-1 px-2 py-1.5 bg-neutral-900 border border-neutral-700 rounded text-xs text-white font-mono"
-                          />
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-neutral-400">Body Color</span>
+                          <div className="flex gap-2">
+                            <input
+                              type="color"
+                              value={config.typography?.bodyColor || '#a3a3a3'}
+                              onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, bodyColor: e.target.value } })}
+                              className="w-10 h-10 rounded-lg border border-neutral-600 bg-neutral-800 cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              value={config.typography?.bodyColor || '#a3a3a3'}
+                              onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, bodyColor: e.target.value } })}
+                              className="w-24 px-2 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-xs text-white font-mono"
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Link Color */}
-                    <div>
-                      <label className="text-[10px] text-neutral-500 mb-1 block">Link Color</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={config.typography?.linkColor || config.primaryColor || '#3B82F6'}
-                          onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, linkColor: e.target.value } })}
-                          className="w-10 h-9 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
-                        />
-                        <input
-                          type="text"
-                          value={config.typography?.linkColor || config.primaryColor || '#3B82F6'}
-                          onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, linkColor: e.target.value } })}
-                          className="flex-1 px-2 py-1.5 bg-neutral-900 border border-neutral-700 rounded text-xs text-white font-mono"
-                        />
-                        <button
-                          onClick={() => onConfigChange({ ...config, typography: { ...config.typography, linkColor: config.primaryColor } })}
-                          className="px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-[10px] text-neutral-400 hover:text-white hover:border-neutral-600"
-                          title="Use primary color"
-                        >
-                          Auto
-                        </button>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-neutral-400">Link Color</span>
+                          <div className="flex gap-2">
+                            <input
+                              type="color"
+                              value={config.typography?.linkColor || config.primaryColor || '#3B82F6'}
+                              onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, linkColor: e.target.value } })}
+                              className="w-10 h-10 rounded-lg border border-neutral-600 bg-neutral-800 cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              value={config.typography?.linkColor || config.primaryColor || '#3B82F6'}
+                              onChange={(e) => onConfigChange({ ...config, typography: { ...config.typography, linkColor: e.target.value } })}
+                              className="w-24 px-2 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-xs text-white font-mono"
+                            />
+                            <button
+                              onClick={() => onConfigChange({ ...config, typography: { ...config.typography, linkColor: config.primaryColor } })}
+                              className="px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-xs text-neutral-400 hover:text-white hover:border-neutral-600"
+                              title="Use primary color"
+                            >
+                              Auto
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Typography Preview */}
-                <div className="mt-6 pt-4 border-t border-neutral-700">
-                  <h5 className="text-xs font-bold text-neutral-400 mb-3">Preview</h5>
+                {/* Typography Preview - Full Width */}
+                <div className="mt-6 bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50">
+                  <h5 className="text-sm font-bold text-white mb-4">Live Preview</h5>
                   <div 
-                    className="bg-white rounded-lg p-6"
+                    className="bg-white rounded-xl p-8"
                     style={{
                       fontFamily: config.typography?.bodyFont || 'Inter, system-ui, sans-serif',
                       fontSize: config.typography?.baseFontSize || '16px',
@@ -2406,7 +2533,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         fontSize: config.typography?.headingScale === 'compact' ? '1.75rem' : 
                                   config.typography?.headingScale === 'large' ? '2.75rem' : 
                                   config.typography?.headingScale === 'dramatic' ? '3.5rem' : '2.25rem',
-                        marginBottom: '0.5rem',
+                        marginBottom: '0.75rem',
                         lineHeight: 1.2,
                       }}
                     >
@@ -2415,9 +2542,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <p style={{ 
                       color: config.typography?.bodyColor || '#666666',
                       fontWeight: config.typography?.bodyWeight || '400',
-                      marginBottom: '0.75rem',
+                      marginBottom: '1rem',
+                      lineHeight: 1.6,
                     }}>
-                      This is how your body text will appear across your store. Good typography creates a professional look.
+                      This is how your body text will appear across your store. Good typography creates a professional look and enhances readability for your customers.
                     </p>
                     <a 
                       href="#" 
@@ -2432,13 +2560,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
                 </div>
               </div>
+            )}
 
-              {/* SEO Section */}
-              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700 md:col-span-2">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                    <Search size={16} className="text-green-500" /> SEO & Meta Tags
-                  </h4>
+            {/* SEO Tab */}
+            {settingsTab === 'seo' && (
+              <div className="max-w-4xl mx-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-green-600/20 rounded-xl">
+                      <Search size={24} className="text-green-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">SEO & Meta Tags</h3>
+                      <p className="text-sm text-neutral-400">Optimize your store for search engines</p>
+                    </div>
+                  </div>
                   <button
                     onClick={async () => {
                       if (!genAI) {
@@ -2498,190 +2634,204 @@ Return ONLY the JSON object, no markdown.`;
                       }
                     }}
                     disabled={isGeneratingSEO}
-                    className="px-3 py-1.5 flex items-center gap-2 bg-gradient-to-r from-green-600/20 to-emerald-600/20 hover:from-green-600/30 hover:to-emerald-600/30 border border-green-500/30 rounded-lg text-green-300 text-xs font-bold transition-colors disabled:opacity-50"
+                    className="px-4 py-2.5 flex items-center gap-2 bg-gradient-to-r from-green-600/20 to-emerald-600/20 hover:from-green-600/30 hover:to-emerald-600/30 border border-green-500/30 rounded-xl text-green-300 font-bold transition-colors disabled:opacity-50"
                   >
                     {isGeneratingSEO ? (
-                      <Loader2 size={14} className="animate-spin" />
+                      <Loader2 size={18} className="animate-spin" />
                     ) : (
-                      <Sparkles size={14} />
+                      <Sparkles size={18} />
                     )}
                     {isGeneratingSEO ? 'Generating...' : 'AI Generate SEO'}
                   </button>
                 </div>
                 
-                <div className="space-y-4">
-                  {/* Meta Title */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-bold text-neutral-400">Meta Title</label>
-                      <span className={`text-[10px] ${(config.seo?.metaTitle?.length || 0) > 60 ? 'text-red-400' : 'text-neutral-500'}`}>
-                        {config.seo?.metaTitle?.length || 0}/60
-                      </span>
-                    </div>
-                    <input
-                      type="text"
-                      value={config.seo?.metaTitle || ''}
-                      onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, metaTitle: e.target.value } })}
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-green-500 outline-none"
-                      placeholder="Your Store - Premium Products & Fast Shipping"
-                    />
-                  </div>
-
-                  {/* Meta Description */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-bold text-neutral-400">Meta Description</label>
-                      <span className={`text-[10px] ${(config.seo?.metaDescription?.length || 0) > 160 ? 'text-red-400' : 'text-neutral-500'}`}>
-                        {config.seo?.metaDescription?.length || 0}/160
-                      </span>
-                    </div>
-                    <textarea
-                      value={config.seo?.metaDescription || ''}
-                      onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, metaDescription: e.target.value } })}
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-green-500 outline-none resize-none h-20"
-                      placeholder="Discover our curated collection of premium products. Free shipping on orders over $50. Shop now!"
-                    />
-                  </div>
-
-                  {/* Keywords */}
-                  <div>
-                    <label className="text-xs font-bold text-neutral-400 mb-1 block">Meta Keywords</label>
-                    <input
-                      type="text"
-                      value={config.seo?.metaKeywords?.join(', ') || ''}
-                      onChange={(e) => onConfigChange({ 
-                        ...config, 
-                        seo: { ...config.seo, metaKeywords: e.target.value.split(',').map(k => k.trim()).filter(k => k) } 
-                      })}
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-green-500 outline-none"
-                      placeholder="ecommerce, online store, premium products, fast shipping"
-                    />
-                    <p className="text-[10px] text-neutral-500 mt-1">Separate keywords with commas</p>
-                  </div>
-
-                  {/* Social Preview */}
-                  <div className="pt-3 border-t border-neutral-700">
-                    <h5 className="text-xs font-bold text-neutral-400 mb-3 flex items-center gap-2">
-                      <Globe size={14} /> Social Sharing Preview
-                    </h5>
-                    
-                    {/* Google Preview */}
-                    <div className="bg-white rounded-lg p-4 mb-3">
-                      <p className="text-[13px] text-blue-600 hover:underline cursor-pointer truncate font-medium">
-                        {config.seo?.metaTitle || config.name || 'Your Store Name'}
-                      </p>
-                      <p className="text-xs text-green-700 truncate">https://yourstore.com</p>
-                      <p className="text-xs text-gray-600 line-clamp-2 mt-1">
-                        {config.seo?.metaDescription || 'Add a meta description to improve your search engine visibility...'}
-                      </p>
-                    </div>
-
-                    {/* OG Title & Description */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[10px] text-neutral-500 mb-1 block">OG Title (Social)</label>
-                        <input
-                          type="text"
-                          value={config.seo?.ogTitle || ''}
-                          onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, ogTitle: e.target.value } })}
-                          className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-white text-xs focus:border-green-500 outline-none"
-                          placeholder={config.seo?.metaTitle || 'Social title'}
-                        />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Column - Basic SEO */}
+                  <div className="space-y-5">
+                    {/* Meta Title */}
+                    <div className="bg-neutral-800/30 p-5 rounded-xl border border-neutral-700/50">
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-sm font-bold text-white">Meta Title</label>
+                        <span className={`text-xs font-mono px-2 py-1 rounded ${(config.seo?.metaTitle?.length || 0) > 60 ? 'bg-red-500/20 text-red-400' : 'bg-neutral-800 text-neutral-400'}`}>
+                          {config.seo?.metaTitle?.length || 0}/60
+                        </span>
                       </div>
-                      <div>
-                        <label className="text-[10px] text-neutral-500 mb-1 block">OG Image URL</label>
-                        <input
-                          type="text"
-                          value={config.seo?.ogImage || ''}
-                          onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, ogImage: e.target.value } })}
-                          className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-white text-xs focus:border-green-500 outline-none"
-                          placeholder="https://... (1200x630 recommended)"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Advanced SEO */}
-                  <div className="pt-3 border-t border-neutral-700">
-                    <h5 className="text-xs font-bold text-neutral-400 mb-3 flex items-center gap-2">
-                      <Settings size={14} /> Advanced Settings
-                    </h5>
-                    <div className="grid grid-cols-2 gap-3">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={config.seo?.robotsIndex !== false}
-                          onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, robotsIndex: e.target.checked } })}
-                          className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
-                        />
-                        <span className="text-xs text-neutral-300">Allow Search Indexing</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={config.seo?.robotsFollow !== false}
-                          onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, robotsFollow: e.target.checked } })}
-                          className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
-                        />
-                        <span className="text-xs text-neutral-300">Allow Link Following</span>
-                      </label>
-                    </div>
-                    <div className="mt-3">
-                      <label className="text-[10px] text-neutral-500 mb-1 block">Canonical URL (optional)</label>
                       <input
                         type="text"
-                        value={config.seo?.canonicalUrl || ''}
-                        onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, canonicalUrl: e.target.value } })}
-                        className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-white text-xs focus:border-green-500 outline-none"
-                        placeholder="https://yourstore.com"
+                        value={config.seo?.metaTitle || ''}
+                        onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, metaTitle: e.target.value } })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3 text-white focus:border-green-500 outline-none"
+                        placeholder="Your Store - Premium Products & Fast Shipping"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3 mt-3">
-                      <div>
-                        <label className="text-[10px] text-neutral-500 mb-1 block">Google Verification</label>
-                        <input
-                          type="text"
-                          value={config.seo?.googleSiteVerification || ''}
-                          onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, googleSiteVerification: e.target.value } })}
-                          className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-white text-xs focus:border-green-500 outline-none"
-                          placeholder="Verification code"
-                        />
+
+                    {/* Meta Description */}
+                    <div className="bg-neutral-800/30 p-5 rounded-xl border border-neutral-700/50">
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-sm font-bold text-white">Meta Description</label>
+                        <span className={`text-xs font-mono px-2 py-1 rounded ${(config.seo?.metaDescription?.length || 0) > 160 ? 'bg-red-500/20 text-red-400' : 'bg-neutral-800 text-neutral-400'}`}>
+                          {config.seo?.metaDescription?.length || 0}/160
+                        </span>
                       </div>
-                      <div>
-                        <label className="text-[10px] text-neutral-500 mb-1 block">Bing Verification</label>
-                        <input
-                          type="text"
-                          value={config.seo?.bingSiteVerification || ''}
-                          onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, bingSiteVerification: e.target.value } })}
-                          className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-white text-xs focus:border-green-500 outline-none"
-                          placeholder="Verification code"
-                        />
+                      <textarea
+                        value={config.seo?.metaDescription || ''}
+                        onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, metaDescription: e.target.value } })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3 text-white focus:border-green-500 outline-none resize-none h-28"
+                        placeholder="Discover our curated collection of premium products. Free shipping on orders over $50. Shop now!"
+                      />
+                    </div>
+
+                    {/* Keywords */}
+                    <div className="bg-neutral-800/30 p-5 rounded-xl border border-neutral-700/50">
+                      <label className="text-sm font-bold text-white mb-3 block">Meta Keywords</label>
+                      <input
+                        type="text"
+                        value={config.seo?.metaKeywords?.join(', ') || ''}
+                        onChange={(e) => onConfigChange({ 
+                          ...config, 
+                          seo: { ...config.seo, metaKeywords: e.target.value.split(',').map(k => k.trim()).filter(k => k) } 
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3 text-white focus:border-green-500 outline-none"
+                        placeholder="ecommerce, online store, premium products"
+                      />
+                      <p className="text-xs text-neutral-500 mt-2">Separate keywords with commas</p>
+                    </div>
+                  </div>
+
+                  {/* Right Column - Social & Preview */}
+                  <div className="space-y-5">
+                    {/* Google Preview */}
+                    <div className="bg-neutral-800/30 p-5 rounded-xl border border-neutral-700/50">
+                      <label className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                        <Globe size={16} /> Google Search Preview
+                      </label>
+                      <div className="bg-white rounded-xl p-5">
+                        <p className="text-[15px] text-blue-600 hover:underline cursor-pointer truncate font-medium">
+                          {config.seo?.metaTitle || config.name || 'Your Store Name'}
+                        </p>
+                        <p className="text-sm text-green-700 truncate mt-0.5">https://yourstore.com</p>
+                        <p className="text-sm text-gray-600 line-clamp-2 mt-1">
+                          {config.seo?.metaDescription || 'Add a meta description to improve your search engine visibility...'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* OG Settings */}
+                    <div className="bg-neutral-800/30 p-5 rounded-xl border border-neutral-700/50">
+                      <label className="text-sm font-bold text-white mb-4 block">Social Sharing</label>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-xs text-neutral-400 mb-2 block">OG Title (Social)</label>
+                          <input
+                            type="text"
+                            value={config.seo?.ogTitle || ''}
+                            onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, ogTitle: e.target.value } })}
+                            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-green-500 outline-none"
+                            placeholder={config.seo?.metaTitle || 'Social title'}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-neutral-400 mb-2 block">OG Image URL</label>
+                          <input
+                            type="text"
+                            value={config.seo?.ogImage || ''}
+                            onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, ogImage: e.target.value } })}
+                            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-green-500 outline-none"
+                            placeholder="https://... (1200x630 recommended)"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Scrollbar Style Section */}
-              <div className="bg-neutral-800/50 p-5 rounded-xl border border-neutral-700 md:col-span-2">
-                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                  <ArrowDownAZ size={16} className="text-blue-500" /> Scrollbar Style
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {/* Advanced SEO - Full Width */}
+                <div className="mt-6 bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50">
+                  <h5 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                    <Settings size={16} /> Advanced Settings
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <label className="flex items-center gap-3 cursor-pointer bg-neutral-900/50 p-3 rounded-lg">
+                      <input
+                        type="checkbox"
+                        checked={config.seo?.robotsIndex !== false}
+                        onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, robotsIndex: e.target.checked } })}
+                        className="w-5 h-5 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                      />
+                      <span className="text-sm text-neutral-300">Allow Search Indexing</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer bg-neutral-900/50 p-3 rounded-lg">
+                      <input
+                        type="checkbox"
+                        checked={config.seo?.robotsFollow !== false}
+                        onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, robotsFollow: e.target.checked } })}
+                        className="w-5 h-5 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                      />
+                      <span className="text-sm text-neutral-300">Allow Link Following</span>
+                    </label>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-2 block">Google Verification</label>
+                      <input
+                        type="text"
+                        value={config.seo?.googleSiteVerification || ''}
+                        onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, googleSiteVerification: e.target.value } })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-white text-sm focus:border-green-500 outline-none"
+                        placeholder="Verification code"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-2 block">Bing Verification</label>
+                      <input
+                        type="text"
+                        value={config.seo?.bingSiteVerification || ''}
+                        onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, bingSiteVerification: e.target.value } })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-white text-sm focus:border-green-500 outline-none"
+                        placeholder="Verification code"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <label className="text-xs text-neutral-400 mb-2 block">Canonical URL (optional)</label>
+                    <input
+                      type="text"
+                      value={config.seo?.canonicalUrl || ''}
+                      onChange={(e) => onConfigChange({ ...config, seo: { ...config.seo, canonicalUrl: e.target.value } })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-green-500 outline-none"
+                      placeholder="https://yourstore.com"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Scrollbar Tab */}
+            {settingsTab === 'scrollbar' && (
+              <div className="max-w-5xl mx-auto">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-3 bg-indigo-600/20 rounded-xl">
+                    <ArrowDownAZ size={24} className="text-indigo-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Scrollbar Style</h3>
+                    <p className="text-sm text-neutral-400">Choose a scrollbar style for your store</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {SCROLLBAR_OPTIONS.slice(0, 8).map((opt) => (
                     <button 
                       key={opt.id} 
                       onClick={() => onConfigChange({ ...config, scrollbarStyle: opt.id as ScrollbarStyleId })} 
-                      className={`text-left rounded-lg border transition-all overflow-hidden ${
+                      className={`text-left rounded-xl border-2 transition-all overflow-hidden ${
                         config.scrollbarStyle === opt.id 
-                          ? 'bg-blue-600/20 border-blue-500 text-white ring-2 ring-blue-500/50' 
-                          : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-500'
+                          ? 'bg-indigo-600/20 border-indigo-500 text-white ring-2 ring-indigo-500/30' 
+                          : 'bg-neutral-800/30 border-neutral-700/50 text-neutral-400 hover:border-neutral-600'
                       }`}
                     >
                       {/* Scrollbar Preview */}
-                      <div className="h-20 bg-neutral-950 relative overflow-hidden">
-                        <div className="absolute right-0 top-0 bottom-0 w-3 flex items-center justify-center">
-                          <div className={`scrollbar-${opt.id} w-2 h-16 rounded-full`} style={{
+                      <div className="h-24 bg-neutral-950 relative overflow-hidden">
+                        <div className="absolute right-0 top-0 bottom-0 w-4 flex items-center justify-center">
+                          <div className={`scrollbar-${opt.id} w-2.5 h-20 rounded-full`} style={{
                             background: opt.id === 'native' ? '#666' : 
                                       opt.id === 'minimal' ? '#444' :
                                       opt.id === 'hidden' ? 'transparent' :
@@ -2695,23 +2845,22 @@ Return ONLY the JSON object, no markdown.`;
                           }}></div>
                         </div>
                       </div>
-                      <div className="p-3">
-                        <div className="font-bold text-sm mb-0.5">{opt.name}</div>
-                        <div className="text-[10px] opacity-60">{opt.description}</div>
+                      <div className="p-4">
+                        <div className="font-bold text-base mb-1">{opt.name}</div>
+                        <div className="text-xs opacity-60">{opt.description}</div>
                       </div>
                     </button>
                   ))}
                 </div>
               </div>
-
-            </div>
+            )}
           </div>
           
           {/* Modal Footer */}
           <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-end shrink-0">
             <button 
               onClick={() => setIsInterfaceModalOpen(false)}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold text-sm transition-colors"
+              className="px-8 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-colors"
             >
               Done
             </button>
