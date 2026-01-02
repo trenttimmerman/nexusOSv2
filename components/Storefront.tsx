@@ -222,7 +222,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
           const ProductComponent = PRODUCT_PAGE_COMPONENTS[product.template || 'standard'] || PRODUCT_PAGE_COMPONENTS['standard'];
           return (
               <div 
-                className={`min-h-screen flex flex-col selection:text-white storefront-typography ${isSidebar ? 'md:pl-64' : ''} ${getVibeClasses()}`}
+                className={`min-h-screen flex flex-col selection:text-white storefront-typography ${isSidebar ? 'md:pl-64' : ''} ${getVibeClasses()} scrollbar-${config.scrollbarStyle || 'native'}`}
                 style={{ ...designTokenStyles, backgroundColor, color: primaryColor }}
               >
                   <HeaderComponent
@@ -560,7 +560,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
 
   return (
     <div 
-      className={`min-h-screen flex flex-col selection:text-white storefront-typography ${isSidebar ? 'md:pl-64' : ''} ${getVibeClasses()}`}
+      className={`min-h-screen flex flex-col selection:text-white storefront-typography ${isSidebar ? 'md:pl-64' : ''} ${getVibeClasses()} scrollbar-${config.scrollbarStyle || 'native'}`}
       style={{ ...designTokenStyles, backgroundColor }}
     >
       {/* Global Typography Styles */}
