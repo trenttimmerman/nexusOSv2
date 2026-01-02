@@ -68,6 +68,7 @@ create table if not exists store_config (
   name text default 'Nexus Store',
   currency text default 'USD',
   header_style text default 'canvas',
+  header_data jsonb default '{}'::jsonb,
   hero_style text default 'impact',
   product_card_style text default 'classic',
   footer_style text default 'columns',
