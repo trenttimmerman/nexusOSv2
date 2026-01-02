@@ -250,7 +250,13 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                       </div>
                       <ProductComponent product={product} onAddToCart={addToCart} />
                   </main>
-                  <FooterComponent storeName={config.name} primaryColor={config.primaryColor} />
+                  <FooterComponent 
+                    storeName={config.name} 
+                    primaryColor={config.primaryColor} 
+                    backgroundColor={config.footerBackgroundColor}
+                    textColor={config.footerTextColor}
+                    accentColor={config.footerAccentColor}
+                  />
                   {showCartDrawer && <CartDrawer />}
               </div>
           );
@@ -656,7 +662,14 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         )}
       </main>
 
-      <FooterComponent storeName={config.name} primaryColor={primaryColor} secondaryColor={secondaryColor} />
+      <FooterComponent 
+        storeName={config.name} 
+        primaryColor={primaryColor} 
+        secondaryColor={secondaryColor} 
+        backgroundColor={config.footerBackgroundColor}
+        textColor={config.footerTextColor}
+        accentColor={config.footerAccentColor}
+      />
       {showCartDrawer && <CartDrawer />}
       
       {/* Dynamic design token styles */}

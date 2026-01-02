@@ -128,6 +128,12 @@ export interface StoreConfig {
   productCardStyle: ProductCardStyleId;
   footerStyle: FooterStyleId;
   scrollbarStyle: ScrollbarStyleId;
+  
+  // Footer Colors
+  footerBackgroundColor?: string;
+  footerTextColor?: string;
+  footerAccentColor?: string;
+  
   primaryColor: string;
   accentColor?: string; // Secondary accent color
   secondaryColor?: string;

@@ -1898,6 +1898,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <FooterComponent
             storeName={config.name || 'Your Store'}
             primaryColor={config.primaryColor}
+            backgroundColor={config.footerBackgroundColor}
+            textColor={config.footerTextColor}
+            accentColor={config.footerAccentColor}
           />
         ) : null;
       }
@@ -1986,6 +1989,89 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </button>
                   ))}
                 </div>
+                
+                {/* Footer Color Controls */}
+                {systemModalType === 'footer' && (
+                  <div className="mt-6 pt-6 border-t border-neutral-800">
+                    <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <Palette size={14} /> Footer Colors
+                    </h4>
+                    <div className="space-y-4">
+                      {/* Background Color */}
+                      <div>
+                        <label className="text-xs text-neutral-400 mb-2 block">Background</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={config.footerBackgroundColor || '#171717'}
+                            onChange={(e) => onConfigChange({ ...config, footerBackgroundColor: e.target.value })}
+                            className="w-8 h-8 rounded cursor-pointer border border-neutral-700 bg-transparent"
+                          />
+                          <input
+                            type="text"
+                            value={config.footerBackgroundColor || '#171717'}
+                            onChange={(e) => onConfigChange({ ...config, footerBackgroundColor: e.target.value })}
+                            className="flex-1 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-300 font-mono"
+                            placeholder="#171717"
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Text Color */}
+                      <div>
+                        <label className="text-xs text-neutral-400 mb-2 block">Text</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={config.footerTextColor || '#ffffff'}
+                            onChange={(e) => onConfigChange({ ...config, footerTextColor: e.target.value })}
+                            className="w-8 h-8 rounded cursor-pointer border border-neutral-700 bg-transparent"
+                          />
+                          <input
+                            type="text"
+                            value={config.footerTextColor || '#ffffff'}
+                            onChange={(e) => onConfigChange({ ...config, footerTextColor: e.target.value })}
+                            className="flex-1 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-300 font-mono"
+                            placeholder="#ffffff"
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Accent/Link Color */}
+                      <div>
+                        <label className="text-xs text-neutral-400 mb-2 block">Accent / Links</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={config.footerAccentColor || config.primaryColor || '#3B82F6'}
+                            onChange={(e) => onConfigChange({ ...config, footerAccentColor: e.target.value })}
+                            className="w-8 h-8 rounded cursor-pointer border border-neutral-700 bg-transparent"
+                          />
+                          <input
+                            type="text"
+                            value={config.footerAccentColor || config.primaryColor || '#3B82F6'}
+                            onChange={(e) => onConfigChange({ ...config, footerAccentColor: e.target.value })}
+                            className="flex-1 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-300 font-mono"
+                            placeholder="#3B82F6"
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Reset to Defaults */}
+                      <button
+                        onClick={() => onConfigChange({ 
+                          ...config, 
+                          footerBackgroundColor: undefined, 
+                          footerTextColor: undefined, 
+                          footerAccentColor: undefined 
+                        })}
+                        className="w-full py-2 text-xs text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg border border-neutral-800 transition-colors"
+                      >
+                        Reset to Default Colors
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             

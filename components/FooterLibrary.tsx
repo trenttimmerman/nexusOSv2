@@ -6,76 +6,91 @@ interface FooterProps {
   storeName: string;
   primaryColor: string;
   secondaryColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  accentColor?: string;
 }
 
 // 1. Minimal (Clean, barely there)
-export const FooterMinimal: React.FC<FooterProps> = ({ storeName }) => (
-  <footer className="bg-white border-t border-neutral-100 py-12 px-6">
+export const FooterMinimal: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor }) => (
+  <footer 
+    className="border-t py-12 px-6 transition-colors"
+    style={{ 
+      backgroundColor: backgroundColor || '#ffffff',
+      borderColor: textColor ? `${textColor}20` : '#f5f5f5'
+    }}
+  >
     <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-      <div className="font-bold text-lg">{storeName}</div>
-      <div className="flex gap-6 text-sm text-neutral-500">
-        <a href="#" className="hover:text-black transition-colors">Terms</a>
-        <a href="#" className="hover:text-black transition-colors">Privacy</a>
-        <a href="#" className="hover:text-black transition-colors">Contact</a>
+      <div className="font-bold text-lg" style={{ color: textColor || '#171717' }}>{storeName}</div>
+      <div className="flex gap-6 text-sm" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
+        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>Terms</a>
+        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>Privacy</a>
+        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>Contact</a>
       </div>
       <div className="flex gap-4">
-        <Instagram size={18} className="text-neutral-400 hover:text-black transition-colors" />
-        <Twitter size={18} className="text-neutral-400 hover:text-black transition-colors" />
+        <Instagram size={18} className="hover:opacity-80 transition-opacity cursor-pointer" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }} />
+        <Twitter size={18} className="hover:opacity-80 transition-opacity cursor-pointer" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }} />
       </div>
     </div>
   </footer>
 );
 
 // 2. Columns (Standard E-commerce)
-export const FooterColumns: React.FC<FooterProps> = ({ storeName, primaryColor }) => (
-  <footer className="bg-neutral-50 border-t border-neutral-200 py-20 px-6 text-sm">
+export const FooterColumns: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor }) => (
+  <footer 
+    className="border-t py-20 px-6 text-sm transition-colors"
+    style={{ 
+      backgroundColor: backgroundColor || '#fafafa',
+      borderColor: textColor ? `${textColor}20` : '#e5e5e5'
+    }}
+  >
     <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12">
       <div className="col-span-2 lg:col-span-2">
-        <h3 className="font-bold text-xl mb-6">{storeName}</h3>
-        <p className="text-neutral-500 max-w-sm mb-6 leading-relaxed">
+        <h3 className="font-bold text-xl mb-6" style={{ color: textColor || '#171717' }}>{storeName}</h3>
+        <p className="max-w-sm mb-6 leading-relaxed" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
           Designed for the future of commerce. We build tools that empower creators to sell without limits.
         </p>
         <div className="flex gap-2">
-           <div className="w-8 h-8 rounded bg-white border border-neutral-200 flex items-center justify-center">
-             <span className="font-bold text-[10px]">VISA</span>
+           <div className="w-8 h-8 rounded border flex items-center justify-center" style={{ borderColor: textColor ? `${textColor}30` : '#e5e5e5', backgroundColor: backgroundColor || '#ffffff' }}>
+             <span className="font-bold text-[10px]" style={{ color: textColor || '#171717' }}>VISA</span>
            </div>
-           <div className="w-8 h-8 rounded bg-white border border-neutral-200 flex items-center justify-center">
-             <span className="font-bold text-[10px]">MC</span>
+           <div className="w-8 h-8 rounded border flex items-center justify-center" style={{ borderColor: textColor ? `${textColor}30` : '#e5e5e5', backgroundColor: backgroundColor || '#ffffff' }}>
+             <span className="font-bold text-[10px]" style={{ color: textColor || '#171717' }}>MC</span>
            </div>
-           <div className="w-8 h-8 rounded bg-white border border-neutral-200 flex items-center justify-center">
-             <span className="font-bold text-[10px]">PAY</span>
+           <div className="w-8 h-8 rounded border flex items-center justify-center" style={{ borderColor: textColor ? `${textColor}30` : '#e5e5e5', backgroundColor: backgroundColor || '#ffffff' }}>
+             <span className="font-bold text-[10px]" style={{ color: textColor || '#171717' }}>PAY</span>
            </div>
         </div>
       </div>
       <div>
-        <h4 className="font-bold mb-4 text-neutral-900">Shop</h4>
-        <ul className="space-y-3 text-neutral-500">
-          <li className="hover:text-black cursor-pointer">New Arrivals</li>
-          <li className="hover:text-black cursor-pointer">Best Sellers</li>
-          <li className="hover:text-black cursor-pointer">Accessories</li>
-          <li className="hover:text-black cursor-pointer">Sale</li>
+        <h4 className="font-bold mb-4" style={{ color: textColor || '#171717' }}>Shop</h4>
+        <ul className="space-y-3" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
+          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>New Arrivals</li>
+          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Best Sellers</li>
+          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Accessories</li>
+          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Sale</li>
         </ul>
       </div>
       <div>
-        <h4 className="font-bold mb-4 text-neutral-900">Company</h4>
-        <ul className="space-y-3 text-neutral-500">
-          <li className="hover:text-black cursor-pointer">About Us</li>
-          <li className="hover:text-black cursor-pointer">Careers</li>
-          <li className="hover:text-black cursor-pointer">Press</li>
-          <li className="hover:text-black cursor-pointer">Sustainability</li>
+        <h4 className="font-bold mb-4" style={{ color: textColor || '#171717' }}>Company</h4>
+        <ul className="space-y-3" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
+          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>About Us</li>
+          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Careers</li>
+          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Press</li>
+          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Sustainability</li>
         </ul>
       </div>
       <div>
-        <h4 className="font-bold mb-4 text-neutral-900">Support</h4>
-        <ul className="space-y-3 text-neutral-500">
-          <li className="hover:text-black cursor-pointer">Help Center</li>
-          <li className="hover:text-black cursor-pointer">Returns</li>
-          <li className="hover:text-black cursor-pointer">Shipping</li>
-          <li className="hover:text-black cursor-pointer">Contact</li>
+        <h4 className="font-bold mb-4" style={{ color: textColor || '#171717' }}>Support</h4>
+        <ul className="space-y-3" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
+          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Help Center</li>
+          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Returns</li>
+          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Shipping</li>
+          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Contact</li>
         </ul>
       </div>
     </div>
-    <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-neutral-200 flex flex-col md:flex-row justify-between text-xs text-neutral-400">
+    <div className="max-w-7xl mx-auto mt-16 pt-8 border-t flex flex-col md:flex-row justify-between text-xs" style={{ borderColor: textColor ? `${textColor}20` : '#e5e5e5', color: textColor ? `${textColor}80` : '#a3a3a3' }}>
       <p>&copy; 2024 {storeName} Inc. All rights reserved.</p>
       <div className="flex gap-4 mt-4 md:mt-0">
          <span>Privacy Policy</span>
@@ -86,12 +101,12 @@ export const FooterColumns: React.FC<FooterProps> = ({ storeName, primaryColor }
 );
 
 // 3. Newsletter (Conversion Focused)
-export const FooterNewsletter: React.FC<FooterProps> = ({ storeName, primaryColor }) => (
-  <footer className="bg-black text-white py-24 px-6">
+export const FooterNewsletter: React.FC<FooterProps> = ({ storeName, primaryColor, backgroundColor, textColor, accentColor }) => (
+  <footer className="py-24 px-6 transition-colors" style={{ backgroundColor: backgroundColor || '#000000' }}>
     <div className="max-w-4xl mx-auto text-center">
-      <Mail size={48} className="mx-auto mb-6 text-neutral-700" />
-      <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">Don't miss the drop.</h2>
-      <p className="text-neutral-400 text-lg mb-10 max-w-lg mx-auto">
+      <Mail size={48} className="mx-auto mb-6" style={{ color: textColor ? `${textColor}50` : '#404040' }} />
+      <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight" style={{ color: textColor || '#ffffff' }}>Don't miss the drop.</h2>
+      <p className="text-lg mb-10 max-w-lg mx-auto" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
         Join 50,000+ subscribers getting exclusive access to new releases, secret sales, and design insights.
       </p>
       
@@ -99,119 +114,134 @@ export const FooterNewsletter: React.FC<FooterProps> = ({ storeName, primaryColo
         <input 
           type="email" 
           placeholder="Enter your email" 
-          className="flex-1 bg-white/10 border border-white/20 rounded-lg px-6 py-4 text-white placeholder:text-neutral-500 focus:outline-none focus:border-white transition-colors"
+          className="flex-1 rounded-lg px-6 py-4 focus:outline-none transition-colors"
+          style={{ 
+            backgroundColor: textColor ? `${textColor}15` : 'rgba(255,255,255,0.1)',
+            borderWidth: '1px',
+            borderColor: textColor ? `${textColor}30` : 'rgba(255,255,255,0.2)',
+            color: textColor || '#ffffff'
+          }}
         />
         <button 
-          className="px-8 py-4 text-black font-bold rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap"
-          style={{ backgroundColor: primaryColor === '#000000' ? '#ffffff' : primaryColor }}
+          className="px-8 py-4 font-bold rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap"
+          style={{ 
+            backgroundColor: accentColor || primaryColor || '#ffffff', 
+            color: backgroundColor || '#000000'
+          }}
         >
           Subscribe
         </button>
       </div>
 
-      <div className="flex justify-center gap-8 border-t border-white/10 pt-12 text-sm text-neutral-500 font-medium">
-        <a href="#" className="hover:text-white transition-colors">Instagram</a>
-        <a href="#" className="hover:text-white transition-colors">Twitter</a>
-        <a href="#" className="hover:text-white transition-colors">TikTok</a>
-        <a href="#" className="hover:text-white transition-colors">YouTube</a>
+      <div className="flex justify-center gap-8 border-t pt-12 text-sm font-medium" style={{ borderColor: textColor ? `${textColor}20` : 'rgba(255,255,255,0.1)', color: textColor ? `${textColor}80` : '#737373' }}>
+        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#ffffff' }}>Instagram</a>
+        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#ffffff' }}>Twitter</a>
+        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#ffffff' }}>TikTok</a>
+        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#ffffff' }}>YouTube</a>
       </div>
-      <p className="mt-8 text-xs text-neutral-600">&copy; 2024 {storeName}.</p>
+      <p className="mt-8 text-xs" style={{ color: textColor ? `${textColor}50` : '#525252' }}>&copy; 2024 {storeName}.</p>
     </div>
   </footer>
 );
 
 // 4. Brand (Typography Heavy)
-export const FooterBrand: React.FC<FooterProps> = ({ storeName }) => (
-  <footer className="bg-[#f0f0f0] pt-24 pb-8 px-6 overflow-hidden">
+export const FooterBrand: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor }) => (
+  <footer className="pt-24 pb-8 px-6 overflow-hidden transition-colors" style={{ backgroundColor: backgroundColor || '#f0f0f0' }}>
     <div className="max-w-7xl mx-auto mb-24 grid grid-cols-1 md:grid-cols-2 gap-12">
        <div>
-          <span className="block text-xs font-bold uppercase tracking-widest text-neutral-400 mb-4">Headquarters</span>
-          <p className="text-xl font-medium leading-relaxed">
+          <span className="block text-xs font-bold uppercase tracking-widest mb-4" style={{ color: textColor ? `${textColor}80` : '#a3a3a3' }}>Headquarters</span>
+          <p className="text-xl font-medium leading-relaxed" style={{ color: textColor || '#171717' }}>
              100 Evolv Way<br/>
              Floor 24, Suite 100<br/>
              New York, NY 10012
           </p>
        </div>
        <div className="flex flex-col md:items-end">
-          <span className="block text-xs font-bold uppercase tracking-widest text-neutral-400 mb-4">Connect</span>
-          <a href="mailto:hello@evolv.com" className="text-xl font-medium hover:underline mb-2">hello@{storeName.toLowerCase()}.com</a>
-          <p className="text-xl font-medium">+1 (555) 000-0000</p>
+          <span className="block text-xs font-bold uppercase tracking-widest mb-4" style={{ color: textColor ? `${textColor}80` : '#a3a3a3' }}>Connect</span>
+          <a href="mailto:hello@evolv.com" className="text-xl font-medium hover:underline mb-2" style={{ color: accentColor || textColor || '#171717' }}>hello@{storeName.toLowerCase()}.com</a>
+          <p className="text-xl font-medium" style={{ color: textColor || '#171717' }}>+1 (555) 000-0000</p>
        </div>
     </div>
     
-    <div className="border-t border-neutral-300 pt-8 mb-4 flex justify-between text-xs font-bold uppercase tracking-wider text-neutral-500">
+    <div className="border-t pt-8 mb-4 flex justify-between text-xs font-bold uppercase tracking-wider" style={{ borderColor: textColor ? `${textColor}30` : '#d4d4d4', color: textColor ? `${textColor}80` : '#737373' }}>
        <span>Based in NYC</span>
        <span>Worldwide Shipping</span>
     </div>
     
-    <h1 className="text-[15vw] leading-none font-black tracking-tighter text-neutral-300 select-none text-center md:text-left">
+    <h1 className="text-[15vw] leading-none font-black tracking-tighter select-none text-center md:text-left" style={{ color: textColor ? `${textColor}30` : '#d4d4d4' }}>
        {storeName.toUpperCase()}
     </h1>
   </footer>
 );
 
 // 5. Sitemap (Information Dense)
-export const FooterSitemap: React.FC<FooterProps> = ({ storeName }) => (
-  <footer className="bg-neutral-900 text-neutral-400 py-16 px-6 text-sm border-t-4 border-blue-600">
+export const FooterSitemap: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor }) => (
+  <footer 
+    className="py-16 px-6 text-sm border-t-4 transition-colors" 
+    style={{ 
+      backgroundColor: backgroundColor || '#171717',
+      borderTopColor: accentColor || '#2563eb'
+    }}
+  >
      <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-16">
         <div className="col-span-2 lg:col-span-2 pr-8">
-           <div className="text-white font-bold text-2xl mb-6">{storeName}</div>
-           <div className="flex items-center gap-2 mb-4 text-xs">
+           <div className="font-bold text-2xl mb-6" style={{ color: textColor || '#ffffff' }}>{storeName}</div>
+           <div className="flex items-center gap-2 mb-4 text-xs" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
               <Globe size={14} /> 
               <span>Region: United States (USD $)</span>
            </div>
-           <div className="flex items-center gap-2 text-xs">
+           <div className="flex items-center gap-2 text-xs" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
               <ShieldCheck size={14} /> 
               <span>Secure Checkout via Evolv Pass</span>
            </div>
         </div>
         
         <div>
-           <h4 className="text-white font-bold mb-4">Products</h4>
-           <ul className="space-y-2">
-              <li className="hover:text-blue-500 cursor-pointer">New Arrivals</li>
-              <li className="hover:text-blue-500 cursor-pointer">Best Sellers</li>
-              <li className="hover:text-blue-500 cursor-pointer">Trends</li>
-              <li className="hover:text-blue-500 cursor-pointer">Gift Cards</li>
-              <li className="hover:text-blue-500 cursor-pointer">Sale</li>
+           <h4 className="font-bold mb-4" style={{ color: textColor || '#ffffff' }}>Products</h4>
+           <ul className="space-y-2" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>New Arrivals</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Best Sellers</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Trends</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Gift Cards</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Sale</li>
            </ul>
         </div>
 
         <div>
-           <h4 className="text-white font-bold mb-4">Collections</h4>
-           <ul className="space-y-2">
-              <li className="hover:text-blue-500 cursor-pointer">Summer 2024</li>
-              <li className="hover:text-blue-500 cursor-pointer">Cyber Tech</li>
-              <li className="hover:text-blue-500 cursor-pointer">Minimalist</li>
-              <li className="hover:text-blue-500 cursor-pointer">Accessories</li>
-              <li className="hover:text-blue-500 cursor-pointer">Home</li>
+           <h4 className="font-bold mb-4" style={{ color: textColor || '#ffffff' }}>Collections</h4>
+           <ul className="space-y-2" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Summer 2024</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Cyber Tech</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Minimalist</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Accessories</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Home</li>
            </ul>
         </div>
 
         <div>
-           <h4 className="text-white font-bold mb-4">Support</h4>
-           <ul className="space-y-2">
-              <li className="hover:text-blue-500 cursor-pointer">Help Center</li>
-              <li className="hover:text-blue-500 cursor-pointer">Track Order</li>
-              <li className="hover:text-blue-500 cursor-pointer">Returns</li>
-              <li className="hover:text-blue-500 cursor-pointer">Shipping Info</li>
-              <li className="hover:text-blue-500 cursor-pointer">Contact Us</li>
+           <h4 className="font-bold mb-4" style={{ color: textColor || '#ffffff' }}>Support</h4>
+           <ul className="space-y-2" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Help Center</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Track Order</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Returns</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Shipping Info</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Contact Us</li>
            </ul>
         </div>
 
         <div>
-           <h4 className="text-white font-bold mb-4">Legal</h4>
-           <ul className="space-y-2">
-              <li className="hover:text-blue-500 cursor-pointer">Terms</li>
-              <li className="hover:text-blue-500 cursor-pointer">Privacy</li>
-              <li className="hover:text-blue-500 cursor-pointer">Cookies</li>
-              <li className="hover:text-blue-500 cursor-pointer">Licenses</li>
+           <h4 className="font-bold mb-4" style={{ color: textColor || '#ffffff' }}>Legal</h4>
+           <ul className="space-y-2" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Terms</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Privacy</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Cookies</li>
+              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Licenses</li>
            </ul>
         </div>
      </div>
      
-     <div className="max-w-7xl mx-auto pt-8 border-t border-neutral-800 flex justify-center">
-        <p className="text-xs opacity-50">&copy; 2024 Evolv Commerce Operating System. Powered by React.</p>
+     <div className="max-w-7xl mx-auto pt-8 border-t flex justify-center" style={{ borderColor: textColor ? `${textColor}20` : '#262626' }}>
+        <p className="text-xs" style={{ color: textColor ? `${textColor}50` : '#525252' }}>&copy; 2024 Evolv Commerce Operating System. Powered by React.</p>
      </div>
   </footer>
 );
