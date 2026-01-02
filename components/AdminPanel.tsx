@@ -4848,7 +4848,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       View Live
                     </a>
                   )}
-                  {/* Version History Button */
+                  {/* Version History Button */}
                   <button 
                     onClick={() => {
                       fetchPageVersions();
@@ -5272,7 +5272,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
                   </div>
 
-                  {/* Contact Information */
+                  {/* Contact Information */}
                   <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
                     <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4">Contact Information</h4>
                     <div><label className="text-xs font-bold text-neutral-500 uppercase">Support Email</label><input value={config.supportEmail || ''} onChange={e => onConfigChange({ ...config, supportEmail: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="support@example.com" /></div>
