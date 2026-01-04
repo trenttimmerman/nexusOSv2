@@ -701,7 +701,7 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
         <nav className="hidden md:flex items-stretch justify-center" style={{ backgroundColor: merged.backgroundColor }}>
           <div className="flex w-full h-full divide-x-4 divide-black border-l-0">
             {(links || []).map(l => (
-              <NavItem key={l.label} link={l} onClick={onLinkClick} className="flex-1 flex items-center justify-center text-sm font-bold uppercase hover:bg-black transition-colors px-4 py-2" style={{ color: merged.textColor }} />
+              <NavItem key={l.label} link={l} onClick={onLinkClick} className="flex-1 flex items-center justify-center text-sm font-bold uppercase hover:bg-black transition-colors px-4 py-2" style={{ color: merged.textColor }} hoverColor={merged.textHoverColor} />
             ))}
           </div>
         </nav>
