@@ -52,21 +52,42 @@ Every header MUST have these 3 icons with show/hide toggles:
 - Interface includes ALL text content properties
 - Interface includes ALL layout properties
 - Properties are properly typed and documented with comments
+- **⚠️ CRITICAL:** Interface MUST be complete BEFORE implementation begins
+- Every property used in ANY variant MUST be in the shared interface
+
+**⚠️ COMMON ERROR - Incomplete Interface:**
+When adding features incrementally to different variants, it's easy to forget to update the shared interface. This causes TypeScript errors when properties are used but not defined.
+
+**Prevention:** After implementing ANY new feature in a variant, IMMEDIATELY add the property to the interface.
 
 **Example:**
 ```typescript
 export interface HeaderData {
-  // Visibility toggles
+  // Visibility toggles - MUST include all variants' toggles
   showSearch?: boolean;
   showAccount?: boolean;
   showCart?: boolean;
+  showCTA?: boolean;           // Pilot variant
+  showMenu?: boolean;          // Luxe variant
+  showTagline?: boolean;       // Luxe variant
+  showLogoBadge?: boolean;     // Pilot variant
+  showIndicatorDot?: boolean;  // Nebula variant
   
-  // Colors
+  // Colors - MUST include all color properties used by any variant
   backgroundColor?: string;
+  borderColor?: string;
   textColor?: string;
   textHoverColor?: string;
+  accentColor?: string;        // Used by Nebula, Pilot, Luxe
   cartBadgeColor?: string;
   cartBadgeTextColor?: string;
+  taglineColor?: string;       // Luxe variant
+  
+  // CTA/Button (Pilot-specific)
+  ctaBackgroundColor?: string;
+  ctaHoverColor?: string;
+  ctaTextColor?: string;
+  ctaText?: string;
   
   // Ticker (Bunker-specific)
   tickerBackgroundColor?: string;
@@ -74,11 +95,34 @@ export interface HeaderData {
   tickerBorderColor?: string;
   tickerText?: string;
   
+  // Tagline (Luxe-specific)
+  taglineText?: string;
+  
+  // Search customization
+  showKeyboardShortcut?: boolean;
+  searchPlaceholder?: string;
+  searchBackgroundColor?: string;
+  searchFocusBackgroundColor?: string;
+  searchFocusBorderColor?: string;
+  searchInputTextColor?: string;
+  searchPlaceholderColor?: string;
+  
+  // Glass effect (Nebula-specific)
+  blurIntensity?: string;
+  
   // Layout
   sticky?: boolean;
-  maxWidth?: string;
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
+  paddingX?: string;
+  paddingY?: string;
 }
 ```
+
+**How to verify interface completeness:**
+1. Search for all DEFAULTS objects in the file (e.g., `CANVAS_DEFAULTS`, `PILOT_DEFAULTS`)
+2. Check every property used in EVERY DEFAULTS object
+3. Ensure ALL properties exist in the shared interface
+4. Run TypeScript check: `npm run build` - should have ZERO errors
 
 ---
 
@@ -261,6 +305,210 @@ Controls that only appear when a specific variant is selected.
 
 ---
 
+## Critical: Icon Imports in AdminPanel
+
+**⚠️ BREAKING ERROR - Missing Icon Imports:**
+When components use lucide-react icons, those icons MUST be imported in `AdminPanel.tsx` if the admin panel renders or previews those components.
+
+**Why this happens:**
+- Component library imports icons for component use
+- AdminPanel imports component library to show previews
+- If AdminPanel tries to render a component that uses an icon not in AdminPanel's imports, it crashes
+- Error: `ReferenceError: [IconName] is not defined`
+
+**Prevention Checklist:**
+When adding OR modifying a component that uses icons:
+
+1. **Identify all icons used** in the component
+   ```tsx
+   // Example: HeaderPilot uses Hexagon icon
+   <Hexagon size={20} />
+   ```
+
+2. **Check AdminPanel.tsx imports** (around line 62-160)
+   ```typescript
+   import {
+     LayoutDashboard,
+     Search,
+     User,
+     ShoppingBag,
+     Menu,
+     Hexagon,  // ← Must be here if used in any component!
+     // ... other icons
+   } from 'lucide-react';
+   ```
+
+3. **Add missing icons immediately**
+   - If icon is used in component but NOT in AdminPanel imports → ADD IT
+   - Keep icons in alphabetical order for maintainability
+
+**Common icons that MUST be in AdminPanel:**
+- `Search` - Used in all headers with search
+- `User` - Used in all headers with account
+- `ShoppingBag` - Used in all headers with cart
+- `Menu` - Used in headers with mobile menu (Luxe, Pilot)
+- `Hexagon` - Used in Pilot header logo badge
+- `Command` - Used in Venture header keyboard shortcut
+
+**Quick fix when you get icon errors:**
+1. Note the icon name from error: `ReferenceError: Hexagon is not defined`
+2. Open `AdminPanel.tsx`
+3. Find the lucide-react import block
+4. Add the icon name to the import list
+5. Commit: `git commit -m "Add missing [IconName] icon import to AdminPanel"`
+
+---
+
+## Event Handling Patterns
+
+**⚠️ COMMON BUG - Expandable Search Input:**
+
+**Problem:** Click on search icon doesn't open input, or input closes immediately when clicked.
+
+**Root Cause:** The `onBlur` event fires before the `onClick` event can complete when clicking the search icon to toggle.
+
+**❌ WRONG APPROACH:**
+```tsx
+// This does NOT work - preventDefault on container doesn't help
+<div onMouseDown={(e) => e.preventDefault()}>
+  <input
+    onBlur={() => { setSearchOpen(false); }}
+    autoFocus
+  />
+</div>
+```
+
+**✅ CORRECT APPROACH:**
+```tsx
+// Use setTimeout to delay blur action
+<div>
+  <input
+    onBlur={() => {
+      // Small delay allows clicks to register first
+      setTimeout(() => {
+        setSearchOpen(false);
+        setSearchFocused(false);
+      }, 150);
+    }}
+    onFocus={() => setSearchFocused(true)}
+    autoFocus
+  />
+</div>
+```
+
+**Why this works:**
+- `setTimeout` delays the blur action by 150ms
+- Click events process immediately
+- By the time blur executes, click has already toggled the state
+- User experience is smooth and natural
+
+**When to use this pattern:**
+- Expandable search inputs
+- Dropdown menus that toggle on click
+- Popovers/modals that close on outside click
+- Any toggle interaction where blur might conflict with click
+
+**Alternative pattern (for more complex cases):**
+```tsx
+const searchRef = useRef<HTMLDivElement>(null);
+
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      setSearchOpen(false);
+    }
+  };
+  
+  if (searchOpen) {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }
+}, [searchOpen]);
+
+return (
+  <div ref={searchRef}>
+    <input autoFocus />
+  </div>
+);
+```
+
+---
+
+## Component Deletion Checklist
+
+**When removing a component variant (e.g., removing HeaderOrbit):**
+
+**⚠️ CRITICAL STEPS - Missing any causes runtime errors:**
+
+1. **Delete the component implementation**
+   ```tsx
+   // Remove the entire HeaderOrbit component function
+   export const HeaderOrbit: React.FC<HeaderProps> = ... ❌ DELETE THIS
+   ```
+
+2. **Delete the DEFAULTS object**
+   ```tsx
+   const ORBIT_DEFAULTS: HeaderData = { ... }; ❌ DELETE THIS
+   ```
+
+3. **Remove from HEADER_COMPONENTS registry**
+   ```tsx
+   export const HEADER_COMPONENTS: Record<string, React.FC<HeaderProps>> = {
+     canvas: HeaderCanvas,
+     orbit: HeaderOrbit,  // ❌ DELETE THIS LINE
+     nebula: HeaderNebula,
+   };
+   ```
+
+4. **Remove from HEADER_OPTIONS**
+   ```tsx
+   export const HEADER_OPTIONS = [
+     { id: 'orbit', name: 'Interactive', ... }, // ❌ DELETE THIS
+   ];
+   ```
+
+5. **Search for ALL references**
+   ```bash
+   # In terminal, search for the component name
+   grep -r "ORBIT" components/
+   grep -r "HeaderOrbit" components/
+   ```
+
+6. **Update AdminPanel.tsx imports** (if component was individually imported)
+   ```tsx
+   import { HeaderCanvas, HeaderOrbit, ... } from './HeaderLibrary';
+                         // ❌ REMOVE THIS
+   ```
+
+7. **Remove variant-specific controls from AdminPanel**
+   - Search for: `{(config.headerStyle === 'orbit') && ...}`
+   - Delete the entire conditional block
+
+8. **Update HEADER_FIELDS** (remove the variant's field list)
+   ```tsx
+   export const HEADER_FIELDS: Record<string, string[]> = {
+     canvas: [...],
+     orbit: [...], // ❌ DELETE THIS
+   };
+   ```
+
+**⚠️ VERIFY DELETION:**
+```bash
+# Should return NO results
+grep -r "orbit" components/HeaderLibrary.tsx
+grep -r "ORBIT" components/HeaderLibrary.tsx
+
+# Build should succeed with no errors
+npm run build
+```
+
+**Common errors when deletion is incomplete:**
+- `ReferenceError: ORBIT_DEFAULTS is not defined` → Forgot to delete DEFAULTS object
+- `Cannot find name 'HeaderOrbit'` → Forgot to remove from HEADER_COMPONENTS
+- Variant still appears in selector but crashes when selected → Forgot to remove from HEADER_OPTIONS
+
+---
+
 ## Common Patterns & Best Practices
 
 ### Color Pickers
@@ -386,11 +634,16 @@ This same process applies to:
 🚨 **Orphaned Properties** - Data property exists but isn't used in component
 🚨 **No Preview Updates** - Changes don't reflect in preview without page refresh
 🚨 **Inconsistent Defaults** - Some variants have complete defaults, others don't
+🚨 **Incomplete Interface** - Properties used in DEFAULTS but missing from interface (causes TypeScript errors)
+🚨 **Missing Icon Imports** - Icons used in components but not imported in AdminPanel (causes runtime crash)
+🚨 **Broken Interactions** - Click handlers don't work due to blur/focus conflicts
+🚨 **Orphaned References** - Component deleted but still referenced in registry or DEFAULTS
 
 ---
 
 ## Session Example: Header Audit (Jan 4, 2026)
 
+### Morning Session: Editor Controls Audit
 **Components Audited:** HeaderCanvas, HeaderNebula, HeaderLuxe, HeaderPilot, HeaderBunker
 
 **Issues Found:**
@@ -413,6 +666,62 @@ This same process applies to:
 - `Add missing editor controls: cart badge colors, Luxe menu toggle, Pilot logo badge, Bunker section`
 - `Add ticker customization controls for Bunker header (background, text color, and content)`
 - `Add ticker border color control to Bunker header`
+
+---
+
+### Afternoon Session: Search Customization & Critical Fixes
+
+**Features Added:**
+- ✅ Search box styling controls (5 color properties for all headers)
+- ✅ Expandable search functionality (icon → input field)
+- ✅ Removed non-functioning Orbit header
+
+**Critical Bugs Fixed:**
+1. **Incomplete HeaderData Interface**
+   - **Error:** TypeScript compilation failed with 20+ errors
+   - **Cause:** Properties used in DEFAULTS but missing from interface
+   - **Missing Properties:** accentColor, showIndicatorDot, blurIntensity, showMenu, showTagline, taglineColor, taglineText, showCTA, showLogoBadge, ctaBackgroundColor, ctaTextColor, ctaHoverColor, ctaText
+   - **Fix:** Added all missing properties to HeaderData interface
+   - **Prevention:** Always update interface when adding properties to any variant
+
+2. **Expandable Search Not Working**
+   - **Error:** Clicking search icon didn't open input, or input closed immediately
+   - **Cause:** `onBlur` event fired before `onClick` could complete
+   - **Wrong Approach Tried:** `onMouseDown={(e) => e.preventDefault()}` on container - didn't work
+   - **Correct Fix:** Added `setTimeout` delay to `onBlur` handler (150ms)
+   - **Prevention:** Use setTimeout pattern for all expandable/toggle interactions
+
+3. **Missing Icon Imports**
+   - **Error:** `ReferenceError: Menu is not defined` then `ReferenceError: Hexagon is not defined`
+   - **Cause:** Icons used in header components but not imported in AdminPanel
+   - **Fix:** Added `Menu` and `Hexagon` to AdminPanel lucide-react imports
+   - **Prevention:** When component uses ANY icon, ensure it's in AdminPanel imports
+
+4. **Orphaned Component Reference**
+   - **Error:** `Cannot find name 'HeaderOrbit'` in HEADER_COMPONENTS
+   - **Cause:** Deleted HeaderOrbit component but forgot to remove from registry
+   - **Fix:** Removed `orbit: HeaderOrbit` from HEADER_COMPONENTS object
+   - **Prevention:** Follow complete deletion checklist when removing components
+
+**Commits:**
+- `Remove Orbit header completely`
+- `Add universal search styling and expandable search to all headers`
+- `Add search styling controls to all header variants in AdminPanel`
+- `Fix expandable search and add missing Menu icon`
+- `Add missing Hexagon icon import to AdminPanel`
+
+**Lessons Learned:**
+1. **Interface completeness is critical** - Build fails if properties are missing
+2. **Event handling requires careful timing** - Use setTimeout for blur/click conflicts
+3. **Icon imports must be comprehensive** - AdminPanel needs ALL icons used in components
+4. **Component deletion requires thoroughness** - Check registry, options, DEFAULTS, and references
+
+**Updated Documentation:**
+- Added "Icon Imports in AdminPanel" section
+- Added "Event Handling Patterns" section with expandable search fix
+- Added "Component Deletion Checklist" with 8-step process
+- Updated "Red Flags & Warning Signs" with new error types
+- Enhanced Step 2 with interface completeness verification
 
 ---
 
