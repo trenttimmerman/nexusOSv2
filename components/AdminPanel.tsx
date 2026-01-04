@@ -2061,127 +2061,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <span className="text-xs text-neutral-500">Changes update instantly</span>
                   </div>
                   <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100 shadow-lg">
-                    {config.headerStyle === 'nebula' ? (
-                      <HeaderNebula
-                        storeName={config.name || 'Your Store'}
-                        logoUrl={config.logoUrl}
-                        logoHeight={config.logoHeight || 32}
-                        links={[
-                          { label: 'Shop', href: '/shop', active: false },
-                          { label: 'About', href: '/about', active: false },
-                          { label: 'Contact', href: '/contact', active: false },
-                        ]}
-                        cartCount={2}
-                        onOpenCart={() => {}}
-                        onLinkClick={() => {}}
-                        data={config.headerData}
-                      />
-                    ) : config.headerStyle === 'luxe' ? (
-                      <HeaderLuxe
-                        storeName={config.name || 'Your Store'}
-                        logoUrl={config.logoUrl}
-                        logoHeight={config.logoHeight || 32}
-                        links={[
-                          { label: 'Shop', href: '/shop', active: false },
-                          { label: 'About', href: '/about', active: false },
-                          { label: 'Contact', href: '/contact', active: false },
-                        ]}
-                        cartCount={2}
-                        onOpenCart={() => {}}
-                        onLinkClick={() => {}}
-                        data={config.headerData}
-                      />
-                    ) : config.headerStyle === 'pilot' ? (
-                      <HeaderPilot
-                        storeName={config.name || 'Your Store'}
-                        logoUrl={config.logoUrl}
-                        logoHeight={config.logoHeight || 32}
-                        links={[
-                          { label: 'Shop', href: '/shop', active: false },
-                          { label: 'About', href: '/about', active: false },
-                          { label: 'Contact', href: '/contact', active: false },
-                        ]}
-                        cartCount={2}
-                        onOpenCart={() => {}}
-                        onLinkClick={() => {}}
-                        data={config.headerData}
-                      />
-                    ) : config.headerStyle === 'bunker' ? (
-                      <HeaderBunker
-                        storeName={config.name || 'Your Store'}
-                        logoUrl={config.logoUrl}
-                        logoHeight={config.logoHeight || 32}
-                        links={[
-                          { label: 'Shop', href: '/shop', active: false },
-                          { label: 'About', href: '/about', active: false },
-                          { label: 'Contact', href: '/contact', active: false },
-                        ]}
-                        cartCount={2}
-                        onOpenCart={() => {}}
-                        onLinkClick={() => {}}
-                        data={config.headerData}
-                      />
-                    ) : config.headerStyle === 'pop' ? (
-                      <HeaderPop
-                        storeName={config.name || 'Your Store'}
-                        logoUrl={config.logoUrl}
-                        logoHeight={config.logoHeight || 32}
-                        links={[
-                          { label: 'Shop', href: '/shop', active: false },
-                          { label: 'About', href: '/about', active: false },
-                          { label: 'Contact', href: '/contact', active: false },
-                        ]}
-                        cartCount={2}
-                        onOpenCart={() => {}}
-                        onLinkClick={() => {}}
-                        data={config.headerData}
-                      />
-                    ) : config.headerStyle === 'venture' ? (
-                      <HeaderVenture
-                        storeName={config.name || 'Your Store'}
-                        logoUrl={config.logoUrl}
-                        logoHeight={config.logoHeight || 32}
-                        links={[
-                          { label: 'Shop', href: '/shop', active: false },
-                          { label: 'About', href: '/about', active: false },
-                          { label: 'Contact', href: '/contact', active: false },
-                        ]}
-                        cartCount={2}
-                        onOpenCart={() => {}}
-                        onLinkClick={() => {}}
-                        data={config.headerData}
-                      />
-                    ) : config.headerStyle === 'gullwing' ? (
-                      <HeaderGullwing
-                        storeName={config.name || 'Your Store'}
-                        logoUrl={config.logoUrl}
-                        logoHeight={config.logoHeight || 32}
-                        links={[
-                          { label: 'Shop', href: '/shop', active: false },
-                          { label: 'About', href: '/about', active: false },
-                          { label: 'Contact', href: '/contact', active: false },
-                        ]}
-                        cartCount={2}
-                        onOpenCart={() => {}}
-                        onLinkClick={() => {}}
-                        data={config.headerData}
-                      />
-                    ) : (
-                      <HeaderCanvas
-                        storeName={config.name || 'Your Store'}
-                        logoUrl={config.logoUrl}
-                        logoHeight={config.logoHeight || 32}
-                        links={[
-                          { label: 'Shop', href: '/shop', active: false },
-                          { label: 'About', href: '/about', active: false },
-                          { label: 'Contact', href: '/contact', active: false },
-                        ]}
-                        cartCount={2}
-                        onOpenCart={() => {}}
-                        onLinkClick={() => {}}
-                        data={config.headerData}
-                      />
-                    )}
+                    {(() => {
+                      const HeaderComponent = HEADER_COMPONENTS[config.headerStyle as HeaderStyleId] || HEADER_COMPONENTS.canvas;
+                      return (
+                        <HeaderComponent
+                          storeName={config.name || 'Your Store'}
+                          logoUrl={config.logoUrl}
+                          logoHeight={config.logoHeight || 32}
+                          links={[
+                            { label: 'Shop', href: '/shop', active: false },
+                            { label: 'About', href: '/about', active: false },
+                            { label: 'Contact', href: '/contact', active: false },
+                          ]}
+                          cartCount={2}
+                          onOpenCart={() => {}}
+                          onLinkClick={() => {}}
+                          data={config.headerData}
+                        />
+                      );
+                    })()}
                   </div>
                 </div>
                 
