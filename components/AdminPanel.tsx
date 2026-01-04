@@ -2577,33 +2577,64 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         />
                       </div>
                       
-                      {/* Expanded Menu Toggle */}
-                      <button
-                        onClick={() => onConfigChange({
-                          ...config,
-                          headerData: { ...config.headerData, expandedMenuEnabled: !(config.headerData?.expandedMenuEnabled ?? true) }
-                        })}
-                        className={`w-full p-3 rounded-lg border transition-all ${
-                          (config.headerData?.expandedMenuEnabled ?? true)
-                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        <span className="text-sm">{(config.headerData?.expandedMenuEnabled ?? true) ? 'Hover Menu Enabled' : 'Hover Menu Disabled'}</span>
-                      </button>
-                      
-                      {/* Accent Color (for indicator dot and hover) */}
-                      <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <input
-                          type="color"
-                          value={config.headerData?.accentColor ?? '#22c55e'}
-                          onChange={(e) => onConfigChange({
+                      {/* Toggles */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => onConfigChange({
                             ...config,
-                            headerData: { ...config.headerData, accentColor: e.target.value }
+                            headerData: { ...config.headerData, expandedMenuEnabled: !(config.headerData?.expandedMenuEnabled ?? true) }
                           })}
-                          className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                        />
-                        <span className="text-sm text-neutral-300">Accent Color (Dot & Hover)</span>
+                          className={`p-3 rounded-lg border transition-all ${
+                            (config.headerData?.expandedMenuEnabled ?? true)
+                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                          }`}
+                        >
+                          <span className="text-sm">{(config.headerData?.expandedMenuEnabled ?? true) ? 'Hover Menu' : 'Menu Off'}</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, showIndicatorDot: !(config.headerData?.showIndicatorDot ?? true) }
+                          })}
+                          className={`p-3 rounded-lg border transition-all ${
+                            (config.headerData?.showIndicatorDot ?? true)
+                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                          }`}
+                        >
+                          <span className="text-sm">{(config.headerData?.showIndicatorDot ?? true) ? 'Indicator Dot' : 'No Dot'}</span>
+                        </button>
+                      </div>
+                      
+                      {/* Colors */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                          <input
+                            type="color"
+                            value={config.headerData?.accentColor ?? '#22c55e'}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              headerData: { ...config.headerData, accentColor: e.target.value }
+                            })}
+                            className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                          />
+                          <span className="text-sm text-neutral-300">Accent Color (Dot & Hover)</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                          <input
+                            type="color"
+                            value={config.headerData?.borderColor ?? '#262626'}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              headerData: { ...config.headerData, borderColor: e.target.value }
+                            })}
+                            className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                          />
+                          <span className="text-sm text-neutral-300">Border Color</span>
+                        </div>
                       </div>
                     </div>
                   )}

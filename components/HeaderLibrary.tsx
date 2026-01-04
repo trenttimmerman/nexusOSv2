@@ -940,16 +940,24 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
   return (
     <header className={`${merged.sticky ? 'sticky top-0' : ''} z-[100] flex justify-center pointer-events-none pt-6`}>
       <div 
-        className={`pointer-events-auto shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] overflow-hidden ${expanded ? 'w-[600px] h-auto rounded-3xl' : 'w-[400px] min-h-[3.5rem] py-2 rounded-full'}`}
-        style={{ backgroundColor: merged.backgroundColor }}
+        className={`pointer-events-auto shadow-2xl transition-all duration-300 ease-out overflow-hidden ${expanded ? 'w-[600px] rounded-3xl' : 'w-[400px] min-h-[3.5rem] py-2 rounded-full'}`}
+        style={{ 
+          backgroundColor: merged.backgroundColor,
+          borderColor: merged.borderColor,
+          borderWidth: '1px',
+          borderStyle: 'solid'
+        }}
         onMouseEnter={() => merged.expandedMenuEnabled && setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
       >
         {/* Collapsed Header */}
-        <div className="w-full flex items-center justify-between px-6">
+        <div className="w-full flex items-center justify-between px-6" style={{ 
+          transition: 'opacity 0.2s ease-out',
+          opacity: expanded ? 0.3 : 1 
+        }}>
           <div className="flex items-center gap-2 py-1">
             {merged.showIndicatorDot && !logoUrl && (
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: merged.accentColor }}></div>
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: merged.accentColor }}></div>
             )}
             <Logo 
               storeName={storeName} 
@@ -978,47 +986,57 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
         </div>
 
         {/* Expanded Content */}
-        {expanded && merged.expandedMenuEnabled && (
-          <div className="px-6 pb-6 pt-2 grid grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-4 duration-300">
-            <div className="flex flex-col gap-3">
-              <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Navigation</span>
-              {(links || []).map(l => (
-                <NavItem 
-                  key={l.href} 
-                  link={l} 
-                  onClick={onLinkClick} 
-                  className="text-lg font-medium transition-colors"
-                  style={{ color: merged.textColor }}
-                  hoverColor={merged.textHoverColor}
-                />
-              ))}
-            </div>
-            <div className="flex flex-col gap-3">
-              <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Account</span>
-              {merged.showAccount && (
-                <>
-                  <a href="#" className="text-sm text-neutral-300 hover:text-white">Orders</a>
-                  <a href="#" className="text-sm text-neutral-300 hover:text-white">Wishlist</a>
-                </>
-              )}
-              {merged.showCart && (
-                <div className="mt-auto pt-4 border-t border-neutral-800 flex justify-between items-center">
-                  <span className="text-sm text-neutral-400">Cart ({cartCount})</span>
-                  <button 
-                    onClick={onOpenCart} 
-                    className="px-4 py-1.5 rounded-full text-xs font-bold"
-                    style={{ 
-                      backgroundColor: merged.cartBadgeColor, 
-                      color: merged.cartBadgeTextColor 
-                    }}
-                  >
-                    {merged.checkoutButtonText || 'Checkout'}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        <div 
+          className="px-6 pb-6 pt-2 grid grid-cols-2 gap-8"
+          style={{
+            transition: 'opacity 0.25s ease-out, transform 0.25s ease-out',
+            opacity: expanded ? 1 : 0,
+            transform: expanded ? 'translateY(0)' : 'translateY(-10px)',
+            pointerEvents: expanded ? 'auto' : 'none'
+          }}
+        >
+          {merged.expandedMenuEnabled && (
+            <>
+              <div className="flex flex-col gap-3">
+                <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Navigation</span>
+                {(links || []).map(l => (
+                  <NavItem 
+                    key={l.href} 
+                    link={l} 
+                    onClick={onLinkClick} 
+                    className="text-lg font-medium transition-colors"
+                    style={{ color: merged.textColor }}
+                    hoverColor={merged.textHoverColor}
+                  />
+                ))}
+              </div>
+              <div className="flex flex-col gap-3">
+                <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Account</span>
+                {merged.showAccount && (
+                  <>
+                    <a href="#" className="text-sm text-neutral-300 hover:text-white">Orders</a>
+                    <a href="#" className="text-sm text-neutral-300 hover:text-white">Wishlist</a>
+                  </>
+                )}
+                {merged.showCart && (
+                  <div className="mt-auto pt-4 border-t border-neutral-800 flex justify-between items-center">
+                    <span className="text-sm text-neutral-400">Cart ({cartCount})</span>
+                    <button 
+                      onClick={onOpenCart} 
+                      className="px-4 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105"
+                      style={{ 
+                        backgroundColor: merged.cartBadgeColor, 
+                        color: merged.cartBadgeTextColor 
+                      }}
+                    >
+                      {merged.checkoutButtonText || 'Checkout'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );
