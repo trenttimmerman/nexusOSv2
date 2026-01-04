@@ -729,10 +729,38 @@ This same process applies to:
 
 **When adding a new component variant:**
 1. Follow the 6-step process above
-2. Add variant to admin selector UI
-3. Add variant preview in admin panel
-4. Add variant-specific controls section
-5. Test all controls before committing
+2. Add variant to HEADER_COMPONENTS registry
+3. **⚠️ CRITICAL: Add variant to HEADER_OPTIONS array** - Without this, header won't appear in selector!
+4. Add variant preview in admin panel
+5. Add variant-specific controls section
+6. Test all controls before committing
+
+**⚠️ COMMON ERROR - Component Implemented But Not Visible:**
+You can fully implement a component with DEFAULTS, add it to HEADER_COMPONENTS, and add HEADER_FIELDS, but if you forget to add it to HEADER_OPTIONS, it will NOT appear in the header selector dropdown in the admin panel.
+
+**HEADER_OPTIONS Entry Format:**
+```tsx
+export const HEADER_OPTIONS = [
+  { 
+    id: 'protocol',                           // Must match key in HEADER_COMPONENTS
+    name: 'Tech/Gaming',                      // Display name in UI
+    description: 'Cyberpunk style',           // Short description
+    date: '2025-01-04',                       // Date added (YYYY-MM-DD)
+    popularity: 65                            // Sorting order (higher = top of list)
+  },
+  // ... other headers
+];
+```
+
+**Checklist for new header:**
+- [ ] Component implementation complete
+- [ ] DEFAULTS object created
+- [ ] Added to HEADER_COMPONENTS registry
+- [ ] **Added to HEADER_OPTIONS array** ← Often forgotten!
+- [ ] Added to HEADER_FIELDS
+- [ ] Build succeeds with no errors
+- [ ] Header appears in admin panel selector
+- [ ] Preview renders correctly
 
 **When modifying an existing component:**
 1. If adding a visual element, add corresponding editor control
