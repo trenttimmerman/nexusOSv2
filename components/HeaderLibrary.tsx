@@ -1541,156 +1541,6 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({
   );
 };
 
-// Default values for HeaderStudio
-const STUDIO_DEFAULTS: HeaderData = {
-  showSearch: true,
-  showAccount: false,
-  showCart: true,
-  searchPlaceholder: "Search...",
-  searchBackgroundColor: '#ffffff',
-  searchFocusBackgroundColor: '#ffffff',
-  searchFocusBorderColor: '#000000',
-  searchInputTextColor: '#111827',
-  searchPlaceholderColor: '#9ca3af',
-  backgroundColor: '#fafafa',
-  borderColor: '#e5e7eb',
-  textColor: '#737373',
-  textHoverColor: '#000000',
-  cartBadgeColor: '#000000',
-  cartBadgeTextColor: '#ffffff',
-  sticky: false,
-  maxWidth: 'full',
-};
-
-// 11. HeaderStudio - "Sidebar Navigation" (Converted to top bar for preview compatibility)
-export const HeaderStudio: React.FC<HeaderProps> = ({
-  storeName,
-  logoUrl,
-  logoHeight,
-  links,
-  cartCount,
-  onOpenCart,
-  onLogoClick,
-  onLinkClick,
-  data = {},
-}) => {
-  const settings = { ...STUDIO_DEFAULTS, ...data };
-  const [searchOpen, setSearchOpen] = React.useState(false);
-
-  return (
-    <header 
-      className="w-full relative"
-      style={{ 
-        backgroundColor: settings.backgroundColor,
-        borderBottom: `1px solid ${settings.borderColor}`,
-      }}
-    >
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between gap-8">
-          {/* Logo */}
-          <Logo 
-            storeName={storeName} 
-            logoUrl={logoUrl} 
-            logoHeight={logoHeight || 32} 
-            className="text-xl font-black tracking-tighter uppercase shrink-0" 
-            onClick={onLogoClick}
-          />
-          
-          {/* Navigation - Desktop */}
-          <nav className="hidden md:flex items-center gap-1 flex-1">
-            {(links || []).map(l => (
-              <a
-                key={l.href}
-                href={l.href}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onLinkClick?.(l.href);
-                }}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-opacity-10"
-                style={{ 
-                  color: l.active ? settings.accentColor : settings.textColor,
-                  backgroundColor: l.active ? `${settings.accentColor}15` : 'transparent',
-                }}
-              >
-                {l.label}
-              </a>
-            ))}
-          </nav>
-
-          {/* Actions */}
-          <div className="flex items-center gap-2 shrink-0">
-            {settings.showSearch && (
-              <>
-                {searchOpen ? (
-                  <div className="relative hidden md:block">
-                    <input 
-                      type="text" 
-                      placeholder={settings.searchPlaceholder}
-                      className="w-64 px-4 py-2 pr-10 text-sm rounded-lg focus:outline-none transition-colors"
-                      style={{ 
-                        backgroundColor: settings.searchFocusBackgroundColor || '#ffffff',
-                        border: `1px solid ${settings.searchFocusBorderColor || settings.accentColor}`,
-                        color: settings.searchInputTextColor,
-                      }}
-                      onBlur={(e) => {
-                        setTimeout(() => setSearchOpen(false), 150);
-                      }}
-                      autoFocus
-                    />
-                    <Search 
-                      size={16} 
-                      className="absolute right-3 top-3 pointer-events-none"
-                      style={{ color: settings.searchPlaceholderColor }}
-                    />
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setSearchOpen(true)}
-                    className="p-2 hover:opacity-70 transition-opacity"
-                    style={{ color: settings.textColor }}
-                  >
-                    <Search size={20} />
-                  </button>
-                )}
-              </>
-            )}
-            
-            {settings.showAccount && (
-              <button 
-                className="p-2 hover:opacity-70 transition-opacity"
-                style={{ color: settings.textColor }}
-              >
-                <User size={20} />
-              </button>
-            )}
-            
-            {settings.showCart && (
-              <button 
-                onClick={onOpenCart}
-                className="relative p-2 hover:opacity-70 transition-opacity"
-                style={{ color: settings.textColor }}
-              >
-                <ShoppingBag size={20} />
-                {cartCount > 0 && (
-                  <span 
-                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold"
-                    style={{ 
-                      backgroundColor: settings.cartBadgeColor,
-                      color: settings.cartBadgeTextColor,
-                    }}
-                  >
-                    {cartCount}
-                  </span>
-                )}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-};
-
 // Default values for HeaderTerminal
 const TERMINAL_DEFAULTS: HeaderData = {
   showSearch: false,
@@ -1817,7 +1667,6 @@ export const HEADER_COMPONENTS: Record<string, React.FC<HeaderProps>> = {
   bunker: HeaderBunker,
   protocol: HeaderProtocol,
   horizon: HeaderHorizon,
-  studio: HeaderStudio,
   terminal: HeaderTerminal,
   portfolio: HeaderPortfolio,
   venture: HeaderVenture,
@@ -1845,7 +1694,6 @@ export const HEADER_OPTIONS = [
   { id: 'gullwing', name: 'Centered Logo', description: 'Logo in middle', date: '2024-07-15', popularity: 77 },
   { id: 'protocol', name: 'Tech/Gaming', description: 'Cyberpunk style', date: '2025-01-04', popularity: 65 },
   { id: 'horizon', name: 'Double Row', description: 'Two-level nav', date: '2025-01-04', popularity: 70 },
-  { id: 'studio', name: 'Sidebar Nav', description: 'Left panel layout', date: '2025-01-04', popularity: 63 },
   { id: 'terminal', name: 'Developer', description: 'Command-line theme', date: '2025-01-04', popularity: 64 },
 ];
 
@@ -1925,14 +1773,6 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'sticky', 'maxWidth'
   ],
   horizon: [
-    'showSearch', 'showAccount', 'showCart',
-    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
-    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
-    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
-    'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
-  ],
-  studio: [
     'showSearch', 'showAccount', 'showCart',
     'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
     'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
