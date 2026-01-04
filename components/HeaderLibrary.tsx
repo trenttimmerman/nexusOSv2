@@ -1707,6 +1707,455 @@ export const HeaderTerminal: React.FC<HeaderProps> = ({
   );
 };
 
+// Default values for HeaderElite (Premium luxury design with complete editability)
+const ELITE_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  searchPlaceholder: "Search...",
+  searchBackgroundColor: '#ffffff',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#d4af37',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
+  backgroundColor: '#000000',
+  borderColor: '#d4af37',
+  textColor: '#f3f4f6',
+  textHoverColor: '#d4af37',
+  accentColor: '#d4af37',
+  cartBadgeColor: '#d4af37',
+  cartBadgeTextColor: '#000000',
+  buttonHoverBackgroundColor: '#d4af37',
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// 12. HeaderElite - Premium luxury design with elegant gold accents
+export const HeaderElite: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...ELITE_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+
+  return (
+    <header 
+      className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50 backdrop-blur-md`}
+      style={{ 
+        backgroundColor: `${settings.backgroundColor}ee`, // Slight transparency
+        borderBottom: `1px solid ${settings.borderColor}`,
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-8 py-4">
+        <div className="flex items-center justify-between gap-8">
+          {/* Logo with elegant styling */}
+          <div 
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={onLogoClick}
+          >
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt={storeName} 
+                style={{ height: `${logoHeight || 40}px` }}
+                className="h-auto transition-all group-hover:scale-105"
+              />
+            ) : (
+              <span 
+                className="text-2xl font-serif font-bold tracking-wide transition-all"
+                style={{ color: settings.textColor }}
+              >
+                {storeName}
+              </span>
+            )}
+            {/* Elegant underline accent */}
+            <div 
+              className="h-[1px] w-0 group-hover:w-12 transition-all duration-500"
+              style={{ backgroundColor: settings.accentColor }}
+            />
+          </div>
+          
+          {/* Centered navigation */}
+          <nav className="hidden md:flex items-center gap-8 flex-1 justify-center">
+            {(links || []).map(l => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLinkClick?.(l.href);
+                }}
+                className="text-sm font-medium uppercase tracking-widest relative group transition-colors"
+                style={{ 
+                  color: l.active ? settings.accentColor : settings.textColor,
+                  letterSpacing: '0.15em',
+                }}
+              >
+                {l.label}
+                {/* Elegant expanding underline */}
+                <span 
+                  className={`absolute -bottom-1 left-0 right-0 h-[1px] transition-all duration-300 ${
+                    l.active ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100'
+                  }`}
+                  style={{ 
+                    backgroundColor: settings.accentColor,
+                    transformOrigin: 'center',
+                  }}
+                />
+              </a>
+            ))}
+          </nav>
+          
+          {/* Actions with luxury styling */}
+          <div className="flex items-center gap-3 shrink-0">
+            {settings.showSearch && (
+              <>
+                {searchOpen ? (
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      placeholder={settings.searchPlaceholder}
+                      className="w-64 px-5 py-2.5 pr-12 text-sm focus:outline-none border transition-all"
+                      style={{ 
+                        backgroundColor: settings.searchFocusBackgroundColor,
+                        borderColor: settings.searchFocusBorderColor,
+                        color: settings.searchInputTextColor,
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => setSearchOpen(false), 150);
+                      }}
+                      autoFocus
+                    />
+                    <Search 
+                      size={18} 
+                      className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: settings.accentColor }}
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="p-2.5 transition-all"
+                    style={{ color: settings.textColor }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = settings.accentColor!;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = settings.textColor!;
+                    }}
+                  >
+                    <Search size={20} />
+                  </button>
+                )}
+              </>
+            )}
+            
+            {settings.showAccount && (
+              <button 
+                className="p-2.5 transition-all"
+                style={{ color: settings.textColor }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = settings.accentColor!;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = settings.textColor!;
+                }}
+              >
+                <User size={20} />
+              </button>
+            )}
+            
+            {settings.showCart && (
+              <button 
+                onClick={onOpenCart}
+                className="relative p-2.5 border transition-all"
+                style={{ 
+                  borderColor: settings.accentColor,
+                  color: settings.accentColor,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = settings.accentColor!;
+                  e.currentTarget.style.color = settings.backgroundColor!;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = settings.accentColor!;
+                }}
+              >
+                <ShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <span 
+                    className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full text-xs flex items-center justify-center font-bold"
+                    style={{ 
+                      backgroundColor: settings.cartBadgeColor,
+                      color: settings.cartBadgeTextColor,
+                    }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// Default values for HeaderVolt (High-energy electric design with vibrant neon)
+const VOLT_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  searchPlaceholder: "Search...",
+  searchBackgroundColor: '#0f172a',
+  searchFocusBackgroundColor: '#1e293b',
+  searchFocusBorderColor: '#06b6d4',
+  searchInputTextColor: '#f8fafc',
+  searchPlaceholderColor: '#64748b',
+  backgroundColor: '#0a0a0a',
+  borderColor: '#06b6d4',
+  textColor: '#f8fafc',
+  textHoverColor: '#06b6d4',
+  accentColor: '#06b6d4',
+  cartBadgeColor: '#06b6d4',
+  cartBadgeTextColor: '#0a0a0a',
+  buttonHoverBackgroundColor: '#06b6d4',
+  glowIntensity: 60,
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// 13. HeaderVolt - High-energy design with electric neon effects
+export const HeaderVolt: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...VOLT_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+
+  // Calculate glow opacity from intensity (0-100 becomes 0-1)
+  const glowOpacity = (settings.glowIntensity || 60) / 100;
+
+  return (
+    <header 
+      className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50 relative`}
+      style={{ 
+        backgroundColor: settings.backgroundColor,
+        borderBottom: `2px solid ${settings.borderColor}`,
+        boxShadow: `0 0 20px ${settings.borderColor}${Math.round(glowOpacity * 40).toString(16).padStart(2, '0')}`,
+      }}
+    >
+      {/* Animated top line */}
+      <div 
+        className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${settings.accentColor}, transparent)`,
+          animation: 'slide 3s ease-in-out infinite',
+        }}
+      />
+      
+      <div className="max-w-7xl mx-auto px-6 py-3.5">
+        <div className="flex items-center justify-between gap-8">
+          {/* Logo with electric glow */}
+          <div 
+            className="flex items-center gap-2 cursor-pointer group"
+            onClick={onLogoClick}
+          >
+            {logoUrl ? (
+              <div className="relative">
+                <div 
+                  className="absolute inset-0 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ 
+                    backgroundColor: settings.accentColor,
+                    filter: `blur(12px)`,
+                  }}
+                />
+                <img 
+                  src={logoUrl} 
+                  alt={storeName} 
+                  style={{ height: `${logoHeight || 36}px` }}
+                  className="relative h-auto"
+                />
+              </div>
+            ) : (
+              <span 
+                className="text-xl font-black uppercase tracking-tighter relative"
+                style={{ 
+                  color: settings.textColor,
+                  textShadow: `0 0 10px ${settings.accentColor}${Math.round(glowOpacity * 80).toString(16).padStart(2, '0')}`,
+                }}
+              >
+                {storeName}
+              </span>
+            )}
+          </div>
+          
+          {/* Navigation with electric accents */}
+          <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
+            {(links || []).map(l => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLinkClick?.(l.href);
+                }}
+                className="px-4 py-2 text-sm font-bold uppercase tracking-wide relative group transition-colors"
+                style={{ 
+                  color: l.active ? settings.accentColor : settings.textColor,
+                }}
+              >
+                {l.label}
+                {/* Animated underline with glow */}
+                <span 
+                  className={`absolute bottom-0 left-0 right-0 h-[2px] transition-all duration-300 ${
+                    l.active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  }`}
+                  style={{ 
+                    backgroundColor: settings.accentColor,
+                    boxShadow: `0 0 8px ${settings.accentColor}`,
+                  }}
+                />
+              </a>
+            ))}
+          </nav>
+          
+          {/* Actions with neon styling */}
+          <div className="flex items-center gap-2 shrink-0">
+            {settings.showSearch && (
+              <>
+                {searchOpen ? (
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      placeholder={settings.searchPlaceholder}
+                      className="w-56 px-4 py-2 pr-10 text-sm focus:outline-none border-2 transition-all"
+                      style={{ 
+                        backgroundColor: settings.searchFocusBackgroundColor,
+                        borderColor: settings.searchFocusBorderColor,
+                        color: settings.searchInputTextColor,
+                        boxShadow: `0 0 15px ${settings.searchFocusBorderColor}${Math.round(glowOpacity * 60).toString(16).padStart(2, '0')}`,
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => setSearchOpen(false), 150);
+                      }}
+                      autoFocus
+                    />
+                    <Search 
+                      size={16} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: settings.accentColor }}
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="p-2.5 relative group transition-all"
+                    style={{ 
+                      color: settings.textColor,
+                      border: `1px solid transparent`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = settings.accentColor!;
+                      e.currentTarget.style.boxShadow = `0 0 10px ${settings.accentColor}40`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'transparent';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    <Search size={20} />
+                  </button>
+                )}
+              </>
+            )}
+            
+            {settings.showAccount && (
+              <button 
+                className="p-2.5 relative group transition-all"
+                style={{ 
+                  color: settings.textColor,
+                  border: `1px solid transparent`,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = settings.accentColor!;
+                  e.currentTarget.style.boxShadow = `0 0 10px ${settings.accentColor}40`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'transparent';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <User size={20} />
+              </button>
+            )}
+            
+            {settings.showCart && (
+              <button 
+                onClick={onOpenCart}
+                className="relative p-2.5 border-2 transition-all"
+                style={{ 
+                  borderColor: settings.accentColor,
+                  color: settings.accentColor,
+                  boxShadow: `0 0 10px ${settings.accentColor}${Math.round(glowOpacity * 40).toString(16).padStart(2, '0')}`,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = settings.accentColor!;
+                  e.currentTarget.style.color = settings.backgroundColor!;
+                  e.currentTarget.style.boxShadow = `0 0 20px ${settings.accentColor}${Math.round(glowOpacity * 80).toString(16).padStart(2, '0')}`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = settings.accentColor!;
+                  e.currentTarget.style.boxShadow = `0 0 10px ${settings.accentColor}${Math.round(glowOpacity * 40).toString(16).padStart(2, '0')}`;
+                }}
+              >
+                <ShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <span 
+                    className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 text-xs font-bold flex items-center justify-center"
+                    style={{ 
+                      backgroundColor: settings.cartBadgeColor,
+                      color: settings.cartBadgeTextColor,
+                      clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
+                      boxShadow: `0 0 10px ${settings.cartBadgeColor}`,
+                    }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      <style>{`
+        @keyframes slide {
+          0%, 100% { transform: translateX(-100%); }
+          50% { transform: translateX(100%); }
+        }
+      `}</style>
+    </header>
+  );
+};
+
 
 // Other headers still use placeholder - restore from HeaderLibrary.archive.tsx as needed
 export const HeaderPortfolio = PlaceholderHeader;
@@ -1725,6 +2174,8 @@ export const HEADER_COMPONENTS: Record<string, React.FC<HeaderProps>> = {
   protocol: HeaderProtocol,
   horizon: HeaderHorizon,
   terminal: HeaderTerminal,
+  elite: HeaderElite,
+  volt: HeaderVolt,
   portfolio: HeaderPortfolio,
   venture: HeaderVenture,
   metro: HeaderMetro,
@@ -1752,8 +2203,8 @@ export const HEADER_OPTIONS = [
   { id: 'protocol', name: 'Tech/Gaming', description: 'Cyberpunk style', date: '2025-01-04', popularity: 65 },
   { id: 'horizon', name: 'Double Row', description: 'Two-level nav', date: '2025-01-04', popularity: 70 },
   { id: 'terminal', name: 'Developer', description: 'Command-line theme', date: '2025-01-04', popularity: 64 },
-  { id: 'aura', name: 'Premium Glow', description: 'Gradient accents', date: '2025-01-04', popularity: 92 },
-  { id: 'quantum', name: 'Futuristic Grid', description: 'Geometric patterns', date: '2025-01-04', popularity: 90 },
+  { id: 'elite', name: 'Premium Luxury', description: 'Elegant gold accents', date: '2025-01-04', popularity: 93 },
+  { id: 'volt', name: 'Electric Neon', description: 'High-energy vibes', date: '2025-01-04', popularity: 91 },
 ];
 
 export const HEADER_FIELDS: Record<string, string[]> = {
@@ -1845,6 +2296,24 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
     'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  elite: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor', 'buttonHoverBackgroundColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  volt: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor', 'buttonHoverBackgroundColor', 'glowIntensity',
     'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
