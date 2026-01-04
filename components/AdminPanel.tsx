@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
-import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas, HeaderNebula, HeaderLuxe, HeaderPilot, HeaderBunker, HeaderPop } from './HeaderLibrary';
+import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas, HeaderNebula, HeaderLuxe, HeaderPilot, HeaderBunker, HeaderPop, HeaderVenture, HeaderOrbit, HeaderGullwing } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
@@ -2134,6 +2134,51 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         onLinkClick={() => {}}
                         data={config.headerData}
                       />
+                    ) : config.headerStyle === 'venture' ? (
+                      <HeaderVenture
+                        storeName={config.name || 'Your Store'}
+                        logoUrl={config.logoUrl}
+                        logoHeight={config.logoHeight || 32}
+                        links={[
+                          { label: 'Shop', href: '/shop', active: false },
+                          { label: 'About', href: '/about', active: false },
+                          { label: 'Contact', href: '/contact', active: false },
+                        ]}
+                        cartCount={2}
+                        onOpenCart={() => {}}
+                        onLinkClick={() => {}}
+                        data={config.headerData}
+                      />
+                    ) : config.headerStyle === 'orbit' ? (
+                      <HeaderOrbit
+                        storeName={config.name || 'Your Store'}
+                        logoUrl={config.logoUrl}
+                        logoHeight={config.logoHeight || 32}
+                        links={[
+                          { label: 'Shop', href: '/shop', active: false },
+                          { label: 'About', href: '/about', active: false },
+                          { label: 'Contact', href: '/contact', active: false },
+                        ]}
+                        cartCount={2}
+                        onOpenCart={() => {}}
+                        onLinkClick={() => {}}
+                        data={config.headerData}
+                      />
+                    ) : config.headerStyle === 'gullwing' ? (
+                      <HeaderGullwing
+                        storeName={config.name || 'Your Store'}
+                        logoUrl={config.logoUrl}
+                        logoHeight={config.logoHeight || 32}
+                        links={[
+                          { label: 'Shop', href: '/shop', active: false },
+                          { label: 'About', href: '/about', active: false },
+                          { label: 'Contact', href: '/contact', active: false },
+                        ]}
+                        cartCount={2}
+                        onOpenCart={() => {}}
+                        onLinkClick={() => {}}
+                        data={config.headerData}
+                      />
                     ) : (
                       <HeaderCanvas
                         storeName={config.name || 'Your Store'}
@@ -2165,6 +2210,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       { id: 'pilot', name: 'Pro' },
                       { id: 'bunker', name: 'Bunker' },
                       { id: 'pop', name: 'Pop' },
+                      { id: 'venture', name: 'Venture' },
+                      { id: 'orbit', name: 'Orbit' },
+                      { id: 'gullwing', name: 'Gullwing' },
                     ].map((header) => (
                       <button
                         key={header.id}
@@ -2468,6 +2516,104 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <span className="text-sm text-neutral-300">{label}</span>
                           </div>
                         ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Venture-specific Controls */}
+                  {(config.headerStyle === 'venture') && (
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Search Settings</p>
+                      
+                      {/* Search Placeholder */}
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-sm text-neutral-300 mb-2 block">Search Placeholder</label>
+                        <input
+                          type="text"
+                          value={config.headerData?.searchPlaceholder ?? "Search for 'Wireless Headphones' or 'Summer Collection'"}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, searchPlaceholder: e.target.value }
+                          })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
+                          placeholder="Search placeholder text"
+                        />
+                      </div>
+                      
+                      {/* Keyboard Shortcut Toggle */}
+                      <button
+                        onClick={() => onConfigChange({
+                          ...config,
+                          headerData: { ...config.headerData, showKeyboardShortcut: !(config.headerData?.showKeyboardShortcut ?? true) }
+                        })}
+                        className={`w-full p-3 rounded-lg border transition-all ${
+                          (config.headerData?.showKeyboardShortcut ?? true)
+                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                        }`}
+                      >
+                        <span className="text-sm">{(config.headerData?.showKeyboardShortcut ?? true) ? 'Keyboard Shortcut (⌘K) Visible' : 'Keyboard Shortcut Hidden'}</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Orbit-specific Controls */}
+                  {(config.headerStyle === 'orbit') && (
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Expandable Menu</p>
+                      
+                      {/* Checkout Button Text */}
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-sm text-neutral-300 mb-2 block">Checkout Button Text</label>
+                        <input
+                          type="text"
+                          value={config.headerData?.checkoutButtonText ?? 'Checkout'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, checkoutButtonText: e.target.value }
+                          })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
+                          placeholder="Checkout"
+                        />
+                      </div>
+                      
+                      {/* Expanded Menu Toggle */}
+                      <button
+                        onClick={() => onConfigChange({
+                          ...config,
+                          headerData: { ...config.headerData, expandedMenuEnabled: !(config.headerData?.expandedMenuEnabled ?? true) }
+                        })}
+                        className={`w-full p-3 rounded-lg border transition-all ${
+                          (config.headerData?.expandedMenuEnabled ?? true)
+                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                        }`}
+                      >
+                        <span className="text-sm">{(config.headerData?.expandedMenuEnabled ?? true) ? 'Hover Menu Enabled' : 'Hover Menu Disabled'}</span>
+                      </button>
+                      
+                      {/* Accent Color (for indicator dot and hover) */}
+                      <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <input
+                          type="color"
+                          value={config.headerData?.accentColor ?? '#22c55e'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, accentColor: e.target.value }
+                          })}
+                          className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                        />
+                        <span className="text-sm text-neutral-300">Accent Color (Dot & Hover)</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Gullwing-specific Controls */}
+                  {(config.headerStyle === 'gullwing') && (
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Centered Logo Design</p>
+                      <div className="bg-neutral-900/50 p-3 rounded-lg border border-neutral-700">
+                        <p className="text-xs text-neutral-400">Gullwing features a centered skewed logo container with symmetrical navigation split. Customize colors in the universal section above.</p>
                       </div>
                     </div>
                   )}

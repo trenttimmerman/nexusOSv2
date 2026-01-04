@@ -1,5 +1,5 @@
-import React from 'react';
-import { ShoppingBag, Search, User, Menu, Hexagon } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShoppingBag, Search, User, Menu, Hexagon, Command } from 'lucide-react';
 import { NavLink } from '../types';
 
 // Header customization data structure
@@ -20,6 +20,12 @@ export interface HeaderData {
   tickerTextColor?: string;
   tickerBorderColor?: string;
   tickerText?: string;
+  // Search features (for Venture header)
+  showKeyboardShortcut?: boolean;
+  searchPlaceholder?: string;
+  // Expandable menu (for Orbit header)
+  checkoutButtonText?: string;
+  expandedMenuEnabled?: boolean;
   // Layout
   sticky?: boolean;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
@@ -748,6 +754,57 @@ const POP_DEFAULTS: HeaderData = {
   maxWidth: 'full',
 };
 
+// Default values for HeaderVenture
+const VENTURE_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  showKeyboardShortcut: true,
+  searchPlaceholder: "Search for 'Wireless Headphones' or 'Summer Collection'",
+  backgroundColor: '#f5f5f5', // Light neutral background
+  borderColor: '#e5e7eb',
+  textColor: '#6b7280',
+  textHoverColor: '#000000',
+  cartBadgeColor: '#ef4444', // Red dot indicator
+  cartBadgeTextColor: '#ffffff',
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// Default values for HeaderOrbit
+const ORBIT_DEFAULTS: HeaderData = {
+  showSearch: false,
+  showAccount: true,
+  showCart: true,
+  showIndicatorDot: true,
+  expandedMenuEnabled: true,
+  checkoutButtonText: 'Checkout',
+  backgroundColor: '#171717', // Dark neutral-900
+  borderColor: '#262626',
+  textColor: '#ffffff',
+  textHoverColor: '#22c55e', // Green-400 hover
+  accentColor: '#22c55e', // Green-500 indicator dot
+  cartBadgeColor: '#ffffff',
+  cartBadgeTextColor: '#000000',
+  sticky: true,
+  maxWidth: '7xl',
+};
+
+// Default values for HeaderGullwing
+const GULLWING_DEFAULTS: HeaderData = {
+  showSearch: false,
+  showAccount: false,
+  showCart: true,
+  backgroundColor: '#ffffff',
+  borderColor: '#e5e7eb',
+  textColor: '#6b7280',
+  textHoverColor: '#000000',
+  cartBadgeColor: '#000000',
+  cartBadgeTextColor: '#ffffff',
+  sticky: true,
+  maxWidth: '7xl',
+};
+
 // 6. HeaderPop - "Playful Modern" (Fun, friendly, colorful with shadows)
 export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, data }) => {
   const merged = { ...POP_DEFAULTS, ...data };
@@ -802,9 +859,238 @@ export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeigh
   );
 };
 
+// 7. HeaderVenture - "Search-First" (Large search bar for large catalogs)
+export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, data }) => {
+  const merged = { ...VENTURE_DEFAULTS, ...data };
+  
+  return (
+    <header className={`w-full border-b ${merged.sticky ? 'sticky top-0' : ''} z-50`} style={{ backgroundColor: merged.backgroundColor, borderColor: merged.borderColor }}>
+      <div className={`max-w-[1600px] mx-auto p-2`}>
+        <div className="bg-white rounded-2xl border shadow-sm p-2 flex items-center justify-between gap-4 min-h-[4rem]" style={{ borderColor: merged.borderColor }}>
+          <div className="px-4 flex items-center gap-2">
+            {!logoUrl && (
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
+                {storeName.charAt(0)}
+              </div>
+            )}
+            <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="font-bold text-lg tracking-tight hidden sm:block" onClick={onLinkClick} />
+          </div>
+          
+          {/* Large Search Bar */}
+          {merged.showSearch && (
+            <div className="flex-1 max-w-2xl bg-neutral-50 rounded-xl flex items-center px-4 py-2.5 gap-3 border border-transparent focus-within:border-blue-500 focus-within:bg-white transition-all">
+              <Search size={18} className="text-neutral-400" />
+              <input 
+                type="text" 
+                placeholder={merged.searchPlaceholder || "Search..."} 
+                className="bg-transparent w-full focus:outline-none text-sm" 
+              />
+              {merged.showKeyboardShortcut && (
+                <div className="hidden md:flex items-center gap-1 text-xs text-neutral-400 border border-neutral-200 rounded px-1.5 py-0.5">
+                  <Command size={10} />
+                  <span>K</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex items-center gap-1 pr-2">
+            {/* Navigation Links */}
+            <nav className="hidden md:flex items-center mr-4">
+              {(links || []).map(l => (
+                <NavItem 
+                  key={l.href} 
+                  link={l} 
+                  onClick={onLinkClick} 
+                  className="px-4 py-2 text-sm font-medium rounded-lg hover:bg-neutral-50 transition-colors"
+                  style={{ color: merged.textColor }}
+                  hoverColor={merged.textHoverColor}
+                />
+              ))}
+            </nav>
+            
+            {/* Cart Icon */}
+            {merged.showCart && (
+              <button onClick={onOpenCart} className="relative p-2.5 hover:bg-neutral-100 rounded-xl transition-colors" style={{ color: merged.textColor }}>
+                <ShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full border border-white" style={{ backgroundColor: merged.cartBadgeColor }}></span>
+                )}
+              </button>
+            )}
+            
+            {/* Account Icon */}
+            {merged.showAccount && (
+              <button className="p-2.5 hover:bg-neutral-100 rounded-xl transition-colors" style={{ color: merged.textColor }}>
+                <User size={20} />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// 8. HeaderOrbit - "Interactive" (Hover expandable menu with animations)
+export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, data }) => {
+  const merged = { ...ORBIT_DEFAULTS, ...data };
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <header className={`${merged.sticky ? 'sticky top-0' : ''} z-[100] flex justify-center pointer-events-none pt-6`}>
+      <div 
+        className={`pointer-events-auto shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] overflow-hidden ${expanded ? 'w-[600px] h-auto rounded-3xl' : 'w-[400px] min-h-[3.5rem] py-2 rounded-full'}`}
+        style={{ backgroundColor: merged.backgroundColor }}
+        onMouseEnter={() => merged.expandedMenuEnabled && setExpanded(true)}
+        onMouseLeave={() => setExpanded(false)}
+      >
+        {/* Collapsed Header */}
+        <div className="w-full flex items-center justify-between px-6">
+          <div className="flex items-center gap-2 py-1">
+            {merged.showIndicatorDot && !logoUrl && (
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: merged.accentColor }}></div>
+            )}
+            <Logo 
+              storeName={storeName} 
+              logoUrl={logoUrl} 
+              logoHeight={logoHeight} 
+              className="font-bold" 
+              onClick={onLinkClick}
+            />
+          </div>
+          
+          {!expanded && (
+            <div className="flex items-center gap-4 text-sm text-neutral-400">
+              <span>Menu</span>
+              <div className="w-px h-4 bg-neutral-700"></div>
+              {merged.showCart && (
+                <span 
+                  onClick={onOpenCart} 
+                  className="flex items-center gap-1 cursor-pointer" 
+                  style={{ color: merged.textColor }}
+                >
+                  <ShoppingBag size={14}/> {cartCount}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Expanded Content */}
+        {expanded && merged.expandedMenuEnabled && (
+          <div className="px-6 pb-6 pt-2 grid grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="flex flex-col gap-3">
+              <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Navigation</span>
+              {(links || []).map(l => (
+                <NavItem 
+                  key={l.href} 
+                  link={l} 
+                  onClick={onLinkClick} 
+                  className="text-lg font-medium transition-colors"
+                  style={{ color: merged.textColor }}
+                  hoverColor={merged.textHoverColor}
+                />
+              ))}
+            </div>
+            <div className="flex flex-col gap-3">
+              <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Account</span>
+              {merged.showAccount && (
+                <>
+                  <a href="#" className="text-sm text-neutral-300 hover:text-white">Orders</a>
+                  <a href="#" className="text-sm text-neutral-300 hover:text-white">Wishlist</a>
+                </>
+              )}
+              {merged.showCart && (
+                <div className="mt-auto pt-4 border-t border-neutral-800 flex justify-between items-center">
+                  <span className="text-sm text-neutral-400">Cart ({cartCount})</span>
+                  <button 
+                    onClick={onOpenCart} 
+                    className="px-4 py-1.5 rounded-full text-xs font-bold"
+                    style={{ 
+                      backgroundColor: merged.cartBadgeColor, 
+                      color: merged.cartBadgeTextColor 
+                    }}
+                  >
+                    {merged.checkoutButtonText || 'Checkout'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+};
+
+// 9. HeaderGullwing - "Centered Logo" (Symmetrical split navigation with centered logo)
+export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, data }) => {
+  const merged = { ...GULLWING_DEFAULTS, ...data };
+  const maxWidthClass = `max-w-${merged.maxWidth}`;
+  
+  return (
+    <header className={`w-full ${merged.sticky ? 'sticky top-0' : ''} z-50 shadow-sm`} style={{ backgroundColor: merged.backgroundColor }}>
+      <div className={`${maxWidthClass} mx-auto min-h-[5rem] py-4 px-8 flex items-center justify-between`}>
+        {/* Left Navigation (first 2 links) */}
+        <nav className="flex-1 flex justify-end gap-8 pr-12">
+          {(links || []).slice(0, 2).map(l => (
+            <NavItem 
+              key={l.href} 
+              link={l} 
+              onClick={onLinkClick} 
+              className="text-sm font-bold transition-colors"
+              style={{ color: merged.textColor }}
+              hoverColor={merged.textHoverColor}
+            />
+          ))}
+        </nav>
+        
+        {/* Centered Logo with Skewed Container */}
+        <div className="shrink-0 flex items-center justify-center px-4 py-2 text-white transform -skew-x-12" style={{ backgroundColor: merged.cartBadgeColor }}>
+          <div className="skew-x-12">
+            <Logo 
+              storeName={storeName} 
+              logoUrl={logoUrl} 
+              logoHeight={logoHeight} 
+              className="font-display font-bold text-2xl tracking-tighter" 
+              onClick={onLinkClick}
+            />
+          </div>
+        </div>
+
+        {/* Right Navigation (remaining links) + Cart */}
+        <div className="flex-1 flex justify-between items-center pl-12">
+          <nav className="flex gap-8">
+            {(links || []).slice(2).map(l => (
+              <NavItem 
+                key={l.href} 
+                link={l} 
+                onClick={onLinkClick} 
+                className="text-sm font-bold transition-colors"
+                style={{ color: merged.textColor }}
+                hoverColor={merged.textHoverColor}
+              />
+            ))}
+          </nav>
+          
+          {merged.showCart && (
+            <div 
+              onClick={onOpenCart} 
+              className="flex items-center gap-4 cursor-pointer hover:opacity-70 transition-opacity"
+              style={{ color: merged.textColor }}
+            >
+              <ShoppingBag size={20} />
+              <span className="font-mono text-sm">[{cartCount}]</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
 // Other headers still use placeholder - restore from HeaderLibrary.archive.tsx as needed
-export const HeaderOrbit = PlaceholderHeader;
-export const HeaderVenture = PlaceholderHeader;
 export const HeaderProtocol = PlaceholderHeader;
 export const HeaderHorizon = PlaceholderHeader;
 export const HeaderStudio = PlaceholderHeader;
@@ -812,7 +1098,6 @@ export const HeaderTerminal = PlaceholderHeader;
 export const HeaderPortfolio = PlaceholderHeader;
 export const HeaderMetro = PlaceholderHeader;
 export const HeaderModul = PlaceholderHeader;
-export const HeaderGullwing = PlaceholderHeader;
 export const HeaderStark = PlaceholderHeader;
 export const HeaderOffset = PlaceholderHeader;
 export const HeaderTicker = PlaceholderHeader;
@@ -893,8 +1178,38 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
-  bunker: [], orbit: [], protocol: [], horizon: [],
-  studio: [], terminal: [], portfolio: [], venture: [], metro: [], modul: [],
-  luxe: [], gullwing: [], pop: [], stark: [], offset: [], ticker: [],
-  noir: [], ghost: [], pilot: [],
+  bunker: [
+    'showSearch', 'showAccount', 'showCart',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'tickerBackgroundColor', 'tickerTextColor', 'tickerBorderColor', 'tickerText',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  pop: [
+    'showSearch', 'showAccount', 'showCart',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  venture: [
+    'showSearch', 'showAccount', 'showCart', 'showKeyboardShortcut',
+    'searchPlaceholder', 'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  orbit: [
+    'showAccount', 'showCart', 'showIndicatorDot', 'expandedMenuEnabled',
+    'checkoutButtonText', 'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  gullwing: [
+    'showCart', 'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  // Placeholders for remaining headers
+  protocol: [], horizon: [], studio: [], terminal: [], 
+  portfolio: [], metro: [], modul: [], stark: [], 
+  offset: [], ticker: [], noir: [], ghost: [],
 };
