@@ -792,8 +792,8 @@ const ORBIT_DEFAULTS: HeaderData = {
 
 // Default values for HeaderGullwing
 const GULLWING_DEFAULTS: HeaderData = {
-  showSearch: false,
-  showAccount: false,
+  showSearch: true,
+  showAccount: true,
   showCart: true,
   backgroundColor: '#ffffff',
   borderColor: '#e5e7eb',
@@ -1077,7 +1077,7 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
           </div>
         </div>
 
-        {/* Right Navigation (remaining links) + Cart */}
+        {/* Right Navigation (remaining links) + Icons */}
         <div className="flex-1 flex justify-between items-center pl-12">
           <nav className="flex gap-8">
             {(links || []).slice(2).map(l => (
@@ -1092,16 +1092,39 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
             ))}
           </nav>
           
-          {merged.showCart && (
-            <div 
-              onClick={onOpenCart} 
-              className="flex items-center gap-4 cursor-pointer hover:opacity-70 transition-opacity"
-              style={{ color: merged.textColor }}
-            >
-              <ShoppingBag size={20} />
-              <span className="font-mono text-sm">[{cartCount}]</span>
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            {/* Search Icon */}
+            {merged.showSearch && (
+              <button 
+                className="cursor-pointer hover:opacity-70 transition-opacity"
+                style={{ color: merged.textColor }}
+              >
+                <Search size={20} />
+              </button>
+            )}
+            
+            {/* Account Icon */}
+            {merged.showAccount && (
+              <button 
+                className="cursor-pointer hover:opacity-70 transition-opacity"
+                style={{ color: merged.textColor }}
+              >
+                <User size={20} />
+              </button>
+            )}
+            
+            {/* Cart with Counter */}
+            {merged.showCart && (
+              <div 
+                onClick={onOpenCart} 
+                className="flex items-center gap-2 cursor-pointer hover:opacity-70 transition-opacity"
+                style={{ color: merged.textColor }}
+              >
+                <ShoppingBag size={20} />
+                <span className="font-mono text-sm">[{cartCount}]</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>
@@ -1222,7 +1245,8 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'sticky', 'maxWidth'
   ],
   gullwing: [
-    'showCart', 'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'showSearch', 'showAccount', 'showCart',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],

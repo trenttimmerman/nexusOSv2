@@ -10,6 +10,14 @@ This guide ensures **complete feature parity** between UI components and their e
 ### Step 1: Audit the Component
 **Goal:** Identify every customizable aspect of the component.
 
+**⚠️ MANDATORY ICON CHECKLIST (For Headers):**
+Every header MUST have these 3 icons with show/hide toggles:
+- [ ] **Search** icon (🔍 magnifying glass)
+- [ ] **Account** icon (👤 user/person) 
+- [ ] **Cart** icon (🛒 shopping bag) with count badge
+
+**If ANY of these 3 icons are missing from your header implementation, STOP and add them immediately!**
+
 **What to look for:**
 - Visual elements (icons, badges, banners, animations)
 - Colors (backgrounds, text, borders, accents, hovers, badges)
