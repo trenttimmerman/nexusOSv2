@@ -156,7 +156,8 @@ import {
   Lightbulb,
   Circle,
   Lock,
-  Unlock
+  Unlock,
+  Menu
 } from 'lucide-react';
 
 // Page type options for creating new pages

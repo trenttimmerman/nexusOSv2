@@ -8,18 +8,32 @@ export interface HeaderData {
   showSearch?: boolean;
   showAccount?: boolean;
   showCart?: boolean;
+  showCTA?: boolean;
+  showMenu?: boolean;
+  showTagline?: boolean;
+  showLogoBadge?: boolean;
+  showIndicatorDot?: boolean;
   // Colors
   backgroundColor?: string;
   borderColor?: string;
   textColor?: string;
   textHoverColor?: string;
+  accentColor?: string;
   cartBadgeColor?: string;
   cartBadgeTextColor?: string;
+  taglineColor?: string;
+  // CTA/Button
+  ctaBackgroundColor?: string;
+  ctaHoverColor?: string;
+  ctaTextColor?: string;
+  ctaText?: string;
   // Ticker (for Bunker header)
   tickerBackgroundColor?: string;
   tickerTextColor?: string;
   tickerBorderColor?: string;
   tickerText?: string;
+  // Tagline (for Luxe header)
+  taglineText?: string;
   // Search features (for Venture header)
   showKeyboardShortcut?: boolean;
   searchPlaceholder?: string;
@@ -28,6 +42,8 @@ export interface HeaderData {
   searchFocusBorderColor?: string;
   searchInputTextColor?: string;
   searchPlaceholderColor?: string;
+  // Glass effect (for Nebula header)
+  blurIntensity?: string;
   // Expandable menu (for Orbit header)
   checkoutButtonText?: string;
   expandedMenuEnabled?: boolean;
@@ -205,12 +221,18 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
                   <Search size={20} />
                 </button>
               ) : (
-                <div className="relative" onMouseDown={(e) => e.preventDefault()}>
+                <div className="relative">
                   <input
                     type="text"
                     placeholder={settings.searchPlaceholder || "Search products..."}
                     autoFocus
-                    onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                    onBlur={(e) => {
+                      // Small delay to allow clicks to register
+                      setTimeout(() => {
+                        setSearchOpen(false);
+                        setSearchFocused(false);
+                      }, 150);
+                    }}
                     onFocus={() => setSearchFocused(true)}
                     className="w-64 px-4 py-2 pr-10 text-sm rounded-full border transition-all"
                     style={{
@@ -364,12 +386,17 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
                   <Search size={18} />
                 </button>
               ) : (
-                <div className="relative" onMouseDown={(e) => e.preventDefault()}>
+                <div className="relative">
                   <input
                     type="text"
                     placeholder={settings.searchPlaceholder || "Search products..."}
                     autoFocus
-                    onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        setSearchOpen(false);
+                        setSearchFocused(false);
+                      }, 150);
+                    }}
                     onFocus={() => setSearchFocused(true)}
                     className="w-56 px-4 py-1.5 pr-10 text-sm rounded-full border transition-all"
                     style={{
@@ -500,12 +527,17 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
                     <Search size={20} />
                   </button>
                 ) : (
-                  <div className="relative" onMouseDown={(e) => e.preventDefault()}>
+                  <div className="relative">
                     <input
                       type="text"
                       placeholder={settings.searchPlaceholder || "Search products..."}
                       autoFocus
-                      onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                      onBlur={() => {
+                        setTimeout(() => {
+                          setSearchOpen(false);
+                          setSearchFocused(false);
+                        }, 150);
+                      }}
                       onFocus={() => setSearchFocused(true)}
                       className="w-56 px-4 py-1.5 pr-10 text-sm rounded-md border transition-all"
                       style={{
@@ -692,12 +724,17 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
                     <Search size={20} />
                   </button>
                 ) : (
-                  <div className="relative" onMouseDown={(e) => e.preventDefault()}>
+                  <div className="relative">
                     <input
                       type="text"
                       placeholder={settings.searchPlaceholder || "Search products..."}
                       autoFocus
-                      onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                      onBlur={() => {
+                        setTimeout(() => {
+                          setSearchOpen(false);
+                          setSearchFocused(false);
+                        }, 150);
+                      }}
                       onFocus={() => setSearchFocused(true)}
                       className="w-64 px-4 py-2 pr-10 text-sm rounded-md border transition-all"
                       style={{
@@ -876,12 +913,17 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
                   <Search size={24} className="stroke-[3]" style={{ color: merged.textColor }} />
                 </button>
               ) : (
-                <div className="relative" onMouseDown={(e) => e.preventDefault()}>
+                <div className="relative">
                   <input
                     type="text"
                     placeholder={merged.searchPlaceholder || "Search products..."}
                     autoFocus
-                    onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        setSearchOpen(false);
+                        setSearchFocused(false);
+                      }, 150);
+                    }}
                     onFocus={() => setSearchFocused(true)}
                     className="w-56 px-4 py-1.5 pr-10 text-sm border-2 font-mono font-bold uppercase"
                     style={{
@@ -1019,12 +1061,17 @@ export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeigh
                   <Search size={18} />
                 </button>
               ) : (
-                <div className="relative" onMouseDown={(e) => e.preventDefault()}>
+                <div className="relative">
                   <input
                     type="text"
                     placeholder={merged.searchPlaceholder || "Search products..."}
                     autoFocus
-                    onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        setSearchOpen(false);
+                        setSearchFocused(false);
+                      }, 150);
+                    }}
                     onFocus={() => setSearchFocused(true)}
                     className="w-64 px-4 py-2 pr-10 text-sm rounded-full border-2 font-bold transition-all"
                     style={{
@@ -1157,120 +1204,7 @@ export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
   );
 };
 
-// 8. HeaderOrbit - "Interactive" (Hover expandable menu with animations)
-export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, data }) => {
-  const merged = { ...ORBIT_DEFAULTS, ...data };
-  const [expanded, setExpanded] = useState(false);
-
-  return (
-    <header className={`${merged.sticky ? 'sticky top-0' : ''} z-[100] flex justify-center pointer-events-none pt-6`}>
-      <div 
-        className={`pointer-events-auto shadow-2xl transition-all duration-300 ease-out overflow-hidden ${expanded ? 'w-[600px] rounded-3xl' : 'w-[400px] min-h-[3.5rem] py-2 rounded-full'}`}
-        style={{ 
-          backgroundColor: merged.backgroundColor,
-          borderColor: merged.borderColor,
-          borderWidth: '1px',
-          borderStyle: 'solid'
-        }}
-        onMouseEnter={() => merged.expandedMenuEnabled && setExpanded(true)}
-        onMouseLeave={() => setExpanded(false)}
-      >
-        {/* Collapsed Header */}
-        <div className="w-full flex items-center justify-between px-6" style={{ 
-          transition: 'opacity 0.2s ease-out',
-          opacity: expanded ? 0.3 : 1 
-        }}>
-          <div className="flex items-center gap-2 py-1">
-            {merged.showIndicatorDot && !logoUrl && (
-              <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: merged.accentColor }}></div>
-            )}
-            <Logo 
-              storeName={storeName} 
-              logoUrl={logoUrl} 
-              logoHeight={logoHeight} 
-              className="font-bold" 
-              onClick={onLinkClick}
-            />
-          </div>
-          
-          {!expanded && (
-            <div className="flex items-center gap-4 text-sm text-neutral-400">
-              <span>Menu</span>
-              <div className="w-px h-4 bg-neutral-700"></div>
-              {merged.showCart && (
-                <span 
-                  onClick={onOpenCart} 
-                  className="flex items-center gap-1 cursor-pointer" 
-                  style={{ color: merged.textColor }}
-                >
-                  <ShoppingBag size={14}/> {cartCount}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Expanded Content */}
-        <div 
-          className="px-6 pb-6 pt-2 grid grid-cols-2 gap-8"
-          style={{
-            transition: 'opacity 0.25s ease-out, transform 0.25s ease-out',
-            opacity: expanded ? 1 : 0,
-            transform: expanded ? 'translateY(0)' : 'translateY(-10px)',
-            pointerEvents: expanded ? 'auto' : 'none'
-          }}
-        >
-          {merged.expandedMenuEnabled && (
-            <>
-              <div className="flex flex-col gap-3">
-                <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Navigation</span>
-                {(links || []).map(l => (
-                  <NavItem 
-                    key={l.href} 
-                    link={l} 
-                    onClick={onLinkClick} 
-                    className="text-lg font-medium transition-colors"
-                    style={{ color: merged.textColor }}
-                    hoverColor={merged.textHoverColor}
-                  />
-                ))}
-              </div>
-              <div className="flex flex-col gap-3">
-                <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Account</span>
-                {merged.showAccount && (
-                  <>
-                    <a href="#" className="text-sm text-neutral-300 hover:text-white">Orders</a>
-                    <a href="#" className="text-sm text-neutral-300 hover:text-white">Wishlist</a>
-                  </>
-                )}
-                {merged.showCart && (
-                  <div className="mt-auto pt-4 border-t border-neutral-800 flex justify-between items-center">
-                    <span className="text-sm text-neutral-400">Cart ({cartCount})</span>
-                    <button 
-                      onClick={onOpenCart} 
-                      className="px-4 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105"
-                      style={{ 
-                        backgroundColor: merged.cartBadgeColor, 
-                        color: merged.cartBadgeTextColor 
-                      }}
-                    >
-                      {merged.checkoutButtonText || 'Checkout'}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </header>
-  );
-};
-
-// Orbit header removed - not functioning properly
-// Will be rebuilt in future iteration
-
-// 9. HeaderGullwing - "Centered Logo" (Symmetrical split navigation with centered logo)
+// 8. HeaderGullwing - "Centered Logo" (Symmetrical split navigation with centered logo)
 export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, data }) => {
   const merged = { ...GULLWING_DEFAULTS, ...data };
   const [searchOpen, setSearchOpen] = React.useState(false);
@@ -1335,12 +1269,17 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
                     <Search size={20} />
                   </button>
                 ) : (
-                  <div className="relative" onMouseDown={(e) => e.preventDefault()}>
+                  <div className="relative">
                     <input
                       type="text"
                       placeholder={merged.searchPlaceholder || "Search products..."}
                       autoFocus
-                      onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                      onBlur={() => {
+                        setTimeout(() => {
+                          setSearchOpen(false);
+                          setSearchFocused(false);
+                        }, 150);
+                      }}
                       onFocus={() => setSearchFocused(true)}
                       className="w-56 px-4 py-1.5 pr-10 text-sm rounded-md border transition-all"
                       style={{
@@ -1405,7 +1344,6 @@ export const HEADER_COMPONENTS: Record<string, React.FC<HeaderProps>> = {
   canvas: HeaderCanvas,
   nebula: HeaderNebula,
   bunker: HeaderBunker,
-  orbit: HeaderOrbit,
   protocol: HeaderProtocol,
   horizon: HeaderHorizon,
   studio: HeaderStudio,
