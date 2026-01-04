@@ -735,7 +735,7 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 // Default values for HeaderPop
 const POP_DEFAULTS: HeaderData = {
   showSearch: true,
-  showAccount: false,
+  showAccount: true,
   showCart: true,
   backgroundColor: '#F3F4F6', // Light gray background
   borderColor: '#000000',
@@ -776,6 +776,11 @@ export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeigh
           {merged.showSearch && (
             <button className="w-10 h-10 rounded-full border-2 flex items-center justify-center hover:bg-neutral-100 transition-colors" style={{ borderColor: merged.borderColor, color: merged.textColor }}>
               <Search size={18} />
+            </button>
+          )}
+          {merged.showAccount && (
+            <button className="w-10 h-10 rounded-full border-2 flex items-center justify-center hover:bg-neutral-100 transition-colors" style={{ borderColor: merged.borderColor, color: merged.textColor }}>
+              <User size={18} />
             </button>
           )}
           {merged.showCart && (
