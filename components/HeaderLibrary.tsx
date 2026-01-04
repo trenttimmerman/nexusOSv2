@@ -205,7 +205,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
                   <Search size={20} />
                 </button>
               ) : (
-                <div className="relative">
+                <div className="relative" onMouseDown={(e) => e.preventDefault()}>
                   <input
                     type="text"
                     placeholder={settings.searchPlaceholder || "Search products..."}
@@ -364,7 +364,7 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
                   <Search size={18} />
                 </button>
               ) : (
-                <div className="relative">
+                <div className="relative" onMouseDown={(e) => e.preventDefault()}>
                   <input
                     type="text"
                     placeholder={settings.searchPlaceholder || "Search products..."}
@@ -500,7 +500,7 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
                     <Search size={20} />
                   </button>
                 ) : (
-                  <div className="relative">
+                  <div className="relative" onMouseDown={(e) => e.preventDefault()}>
                     <input
                       type="text"
                       placeholder={settings.searchPlaceholder || "Search products..."}
@@ -692,7 +692,7 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
                     <Search size={20} />
                   </button>
                 ) : (
-                  <div className="relative">
+                  <div className="relative" onMouseDown={(e) => e.preventDefault()}>
                     <input
                       type="text"
                       placeholder={settings.searchPlaceholder || "Search products..."}
@@ -876,7 +876,7 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
                   <Search size={24} className="stroke-[3]" style={{ color: merged.textColor }} />
                 </button>
               ) : (
-                <div className="relative">
+                <div className="relative" onMouseDown={(e) => e.preventDefault()}>
                   <input
                     type="text"
                     placeholder={merged.searchPlaceholder || "Search products..."}
@@ -1019,7 +1019,7 @@ export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeigh
                   <Search size={18} />
                 </button>
               ) : (
-                <div className="relative">
+                <div className="relative" onMouseDown={(e) => e.preventDefault()}>
                   <input
                     type="text"
                     placeholder={merged.searchPlaceholder || "Search products..."}
@@ -1335,7 +1335,7 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
                     <Search size={20} />
                   </button>
                 ) : (
-                  <div className="relative">
+                  <div className="relative" onMouseDown={(e) => e.preventDefault()}>
                     <input
                       type="text"
                       placeholder={merged.searchPlaceholder || "Search products..."}
