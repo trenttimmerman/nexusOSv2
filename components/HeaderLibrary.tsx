@@ -57,6 +57,12 @@ const CANVAS_DEFAULTS: HeaderData = {
   showSearch: true,
   showAccount: true,
   showCart: true,
+  searchPlaceholder: "Search products...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#3b82f6',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
   backgroundColor: '#ffffff',
   borderColor: '#f3f4f6',
   textColor: '#6b7280',
@@ -138,6 +144,8 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
 }) => {
   // Merge defaults with customization
   const settings = { ...CANVAS_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [searchFocused, setSearchFocused] = React.useState(false);
   
   const maxWidthClass = settings.maxWidth === 'full' ? 'max-w-full' : `max-w-${settings.maxWidth}`;
 
@@ -185,14 +193,40 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
         {/* Right: Icons */}
         <div className="flex items-center gap-2">
           {settings.showSearch && (
-            <button
-              className="p-2 rounded-full transition-colors"
-              style={{ color: settings.textColor }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
-            >
-              <Search size={20} />
-            </button>
+            <>
+              {!searchOpen ? (
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  className="p-2 rounded-full transition-colors"
+                  style={{ color: settings.textColor }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+                >
+                  <Search size={20} />
+                </button>
+              ) : (
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={settings.searchPlaceholder || "Search products..."}
+                    autoFocus
+                    onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                    onFocus={() => setSearchFocused(true)}
+                    className="w-64 px-4 py-2 pr-10 text-sm rounded-full border transition-all"
+                    style={{
+                      backgroundColor: searchFocused ? settings.searchFocusBackgroundColor : settings.searchBackgroundColor,
+                      borderColor: searchFocused ? settings.searchFocusBorderColor : 'transparent',
+                      color: settings.searchInputTextColor,
+                    }}
+                  />
+                  <Search 
+                    size={16} 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    style={{ color: settings.searchPlaceholderColor }}
+                  />
+                </div>
+              )}
+            </>
           )}
           {settings.showAccount && (
             <button
@@ -237,6 +271,12 @@ const NEBULA_DEFAULTS: HeaderData = {
   showSearch: true,
   showAccount: true,
   showCart: true,
+  searchPlaceholder: "Search products...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#3b82f6',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
   backgroundColor: 'rgba(255, 255, 255, 0.6)', // Glass effect
   borderColor: 'rgba(255, 255, 255, 0.2)',
   textColor: '#4b5563', // gray-600
@@ -264,6 +304,8 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
 }) => {
   // Merge defaults with customization
   const settings = { ...NEBULA_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [searchFocused, setSearchFocused] = React.useState(false);
   
   const maxWidthClass = settings.maxWidth === 'full' ? 'max-w-full' : `max-w-${settings.maxWidth}`;
   const blurClass = `backdrop-blur-${settings.blurIntensity || 'xl'}`;
@@ -310,14 +352,40 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
         {/* Right: Icons */}
         <div className="flex items-center gap-4" style={{ color: settings.textColor }}>
           {settings.showSearch && (
-            <button
-              className="cursor-pointer transition-colors"
-              style={{ color: settings.textColor }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
-            >
-              <Search size={18} />
-            </button>
+            <>
+              {!searchOpen ? (
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  className="cursor-pointer transition-colors"
+                  style={{ color: settings.textColor }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+                >
+                  <Search size={18} />
+                </button>
+              ) : (
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={settings.searchPlaceholder || "Search products..."}
+                    autoFocus
+                    onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                    onFocus={() => setSearchFocused(true)}
+                    className="w-56 px-4 py-1.5 pr-10 text-sm rounded-full border transition-all"
+                    style={{
+                      backgroundColor: searchFocused ? settings.searchFocusBackgroundColor : settings.searchBackgroundColor,
+                      borderColor: searchFocused ? settings.searchFocusBorderColor : 'transparent',
+                      color: settings.searchInputTextColor,
+                    }}
+                  />
+                  <Search 
+                    size={14} 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    style={{ color: settings.searchPlaceholderColor }}
+                  />
+                </div>
+              )}
+            </>
           )}
           {settings.showAccount && (
             <button
@@ -359,6 +427,12 @@ const LUXE_DEFAULTS: HeaderData = {
   showAccount: true,
   showCart: true,
   showTagline: true,
+  searchPlaceholder: "Search products...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#d4af37',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
   backgroundColor: '#faf9f6', // Cream/off-white
   borderColor: '#e5e5e5',
   textColor: '#737373', // neutral-500
@@ -385,6 +459,8 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
 }) => {
   // Merge defaults with customization
   const settings = { ...LUXE_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [searchFocused, setSearchFocused] = React.useState(false);
   
   const maxWidthClass = settings.maxWidth === 'full' ? 'max-w-full' : `max-w-${settings.maxWidth}`;
 
@@ -412,14 +488,40 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
               </button>
             )}
             {settings.showSearch && (
-              <button
-                className="transition-colors cursor-pointer"
-                style={{ color: settings.textColor }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
-                onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
-              >
-                <Search size={20} />
-              </button>
+              <>
+                {!searchOpen ? (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="transition-colors cursor-pointer"
+                    style={{ color: settings.textColor }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+                  >
+                    <Search size={20} />
+                  </button>
+                ) : (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder={settings.searchPlaceholder || "Search products..."}
+                      autoFocus
+                      onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                      onFocus={() => setSearchFocused(true)}
+                      className="w-56 px-4 py-1.5 pr-10 text-sm rounded-md border transition-all"
+                      style={{
+                        backgroundColor: searchFocused ? settings.searchFocusBackgroundColor : settings.searchBackgroundColor,
+                        borderColor: searchFocused ? settings.searchFocusBorderColor : settings.borderColor,
+                        color: settings.searchInputTextColor,
+                      }}
+                    />
+                    <Search 
+                      size={14} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: settings.searchPlaceholderColor }}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
           
@@ -499,6 +601,12 @@ const PILOT_DEFAULTS: HeaderData = {
   showCart: true,
   showCTA: true,
   showLogoBadge: true, // Hexagon icon next to logo
+  searchPlaceholder: "Search products...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#4f46e5',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
   backgroundColor: '#ffffff',
   textColor: '#4b5563', // gray-600
   textHoverColor: '#4f46e5', // indigo-600
@@ -526,6 +634,8 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
   data = {},
 }) => {
   const settings = { ...PILOT_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [searchFocused, setSearchFocused] = React.useState(false);
   const maxWidthClass = settings.maxWidth === 'full' ? 'max-w-full' : `max-w-${settings.maxWidth}`;
 
   return (
@@ -570,14 +680,40 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
           {/* Right: Search + Account + Cart + CTA */}
           <div className="hidden md:flex items-center gap-4">
             {settings.showSearch && (
-              <button
-                className="cursor-pointer transition-colors"
-                style={{ color: settings.textColor }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
-                onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
-              >
-                <Search size={20} />
-              </button>
+              <>
+                {!searchOpen ? (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="cursor-pointer transition-colors"
+                    style={{ color: settings.textColor }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+                  >
+                    <Search size={20} />
+                  </button>
+                ) : (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder={settings.searchPlaceholder || "Search products..."}
+                      autoFocus
+                      onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                      onFocus={() => setSearchFocused(true)}
+                      className="w-64 px-4 py-2 pr-10 text-sm rounded-md border transition-all"
+                      style={{
+                        backgroundColor: searchFocused ? settings.searchFocusBackgroundColor : settings.searchBackgroundColor,
+                        borderColor: searchFocused ? settings.searchFocusBorderColor : 'transparent',
+                        color: settings.searchInputTextColor,
+                      }}
+                    />
+                    <Search 
+                      size={16} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: settings.searchPlaceholderColor }}
+                    />
+                  </div>
+                )}
+              </>
             )}
             {settings.showAccount && (
               <button
@@ -686,6 +822,12 @@ const BUNKER_DEFAULTS: HeaderData = {
   showSearch: true,
   showAccount: true,
   showCart: true,
+  searchPlaceholder: "Search products...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#000000',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
   backgroundColor: '#facc15', // yellow-400
   borderColor: '#000000',
   textColor: '#000000',
@@ -705,6 +847,8 @@ const BUNKER_DEFAULTS: HeaderData = {
 // 5. Bunker (Bold Contrast, Black & White Brutalist)
 export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, data }) => {
   const merged = { ...BUNKER_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [searchFocused, setSearchFocused] = React.useState(false);
   
   return (
     <header className={`w-full border-b-4 ${merged.sticky ? 'sticky top-0' : ''} z-50 font-mono`} style={{ backgroundColor: merged.backgroundColor, borderColor: merged.borderColor }}>
@@ -725,7 +869,36 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
           </div>
         </nav>
         <div className="px-6 py-2 flex items-center justify-center gap-6 bg-white">
-          {merged.showSearch && <Search size={24} className="stroke-[3]" style={{ color: merged.textColor }} />}
+          {merged.showSearch && (
+            <>
+              {!searchOpen ? (
+                <button onClick={() => setSearchOpen(true)} className="cursor-pointer">
+                  <Search size={24} className="stroke-[3]" style={{ color: merged.textColor }} />
+                </button>
+              ) : (
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={merged.searchPlaceholder || "Search products..."}
+                    autoFocus
+                    onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                    onFocus={() => setSearchFocused(true)}
+                    className="w-56 px-4 py-1.5 pr-10 text-sm border-2 font-mono font-bold uppercase"
+                    style={{
+                      backgroundColor: searchFocused ? merged.searchFocusBackgroundColor : merged.searchBackgroundColor,
+                      borderColor: searchFocused ? merged.searchFocusBorderColor : merged.borderColor,
+                      color: merged.searchInputTextColor,
+                    }}
+                  />
+                  <Search 
+                    size={16} 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none stroke-[3]"
+                    style={{ color: merged.searchPlaceholderColor }}
+                  />
+                </div>
+              )}
+            </>
+          )}
           {merged.showAccount && <User size={24} className="stroke-[3]" style={{ color: merged.textColor }} />}
           {merged.showCart && (
             <div onClick={onOpenCart} className="relative cursor-pointer">
@@ -748,6 +921,12 @@ const POP_DEFAULTS: HeaderData = {
   showSearch: true,
   showAccount: true,
   showCart: true,
+  searchPlaceholder: "Search products...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#23A094',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
   backgroundColor: '#F3F4F6', // Light gray background
   borderColor: '#000000',
   textColor: '#000000',
@@ -786,6 +965,12 @@ const GULLWING_DEFAULTS: HeaderData = {
   showSearch: true,
   showAccount: true,
   showCart: true,
+  searchPlaceholder: "Search products...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#3b82f6',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
   backgroundColor: '#ffffff',
   borderColor: '#e5e7eb',
   textColor: '#6b7280',
@@ -799,6 +984,8 @@ const GULLWING_DEFAULTS: HeaderData = {
 // 6. HeaderPop - "Playful Modern" (Fun, friendly, colorful with shadows)
 export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, data }) => {
   const merged = { ...POP_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [searchFocused, setSearchFocused] = React.useState(false);
   
   return (
     <header className={`w-full p-4 ${merged.sticky ? 'sticky top-0' : ''} z-50`} style={{ backgroundColor: merged.backgroundColor }}>
@@ -822,9 +1009,38 @@ export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeigh
 
         <div className="flex items-center gap-2">
           {merged.showSearch && (
-            <button className="w-10 h-10 rounded-full border-2 flex items-center justify-center hover:bg-neutral-100 transition-colors" style={{ borderColor: merged.borderColor, color: merged.textColor }}>
-              <Search size={18} />
-            </button>
+            <>
+              {!searchOpen ? (
+                <button 
+                  onClick={() => setSearchOpen(true)}
+                  className="w-10 h-10 rounded-full border-2 flex items-center justify-center hover:bg-neutral-100 transition-colors" 
+                  style={{ borderColor: merged.borderColor, color: merged.textColor }}
+                >
+                  <Search size={18} />
+                </button>
+              ) : (
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={merged.searchPlaceholder || "Search products..."}
+                    autoFocus
+                    onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                    onFocus={() => setSearchFocused(true)}
+                    className="w-64 px-4 py-2 pr-10 text-sm rounded-full border-2 font-bold transition-all"
+                    style={{
+                      backgroundColor: searchFocused ? merged.searchFocusBackgroundColor : merged.searchBackgroundColor,
+                      borderColor: searchFocused ? merged.searchFocusBorderColor : merged.borderColor,
+                      color: merged.searchInputTextColor,
+                    }}
+                  />
+                  <Search 
+                    size={16} 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    style={{ color: merged.searchPlaceholderColor }}
+                  />
+                </div>
+              )}
+            </>
           )}
           {merged.showAccount && (
             <button className="w-10 h-10 rounded-full border-2 flex items-center justify-center hover:bg-neutral-100 transition-colors" style={{ borderColor: merged.borderColor, color: merged.textColor }}>
@@ -1057,6 +1273,8 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 // 9. HeaderGullwing - "Centered Logo" (Symmetrical split navigation with centered logo)
 export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, data }) => {
   const merged = { ...GULLWING_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [searchFocused, setSearchFocused] = React.useState(false);
   const maxWidthClass = `max-w-${merged.maxWidth}`;
   
   return (
@@ -1107,12 +1325,38 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
           <div className="flex items-center gap-4">
             {/* Search Icon */}
             {merged.showSearch && (
-              <button 
-                className="cursor-pointer hover:opacity-70 transition-opacity"
-                style={{ color: merged.textColor }}
-              >
-                <Search size={20} />
-              </button>
+              <>
+                {!searchOpen ? (
+                  <button 
+                    onClick={() => setSearchOpen(true)}
+                    className="cursor-pointer hover:opacity-70 transition-opacity"
+                    style={{ color: merged.textColor }}
+                  >
+                    <Search size={20} />
+                  </button>
+                ) : (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder={merged.searchPlaceholder || "Search products..."}
+                      autoFocus
+                      onBlur={() => { setSearchOpen(false); setSearchFocused(false); }}
+                      onFocus={() => setSearchFocused(true)}
+                      className="w-56 px-4 py-1.5 pr-10 text-sm rounded-md border transition-all"
+                      style={{
+                        backgroundColor: searchFocused ? merged.searchFocusBackgroundColor : merged.searchBackgroundColor,
+                        borderColor: searchFocused ? merged.searchFocusBorderColor : merged.borderColor,
+                        color: merged.searchInputTextColor,
+                      }}
+                    />
+                    <Search 
+                      size={14} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: merged.searchPlaceholderColor }}
+                    />
+                  </div>
+                )}
+              </>
             )}
             
             {/* Account Icon */}
@@ -1208,24 +1452,32 @@ export const HEADER_OPTIONS = [
 export const HEADER_FIELDS: Record<string, string[]> = {
   canvas: [
     'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth', 'paddingX', 'paddingY'
   ],
   nebula: [
     'showSearch', 'showCart', 'showIndicatorDot',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor',
     'sticky', 'maxWidth', 'blurIntensity'
   ],
   luxe: [
     'showMenu', 'showSearch', 'showAccount', 'showCart', 'showTagline',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'taglineColor', 'taglineText', 'cartBadgeColor',
     'sticky', 'maxWidth'
   ],
   pilot: [
     'showCart', 'showCTA', 'showLogoBadge',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'textColor', 'textHoverColor', 'accentColor',
     'ctaBackgroundColor', 'ctaHoverColor', 'ctaTextColor', 'ctaText',
     'cartBadgeColor', 'cartBadgeTextColor',
@@ -1233,6 +1485,8 @@ export const HEADER_FIELDS: Record<string, string[]> = {
   ],
   bunker: [
     'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'tickerBackgroundColor', 'tickerTextColor', 'tickerBorderColor', 'tickerText',
     'cartBadgeColor', 'cartBadgeTextColor',
@@ -1240,6 +1494,8 @@ export const HEADER_FIELDS: Record<string, string[]> = {
   ],
   pop: [
     'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
@@ -1254,6 +1510,8 @@ export const HEADER_FIELDS: Record<string, string[]> = {
   ],
   gullwing: [
     'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
