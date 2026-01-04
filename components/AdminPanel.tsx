@@ -2190,16 +2190,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <label className="text-sm font-bold text-white mb-3 block">Header Design</label>
                   <div className="grid grid-cols-4 gap-2">
                     {/* Available headers */}
-                    {[
-                      { id: 'canvas', name: 'Classic' },
-                      { id: 'nebula', name: 'Glass' },
-                      { id: 'luxe', name: 'Luxury' },
-                      { id: 'pilot', name: 'Pro' },
-                      { id: 'bunker', name: 'Bunker' },
-                      { id: 'pop', name: 'Pop' },
-                      { id: 'venture', name: 'Venture' },
-                      { id: 'gullwing', name: 'Gullwing' },
-                    ].map((header) => (
+                    {HEADER_OPTIONS.map((header) => (
                       <button
                         key={header.id}
                         onClick={() => onConfigChange({ ...config, headerStyle: header.id as any, headerData: {} })}
