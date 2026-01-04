@@ -1457,84 +1457,131 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({
   data = {},
 }) => {
   const settings = { ...HORIZON_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
 
   return (
     <header className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50`}>
       {/* Utility Bar */}
-      <div className="bg-neutral-900 text-white py-2 px-6 flex justify-between items-center text-xs font-medium tracking-wide">
+      <div 
+        className="py-2 px-6 flex justify-between items-center text-xs font-medium tracking-wide"
+        style={{ 
+          backgroundColor: settings.accentColor || '#000000',
+          color: '#ffffff',
+        }}
+      >
         <div className="flex gap-4">
-          <span>Currency: USD</span>
-          <span>Language: EN</span>
+          <span>Free Shipping Over $100</span>
         </div>
-        <span>Free Express Shipping on Orders Over $100</span>
         <div className="flex gap-4">
-          <a href="#" className="hover:underline">Support</a>
+          <a href="#" className="hover:underline">Help</a>
           {settings.showAccount && <a href="#" className="hover:underline">Sign In</a>}
         </div>
       </div>
       
       {/* Main Navigation */}
       <div 
-        className="py-6 px-8 flex items-center justify-between"
+        className="py-4 px-6"
         style={{ 
           backgroundColor: settings.backgroundColor,
           borderBottom: `1px solid ${settings.borderColor}`,
         }}
       >
-        <Menu size={24} className="md:hidden" style={{ color: settings.textColor }} />
-        
-        {/* Left Nav */}
-        <nav className="hidden md:flex gap-8">
-          {(links || []).slice(0, 2).map(l => (
-            <NavItem
-              key={l.href}
-              link={l}
-              onClick={onLinkClick}
-              className="text-sm font-bold uppercase tracking-wider hover:underline underline-offset-4 transition-all"
-              style={{ color: settings.textColor }}
-              hoverColor={settings.textHoverColor}
-            />
-          ))}
-        </nav>
-        
-        {/* Centered Logo */}
-        <div className="absolute left-1/2 transform -translate-x-1/2">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-8">
+          {/* Logo - Left Side */}
           <Logo 
             storeName={storeName} 
             logoUrl={logoUrl} 
-            logoHeight={logoHeight} 
-            className="text-3xl font-serif italic" 
+            logoHeight={logoHeight || 32} 
+            className="text-2xl font-bold tracking-tight shrink-0" 
             onClick={onLogoClick}
           />
-        </div>
-
-        {/* Right Nav */}
-        <nav className="hidden md:flex gap-8">
-          {(links || []).slice(2).map(l => (
-            <NavItem
-              key={l.href}
-              link={l}
-              onClick={onLinkClick}
-              className="text-sm font-bold uppercase tracking-wider hover:underline underline-offset-4 transition-all"
-              style={{ color: settings.textColor }}
-              hoverColor={settings.textHoverColor}
-            />
-          ))}
-        </nav>
-        
-        {/* Icons */}
-        <div className="flex items-center gap-4">
-          {settings.showSearch && <Search size={20} style={{ color: settings.textColor }} />}
-          {settings.showCart && (
-            <button 
-              onClick={onOpenCart} 
-              className="flex items-center gap-1 font-bold text-sm cursor-pointer hover:text-neutral-600 transition-colors"
-              style={{ color: settings.textColor }}
-            >
-              <ShoppingBag size={20} />
-              <span>({cartCount})</span>
-            </button>
-          )}
+          
+          {/* Navigation - Center */}
+          <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
+            {(links || []).map(l => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLinkClick?.(l.href);
+                }}
+                className="text-sm font-medium uppercase tracking-wide hover:underline underline-offset-4 transition-all"
+                style={{ color: l.active ? settings.accentColor : settings.textColor }}
+              >
+                {l.label}
+              </a>
+            ))}
+          </nav>
+          
+          {/* Icons - Right Side */}
+          <div className="flex items-center gap-3 shrink-0">
+            {settings.showSearch && (
+              <>
+                {searchOpen ? (
+                  <div className="relative hidden md:block">
+                    <input 
+                      type="text" 
+                      placeholder={settings.searchPlaceholder}
+                      className="w-48 px-3 py-1.5 pr-8 text-sm rounded-md focus:outline-none transition-colors"
+                      style={{ 
+                        backgroundColor: settings.searchFocusBackgroundColor || '#ffffff',
+                        border: `1px solid ${settings.searchFocusBorderColor || settings.borderColor}`,
+                        color: settings.searchInputTextColor,
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => setSearchOpen(false), 150);
+                      }}
+                      autoFocus
+                    />
+                    <Search 
+                      size={14} 
+                      className="absolute right-2.5 top-2 pointer-events-none"
+                      style={{ color: settings.searchPlaceholderColor }}
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="p-1.5 hover:opacity-70 transition-opacity"
+                    style={{ color: settings.textColor }}
+                  >
+                    <Search size={20} />
+                  </button>
+                )}
+              </>
+            )}
+            
+            {settings.showAccount && (
+              <button 
+                className="p-1.5 hover:opacity-70 transition-opacity"
+                style={{ color: settings.textColor }}
+              >
+                <User size={20} />
+              </button>
+            )}
+            
+            {settings.showCart && (
+              <button 
+                onClick={onOpenCart} 
+                className="relative p-1.5 hover:opacity-70 transition-opacity"
+                style={{ color: settings.textColor }}
+              >
+                <ShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <span 
+                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold"
+                    style={{ 
+                      backgroundColor: settings.cartBadgeColor,
+                      color: settings.cartBadgeTextColor,
+                    }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </header>
