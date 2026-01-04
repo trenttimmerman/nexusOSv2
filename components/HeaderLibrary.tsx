@@ -47,6 +47,9 @@ export interface HeaderData {
   // Expandable menu (for Orbit header)
   checkoutButtonText?: string;
   expandedMenuEnabled?: boolean;
+  // Utility bar (for Horizon header)
+  utilityBarBackgroundColor?: string;
+  utilityBarTextColor?: string;
   // Layout
   sticky?: boolean;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
@@ -1438,6 +1441,9 @@ const HORIZON_DEFAULTS: HeaderData = {
   borderColor: '#e5e7eb',
   textColor: '#000000',
   textHoverColor: '#6b7280',
+  accentColor: '#000000',
+  utilityBarBackgroundColor: '#000000',
+  utilityBarTextColor: '#ffffff',
   cartBadgeColor: '#000000',
   cartBadgeTextColor: '#ffffff',
   sticky: true,
@@ -1465,8 +1471,8 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({
       <div 
         className="py-2 px-6 flex justify-between items-center text-xs font-medium tracking-wide"
         style={{ 
-          backgroundColor: settings.accentColor || '#000000',
-          color: '#ffffff',
+          backgroundColor: settings.utilityBarBackgroundColor || '#000000',
+          color: settings.utilityBarTextColor || '#ffffff',
         }}
       >
         <div className="flex gap-4">
@@ -1824,6 +1830,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
     'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor', 'utilityBarBackgroundColor', 'utilityBarTextColor',
     'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
