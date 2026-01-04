@@ -2156,11 +2156,583 @@ export const HeaderVolt: React.FC<HeaderProps> = ({
   );
 };
 
+// Default values for HeaderPortfolio (Creative/Agency style with split layout)
+const PORTFOLIO_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  searchPlaceholder: "Search...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#000000',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
+  backgroundColor: '#ffffff',
+  borderColor: '#e5e7eb',
+  textColor: '#111827',
+  textHoverColor: '#000000',
+  accentColor: '#000000',
+  cartBadgeColor: '#000000',
+  cartBadgeTextColor: '#ffffff',
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// 14. HeaderPortfolio - Creative/Agency style with asymmetric layout
+export const HeaderPortfolio: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...PORTFOLIO_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+
+  return (
+    <header 
+      className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50`}
+      style={{ 
+        backgroundColor: settings.backgroundColor,
+        borderBottom: `1px solid ${settings.borderColor}`,
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="flex items-start justify-between gap-8">
+          {/* Left: Logo */}
+          <div 
+            className="cursor-pointer group pt-1"
+            onClick={onLogoClick}
+          >
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt={storeName} 
+                style={{ height: `${logoHeight || 32}px` }}
+                className="h-auto transition-opacity group-hover:opacity-70"
+              />
+            ) : (
+              <span 
+                className="text-xl font-light tracking-[0.2em] uppercase transition-opacity group-hover:opacity-70"
+                style={{ color: settings.textColor }}
+              >
+                {storeName}
+              </span>
+            )}
+          </div>
+          
+          {/* Right: Navigation stacked vertically */}
+          <div className="flex flex-col items-end gap-4">
+            {/* Top row: Actions */}
+            <div className="flex items-center gap-4">
+              {settings.showSearch && (
+                <>
+                  {searchOpen ? (
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder={settings.searchPlaceholder}
+                        className="w-48 px-4 py-1.5 pr-10 text-sm border-b-2 focus:outline-none transition-all bg-transparent"
+                        style={{ 
+                          borderColor: settings.searchFocusBorderColor,
+                          color: settings.searchInputTextColor,
+                        }}
+                        onBlur={() => {
+                          setTimeout(() => setSearchOpen(false), 150);
+                        }}
+                        autoFocus
+                      />
+                      <Search 
+                        size={16} 
+                        className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none"
+                        style={{ color: settings.accentColor }}
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setSearchOpen(true)}
+                      className="text-sm uppercase tracking-wider transition-opacity hover:opacity-60"
+                      style={{ color: settings.textColor }}
+                    >
+                      Search
+                    </button>
+                  )}
+                </>
+              )}
+              
+              {settings.showAccount && (
+                <button 
+                  className="transition-opacity hover:opacity-60"
+                  style={{ color: settings.textColor }}
+                >
+                  <User size={18} />
+                </button>
+              )}
+              
+              {settings.showCart && (
+                <button 
+                  onClick={onOpenCart}
+                  className="relative transition-opacity hover:opacity-60"
+                  style={{ color: settings.textColor }}
+                >
+                  <ShoppingBag size={18} />
+                  {cartCount > 0 && (
+                    <span 
+                      className="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] flex items-center justify-center font-bold"
+                      style={{ 
+                        backgroundColor: settings.cartBadgeColor,
+                        color: settings.cartBadgeTextColor,
+                      }}
+                    >
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              )}
+            </div>
+            
+            {/* Bottom row: Navigation links */}
+            <nav className="hidden md:flex items-center gap-6">
+              {(links || []).map(l => (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onLinkClick?.(l.href);
+                  }}
+                  className="text-sm uppercase tracking-wider relative transition-opacity hover:opacity-60"
+                  style={{ 
+                    color: l.active ? settings.accentColor : settings.textColor,
+                    fontWeight: l.active ? 600 : 400,
+                  }}
+                >
+                  {l.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// Default values for HeaderMetro (Clean minimal with perfect alignment)
+const METRO_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  searchPlaceholder: "Search...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#3b82f6',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
+  backgroundColor: '#ffffff',
+  borderColor: '#e5e7eb',
+  textColor: '#6b7280',
+  textHoverColor: '#111827',
+  accentColor: '#3b82f6',
+  cartBadgeColor: '#3b82f6',
+  cartBadgeTextColor: '#ffffff',
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// 15. HeaderMetro - Clean minimal design with grid-based precision
+export const HeaderMetro: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...METRO_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+
+  return (
+    <header 
+      className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50`}
+      style={{ 
+        backgroundColor: settings.backgroundColor,
+        borderBottom: `1px solid ${settings.borderColor}`,
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-8 py-5">
+        <div className="grid grid-cols-3 items-center gap-8">
+          {/* Left: Logo */}
+          <div 
+            className="cursor-pointer transition-opacity hover:opacity-70"
+            onClick={onLogoClick}
+          >
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt={storeName} 
+                style={{ height: `${logoHeight || 28}px` }}
+                className="h-auto"
+              />
+            ) : (
+              <span 
+                className="text-lg font-semibold"
+                style={{ color: settings.textColor }}
+              >
+                {storeName}
+              </span>
+            )}
+          </div>
+          
+          {/* Center: Navigation */}
+          <nav className="hidden md:flex items-center justify-center gap-8">
+            {(links || []).map(l => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLinkClick?.(l.href);
+                }}
+                className="text-sm font-medium transition-colors relative"
+                style={{ 
+                  color: l.active ? settings.accentColor : settings.textColor,
+                }}
+                onMouseEnter={(e) => {
+                  if (!l.active) e.currentTarget.style.color = settings.textHoverColor!;
+                }}
+                onMouseLeave={(e) => {
+                  if (!l.active) e.currentTarget.style.color = settings.textColor!;
+                }}
+              >
+                {l.label}
+                {l.active && (
+                  <span 
+                    className="absolute -bottom-5 left-0 right-0 h-0.5"
+                    style={{ backgroundColor: settings.accentColor }}
+                  />
+                )}
+              </a>
+            ))}
+          </nav>
+          
+          {/* Right: Actions */}
+          <div className="flex items-center justify-end gap-5">
+            {settings.showSearch && (
+              <>
+                {searchOpen ? (
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      placeholder={settings.searchPlaceholder}
+                      className="w-44 px-4 py-2 pr-10 text-sm rounded-md border focus:outline-none transition-all"
+                      style={{ 
+                        backgroundColor: settings.searchFocusBackgroundColor,
+                        borderColor: settings.searchFocusBorderColor,
+                        color: settings.searchInputTextColor,
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => setSearchOpen(false), 150);
+                      }}
+                      autoFocus
+                    />
+                    <Search 
+                      size={16} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: settings.searchPlaceholderColor }}
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="p-2 rounded-md transition-colors"
+                    style={{ color: settings.textColor }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = settings.textHoverColor!;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = settings.textColor!;
+                    }}
+                  >
+                    <Search size={20} />
+                  </button>
+                )}
+              </>
+            )}
+            
+            {settings.showAccount && (
+              <button 
+                className="p-2 rounded-md transition-colors"
+                style={{ color: settings.textColor }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = settings.textHoverColor!;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = settings.textColor!;
+                }}
+              >
+                <User size={20} />
+              </button>
+            )}
+            
+            {settings.showCart && (
+              <button 
+                onClick={onOpenCart}
+                className="relative p-2 rounded-md transition-colors"
+                style={{ color: settings.textColor }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = settings.textHoverColor!;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = settings.textColor!;
+                }}
+              >
+                <ShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <span 
+                    className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] flex items-center justify-center font-bold"
+                    style={{ 
+                      backgroundColor: settings.cartBadgeColor,
+                      color: settings.cartBadgeTextColor,
+                    }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// Default values for HeaderModul (Modular blocks with compartmentalized design)
+const MODUL_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  searchPlaceholder: "Search...",
+  searchBackgroundColor: '#f3f4f6',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#10b981',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
+  backgroundColor: '#ffffff',
+  borderColor: '#e5e7eb',
+  textColor: '#374151',
+  textHoverColor: '#10b981',
+  accentColor: '#10b981',
+  cartBadgeColor: '#10b981',
+  cartBadgeTextColor: '#ffffff',
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// 16. HeaderModul - Modular block-based design with compartments
+export const HeaderModul: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...MODUL_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+
+  return (
+    <header 
+      className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50`}
+      style={{ 
+        backgroundColor: settings.backgroundColor,
+        borderBottom: `2px solid ${settings.borderColor}`,
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex items-center justify-between gap-6">
+          {/* Logo module */}
+          <div 
+            className="px-6 py-2 border-r cursor-pointer transition-colors"
+            style={{ borderColor: settings.borderColor }}
+            onClick={onLogoClick}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = settings.accentColor!;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = settings.borderColor!;
+            }}
+          >
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt={storeName} 
+                style={{ height: `${logoHeight || 32}px` }}
+                className="h-auto"
+              />
+            ) : (
+              <span 
+                className="text-lg font-bold"
+                style={{ color: settings.textColor }}
+              >
+                {storeName}
+              </span>
+            )}
+          </div>
+          
+          {/* Navigation module */}
+          <nav className="hidden md:flex items-center gap-1 flex-1 px-4">
+            {(links || []).map(l => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLinkClick?.(l.href);
+                }}
+                className="px-4 py-2 text-sm font-medium rounded transition-all"
+                style={{ 
+                  color: l.active ? settings.accentColor : settings.textColor,
+                  backgroundColor: l.active ? `${settings.accentColor}15` : 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  if (!l.active) {
+                    e.currentTarget.style.backgroundColor = `${settings.borderColor}`;
+                    e.currentTarget.style.color = settings.textHoverColor!;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!l.active) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = settings.textColor!;
+                  }
+                }}
+              >
+                {l.label}
+              </a>
+            ))}
+          </nav>
+          
+          {/* Actions module */}
+          <div className="flex items-center gap-2 border-l pl-6" style={{ borderColor: settings.borderColor }}>
+            {settings.showSearch && (
+              <>
+                {searchOpen ? (
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      placeholder={settings.searchPlaceholder}
+                      className="w-52 px-4 py-2 pr-10 text-sm rounded border focus:outline-none transition-all"
+                      style={{ 
+                        backgroundColor: settings.searchFocusBackgroundColor,
+                        borderColor: settings.searchFocusBorderColor,
+                        color: settings.searchInputTextColor,
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => setSearchOpen(false), 150);
+                      }}
+                      autoFocus
+                    />
+                    <Search 
+                      size={16} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: settings.accentColor }}
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="p-2 rounded transition-colors"
+                    style={{ 
+                      color: settings.textColor,
+                      backgroundColor: 'transparent',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = settings.borderColor!;
+                      e.currentTarget.style.color = settings.textHoverColor!;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = settings.textColor!;
+                    }}
+                  >
+                    <Search size={20} />
+                  </button>
+                )}
+              </>
+            )}
+            
+            {settings.showAccount && (
+              <button 
+                className="p-2 rounded transition-colors"
+                style={{ 
+                  color: settings.textColor,
+                  backgroundColor: 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = settings.borderColor!;
+                  e.currentTarget.style.color = settings.textHoverColor!;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = settings.textColor!;
+                }}
+              >
+                <User size={20} />
+              </button>
+            )}
+            
+            {settings.showCart && (
+              <button 
+                onClick={onOpenCart}
+                className="relative p-2 rounded transition-colors"
+                style={{ 
+                  color: settings.accentColor,
+                  backgroundColor: `${settings.accentColor}15`,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = settings.accentColor!;
+                  e.currentTarget.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = `${settings.accentColor}15`;
+                  e.currentTarget.style.color = settings.accentColor!;
+                }}
+              >
+                <ShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <span 
+                    className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded text-[10px] flex items-center justify-center font-bold"
+                    style={{ 
+                      backgroundColor: settings.cartBadgeColor,
+                      color: settings.cartBadgeTextColor,
+                    }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
 
 // Other headers still use placeholder - restore from HeaderLibrary.archive.tsx as needed
-export const HeaderPortfolio = PlaceholderHeader;
-export const HeaderMetro = PlaceholderHeader;
-export const HeaderModul = PlaceholderHeader;
 export const HeaderStark = PlaceholderHeader;
 export const HeaderOffset = PlaceholderHeader;
 export const HeaderTicker = PlaceholderHeader;
@@ -2205,6 +2777,9 @@ export const HEADER_OPTIONS = [
   { id: 'terminal', name: 'Developer', description: 'Command-line theme', date: '2025-01-04', popularity: 64 },
   { id: 'elite', name: 'Premium Luxury', description: 'Elegant gold accents', date: '2025-01-04', popularity: 93 },
   { id: 'volt', name: 'Electric Neon', description: 'High-energy vibes', date: '2025-01-04', popularity: 91 },
+  { id: 'portfolio', name: 'Creative Agency', description: 'Asymmetric layout', date: '2025-01-04', popularity: 78 },
+  { id: 'metro', name: 'Clean Minimal', description: 'Grid-based precision', date: '2025-01-04', popularity: 81 },
+  { id: 'modul', name: 'Modular Blocks', description: 'Compartmentalized', date: '2025-01-04', popularity: 74 },
 ];
 
 export const HEADER_FIELDS: Record<string, string[]> = {
@@ -2317,7 +2892,34 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
+  portfolio: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  metro: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  modul: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
   // Placeholders for remaining headers
-  portfolio: [], metro: [], modul: [], stark: [], 
+  stark: [], 
   offset: [], ticker: [], noir: [], ghost: [],
 };
