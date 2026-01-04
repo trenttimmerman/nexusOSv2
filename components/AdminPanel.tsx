@@ -157,7 +157,8 @@ import {
   Circle,
   Lock,
   Unlock,
-  Menu
+  Menu,
+  Hexagon
 } from 'lucide-react';
 
 // Page type options for creating new pages
