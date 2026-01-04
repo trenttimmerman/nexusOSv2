@@ -1809,20 +1809,10 @@ export const HEADER_OPTIONS = [
   { id: 'pop', name: 'Playful Modern', description: 'Fun and friendly', date: '2024-09-01', popularity: 82 },
   { id: 'venture', name: 'Search-First', description: 'Large catalogs', date: '2024-02-01', popularity: 80 },
   { id: 'gullwing', name: 'Centered Logo', description: 'Logo in middle', date: '2024-07-15', popularity: 77 },
-  { id: 'noir', name: 'Dark Mode', description: 'Dark theme', date: '2024-10-15', popularity: 76 },
-  { id: 'modul', name: 'Grid Layout', description: 'Swiss-style', date: '2024-10-05', popularity: 74 },
-  { id: 'portfolio', name: 'Split Screen', description: 'Two-column', date: '2024-05-05', popularity: 72 },
-  { id: 'horizon', name: 'Double Row', description: 'Two-level nav', date: '2024-02-14', popularity: 70 },
-  { id: 'metro', name: 'Tile Style', description: 'Windows-inspired', date: '2024-10-01', popularity: 68 },
-  { id: 'stark', name: 'Minimalist', description: 'Ultra-clean', date: '2024-08-20', popularity: 66 },
-  { id: 'protocol', name: 'Tech/Gaming', description: 'Cyberpunk style', date: '2024-09-10', popularity: 65 },
-  { id: 'terminal', name: 'Developer', description: 'Command-line theme', date: '2025-01-04', popularity: 64 },
+  { id: 'protocol', name: 'Tech/Gaming', description: 'Cyberpunk style', date: '2025-01-04', popularity: 65 },
+  { id: 'horizon', name: 'Double Row', description: 'Two-level nav', date: '2025-01-04', popularity: 70 },
   { id: 'studio', name: 'Sidebar Nav', description: 'Left panel layout', date: '2025-01-04', popularity: 63 },
-  { id: 'ghost', name: 'Hidden Menu', description: 'Hover menu', date: '2024-11-01', popularity: 62 },
-  { id: 'studio', name: 'Sidebar Nav', description: 'Left navigation', date: '2024-01-20', popularity: 60 },
-  { id: 'offset', name: 'Asymmetric', description: 'Off-center', date: '2024-03-01', popularity: 58 },
-  { id: 'terminal', name: 'Developer', description: 'Code-inspired', date: '2024-04-01', popularity: 55 },
-  { id: 'ticker', name: 'News Ticker', description: 'Scrolling bar', date: '2024-06-01', popularity: 50 },
+  { id: 'terminal', name: 'Developer', description: 'Command-line theme', date: '2025-01-04', popularity: 64 },
 ];
 
 export const HEADER_FIELDS: Record<string, string[]> = {
