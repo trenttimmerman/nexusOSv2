@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
-import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas, HeaderNebula, HeaderLuxe, HeaderPilot, HeaderBunker, HeaderPop, HeaderVenture, HeaderOrbit, HeaderGullwing } from './HeaderLibrary';
+import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas, HeaderNebula, HeaderLuxe, HeaderPilot, HeaderBunker, HeaderPop, HeaderVenture, HeaderGullwing } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
@@ -2149,21 +2149,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         onLinkClick={() => {}}
                         data={config.headerData}
                       />
-                    ) : config.headerStyle === 'orbit' ? (
-                      <HeaderOrbit
-                        storeName={config.name || 'Your Store'}
-                        logoUrl={config.logoUrl}
-                        logoHeight={config.logoHeight || 32}
-                        links={[
-                          { label: 'Shop', href: '/shop', active: false },
-                          { label: 'About', href: '/about', active: false },
-                          { label: 'Contact', href: '/contact', active: false },
-                        ]}
-                        cartCount={2}
-                        onOpenCart={() => {}}
-                        onLinkClick={() => {}}
-                        data={config.headerData}
-                      />
                     ) : config.headerStyle === 'gullwing' ? (
                       <HeaderGullwing
                         storeName={config.name || 'Your Store'}
@@ -2211,7 +2196,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       { id: 'bunker', name: 'Bunker' },
                       { id: 'pop', name: 'Pop' },
                       { id: 'venture', name: 'Venture' },
-                      { id: 'orbit', name: 'Orbit' },
                       { id: 'gullwing', name: 'Gullwing' },
                     ].map((header) => (
                       <button
@@ -2578,88 +2562,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       >
                         <span className="text-sm">{(config.headerData?.showKeyboardShortcut ?? true) ? 'Keyboard Shortcut (⌘K) Visible' : 'Keyboard Shortcut Hidden'}</span>
                       </button>
-                    </div>
-                  )}
-
-                  {/* Orbit-specific Controls */}
-                  {(config.headerStyle === 'orbit') && (
-                    <div className="space-y-3 mb-6">
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Expandable Menu</p>
-                      
-                      {/* Checkout Button Text */}
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-sm text-neutral-300 mb-2 block">Checkout Button Text</label>
-                        <input
-                          type="text"
-                          value={config.headerData?.checkoutButtonText ?? 'Checkout'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, checkoutButtonText: e.target.value }
-                          })}
-                          className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
-                          placeholder="Checkout"
-                        />
-                      </div>
-                      
-                      {/* Toggles */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          onClick={() => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, expandedMenuEnabled: !(config.headerData?.expandedMenuEnabled ?? true) }
-                          })}
-                          className={`p-3 rounded-lg border transition-all ${
-                            (config.headerData?.expandedMenuEnabled ?? true)
-                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                          }`}
-                        >
-                          <span className="text-sm">{(config.headerData?.expandedMenuEnabled ?? true) ? 'Hover Menu' : 'Menu Off'}</span>
-                        </button>
-                        
-                        <button
-                          onClick={() => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, showIndicatorDot: !(config.headerData?.showIndicatorDot ?? true) }
-                          })}
-                          className={`p-3 rounded-lg border transition-all ${
-                            (config.headerData?.showIndicatorDot ?? true)
-                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                          }`}
-                        >
-                          <span className="text-sm">{(config.headerData?.showIndicatorDot ?? true) ? 'Indicator Dot' : 'No Dot'}</span>
-                        </button>
-                      </div>
-                      
-                      {/* Colors */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                          <input
-                            type="color"
-                            value={config.headerData?.accentColor ?? '#22c55e'}
-                            onChange={(e) => onConfigChange({
-                              ...config,
-                              headerData: { ...config.headerData, accentColor: e.target.value }
-                            })}
-                            className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                          />
-                          <span className="text-sm text-neutral-300">Accent Color (Dot & Hover)</span>
-                        </div>
-                        
-                        <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                          <input
-                            type="color"
-                            value={config.headerData?.borderColor ?? '#262626'}
-                            onChange={(e) => onConfigChange({
-                              ...config,
-                              headerData: { ...config.headerData, borderColor: e.target.value }
-                            })}
-                            className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                          />
-                          <span className="text-sm text-neutral-300">Border Color</span>
-                        </div>
-                      </div>
                     </div>
                   )}
 

@@ -781,25 +781,6 @@ const VENTURE_DEFAULTS: HeaderData = {
   maxWidth: 'full',
 };
 
-// Default values for HeaderOrbit
-const ORBIT_DEFAULTS: HeaderData = {
-  showSearch: false,
-  showAccount: true,
-  showCart: true,
-  showIndicatorDot: true,
-  expandedMenuEnabled: true,
-  checkoutButtonText: 'Checkout',
-  backgroundColor: '#171717', // Dark neutral-900
-  borderColor: '#262626',
-  textColor: '#ffffff',
-  textHoverColor: '#22c55e', // Green-400 hover
-  accentColor: '#22c55e', // Green-500 indicator dot
-  cartBadgeColor: '#ffffff',
-  cartBadgeTextColor: '#000000',
-  sticky: true,
-  maxWidth: '7xl',
-};
-
 // Default values for HeaderGullwing
 const GULLWING_DEFAULTS: HeaderData = {
   showSearch: true,
@@ -1070,6 +1051,9 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
   );
 };
 
+// Orbit header removed - not functioning properly
+// Will be rebuilt in future iteration
+
 // 9. HeaderGullwing - "Centered Logo" (Symmetrical split navigation with centered logo)
 export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, data }) => {
   const merged = { ...GULLWING_DEFAULTS, ...data };
@@ -1268,12 +1252,6 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
-  orbit: [
-    'showAccount', 'showCart', 'showIndicatorDot', 'expandedMenuEnabled',
-    'checkoutButtonText', 'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
-    'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
-  ],
   gullwing: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
@@ -1281,7 +1259,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'sticky', 'maxWidth'
   ],
   // Placeholders for remaining headers
-  protocol: [], horizon: [], studio: [], terminal: [], 
+  orbit: [], protocol: [], horizon: [], studio: [], terminal: [], 
   portfolio: [], metro: [], modul: [], stark: [], 
   offset: [], ticker: [], noir: [], ghost: [],
 };
