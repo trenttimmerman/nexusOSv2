@@ -732,18 +732,82 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
   );
 };
 
+// Default values for HeaderPop
+const POP_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: false,
+  showCart: true,
+  backgroundColor: '#F3F4F6', // Light gray background
+  borderColor: '#000000',
+  textColor: '#000000',
+  textHoverColor: '#ffffff',
+  accentColor: '#23A094', // Teal hover
+  cartBadgeColor: '#FFC900', // Yellow cart button
+  cartBadgeTextColor: '#000000',
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// 6. HeaderPop - "Playful Modern" (Fun, friendly, colorful with shadows)
+export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, data }) => {
+  const merged = { ...POP_DEFAULTS, ...data };
+  
+  return (
+    <header className={`w-full p-4 ${merged.sticky ? 'sticky top-0' : ''} z-50`} style={{ backgroundColor: merged.backgroundColor }}>
+      <div className="bg-white border-2 rounded-xl min-h-[4rem] py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center px-4 justify-between" style={{ borderColor: merged.borderColor }}>
+        <div className="bg-[#FF90E8] border-2 px-4 py-1 rounded-full font-black text-sm uppercase transform -rotate-2" style={{ borderColor: merged.borderColor }}>
+          <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} />
+        </div>
+
+        <nav className="hidden md:flex gap-2">
+          {(links || []).map(l => (
+            <NavItem 
+              key={l.label} 
+              link={l} 
+              onClick={onLinkClick} 
+              className="px-4 py-1.5 rounded-lg border-2 border-transparent hover:border-black font-bold text-sm transition-all" 
+              style={{ color: merged.textColor }}
+              hoverColor={merged.textHoverColor}
+            />
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          {merged.showSearch && (
+            <button className="w-10 h-10 rounded-full border-2 flex items-center justify-center hover:bg-neutral-100 transition-colors" style={{ borderColor: merged.borderColor, color: merged.textColor }}>
+              <Search size={18} />
+            </button>
+          )}
+          {merged.showCart && (
+            <button 
+              onClick={onOpenCart} 
+              className="px-4 py-1.5 rounded-full border-2 font-bold text-sm flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:shadow-none transition-all" 
+              style={{ 
+                backgroundColor: merged.cartBadgeColor, 
+                borderColor: merged.borderColor,
+                color: merged.cartBadgeTextColor 
+              }}
+            >
+              <ShoppingBag size={16} /> Cart ({cartCount})
+            </button>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
 // Other headers still use placeholder - restore from HeaderLibrary.archive.tsx as needed
 export const HeaderOrbit = PlaceholderHeader;
+export const HeaderVenture = PlaceholderHeader;
 export const HeaderProtocol = PlaceholderHeader;
 export const HeaderHorizon = PlaceholderHeader;
 export const HeaderStudio = PlaceholderHeader;
 export const HeaderTerminal = PlaceholderHeader;
 export const HeaderPortfolio = PlaceholderHeader;
-export const HeaderVenture = PlaceholderHeader;
 export const HeaderMetro = PlaceholderHeader;
 export const HeaderModul = PlaceholderHeader;
 export const HeaderGullwing = PlaceholderHeader;
-export const HeaderPop = PlaceholderHeader;
 export const HeaderStark = PlaceholderHeader;
 export const HeaderOffset = PlaceholderHeader;
 export const HeaderTicker = PlaceholderHeader;
