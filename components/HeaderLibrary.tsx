@@ -219,7 +219,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
 // Default values for HeaderNebula
 const NEBULA_DEFAULTS: HeaderData = {
   showSearch: true,
-  showAccount: false, // Nebula doesn't show account by default
+  showAccount: true,
   showCart: true,
   backgroundColor: 'rgba(255, 255, 255, 0.6)', // Glass effect
   borderColor: 'rgba(255, 255, 255, 0.2)',
@@ -301,6 +301,16 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
               onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
             >
               <Search size={18} />
+            </button>
+          )}
+          {settings.showAccount && (
+            <button
+              className="cursor-pointer transition-colors"
+              style={{ color: settings.textColor }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+            >
+              <User size={18} />
             </button>
           )}
           {settings.showCart && (
@@ -468,6 +478,8 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
 
 // Default values for HeaderPilot
 const PILOT_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
   showCart: true,
   showCTA: true,
   showLogoBadge: true, // Hexagon icon next to logo
@@ -539,8 +551,28 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
             ))}
           </nav>
 
-          {/* Right: Cart + CTA */}
+          {/* Right: Search + Account + Cart + CTA */}
           <div className="hidden md:flex items-center gap-4">
+            {settings.showSearch && (
+              <button
+                className="cursor-pointer transition-colors"
+                style={{ color: settings.textColor }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+              >
+                <Search size={20} />
+              </button>
+            )}
+            {settings.showAccount && (
+              <button
+                className="cursor-pointer transition-colors"
+                style={{ color: settings.textColor }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+              >
+                <User size={20} />
+              </button>
+            )}
             {settings.showCart && (
               <button 
                 onClick={onOpenCart} 
@@ -635,7 +667,7 @@ const PlaceholderHeader: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
 
 // Default values for HeaderBunker
 const BUNKER_DEFAULTS: HeaderData = {
-  showSearch: false,
+  showSearch: true,
   showAccount: true,
   showCart: true,
   backgroundColor: '#facc15', // yellow-400
@@ -674,6 +706,7 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
           </div>
         </nav>
         <div className="px-6 py-2 flex items-center justify-center gap-6 bg-white">
+          {merged.showSearch && <Search size={24} className="stroke-[3]" style={{ color: merged.textColor }} />}
           {merged.showAccount && <User size={24} className="stroke-[3]" style={{ color: merged.textColor }} />}
           {merged.showCart && (
             <div onClick={onOpenCart} className="relative cursor-pointer">
