@@ -633,8 +633,65 @@ const PlaceholderHeader: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
   </header>
 );
 
+// Default values for HeaderBunker
+const BUNKER_DEFAULTS: HeaderData = {
+  showSearch: false,
+  showAccount: true,
+  showCart: true,
+  backgroundColor: '#facc15', // yellow-400
+  borderColor: '#000000',
+  textColor: '#000000',
+  textHoverColor: '#facc15',
+  cartBadgeColor: '#000000',
+  cartBadgeTextColor: '#facc15',
+  sticky: true,
+  maxWidth: 'full',
+  paddingX: '24px',
+  paddingY: '8px',
+};
+
+// 5. Bunker (Bold Contrast, Black & White Brutalist)
+export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, data }) => {
+  const merged = { ...BUNKER_DEFAULTS, ...data };
+  
+  return (
+    <header className={`w-full border-b-4 ${merged.sticky ? 'sticky top-0' : ''} z-50 font-mono`} style={{ backgroundColor: merged.backgroundColor, borderColor: merged.borderColor }}>
+      <div className="w-full bg-black text-yellow-400 text-xs py-1 px-2 overflow-hidden whitespace-nowrap">
+        <div className="animate-marquee inline-block">
+          FREE SHIPPING WORLDWIDE — 0% TRANSACTION FEES — NEXUS COMMERCE OS — BUILD THE FUTURE — 
+          FREE SHIPPING WORLDWIDE — 0% TRANSACTION FEES — NEXUS COMMERCE OS — BUILD THE FUTURE —
+        </div>
+      </div>
+      <div className="grid grid-cols-[auto_1fr_auto] min-h-[4rem] divide-x-4 divide-black">
+        <div className="px-6 py-2 flex items-center bg-white">
+          <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-black uppercase italic transform -skew-x-12" />
+        </div>
+        <nav className="hidden md:flex items-stretch justify-center" style={{ backgroundColor: merged.backgroundColor }}>
+          <div className="flex w-full h-full divide-x-4 divide-black border-l-0">
+            {(links || []).map(l => (
+              <NavItem key={l.label} link={l} onClick={onLinkClick} className="flex-1 flex items-center justify-center text-sm font-bold uppercase hover:bg-black transition-colors px-4 py-2" style={{ color: merged.textColor }} />
+            ))}
+          </div>
+        </nav>
+        <div className="px-6 py-2 flex items-center justify-center gap-6 bg-white">
+          {merged.showAccount && <User size={24} className="stroke-[3]" style={{ color: merged.textColor }} />}
+          {merged.showCart && (
+            <div onClick={onOpenCart} className="relative cursor-pointer">
+              <ShoppingBag size={24} className="stroke-[3]" style={{ color: merged.textColor }} />
+              <span className="absolute -top-2 -right-2 text-xs font-bold px-1 border-2" style={{ 
+                backgroundColor: merged.cartBadgeColor, 
+                color: merged.cartBadgeTextColor,
+                borderColor: merged.cartBadgeColor 
+              }}>{cartCount}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
 // Other headers still use placeholder - restore from HeaderLibrary.archive.tsx as needed
-export const HeaderBunker = PlaceholderHeader;
 export const HeaderOrbit = PlaceholderHeader;
 export const HeaderProtocol = PlaceholderHeader;
 export const HeaderHorizon = PlaceholderHeader;
