@@ -2281,6 +2281,78 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
                   </div>
 
+                  {/* Canvas-specific Controls */}
+                  {(config.headerStyle === 'canvas') && (
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Search Styling</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
+                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
+                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#3b82f6' },
+                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
+                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
+                        ].map(({ key, label, defaultValue }) => (
+                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={config.headerData?.[key] ?? defaultValue}
+                              onChange={(e) => onConfigChange({
+                                ...config,
+                                headerData: { ...config.headerData, [key]: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-xs text-neutral-300">{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pop-specific Controls */}
+                  {(config.headerStyle === 'pop') && (
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Accent Color</p>
+                      <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <input
+                          type="color"
+                          value={config.headerData?.accentColor ?? '#23A094'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, accentColor: e.target.value }
+                          })}
+                          className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                        />
+                        <span className="text-sm text-neutral-300">Accent Color (Teal)</span>
+                      </div>
+                      
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Search Styling</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
+                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
+                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#23A094' },
+                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
+                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
+                        ].map(({ key, label, defaultValue }) => (
+                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={config.headerData?.[key] ?? defaultValue}
+                              onChange={(e) => onConfigChange({
+                                ...config,
+                                headerData: { ...config.headerData, [key]: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-xs text-neutral-300">{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Button/CTA Controls - only show for headers with CTA */}
                   {(config.headerStyle === 'pilot') && (
                     <div className="space-y-3 mb-6">
@@ -2354,6 +2426,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <span className="text-sm">Badge</span>
                         </button>
                       </div>
+                      
+                      {/* Search Colors */}
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Search Styling</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
+                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
+                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#4f46e5' },
+                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
+                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
+                        ].map(({ key, label, defaultValue }) => (
+                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={config.headerData?.[key] ?? defaultValue}
+                              onChange={(e) => onConfigChange({
+                                ...config,
+                                headerData: { ...config.headerData, [key]: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-xs text-neutral-300">{label}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 
@@ -2421,6 +2518,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <span className="text-sm">Tagline</span>
                         </button>
                       </div>
+                      
+                      {/* Search Colors */}
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Search Styling</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
+                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
+                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#d4af37' },
+                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
+                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
+                        ].map(({ key, label, defaultValue }) => (
+                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={config.headerData?.[key] ?? defaultValue}
+                              onChange={(e) => onConfigChange({
+                                ...config,
+                                headerData: { ...config.headerData, [key]: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-xs text-neutral-300">{label}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 
@@ -2457,6 +2579,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       >
                         <span className="text-sm">{(config.headerData?.showIndicatorDot ?? true) ? 'Indicator Dot Visible' : 'Indicator Dot Hidden'}</span>
                       </button>
+                      
+                      {/* Search Colors */}
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Search Styling</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
+                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
+                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#3b82f6' },
+                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
+                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
+                        ].map(({ key, label, defaultValue }) => (
+                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={config.headerData?.[key] ?? defaultValue}
+                              onChange={(e) => onConfigChange({
+                                ...config,
+                                headerData: { ...config.headerData, [key]: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-xs text-neutral-300">{label}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 
@@ -2498,6 +2645,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
                             />
                             <span className="text-sm text-neutral-300">{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Search Colors */}
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Search Styling</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
+                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
+                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#000000' },
+                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
+                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
+                        ].map(({ key, label, defaultValue }) => (
+                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={config.headerData?.[key] ?? defaultValue}
+                              onChange={(e) => onConfigChange({
+                                ...config,
+                                headerData: { ...config.headerData, [key]: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-xs text-neutral-300">{label}</span>
                           </div>
                         ))}
                       </div>
@@ -2571,6 +2743,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <p className="text-xs text-neutral-400 uppercase tracking-wide">Centered Logo Design</p>
                       <div className="bg-neutral-900/50 p-3 rounded-lg border border-neutral-700">
                         <p className="text-xs text-neutral-400">Gullwing features a centered skewed logo container with symmetrical navigation split. Customize colors in the universal section above.</p>
+                      </div>
+                      
+                      {/* Search Colors */}
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Search Styling</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
+                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
+                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#3b82f6' },
+                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
+                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
+                        ].map(({ key, label, defaultValue }) => (
+                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={config.headerData?.[key] ?? defaultValue}
+                              onChange={(e) => onConfigChange({
+                                ...config,
+                                headerData: { ...config.headerData, [key]: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-xs text-neutral-300">{label}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
