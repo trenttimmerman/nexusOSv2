@@ -2437,6 +2437,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         {[
                           { key: 'tickerBackgroundColor', label: 'Ticker Background', defaultValue: '#000000' },
                           { key: 'tickerTextColor', label: 'Ticker Text', defaultValue: '#facc15' },
+                          { key: 'tickerBorderColor', label: 'Ticker Border', defaultValue: '#000000' },
                         ].map(({ key, label, defaultValue }) => (
                           <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
                             <input
