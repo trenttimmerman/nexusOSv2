@@ -50,6 +50,9 @@ export interface HeaderData {
   // Utility bar (for Horizon header)
   utilityBarBackgroundColor?: string;
   utilityBarTextColor?: string;
+  // Hover and effect controls
+  buttonHoverBackgroundColor?: string;
+  glowIntensity?: number; // 0-100 for opacity percentages
   // Layout
   sticky?: boolean;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
@@ -1722,6 +1725,8 @@ const AURA_DEFAULTS: HeaderData = {
   accentColor: '#8b5cf6',
   cartBadgeColor: '#8b5cf6',
   cartBadgeTextColor: '#ffffff',
+  buttonHoverBackgroundColor: '#ffffff',
+  glowIntensity: 40,
   sticky: true,
   maxWidth: 'full',
 };
@@ -1751,9 +1756,10 @@ export const HeaderAura: React.FC<HeaderProps> = ({
     >
       {/* Ambient glow effect */}
       <div 
-        className="absolute inset-0 opacity-20 blur-3xl pointer-events-none"
+        className="absolute inset-0 blur-3xl pointer-events-none"
         style={{
           background: `radial-gradient(circle at 50% 0%, ${settings.accentColor}, transparent 70%)`,
+          opacity: (settings.glowIntensity || 40) / 200, // Convert to 0-0.5 range
         }}
       />
       
@@ -1825,7 +1831,7 @@ export const HeaderAura: React.FC<HeaderProps> = ({
                         backgroundColor: settings.searchFocusBackgroundColor,
                         border: `2px solid ${settings.searchFocusBorderColor}`,
                         color: settings.searchInputTextColor,
-                        boxShadow: `0 0 20px ${settings.searchFocusBorderColor}40`,
+                        boxShadow: `0 0 20px ${settings.searchFocusBorderColor}${Math.round((settings.glowIntensity || 40) * 2.55).toString(16).padStart(2, '0')}`,
                       }}
                       onBlur={() => {
                         setTimeout(() => setSearchOpen(false), 150);
@@ -1841,8 +1847,14 @@ export const HeaderAura: React.FC<HeaderProps> = ({
                 ) : (
                   <button
                     onClick={() => setSearchOpen(true)}
-                    className="p-2.5 rounded-full hover:bg-white/5 transition-all group"
+                    className="p-2.5 rounded-full transition-all group"
                     style={{ color: settings.textColor }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = `${settings.buttonHoverBackgroundColor || '#ffffff'}0d`; // 5% opacity
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
                   >
                     <Search size={20} className="group-hover:scale-110 transition-transform" />
                   </button>
@@ -1852,8 +1864,14 @@ export const HeaderAura: React.FC<HeaderProps> = ({
             
             {settings.showAccount && (
               <button 
-                className="p-2.5 rounded-full hover:bg-white/5 transition-all group"
+                className="p-2.5 rounded-full transition-all group"
                 style={{ color: settings.textColor }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = `${settings.buttonHoverBackgroundColor || '#ffffff'}0d`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
               >
                 <User size={20} className="group-hover:scale-110 transition-transform" />
               </button>
@@ -1864,7 +1882,7 @@ export const HeaderAura: React.FC<HeaderProps> = ({
                 onClick={onOpenCart}
                 className="relative p-2.5 rounded-full transition-all group"
                 style={{ 
-                  backgroundColor: `${settings.accentColor}20`,
+                  backgroundColor: `${settings.accentColor}${Math.round((settings.glowIntensity || 40) / 2.5).toString(16).padStart(2, '0')}`, // Use glowIntensity for opacity
                   color: settings.accentColor,
                 }}
               >
@@ -1908,6 +1926,8 @@ const QUANTUM_DEFAULTS: HeaderData = {
   accentColor: '#06b6d4',
   cartBadgeColor: '#06b6d4',
   cartBadgeTextColor: '#ffffff',
+  buttonHoverBackgroundColor: '#06b6d4',
+  glowIntensity: 50,
   sticky: true,
   maxWidth: 'full',
 };
@@ -1937,9 +1957,10 @@ export const HeaderQuantum: React.FC<HeaderProps> = ({
     >
       {/* Geometric pattern overlay */}
       <div 
-        className="absolute top-0 left-0 right-0 h-1 opacity-50"
+        className="absolute top-0 left-0 right-0 h-1"
         style={{
           background: `linear-gradient(90deg, transparent, ${settings.accentColor}, transparent)`,
+          opacity: (settings.glowIntensity || 50) / 100,
         }}
       />
       
@@ -1954,7 +1975,7 @@ export const HeaderQuantum: React.FC<HeaderProps> = ({
               className="relative w-10 h-10 flex items-center justify-center"
               style={{ 
                 clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-                backgroundColor: `${settings.accentColor}15`,
+                backgroundColor: `${settings.accentColor}${Math.round((settings.glowIntensity || 50) / 6.67).toString(16).padStart(2, '0')}`, // glowIntensity/6.67 = 15% at default 50
                 border: `2px solid ${settings.accentColor}`,
               }}
             >
@@ -2065,8 +2086,12 @@ export const HeaderQuantum: React.FC<HeaderProps> = ({
                     }}
                   >
                     <span 
-                      className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-10 transition-opacity"
-                      style={{ backgroundImage: `linear-gradient(135deg, ${settings.accentColor}, transparent)` }}
+                      className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ 
+                        backgroundImage: `linear-gradient(135deg, ${settings.buttonHoverBackgroundColor || settings.accentColor}, transparent)`,
+                        opacity: `var(--hover-opacity, 0)`,
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.setProperty('--hover-opacity', String((settings.glowIntensity || 50) / 1000))}
                     />
                     <Search size={18} className="relative" />
                   </button>
@@ -2083,8 +2108,12 @@ export const HeaderQuantum: React.FC<HeaderProps> = ({
                 }}
               >
                 <span 
-                  className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-10 transition-opacity"
-                  style={{ backgroundImage: `linear-gradient(135deg, ${settings.accentColor}, transparent)` }}
+                  className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ 
+                    backgroundImage: `linear-gradient(135deg, ${settings.buttonHoverBackgroundColor || settings.accentColor}, transparent)`,
+                    opacity: `var(--hover-opacity, 0)`,
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.setProperty('--hover-opacity', String((settings.glowIntensity || 50) / 1000))}
                 />
                 <User size={18} className="relative" />
               </button>
@@ -2101,7 +2130,9 @@ export const HeaderQuantum: React.FC<HeaderProps> = ({
               >
                 <span 
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{ backgroundColor: `${settings.accentColor}10` }}
+                  style={{ 
+                    backgroundColor: `${settings.buttonHoverBackgroundColor || settings.accentColor}${Math.round((settings.glowIntensity || 50) / 10).toString(16).padStart(2, '0')}`,
+                  }}
                 />
                 <ShoppingBag size={18} className="relative" />
                 {cartCount > 0 && (
@@ -2272,7 +2303,8 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
     'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
-    'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'accentColor', 'buttonHoverBackgroundColor', 'glowIntensity',
+    'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
   quantum: [
@@ -2280,7 +2312,8 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
     'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
-    'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'accentColor', 'buttonHoverBackgroundColor', 'glowIntensity',
+    'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
   // Placeholders for remaining headers
