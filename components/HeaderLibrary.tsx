@@ -1562,7 +1562,7 @@ const STUDIO_DEFAULTS: HeaderData = {
   maxWidth: 'full',
 };
 
-// 11. HeaderStudio - "Sidebar Navigation" (Fixed left panel for desktop)
+// 11. HeaderStudio - "Sidebar Navigation" (Fixed left panel for desktop, top bar for mobile)
 export const HeaderStudio: React.FC<HeaderProps> = ({
   storeName,
   logoUrl,
@@ -1575,85 +1575,168 @@ export const HeaderStudio: React.FC<HeaderProps> = ({
   data = {},
 }) => {
   const settings = { ...STUDIO_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
 
   return (
-    <header 
-      className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 flex-col p-8 z-50"
-      style={{ 
-        backgroundColor: settings.backgroundColor,
-        borderRight: `1px solid ${settings.borderColor}`,
-      }}
-    >
-      <div className="mb-12">
+    <>
+      {/* Mobile Header - Top Bar */}
+      <header 
+        className="md:hidden fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-4 z-50"
+        style={{ 
+          backgroundColor: settings.backgroundColor,
+          borderBottom: `1px solid ${settings.borderColor}`,
+        }}
+      >
         <Logo 
           storeName={storeName} 
           logoUrl={logoUrl} 
-          logoHeight={logoHeight || 48} 
-          className="text-2xl font-black tracking-tighter uppercase leading-none" 
+          logoHeight={logoHeight || 32} 
+          className="text-xl font-black tracking-tighter uppercase" 
           onClick={onLogoClick}
         />
-      </div>
-      
-      <nav className="flex flex-col gap-6 flex-1">
-        {(links || []).map(l => (
-          <NavItem
-            key={l.href}
-            link={l}
-            onClick={onLinkClick}
-            className="text-lg font-medium hover:pl-2 transition-all duration-300"
-            style={{ color: settings.textColor }}
-            hoverColor={settings.textHoverColor}
-          />
-        ))}
-      </nav>
-
-      <div className="mt-auto space-y-6">
-        {settings.showSearch && (
-          <div className="relative w-full">
-            <input 
-              type="text" 
-              placeholder={settings.searchPlaceholder}
-              className="w-full border px-3 py-2 text-sm rounded-md focus:outline-none"
-              style={{ 
-                backgroundColor: settings.searchBackgroundColor,
-                borderColor: settings.borderColor,
-                color: settings.searchInputTextColor,
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = settings.searchFocusBorderColor || settings.borderColor;
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = settings.borderColor;
-              }}
-            />
-            <Search 
-              size={14} 
-              className="absolute right-3 top-3"
-              style={{ color: settings.searchPlaceholderColor }}
-            />
-          </div>
-        )}
         
-        {settings.showCart && (
-          <div 
-            className="flex justify-between items-center pt-6"
-            style={{ borderTop: `1px solid ${settings.borderColor}` }}
-          >
-            <div className="flex flex-col">
-              <span className="text-xs" style={{ color: settings.textColor }}>Your Bag</span>
-              <span className="font-bold text-lg">${(cartCount * 45).toFixed(2)}</span>
-            </div>
-            <button 
-              onClick={onOpenCart} 
-              className="w-10 h-10 flex items-center justify-center rounded-full cursor-pointer hover:opacity-80 transition-opacity"
-              style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}
+        <div className="flex items-center gap-3">
+          {settings.showSearch && (
+            <button
+              onClick={() => setSearchOpen(!searchOpen)}
+              className="p-2 hover:opacity-70 transition-opacity"
+              style={{ color: settings.textColor }}
             >
-              {cartCount}
+              <Search size={20} />
             </button>
+          )}
+          {settings.showAccount && (
+            <button 
+              className="p-2 hover:opacity-70 transition-opacity"
+              style={{ color: settings.textColor }}
+            >
+              <User size={20} />
+            </button>
+          )}
+          {settings.showCart && (
+            <button 
+              onClick={onOpenCart}
+              className="relative p-2 hover:opacity-70 transition-opacity"
+              style={{ color: settings.textColor }}
+            >
+              <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <span 
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold"
+                  style={{ 
+                    backgroundColor: settings.cartBadgeColor,
+                    color: settings.cartBadgeTextColor,
+                  }}
+                >
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* Desktop Sidebar */}
+      <aside 
+        className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 flex-col p-6 z-50"
+        style={{ 
+          backgroundColor: settings.backgroundColor,
+          borderRight: `1px solid ${settings.borderColor}`,
+        }}
+      >
+        {/* Logo */}
+        <div className="mb-8 pb-6" style={{ borderBottom: `1px solid ${settings.borderColor}` }}>
+          <Logo 
+            storeName={storeName} 
+            logoUrl={logoUrl} 
+            logoHeight={logoHeight || 40} 
+            className="text-xl font-black tracking-tighter uppercase" 
+            onClick={onLogoClick}
+          />
+        </div>
+        
+        {/* Navigation */}
+        <nav className="flex flex-col gap-1 flex-1">
+          {(links || []).map(l => (
+            <a
+              key={l.href}
+              href={l.href}
+              onClick={(e) => {
+                e.preventDefault();
+                onLinkClick?.(l.href);
+              }}
+              className="px-4 py-2.5 rounded-lg text-sm font-medium transition-all hover:pl-6"
+              style={{ 
+                color: l.active ? settings.accentColor : settings.textColor,
+                backgroundColor: l.active ? `${settings.accentColor}10` : 'transparent',
+              }}
+            >
+              {l.label}
+            </a>
+          ))}
+        </nav>
+
+        {/* Bottom Section */}
+        <div className="mt-auto space-y-4 pt-6" style={{ borderTop: `1px solid ${settings.borderColor}` }}>
+          {settings.showSearch && (
+            <div className="relative">
+              <input 
+                type="text" 
+                placeholder={settings.searchPlaceholder}
+                className="w-full px-4 py-2 text-sm rounded-lg focus:outline-none transition-colors"
+                style={{ 
+                  backgroundColor: settings.searchBackgroundColor,
+                  borderColor: settings.borderColor,
+                  color: settings.searchInputTextColor,
+                  border: `1px solid ${settings.borderColor}`,
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = settings.searchFocusBorderColor || settings.accentColor;
+                  e.currentTarget.style.backgroundColor = settings.searchFocusBackgroundColor || '#ffffff';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = settings.borderColor;
+                  e.currentTarget.style.backgroundColor = settings.searchBackgroundColor;
+                }}
+              />
+              <Search 
+                size={16} 
+                className="absolute right-3 top-2.5 pointer-events-none"
+                style={{ color: settings.searchPlaceholderColor }}
+              />
+            </div>
+          )}
+          
+          <div className="flex items-center justify-between gap-3">
+            {settings.showAccount && (
+              <button 
+                className="p-2 hover:opacity-70 transition-opacity rounded-lg"
+                style={{ color: settings.textColor }}
+              >
+                <User size={20} />
+              </button>
+            )}
+            
+            {settings.showCart && (
+              <button 
+                onClick={onOpenCart}
+                className="flex-1 flex items-center justify-between px-4 py-3 rounded-lg hover:opacity-90 transition-opacity"
+                style={{ 
+                  backgroundColor: settings.cartBadgeColor,
+                  color: settings.cartBadgeTextColor,
+                }}
+              >
+                <span className="text-sm font-bold">Cart</span>
+                <span className="flex items-center gap-2">
+                  <ShoppingBag size={16} />
+                  <span className="text-sm font-bold">{cartCount}</span>
+                </span>
+              </button>
+            )}
           </div>
-        )}
-      </div>
-    </header>
+        </div>
+      </aside>
+    </>
   );
 };
 
