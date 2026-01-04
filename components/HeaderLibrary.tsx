@@ -1769,7 +1769,12 @@ export const HeaderAura: React.FC<HeaderProps> = ({
               style={{ backgroundColor: settings.accentColor }}
             />
             {logoUrl ? (
-              <img src={logoUrl} alt={storeName} height={logoHeight || 36} className="relative" />
+              <img 
+                src={logoUrl} 
+                alt={storeName} 
+                style={{ height: `${logoHeight || 36}px` }}
+                className="relative h-auto"
+              />
             ) : (
               <span 
                 className="text-2xl font-bold tracking-tight relative bg-gradient-to-r bg-clip-text text-transparent"
@@ -1960,7 +1965,12 @@ export const HeaderQuantum: React.FC<HeaderProps> = ({
               />
             </div>
             {logoUrl ? (
-              <img src={logoUrl} alt={storeName} height={logoHeight || 32} />
+              <img 
+                src={logoUrl} 
+                alt={storeName} 
+                style={{ height: `${logoHeight || 32}px` }}
+                className="h-auto"
+              />
             ) : (
               <span 
                 className="text-xl font-black tracking-tighter uppercase"
