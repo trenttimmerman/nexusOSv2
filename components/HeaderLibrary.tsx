@@ -1326,11 +1326,448 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
   );
 };
 
+// Default values for HeaderProtocol
+const PROTOCOL_DEFAULTS: HeaderData = {
+  showSearch: false,
+  showAccount: false,
+  showCart: true,
+  searchPlaceholder: "Search products...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#000000',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
+  backgroundColor: '#facc15', // Yellow-400
+  borderColor: '#000000',
+  textColor: '#000000',
+  textHoverColor: '#000000',
+  cartBadgeColor: '#000000',
+  cartBadgeTextColor: '#ffffff',
+  sticky: true,
+  maxWidth: '7xl',
+};
+
+// 9. HeaderProtocol - "Cyberpunk/Tech" (Yellow/black, status badge, bold)
+export const HeaderProtocol: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...PROTOCOL_DEFAULTS, ...data };
+  const maxWidthClass = settings.maxWidth === 'full' ? 'max-w-full' : `max-w-${settings.maxWidth}`;
+
+  return (
+    <header 
+      className={`${settings.sticky ? 'sticky top-0' : ''} z-50 font-mono`}
+      style={{ 
+        backgroundColor: settings.backgroundColor,
+        borderBottom: `4px solid ${settings.borderColor}`,
+      }}
+    >
+      <div className={`${maxWidthClass} mx-auto px-4 h-16 flex items-center justify-between`}>
+        <div className="flex items-center gap-8">
+          <Logo 
+            storeName={storeName} 
+            logoUrl={logoUrl} 
+            logoHeight={logoHeight} 
+            className="text-2xl font-black uppercase tracking-tighter" 
+            onClick={onLogoClick}
+          />
+          <nav className="hidden md:flex gap-6">
+            {(links || []).map(l => (
+              <NavItem
+                key={l.href}
+                link={l}
+                onClick={onLinkClick}
+                className="text-sm font-bold uppercase hover:underline decoration-2 underline-offset-4 transition-all"
+                style={{ color: settings.textColor }}
+                hoverColor={settings.textHoverColor}
+              />
+            ))}
+          </nav>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <div 
+            className="hidden md:block px-2 py-1 text-xs font-bold"
+            style={{ backgroundColor: settings.borderColor, color: settings.backgroundColor }}
+          >
+            SYS.ONLINE
+          </div>
+          {settings.showCart && (
+            <button 
+              onClick={onOpenCart} 
+              className="relative cursor-pointer border-2 p-1 hover:bg-black hover:text-yellow-400 transition-colors"
+              style={{ borderColor: settings.borderColor, color: settings.textColor }}
+            >
+              <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <span 
+                  className="absolute -top-2 -right-2 text-[10px] font-bold w-5 h-5 flex items-center justify-center"
+                  style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}
+                >
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// Default values for HeaderHorizon
+const HORIZON_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  searchPlaceholder: "Search products...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#3b82f6',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
+  backgroundColor: '#ffffff',
+  borderColor: '#e5e7eb',
+  textColor: '#000000',
+  textHoverColor: '#6b7280',
+  cartBadgeColor: '#000000',
+  cartBadgeTextColor: '#ffffff',
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// 10. HeaderHorizon - "Double Row Editorial" (Utility bar + main nav)
+export const HeaderHorizon: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...HORIZON_DEFAULTS, ...data };
+
+  return (
+    <header className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50`}>
+      {/* Utility Bar */}
+      <div className="bg-neutral-900 text-white py-2 px-6 flex justify-between items-center text-xs font-medium tracking-wide">
+        <div className="flex gap-4">
+          <span>Currency: USD</span>
+          <span>Language: EN</span>
+        </div>
+        <span>Free Express Shipping on Orders Over $100</span>
+        <div className="flex gap-4">
+          <a href="#" className="hover:underline">Support</a>
+          {settings.showAccount && <a href="#" className="hover:underline">Sign In</a>}
+        </div>
+      </div>
+      
+      {/* Main Navigation */}
+      <div 
+        className="py-6 px-8 flex items-center justify-between"
+        style={{ 
+          backgroundColor: settings.backgroundColor,
+          borderBottom: `1px solid ${settings.borderColor}`,
+        }}
+      >
+        <Menu size={24} className="md:hidden" style={{ color: settings.textColor }} />
+        
+        {/* Left Nav */}
+        <nav className="hidden md:flex gap-8">
+          {(links || []).slice(0, 2).map(l => (
+            <NavItem
+              key={l.href}
+              link={l}
+              onClick={onLinkClick}
+              className="text-sm font-bold uppercase tracking-wider hover:underline underline-offset-4 transition-all"
+              style={{ color: settings.textColor }}
+              hoverColor={settings.textHoverColor}
+            />
+          ))}
+        </nav>
+        
+        {/* Centered Logo */}
+        <div className="absolute left-1/2 transform -translate-x-1/2">
+          <Logo 
+            storeName={storeName} 
+            logoUrl={logoUrl} 
+            logoHeight={logoHeight} 
+            className="text-3xl font-serif italic" 
+            onClick={onLogoClick}
+          />
+        </div>
+
+        {/* Right Nav */}
+        <nav className="hidden md:flex gap-8">
+          {(links || []).slice(2).map(l => (
+            <NavItem
+              key={l.href}
+              link={l}
+              onClick={onLinkClick}
+              className="text-sm font-bold uppercase tracking-wider hover:underline underline-offset-4 transition-all"
+              style={{ color: settings.textColor }}
+              hoverColor={settings.textHoverColor}
+            />
+          ))}
+        </nav>
+        
+        {/* Icons */}
+        <div className="flex items-center gap-4">
+          {settings.showSearch && <Search size={20} style={{ color: settings.textColor }} />}
+          {settings.showCart && (
+            <button 
+              onClick={onOpenCart} 
+              className="flex items-center gap-1 font-bold text-sm cursor-pointer hover:text-neutral-600 transition-colors"
+              style={{ color: settings.textColor }}
+            >
+              <ShoppingBag size={20} />
+              <span>({cartCount})</span>
+            </button>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// Default values for HeaderStudio
+const STUDIO_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: false,
+  showCart: true,
+  searchPlaceholder: "Search...",
+  searchBackgroundColor: '#ffffff',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#000000',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
+  backgroundColor: '#fafafa',
+  borderColor: '#e5e7eb',
+  textColor: '#737373',
+  textHoverColor: '#000000',
+  cartBadgeColor: '#000000',
+  cartBadgeTextColor: '#ffffff',
+  sticky: false,
+  maxWidth: 'full',
+};
+
+// 11. HeaderStudio - "Sidebar Navigation" (Fixed left panel for desktop)
+export const HeaderStudio: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...STUDIO_DEFAULTS, ...data };
+
+  return (
+    <header 
+      className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 flex-col p-8 z-50"
+      style={{ 
+        backgroundColor: settings.backgroundColor,
+        borderRight: `1px solid ${settings.borderColor}`,
+      }}
+    >
+      <div className="mb-12">
+        <Logo 
+          storeName={storeName} 
+          logoUrl={logoUrl} 
+          logoHeight={logoHeight || 48} 
+          className="text-2xl font-black tracking-tighter uppercase leading-none" 
+          onClick={onLogoClick}
+        />
+      </div>
+      
+      <nav className="flex flex-col gap-6 flex-1">
+        {(links || []).map(l => (
+          <NavItem
+            key={l.href}
+            link={l}
+            onClick={onLinkClick}
+            className="text-lg font-medium hover:pl-2 transition-all duration-300"
+            style={{ color: settings.textColor }}
+            hoverColor={settings.textHoverColor}
+          />
+        ))}
+      </nav>
+
+      <div className="mt-auto space-y-6">
+        {settings.showSearch && (
+          <div className="relative w-full">
+            <input 
+              type="text" 
+              placeholder={settings.searchPlaceholder}
+              className="w-full border px-3 py-2 text-sm rounded-md focus:outline-none"
+              style={{ 
+                backgroundColor: settings.searchBackgroundColor,
+                borderColor: settings.borderColor,
+                color: settings.searchInputTextColor,
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = settings.searchFocusBorderColor || settings.borderColor;
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = settings.borderColor;
+              }}
+            />
+            <Search 
+              size={14} 
+              className="absolute right-3 top-3"
+              style={{ color: settings.searchPlaceholderColor }}
+            />
+          </div>
+        )}
+        
+        {settings.showCart && (
+          <div 
+            className="flex justify-between items-center pt-6"
+            style={{ borderTop: `1px solid ${settings.borderColor}` }}
+          >
+            <div className="flex flex-col">
+              <span className="text-xs" style={{ color: settings.textColor }}>Your Bag</span>
+              <span className="font-bold text-lg">${(cartCount * 45).toFixed(2)}</span>
+            </div>
+            <button 
+              onClick={onOpenCart} 
+              className="w-10 h-10 flex items-center justify-center rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+              style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}
+            >
+              {cartCount}
+            </button>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+};
+
+// Default values for HeaderTerminal
+const TERMINAL_DEFAULTS: HeaderData = {
+  showSearch: false,
+  showAccount: false,
+  showCart: true,
+  searchPlaceholder: "Search products...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#3b82f6',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
+  backgroundColor: '#1e1e1e',
+  borderColor: '#3c3c3c',
+  textColor: '#d4d4d4',
+  textHoverColor: '#ffffff',
+  cartBadgeColor: '#569cd6',
+  cartBadgeTextColor: '#ffffff',
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// 12. HeaderTerminal - "Developer Theme" (VS Code command-line style)
+export const HeaderTerminal: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...TERMINAL_DEFAULTS, ...data };
+
+  return (
+    <header 
+      className={`w-full font-mono ${settings.sticky ? 'sticky top-0' : ''} z-50`}
+      style={{ 
+        backgroundColor: settings.backgroundColor,
+        color: settings.textColor,
+        borderBottom: `1px solid ${settings.borderColor}`,
+      }}
+    >
+      {/* Terminal Window Controls */}
+      <div 
+        className="flex items-center h-10 px-4 text-xs"
+        style={{ 
+          backgroundColor: '#252526',
+          borderBottom: `1px solid ${settings.backgroundColor}`,
+        }}
+      >
+        <div className="flex gap-2 mr-4">
+          <div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+          <div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+          <div className="w-3 h-3 rounded-full bg-[#27c93f]"></div>
+        </div>
+        <span className="opacity-50">root@nexus:~/storefront</span>
+      </div>
+      
+      {/* Main Header Content */}
+      <div className="p-4 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-[#569cd6]">const</span>
+          <span className="text-[#4fc1ff]">store</span>
+          <span style={{ color: settings.textColor }}>=</span>
+          {logoUrl ? (
+            <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} onClick={onLogoClick} />
+          ) : (
+            <span className="text-[#ce9178]">"{storeName}"</span>
+          )}
+          <span style={{ color: settings.textColor }}>;</span>
+        </div>
+
+        <nav className="flex gap-6 text-sm">
+          {(links || []).map(l => (
+            <NavItem
+              key={l.href}
+              link={l}
+              onClick={onLinkClick}
+              className="transition-colors flex gap-1"
+              style={{ color: settings.textColor }}
+              hoverColor={settings.textHoverColor}
+            >
+              <span className="text-[#c586c0]">import</span>
+              <span>{l.label}</span>
+            </NavItem>
+          ))}
+        </nav>
+
+        {settings.showCart && (
+          <button 
+            onClick={onOpenCart} 
+            className="flex items-center gap-3 text-sm cursor-pointer transition-colors"
+            style={{ color: settings.textColor }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+            onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+          >
+            <span className="text-[#6a9955]">// Cart: {cartCount} items</span>
+            <div 
+              className="w-2 h-4 animate-pulse"
+              style={{ backgroundColor: settings.textColor }}
+            ></div>
+          </button>
+        )}
+      </div>
+    </header>
+  );
+};
+
 // Other headers still use placeholder - restore from HeaderLibrary.archive.tsx as needed
-export const HeaderProtocol = PlaceholderHeader;
-export const HeaderHorizon = PlaceholderHeader;
-export const HeaderStudio = PlaceholderHeader;
-export const HeaderTerminal = PlaceholderHeader;
 export const HeaderPortfolio = PlaceholderHeader;
 export const HeaderMetro = PlaceholderHeader;
 export const HeaderModul = PlaceholderHeader;
@@ -1454,8 +1891,39 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
+  protocol: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  horizon: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  studio: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  terminal: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
   // Placeholders for remaining headers
-  orbit: [], protocol: [], horizon: [], studio: [], terminal: [], 
   portfolio: [], metro: [], modul: [], stark: [], 
   offset: [], ticker: [], noir: [], ghost: [],
 };
