@@ -2214,6 +2214,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         { key: 'borderColor', label: 'Border', defaultValue: '#f3f4f6' },
                         { key: 'textColor', label: 'Text', defaultValue: '#6b7280' },
                         { key: 'textHoverColor', label: 'Text Hover', defaultValue: '#000000' },
+                        { key: 'cartBadgeColor', label: 'Cart Badge', defaultValue: '#000000' },
+                        { key: 'cartBadgeTextColor', label: 'Badge Text', defaultValue: '#ffffff' },
                       ].map(({ key, label, defaultValue }) => (
                         <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
                           <input
@@ -2257,7 +2259,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           { key: 'ctaBackgroundColor', label: 'Button Color', defaultValue: '#4f46e5' },
                           { key: 'ctaHoverColor', label: 'Button Hover', defaultValue: '#4338ca' },
                           { key: 'ctaTextColor', label: 'Button Text', defaultValue: '#ffffff' },
-                          { key: 'cartBadgeColor', label: 'Badge Color', defaultValue: '#4f46e5' },
+                          { key: 'accentColor', label: 'Accent Color', defaultValue: '#4f46e5' },
                         ].map(({ key, label, defaultValue }) => (
                           <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
                             <input
@@ -2274,27 +2276,43 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         ))}
                       </div>
                       
-                      {/* Show/Hide CTA */}
-                      <button
-                        onClick={() => onConfigChange({
-                          ...config,
-                          headerData: { ...config.headerData, showCTA: !(config.headerData?.showCTA ?? true) }
-                        })}
-                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
-                          (config.headerData?.showCTA ?? true)
-                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        <span className="text-sm">{(config.headerData?.showCTA ?? true) ? 'Button Visible' : 'Button Hidden'}</span>
-                      </button>
+                      {/* Toggle Buttons */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, showCTA: !(config.headerData?.showCTA ?? true) }
+                          })}
+                          className={`flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
+                            (config.headerData?.showCTA ?? true)
+                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                          }`}
+                        >
+                          <span className="text-sm">Button</span>
+                        </button>
+                        <button
+                          onClick={() => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, showLogoBadge: !(config.headerData?.showLogoBadge ?? true) }
+                          })}
+                          className={`flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
+                            (config.headerData?.showLogoBadge ?? true)
+                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                          }`}
+                        >
+                          <Hexagon size={16} />
+                          <span className="text-sm">Badge</span>
+                        </button>
+                      </div>
                     </div>
                   )}
 
                   {/* Luxe-specific Controls */}
                   {(config.headerStyle === 'luxe') && (
                     <div className="space-y-3 mb-6">
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Tagline</p>
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Luxury Settings</p>
                       
                       {/* Tagline Text */}
                       <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
@@ -2325,20 +2343,36 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <span className="text-sm text-neutral-300">Accent Color (Gold)</span>
                       </div>
                       
-                      {/* Show/Hide Tagline */}
-                      <button
-                        onClick={() => onConfigChange({
-                          ...config,
-                          headerData: { ...config.headerData, showTagline: !(config.headerData?.showTagline ?? true) }
-                        })}
-                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
-                          (config.headerData?.showTagline ?? true)
-                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        <span className="text-sm">{(config.headerData?.showTagline ?? true) ? 'Tagline Visible' : 'Tagline Hidden'}</span>
-                      </button>
+                      {/* Toggle Buttons */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, showMenu: !(config.headerData?.showMenu ?? true) }
+                          })}
+                          className={`flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
+                            (config.headerData?.showMenu ?? true)
+                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                          }`}
+                        >
+                          <Menu size={16} />
+                          <span className="text-sm">Menu</span>
+                        </button>
+                        <button
+                          onClick={() => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, showTagline: !(config.headerData?.showTagline ?? true) }
+                          })}
+                          className={`flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
+                            (config.headerData?.showTagline ?? true)
+                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                          }`}
+                        >
+                          <span className="text-sm">Tagline</span>
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -2375,6 +2409,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       >
                         <span className="text-sm">{(config.headerData?.showIndicatorDot ?? true) ? 'Indicator Dot Visible' : 'Indicator Dot Hidden'}</span>
                       </button>
+                    </div>
+                  )}
+
+                  {/* Bunker-specific Controls */}
+                  {(config.headerStyle === 'bunker') && (
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Brutalist Style</p>
+                      
+                      {/* Note about Bunker style */}
+                      <div className="bg-neutral-900/50 p-3 rounded-lg border border-neutral-700">
+                        <p className="text-xs text-neutral-400">Bold, high-contrast design with heavy borders and monospace font. Customize colors above to match your brand.</p>
+                      </div>
                     </div>
                   )}
 
