@@ -15,6 +15,10 @@ export interface HeaderData {
   textHoverColor?: string;
   cartBadgeColor?: string;
   cartBadgeTextColor?: string;
+  // Ticker (for Bunker header)
+  tickerBackgroundColor?: string;
+  tickerTextColor?: string;
+  tickerText?: string;
   // Layout
   sticky?: boolean;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
@@ -676,6 +680,9 @@ const BUNKER_DEFAULTS: HeaderData = {
   textHoverColor: '#facc15',
   cartBadgeColor: '#000000',
   cartBadgeTextColor: '#facc15',
+  tickerBackgroundColor: '#000000',
+  tickerTextColor: '#facc15',
+  tickerText: 'FREE SHIPPING WORLDWIDE — 0% TRANSACTION FEES — NEXUS COMMERCE OS — BUILD THE FUTURE',
   sticky: true,
   maxWidth: 'full',
   paddingX: '24px',
@@ -688,10 +695,9 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
   
   return (
     <header className={`w-full border-b-4 ${merged.sticky ? 'sticky top-0' : ''} z-50 font-mono`} style={{ backgroundColor: merged.backgroundColor, borderColor: merged.borderColor }}>
-      <div className="w-full bg-black text-yellow-400 text-xs py-1 px-2 overflow-hidden whitespace-nowrap">
+      <div className="w-full text-xs py-1 px-2 overflow-hidden whitespace-nowrap" style={{ backgroundColor: merged.tickerBackgroundColor, color: merged.tickerTextColor }}>
         <div className="animate-marquee inline-block">
-          FREE SHIPPING WORLDWIDE — 0% TRANSACTION FEES — NEXUS COMMERCE OS — BUILD THE FUTURE — 
-          FREE SHIPPING WORLDWIDE — 0% TRANSACTION FEES — NEXUS COMMERCE OS — BUILD THE FUTURE —
+          {merged.tickerText} — {merged.tickerText} —
         </div>
       </div>
       <div className="grid grid-cols-[auto_1fr_auto] min-h-[4rem] divide-x-4 divide-black">
