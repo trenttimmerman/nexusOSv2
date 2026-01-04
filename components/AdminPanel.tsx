@@ -2540,6 +2540,30 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         />
                       </div>
                       
+                      {/* Search Box Colors */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: 'searchBackgroundColor', label: 'Search Background', defaultValue: '#f9fafb' },
+                          { key: 'searchFocusBackgroundColor', label: 'Search Focus BG', defaultValue: '#ffffff' },
+                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#3b82f6' },
+                          { key: 'searchInputTextColor', label: 'Input Text', defaultValue: '#111827' },
+                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
+                        ].map(({ key, label, defaultValue }) => (
+                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={config.headerData?.[key] ?? defaultValue}
+                              onChange={(e) => onConfigChange({
+                                ...config,
+                                headerData: { ...config.headerData, [key]: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-xs text-neutral-300">{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                      
                       {/* Keyboard Shortcut Toggle */}
                       <button
                         onClick={() => onConfigChange({

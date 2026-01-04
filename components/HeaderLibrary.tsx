@@ -23,6 +23,11 @@ export interface HeaderData {
   // Search features (for Venture header)
   showKeyboardShortcut?: boolean;
   searchPlaceholder?: string;
+  searchBackgroundColor?: string;
+  searchFocusBackgroundColor?: string;
+  searchFocusBorderColor?: string;
+  searchInputTextColor?: string;
+  searchPlaceholderColor?: string;
   // Expandable menu (for Orbit header)
   checkoutButtonText?: string;
   expandedMenuEnabled?: boolean;
@@ -761,6 +766,11 @@ const VENTURE_DEFAULTS: HeaderData = {
   showCart: true,
   showKeyboardShortcut: true,
   searchPlaceholder: "Search for 'Wireless Headphones' or 'Summer Collection'",
+  searchBackgroundColor: '#f9fafb', // neutral-50
+  searchFocusBackgroundColor: '#ffffff', // white
+  searchFocusBorderColor: '#3b82f6', // blue-500
+  searchInputTextColor: '#111827', // gray-900
+  searchPlaceholderColor: '#9ca3af', // gray-400
   backgroundColor: '#f5f5f5', // Light neutral background
   borderColor: '#e5e7eb',
   textColor: '#6b7280',
@@ -878,15 +888,33 @@ export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
           
           {/* Large Search Bar */}
           {merged.showSearch && (
-            <div className="flex-1 max-w-2xl bg-neutral-50 rounded-xl flex items-center px-4 py-2.5 gap-3 border border-transparent focus-within:border-blue-500 focus-within:bg-white transition-all">
-              <Search size={18} className="text-neutral-400" />
+            <div 
+              className="flex-1 max-w-2xl rounded-xl flex items-center px-4 py-2.5 gap-3 border transition-all"
+              style={{
+                backgroundColor: merged.searchBackgroundColor,
+                borderColor: 'transparent'
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.backgroundColor = merged.searchFocusBackgroundColor!;
+                e.currentTarget.style.borderColor = merged.searchFocusBorderColor!;
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.backgroundColor = merged.searchBackgroundColor!;
+                e.currentTarget.style.borderColor = 'transparent';
+              }}
+            >
+              <Search size={18} style={{ color: merged.searchPlaceholderColor }} />
               <input 
                 type="text" 
                 placeholder={merged.searchPlaceholder || "Search..."} 
-                className="bg-transparent w-full focus:outline-none text-sm" 
+                className="bg-transparent w-full focus:outline-none text-sm"
+                style={{ 
+                  color: merged.searchInputTextColor,
+                  caretColor: merged.searchInputTextColor
+                }}
               />
               {merged.showKeyboardShortcut && (
-                <div className="hidden md:flex items-center gap-1 text-xs text-neutral-400 border border-neutral-200 rounded px-1.5 py-0.5">
+                <div className="hidden md:flex items-center gap-1 text-xs border border-neutral-200 rounded px-1.5 py-0.5" style={{ color: merged.searchPlaceholderColor }}>
                   <Command size={10} />
                   <span>K</span>
                 </div>
@@ -1234,7 +1262,9 @@ export const HEADER_FIELDS: Record<string, string[]> = {
   ],
   venture: [
     'showSearch', 'showAccount', 'showCart', 'showKeyboardShortcut',
-    'searchPlaceholder', 'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor', 'searchFocusBorderColor',
+    'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
