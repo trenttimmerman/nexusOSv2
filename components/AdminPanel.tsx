@@ -2086,6 +2086,322 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </>
                 )}
 
+                {/* Newsletter Footer Controls */}
+                {config.footerStyle === 'newsletter' && (
+                  <>
+                    {/* Heading & Subheading */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Newsletter Content</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.heading || "Don't miss the drop."}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, heading: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none font-bold"
+                        placeholder="Newsletter heading..."
+                      />
+                      <textarea
+                        value={config.footerData?.subheading || 'Join 50,000+ subscribers getting exclusive access to new releases, secret sales, and design insights.'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, subheading: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none resize-none"
+                        rows={2}
+                        placeholder="Newsletter description..."
+                      />
+                    </div>
+
+                    {/* Form Controls */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Form</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={config.footerData?.placeholderText || 'Enter your email'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, placeholderText: e.target.value }
+                          })}
+                          className="bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                          placeholder="Placeholder..."
+                        />
+                        <input
+                          type="text"
+                          value={config.footerData?.buttonText || 'Subscribe'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, buttonText: e.target.value }
+                          })}
+                          className="bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                          placeholder="Button text..."
+                        />
+                      </div>
+                    </div>
+
+                    {/* Social Links */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Social Links</p>
+                      <div className="space-y-2">
+                        {[
+                          { key: 'showInstagram', labelKey: 'instagramLabel', linkKey: 'instagramLink', defaultLabel: 'Instagram', icon: Instagram },
+                          { key: 'showTwitter', labelKey: 'twitterLabel', linkKey: 'twitterLink', defaultLabel: 'Twitter', icon: Twitter },
+                          { key: 'showTiktok', labelKey: 'tiktokLabel', linkKey: 'tiktokLink', defaultLabel: 'TikTok', icon: User },
+                          { key: 'showYoutube', labelKey: 'youtubeLabel', linkKey: 'youtubeLink', defaultLabel: 'YouTube', icon: User },
+                        ].map(({ key, labelKey, linkKey, defaultLabel, icon: Icon }) => (
+                          <div key={key} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <div className="flex items-center gap-2 mb-1">
+                              <button
+                                onClick={() => onConfigChange({
+                                  ...config,
+                                  footerData: { ...config.footerData, [key]: !(config.footerData?.[key] ?? true) }
+                                })}
+                                className={`w-8 h-5 rounded-full transition-colors relative shrink-0 ${
+                                  (config.footerData?.[key] ?? true) ? 'bg-orange-500' : 'bg-neutral-700'
+                                }`}
+                              >
+                                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                                  (config.footerData?.[key] ?? true) ? 'left-3.5' : 'left-0.5'
+                                }`} />
+                              </button>
+                              <Icon size={14} className="text-neutral-500" />
+                              <input
+                                type="text"
+                                value={config.footerData?.[labelKey] ?? defaultLabel}
+                                onChange={(e) => onConfigChange({
+                                  ...config,
+                                  footerData: { ...config.footerData, [labelKey]: e.target.value }
+                                })}
+                                disabled={!(config.footerData?.[key] ?? true)}
+                                className={`flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs focus:border-orange-500 outline-none ${
+                                  (config.footerData?.[key] ?? true) ? 'text-white' : 'text-neutral-600'
+                                }`}
+                              />
+                            </div>
+                            {(config.footerData?.[key] ?? true) && (
+                              <div className="flex items-center gap-2 ml-10">
+                                <Link size={10} className="text-neutral-600" />
+                                <input
+                                  type="text"
+                                  value={config.footerData?.[linkKey] ?? ''}
+                                  onChange={(e) => onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, [linkKey]: e.target.value }
+                                  })}
+                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                  placeholder="https://instagram.com/yourhandle"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Copyright Text */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Copyright Text</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.copyrightText || `© 2024 ${config.name}.`}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, copyrightText: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                        placeholder="© 2024 Your Company..."
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Sitemap Footer Controls */}
+                {config.footerStyle === 'sitemap' && (
+                  <>
+                    {/* Region & Security Badge */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Header Section</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.regionText || 'Region: United States (USD $)'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, regionText: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                        placeholder="Region text..."
+                      />
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, showSecurityBadge: !(config.footerData?.showSecurityBadge ?? true) }
+                          })}
+                          className={`w-8 h-5 rounded-full transition-colors relative shrink-0 ${
+                            (config.footerData?.showSecurityBadge ?? true) ? 'bg-orange-500' : 'bg-neutral-700'
+                          }`}
+                        >
+                          <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                            (config.footerData?.showSecurityBadge ?? true) ? 'left-3.5' : 'left-0.5'
+                          }`} />
+                        </button>
+                        <input
+                          type="text"
+                          value={config.footerData?.securityBadgeText || 'Secure Checkout via Evolv Pass'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, securityBadgeText: e.target.value }
+                          })}
+                          disabled={!(config.footerData?.showSecurityBadge ?? true)}
+                          className={`flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm focus:border-orange-500 outline-none ${
+                            (config.footerData?.showSecurityBadge ?? true) ? 'text-white' : 'text-neutral-600'
+                          }`}
+                          placeholder="Security badge text..."
+                        />
+                      </div>
+                    </div>
+
+                    {/* Link Columns */}
+                    {[
+                      { key: 'col1', defaultTitle: 'Products', defaultLinks: [{ label: 'New Arrivals', link: '' }, { label: 'Best Sellers', link: '' }, { label: 'Trends', link: '' }, { label: 'Gift Cards', link: '' }, { label: 'Sale', link: '' }] },
+                      { key: 'col2', defaultTitle: 'Collections', defaultLinks: [{ label: 'Summer 2024', link: '' }, { label: 'Cyber Tech', link: '' }, { label: 'Minimalist', link: '' }, { label: 'Accessories', link: '' }, { label: 'Home', link: '' }] },
+                      { key: 'col3', defaultTitle: 'Support', defaultLinks: [{ label: 'Help Center', link: '' }, { label: 'Track Order', link: '' }, { label: 'Returns', link: '' }, { label: 'Shipping Info', link: '' }, { label: 'Contact Us', link: '' }] },
+                      { key: 'col4', defaultTitle: 'Legal', defaultLinks: [{ label: 'Terms', link: '' }, { label: 'Privacy', link: '' }, { label: 'Cookies', link: '' }, { label: 'Licenses', link: '' }] },
+                    ].map(({ key, defaultTitle, defaultLinks }) => {
+                      const titleKey = `${key}Title`;
+                      const linksKey = `${key}Links`;
+                      const links = config.footerData?.[linksKey] || defaultLinks;
+
+                      return (
+                        <div key={key} className="space-y-3 mb-6">
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs text-neutral-400 uppercase tracking-wide">{defaultTitle} Column</p>
+                          </div>
+                          
+                          {/* Column Title */}
+                          <input
+                            type="text"
+                            value={config.footerData?.[titleKey] || defaultTitle}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, [titleKey]: e.target.value }
+                            })}
+                            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none font-bold"
+                            placeholder="Column title..."
+                          />
+                          
+                          {/* Links */}
+                          <div className="space-y-2">
+                            {links.map((item: any, idx: number) => (
+                              <div key={idx} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <input
+                                    type="text"
+                                    value={item.label}
+                                    onChange={(e) => {
+                                      const newLinks = [...links];
+                                      newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                      onConfigChange({
+                                        ...config,
+                                        footerData: { ...config.footerData, [linksKey]: newLinks }
+                                      });
+                                    }}
+                                    className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-white focus:border-orange-500 outline-none"
+                                    placeholder="Link label..."
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const newLinks = links.filter((_: any, i: number) => i !== idx);
+                                      onConfigChange({
+                                        ...config,
+                                        footerData: { ...config.footerData, [linksKey]: newLinks }
+                                      });
+                                    }}
+                                    className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Link size={10} className="text-neutral-600" />
+                                  <select
+                                    value={item.link || ''}
+                                    onChange={(e) => {
+                                      const newLinks = [...links];
+                                      newLinks[idx] = { ...newLinks[idx], link: e.target.value };
+                                      onConfigChange({
+                                        ...config,
+                                        footerData: { ...config.footerData, [linksKey]: newLinks }
+                                      });
+                                    }}
+                                    className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                  >
+                                    <option value="">No link</option>
+                                    {localPages.map(page => (
+                                      <option key={page.id} value={page.slug || '/'}>
+                                        {page.title || page.slug}
+                                      </option>
+                                    ))}
+                                    <option value="external">Custom URL...</option>
+                                  </select>
+                                </div>
+                                {item.link === 'external' && (
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <ExternalLink size={10} className="text-neutral-600" />
+                                    <input
+                                      type="text"
+                                      value={item.externalUrl || ''}
+                                      onChange={(e) => {
+                                        const newLinks = [...links];
+                                        newLinks[idx] = { ...newLinks[idx], externalUrl: e.target.value };
+                                        onConfigChange({
+                                          ...config,
+                                          footerData: { ...config.footerData, [linksKey]: newLinks }
+                                        });
+                                      }}
+                                      className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                      placeholder="https://..."
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                            <button
+                              onClick={() => {
+                                const newLinks = [...links, { label: 'New Link', link: '' }];
+                                onConfigChange({
+                                  ...config,
+                                  footerData: { ...config.footerData, [linksKey]: newLinks }
+                                });
+                              }}
+                              className="w-full py-1.5 text-[10px] text-neutral-500 hover:text-orange-400 border border-dashed border-neutral-700 hover:border-orange-500 rounded transition-colors"
+                            >
+                              + Add Link
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Copyright Text */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Copyright Text</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.copyrightText || '© 2024 Evolv Commerce Operating System. Powered by React.'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, copyrightText: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                        placeholder="© 2024 Your Company..."
+                      />
+                    </div>
+                  </>
+                )}
+
                 {/* Reset to Defaults */}
                 <button
                   onClick={() => onConfigChange({ 

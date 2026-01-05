@@ -12,8 +12,11 @@ interface FooterProps {
   data?: Record<string, any>;
 }
 
+type FooterData = Record<string, any>;
+
 // 1. Minimal (Clean, barely there)
-export const FooterMinimal: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor, data = {} }) => {
+export const FooterMinimal: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor, data: dataRaw = {} }) => {
+  const data = dataRaw as FooterData;
   const showSearch = data.showSearch ?? false;
   const showAccount = data.showAccount ?? false;
   const showCart = data.showCart ?? false;
@@ -70,7 +73,8 @@ export const FooterMinimal: React.FC<FooterProps> = ({ storeName, backgroundColo
 };
 
 // 2. Columns (Standard E-commerce)
-export const FooterColumns: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor, data = {} }) => {
+export const FooterColumns: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor, data: dataRaw = {} }) => {
+  const data = dataRaw as FooterData;
   const tagline = data.tagline || 'Designed for the future of commerce. We build tools that empower creators to sell without limits.';
   const copyrightText = data.copyrightText || `© 2024 ${storeName} Inc. All rights reserved.`;
   const showPaymentBadges = data.showPaymentBadges ?? true;
@@ -180,120 +184,171 @@ export const FooterColumns: React.FC<FooterProps> = ({ storeName, backgroundColo
 };
 
 // 3. Newsletter (Conversion Focused)
-export const FooterNewsletter: React.FC<FooterProps> = ({ storeName, primaryColor, backgroundColor, textColor, accentColor }) => (
-  <footer className="py-24 px-6 transition-colors" style={{ backgroundColor: backgroundColor || '#000000' }}>
-    <div className="max-w-4xl mx-auto text-center">
-      <Mail size={48} className="mx-auto mb-6" style={{ color: textColor ? `${textColor}50` : '#404040' }} />
-      <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight" style={{ color: textColor || '#ffffff' }}>Don't miss the drop.</h2>
-      <p className="text-lg mb-10 max-w-lg mx-auto" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
-        Join 50,000+ subscribers getting exclusive access to new releases, secret sales, and design insights.
-      </p>
-      
-      <div className="flex flex-col md:flex-row gap-4 max-w-md mx-auto mb-16">
-        <input 
-          type="email" 
-          placeholder="Enter your email" 
-          className="flex-1 rounded-lg px-6 py-4 focus:outline-none transition-colors"
-          style={{ 
-            backgroundColor: textColor ? `${textColor}15` : 'rgba(255,255,255,0.1)',
-            borderWidth: '1px',
-            borderColor: textColor ? `${textColor}30` : 'rgba(255,255,255,0.2)',
-            color: textColor || '#ffffff'
-          }}
-        />
-        <button 
-          className="px-8 py-4 font-bold rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap"
-          style={{ 
-            backgroundColor: accentColor || primaryColor || '#ffffff', 
-            color: backgroundColor || '#000000'
-          }}
-        >
-          Subscribe
-        </button>
-      </div>
+export const FooterNewsletter: React.FC<FooterProps> = ({ storeName, primaryColor, backgroundColor, textColor, accentColor, data: dataRaw = {} }) => {
+  const data = dataRaw as FooterData;
+  const heading = data.heading || "Don't miss the drop.";
+  const subheading = data.subheading || 'Join 50,000+ subscribers getting exclusive access to new releases, secret sales, and design insights.';
+  const buttonText = data.buttonText || 'Subscribe';
+  const placeholderText = data.placeholderText || 'Enter your email';
+  const copyrightText = data.copyrightText || `© 2024 ${storeName}.`;
+  
+  // Social links
+  const showInstagram = data.showInstagram ?? true;
+  const instagramLabel = data.instagramLabel || 'Instagram';
+  const instagramLink = data.instagramLink || '';
+  const showTwitter = data.showTwitter ?? true;
+  const twitterLabel = data.twitterLabel || 'Twitter';
+  const twitterLink = data.twitterLink || '';
+  const showTiktok = data.showTiktok ?? true;
+  const tiktokLabel = data.tiktokLabel || 'TikTok';
+  const tiktokLink = data.tiktokLink || '';
+  const showYoutube = data.showYoutube ?? true;
+  const youtubeLabel = data.youtubeLabel || 'YouTube';
+  const youtubeLink = data.youtubeLink || '';
 
-      <div className="flex justify-center gap-8 border-t pt-12 text-sm font-medium" style={{ borderColor: textColor ? `${textColor}20` : 'rgba(255,255,255,0.1)', color: textColor ? `${textColor}80` : '#737373' }}>
-        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#ffffff' }}>Instagram</a>
-        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#ffffff' }}>Twitter</a>
-        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#ffffff' }}>TikTok</a>
-        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#ffffff' }}>YouTube</a>
+  const getHref = (link: string) => link || '#';
+
+  return (
+    <footer className="py-24 px-6 transition-colors" style={{ backgroundColor: backgroundColor || '#000000' }}>
+      <div className="max-w-4xl mx-auto text-center">
+        <Mail size={48} className="mx-auto mb-6" style={{ color: textColor ? `${textColor}50` : '#404040' }} />
+        <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight" style={{ color: textColor || '#ffffff' }}>{heading}</h2>
+        <p className="text-lg mb-10 max-w-lg mx-auto" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
+          {subheading}
+        </p>
+        
+        <div className="flex flex-col md:flex-row gap-4 max-w-md mx-auto mb-16">
+          <input 
+            type="email" 
+            placeholder={placeholderText}
+            className="flex-1 rounded-lg px-6 py-4 focus:outline-none transition-colors"
+            style={{ 
+              backgroundColor: textColor ? `${textColor}15` : 'rgba(255,255,255,0.1)',
+              borderWidth: '1px',
+              borderColor: textColor ? `${textColor}30` : 'rgba(255,255,255,0.2)',
+              color: textColor || '#ffffff'
+            }}
+          />
+          <button 
+            className="px-8 py-4 font-bold rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap"
+            style={{ 
+              backgroundColor: accentColor || primaryColor || '#ffffff', 
+              color: backgroundColor || '#000000'
+            }}
+          >
+            {buttonText}
+          </button>
+        </div>
+
+        <div className="flex justify-center gap-8 border-t pt-12 text-sm font-medium" style={{ borderColor: textColor ? `${textColor}20` : 'rgba(255,255,255,0.1)', color: textColor ? `${textColor}80` : '#737373' }}>
+          {showInstagram && <a href={getHref(instagramLink)} className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#ffffff' }}>{instagramLabel}</a>}
+          {showTwitter && <a href={getHref(twitterLink)} className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#ffffff' }}>{twitterLabel}</a>}
+          {showTiktok && <a href={getHref(tiktokLink)} className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#ffffff' }}>{tiktokLabel}</a>}
+          {showYoutube && <a href={getHref(youtubeLink)} className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#ffffff' }}>{youtubeLabel}</a>}
+        </div>
+        <p className="mt-8 text-xs" style={{ color: textColor ? `${textColor}50` : '#525252' }}>{copyrightText}</p>
       </div>
-      <p className="mt-8 text-xs" style={{ color: textColor ? `${textColor}50` : '#525252' }}>&copy; 2024 {storeName}.</p>
-    </div>
-  </footer>
-);
+    </footer>
+  );
+};
 
 // 4. Sitemap (Information Dense)
-export const FooterSitemap: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor }) => (
-  <footer 
-    className="py-16 px-6 text-sm border-t-4 transition-colors" 
-    style={{ 
-      backgroundColor: backgroundColor || '#171717',
-      borderTopColor: accentColor || '#2563eb'
-    }}
-  >
-     <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-16">
-        <div className="col-span-2 lg:col-span-2 pr-8">
-           <div className="font-bold text-2xl mb-6" style={{ color: textColor || '#ffffff' }}>{storeName}</div>
-           <div className="flex items-center gap-2 mb-4 text-xs" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
-              <Globe size={14} /> 
-              <span>Region: United States (USD $)</span>
-           </div>
-           <div className="flex items-center gap-2 text-xs" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
-              <ShieldCheck size={14} /> 
-              <span>Secure Checkout via Evolv Pass</span>
-           </div>
-        </div>
-        
-        <div>
-           <h4 className="font-bold mb-4" style={{ color: textColor || '#ffffff' }}>Products</h4>
-           <ul className="space-y-2" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>New Arrivals</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Best Sellers</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Trends</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Gift Cards</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Sale</li>
-           </ul>
-        </div>
+export const FooterSitemap: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor, data: dataRaw = {} }) => {
+  const data = dataRaw as FooterData;
+  const regionText = data.regionText || 'Region: United States (USD $)';
+  const showSecurityBadge = data.showSecurityBadge ?? true;
+  const securityBadgeText = data.securityBadgeText || 'Secure Checkout via Evolv Pass';
+  const copyrightText = data.copyrightText || '© 2024 Evolv Commerce Operating System. Powered by React.';
+  
+  // Column 1: Products
+  const col1Title = data.col1Title || 'Products';
+  const col1Links = data.col1Links || [
+    { label: 'New Arrivals', link: '' },
+    { label: 'Best Sellers', link: '' },
+    { label: 'Trends', link: '' },
+    { label: 'Gift Cards', link: '' },
+    { label: 'Sale', link: '' }
+  ];
+  
+  // Column 2: Collections
+  const col2Title = data.col2Title || 'Collections';
+  const col2Links = data.col2Links || [
+    { label: 'Summer 2024', link: '' },
+    { label: 'Cyber Tech', link: '' },
+    { label: 'Minimalist', link: '' },
+    { label: 'Accessories', link: '' },
+    { label: 'Home', link: '' }
+  ];
+  
+  // Column 3: Support
+  const col3Title = data.col3Title || 'Support';
+  const col3Links = data.col3Links || [
+    { label: 'Help Center', link: '' },
+    { label: 'Track Order', link: '' },
+    { label: 'Returns', link: '' },
+    { label: 'Shipping Info', link: '' },
+    { label: 'Contact Us', link: '' }
+  ];
+  
+  // Column 4: Legal
+  const col4Title = data.col4Title || 'Legal';
+  const col4Links = data.col4Links || [
+    { label: 'Terms', link: '' },
+    { label: 'Privacy', link: '' },
+    { label: 'Cookies', link: '' },
+    { label: 'Licenses', link: '' }
+  ];
+  
+  const getHref = (link: string) => link || '#';
 
-        <div>
-           <h4 className="font-bold mb-4" style={{ color: textColor || '#ffffff' }}>Collections</h4>
-           <ul className="space-y-2" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Summer 2024</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Cyber Tech</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Minimalist</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Accessories</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Home</li>
-           </ul>
-        </div>
+  const renderColumn = (title: string, links: Array<{label: string, link: string}>) => (
+    <div>
+      <h4 className="font-bold mb-4" style={{ color: textColor || '#ffffff' }}>{title}</h4>
+      <ul className="space-y-2" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
+        {links.map((item, idx) => (
+          <li key={idx}>
+            <a href={getHref(item.link)} className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>{item.label}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 
-        <div>
-           <h4 className="font-bold mb-4" style={{ color: textColor || '#ffffff' }}>Support</h4>
-           <ul className="space-y-2" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Help Center</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Track Order</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Returns</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Shipping Info</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Contact Us</li>
-           </ul>
-        </div>
-
-        <div>
-           <h4 className="font-bold mb-4" style={{ color: textColor || '#ffffff' }}>Legal</h4>
-           <ul className="space-y-2" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Terms</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Privacy</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Cookies</li>
-              <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Licenses</li>
-           </ul>
-        </div>
-     </div>
-     
-     <div className="max-w-7xl mx-auto pt-8 border-t flex justify-center" style={{ borderColor: textColor ? `${textColor}20` : '#262626' }}>
-        <p className="text-xs" style={{ color: textColor ? `${textColor}50` : '#525252' }}>&copy; 2024 Evolv Commerce Operating System. Powered by React.</p>
-     </div>
-  </footer>
-);
+  return (
+    <footer 
+      className="py-16 px-6 text-sm border-t-4 transition-colors" 
+      style={{ 
+        backgroundColor: backgroundColor || '#171717',
+        borderTopColor: accentColor || '#2563eb'
+      }}
+    >
+       <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-16">
+          <div className="col-span-2 lg:col-span-2 pr-8">
+             <div className="font-bold text-2xl mb-6" style={{ color: textColor || '#ffffff' }}>{storeName}</div>
+             <div className="flex items-center gap-2 mb-4 text-xs" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
+                <Globe size={14} /> 
+                <span>{regionText}</span>
+             </div>
+             {showSecurityBadge && (
+               <div className="flex items-center gap-2 text-xs" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }}>
+                  <ShieldCheck size={14} /> 
+                  <span>{securityBadgeText}</span>
+               </div>
+             )}
+          </div>
+          
+          {renderColumn(col1Title, col1Links)}
+          {renderColumn(col2Title, col2Links)}
+          {renderColumn(col3Title, col3Links)}
+          {renderColumn(col4Title, col4Links)}
+       </div>
+       
+       <div className="max-w-7xl mx-auto pt-8 border-t flex justify-center" style={{ borderColor: textColor ? `${textColor}20` : '#262626' }}>
+          <p className="text-xs" style={{ color: textColor ? `${textColor}50` : '#525252' }}>{copyrightText}</p>
+       </div>
+    </footer>
+  );
+};
 
 export const FOOTER_COMPONENTS = {
   minimal: FooterMinimal,
