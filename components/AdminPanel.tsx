@@ -1681,7 +1681,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
 
               {/* Bottom Row: Scrollable Controls */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-2">
                 
               {/* Footer Style Selection */}
               <div className="bg-neutral-800/30 p-4 rounded-xl border border-neutral-700/50 mb-6">
