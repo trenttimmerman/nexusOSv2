@@ -107,7 +107,7 @@ const NEWSLETTER_DEFAULTS: FooterData = {
   textColor: '#ffffff',
   accentColor: '#ffffff',
   paddingY: '6rem',
-  heading: 'Don't miss the drop.',
+  heading: "Don't miss the drop.",
   subheading: 'Join 50,000+ subscribers getting exclusive access to new releases, secret sales, and design insights.',
   buttonText: 'Subscribe',
   emailPlaceholder: 'Enter your email',
