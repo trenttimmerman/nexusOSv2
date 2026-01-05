@@ -3717,11 +3717,11 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'sticky', 'maxWidth', 'paddingX', 'paddingY'
   ],
   nebula: [
-    'showSearch', 'showCart', 'showIndicatorDot',
+    'showSearch', 'showAccount', 'showCart', 'showIndicatorDot',
     'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
     'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
-    'accentColor', 'cartBadgeColor',
+    'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth', 'blurIntensity'
   ],
   luxe: [
@@ -3733,7 +3733,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'sticky', 'maxWidth'
   ],
   pilot: [
-    'showCart', 'showCTA', 'showLogoBadge',
+    'showSearch', 'showAccount', 'showCart', 'showCTA', 'showLogoBadge',
     'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
     'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'textColor', 'textHoverColor', 'accentColor',
@@ -3748,7 +3748,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'tickerBackgroundColor', 'tickerTextColor', 'tickerBorderColor', 'tickerText',
     'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'paddingX', 'paddingY'
   ],
   pop: [
     'showSearch', 'showAccount', 'showCart',
