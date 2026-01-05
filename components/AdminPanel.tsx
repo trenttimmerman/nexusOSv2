@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
-import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas, HeaderNebula, HeaderLuxe, HeaderPilot, HeaderBunker, HeaderPop, HeaderVenture, HeaderGullwing, HeaderProtocol, HeaderHorizon, HeaderTerminal, HeaderElite, HeaderVolt, HeaderPortfolio, HeaderMetro, HeaderModul, HeaderStark, HeaderOffset, HeaderTicker, HeaderNoir, HeaderGhost } from './HeaderLibrary';
+import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas, HeaderNebula, HeaderLuxe, HeaderPilot } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
@@ -156,9 +156,7 @@ import {
   Lightbulb,
   Circle,
   Lock,
-  Unlock,
-  Menu,
-  Hexagon
+  Unlock
 } from 'lucide-react';
 
 // Page type options for creating new pages
@@ -816,12 +814,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // MODAL STATES
   const [isHeaderModalOpen, setIsHeaderModalOpen] = useState(false);
-  const [isFooterModalOpen, setIsFooterModalOpen] = useState(false);
   const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
   const [systemModalType, setSystemModalType] = useState<'hero' | 'grid' | 'footer' | null>(null);
+  const [isFooterModalOpen, setIsFooterModalOpen] = useState(false);
   const [isInterfaceModalOpen, setIsInterfaceModalOpen] = useState(false);
   const [previewingHeaderId, setPreviewingHeaderId] = useState<HeaderStyleId | null>(null);
-  const [previewingFooterId, setPreviewingFooterId] = useState<FooterStyleId | null>(null);
   const [settingsTab, setSettingsTab] = useState<'identity' | 'typography' | 'colors' | 'seo' | 'header' | 'scrollbar'>('identity');
   const [previewingScrollbar, setPreviewingScrollbar] = useState<string | null>(null);
 
@@ -1627,83 +1624,71 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     );
   };
 
-  // --- FOOTER CONFIG MODAL ---
+  // --- FOOTER MODAL (Header-style layout) ---
   const renderFooterModal = () => {
     if (!isFooterModalOpen) return null;
-    
-    const currentFooterFields = FOOTER_FIELDS[config.footerStyle] || [];
-    
+
+    const FooterComponent = FOOTER_COMPONENTS[config.footerStyle] || FOOTER_COMPONENTS['columns'];
+
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
-          
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
           {/* Modal Header */}
-          <div className="flex items-center justify-between p-6 border-b border-neutral-700">
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-emerald-600/20 rounded-xl">
-                <PanelBottom size={24} className="text-emerald-400" />
+              <div className="p-2 bg-orange-600/20 rounded-lg">
+                <PanelBottom size={20} className="text-orange-400" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">Footer Studio</h3>
-                <p className="text-sm text-neutral-400">Customize your store's footer</p>
+                <h3 className="text-white font-bold">Footer Studio</h3>
+                <p className="text-xs text-neutral-500">Customize your store's footer</p>
               </div>
             </div>
             <button 
-              onClick={() => setIsFooterModalOpen(false)}
-              className="p-2 hover:bg-neutral-800 rounded-lg transition-colors text-neutral-400 hover:text-white"
+              onClick={() => setIsFooterModalOpen(false)} 
+              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
             >
               <X size={20} />
             </button>
           </div>
 
-          {/* Modal Content */}
-          <div className="flex-1 overflow-hidden p-6">
-            <div className="flex flex-col gap-6 h-full">
-              
-              {/* Top Row: Live Preview */}
-              <div className="flex-shrink-0">
+          {/* Modal Content - Scrollable */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <div className="max-w-3xl mx-auto">
+              {/* Live Preview - Sticky */}
+              <div className="sticky top-0 z-10 bg-neutral-900 pb-4 -mx-6 px-6 pt-2 -mt-2">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs text-neutral-400 uppercase tracking-wide">Live Preview</p>
                   <span className="text-xs text-neutral-500">Changes update instantly</span>
                 </div>
                 <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100 shadow-lg">
-                  {(() => {
-                    const FooterComponent = FOOTER_COMPONENTS[config.footerStyle as FooterStyleId] || FOOTER_COMPONENTS.minimal;
-                    return (
-                      <FooterComponent
-                        storeName={config.name || 'Your Store'}
-                        primaryColor={config.primaryColor}
-                        data={config.footerData}
-                      />
-                    );
-                  })()}
+                  <FooterComponent
+                    storeName={config.name || 'Your Store'}
+                    primaryColor={config.primaryColor}
+                    backgroundColor={config.footerBackgroundColor}
+                    textColor={config.footerTextColor}
+                    accentColor={config.footerAccentColor}
+                  />
                 </div>
               </div>
 
-              {/* Bottom Row: Scrollable Controls */}
-              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-2">
-                
-              {/* Footer Style Selection */}
+              {/* Footer Design Selection */}
               <div className="bg-neutral-800/30 p-4 rounded-xl border border-neutral-700/50 mb-6">
                 <label className="text-sm font-bold text-white mb-3 block">Footer Design</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-5 gap-2">
                   {FOOTER_OPTIONS.map((footer) => (
                     <button
                       key={footer.id}
-                      onClick={() => {
-                        setPreviewingFooterId(footer.id as FooterStyleId);
-                        onConfigChange({ ...config, footerStyle: footer.id as any, footerData: {} });
-                      }}
-                      className={`p-3 rounded-lg border-2 text-center transition-all ${
-                        config.footerStyle === footer.id
-                          ? 'border-emerald-500 bg-emerald-500/10'
-                          : 'border-neutral-700 hover:border-neutral-600'
+                      onClick={() => onConfigChange({ ...config, footerStyle: footer.id as FooterStyleId })}
+                      className={`p-3 rounded-lg border-2 text-center transition-all ${config.footerStyle === footer.id
+                        ? 'border-orange-500 bg-orange-500/10'
+                        : 'border-neutral-700 hover:border-neutral-600'
                       }`}
                     >
-                      <span className={`text-xs font-bold block mb-1 ${config.footerStyle === footer.id ? 'text-emerald-400' : 'text-white'}`}>
+                      <span className={`text-xs font-bold block ${config.footerStyle === footer.id ? 'text-orange-400' : 'text-white'}`}>
                         {footer.name}
                       </span>
-                      <span className="text-[10px] text-neutral-500">{footer.description}</span>
+                      <span className="text-[10px] text-neutral-500 block mt-0.5">{footer.description}</span>
                     </button>
                   ))}
                 </div>
@@ -1713,486 +1698,67 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50">
                 <div className="flex items-center justify-between mb-4">
                   <label className="text-sm font-bold text-white">Customize Footer</label>
-                  <span className="text-xs px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg">
-                    {FOOTER_OPTIONS.find(f => f.id === config.footerStyle)?.name || 'Minimal'}
+                  <span className="text-xs px-2 py-1 bg-orange-500/20 text-orange-400 rounded-lg">
+                    {FOOTER_OPTIONS.find(f => f.id === config.footerStyle)?.name || 'Columns'}
                   </span>
                 </div>
 
-                {/* Universal Color Controls */}
-                {currentFooterFields.some(field => ['backgroundColor', 'textColor', 'accentColor', 'borderColor'].includes(field)) && (
-                  <div className="space-y-3 mb-6">
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Colors</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        currentFooterFields.includes('backgroundColor') && { key: 'backgroundColor', label: 'Background', defaultValue: '#ffffff' },
-                        currentFooterFields.includes('textColor') && { key: 'textColor', label: 'Text', defaultValue: '#171717' },
-                        currentFooterFields.includes('accentColor') && { key: 'accentColor', label: 'Accent', defaultValue: '#737373' },
-                        currentFooterFields.includes('borderColor') && { key: 'borderColor', label: 'Border', defaultValue: '#e5e5e5' },
-                      ].filter(Boolean).map((field: any) => (
-                        <div key={field.key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                          <input
-                            type="color"
-                            value={config.footerData?.[field.key] ?? field.defaultValue}
-                            onChange={(e) => onConfigChange({
-                              ...config,
-                              footerData: { ...config.footerData, [field.key]: e.target.value }
-                            })}
-                            className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                          />
-                          <span className="text-sm text-neutral-300">{field.label}</span>
-                        </div>
-                      ))}
-                    </div>
+                {/* Color Controls */}
+                <div className="space-y-3 mb-6">
+                  <p className="text-xs text-neutral-400 uppercase tracking-wide">Colors</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { key: 'footerBackgroundColor', label: 'Background', defaultValue: '#171717' },
+                      { key: 'footerTextColor', label: 'Text', defaultValue: '#ffffff' },
+                      { key: 'footerAccentColor', label: 'Accent / Links', defaultValue: config.primaryColor || '#3B82F6' },
+                    ].map(({ key, label, defaultValue }) => (
+                      <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <input
+                          type="color"
+                          value={(config as any)[key] ?? defaultValue}
+                          onChange={(e) => onConfigChange({ ...config, [key]: e.target.value })}
+                          className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                        />
+                        <span className="text-sm text-neutral-300">{label}</span>
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
 
-                {/* Minimal Footer Controls */}
-                {config.footerStyle === 'minimal' && (
-                  <div className="space-y-3 mb-6">
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Link Labels</p>
-                    <div className="grid grid-cols-3 gap-3">
-                      {[
-                        { key: 'termsLabel', label: 'Terms', defaultValue: 'Terms' },
-                        { key: 'privacyLabel', label: 'Privacy', defaultValue: 'Privacy' },
-                        { key: 'contactLabel', label: 'Contact', defaultValue: 'Contact' },
-                      ].map(({ key, label, defaultValue }) => (
-                        <div key={key} className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                          <label className="text-xs text-neutral-400 mb-1 block">{label}</label>
-                          <input
-                            type="text"
-                            value={config.footerData?.[key] ?? defaultValue}
-                            onChange={(e) => onConfigChange({
-                              ...config,
-                              footerData: { ...config.footerData, [key]: e.target.value }
-                            })}
-                            className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Social Media</p>
-                    <div className="grid grid-cols-3 gap-3">
-                      {[
-                        { key: 'showInstagram', label: 'Instagram' },
-                        { key: 'showTwitter', label: 'Twitter' },
-                        { key: 'showFacebook', label: 'Facebook' },
-                      ].map(({ key, label }) => (
-                        <button
-                          key={key}
-                          onClick={() => onConfigChange({
-                            ...config,
-                            footerData: { ...config.footerData, [key]: !(config.footerData?.[key] ?? true) }
-                          })}
-                          className={`flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
-                            (config.footerData?.[key] ?? (key === 'showFacebook' ? false : true))
-                              ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                          }`}
-                        >
-                          <span className="text-sm">{label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Columns Footer Controls */}
-                {config.footerStyle === 'columns' && (
-                  <div className="space-y-3 mb-6">
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Tagline</p>
-                    <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                      <textarea
-                        value={config.footerData?.tagline ?? 'Designed for the future of commerce. We build tools that empower creators to sell without limits.'}
-                        onChange={(e) => onConfigChange({
-                          ...config,
-                          footerData: { ...config.footerData, tagline: e.target.value }
-                        })}
-                        rows={2}
-                        className="w-full bg-neutral-800 border-0 rounded px-3 py-2 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none resize-none"
-                      />
-                    </div>
-                    
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Column Titles</p>
-                    <div className="grid grid-cols-3 gap-3">
-                      {[
-                        { key: 'shopColumnTitle', label: 'Shop', defaultValue: 'Shop' },
-                        { key: 'companyColumnTitle', label: 'Company', defaultValue: 'Company' },
-                        { key: 'supportColumnTitle', label: 'Support', defaultValue: 'Support' },
-                      ].map(({ key, label, defaultValue }) => (
-                        <div key={key} className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                          <label className="text-xs text-neutral-400 mb-1 block">{label}</label>
-                          <input
-                            type="text"
-                            value={config.footerData?.[key] ?? defaultValue}
-                            onChange={(e) => onConfigChange({
-                              ...config,
-                              footerData: { ...config.footerData, [key]: e.target.value }
-                            })}
-                            className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Copyright & Features</p>
-                    <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700 mb-3">
-                      <label className="text-xs text-neutral-400 mb-1 block">Copyright Text</label>
-                      <input
-                        type="text"
-                        value={config.footerData?.copyrightText ?? '© 2024 All rights reserved.'}
-                        onChange={(e) => onConfigChange({
-                          ...config,
-                          footerData: { ...config.footerData, copyrightText: e.target.value }
-                        })}
-                        className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                      />
-                    </div>
-                    
-                    <button
-                      onClick={() => onConfigChange({
-                        ...config,
-                        footerData: { ...config.footerData, showPaymentIcons: !(config.footerData?.showPaymentIcons ?? true) }
-                      })}
-                      className={`w-full p-3 rounded-lg border transition-colors ${
-                        (config.footerData?.showPaymentIcons ?? true)
-                          ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-                          : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                      }`}
-                    >
-                      <span className="text-sm">Payment Icons</span>
-                    </button>
-                  </div>
-                )}
-
-                {/* Newsletter Footer Controls */}
-                {config.footerStyle === 'newsletter' && (
-                  <div className="space-y-3 mb-6">
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Copy</p>
-                    <div className="grid grid-cols-1 gap-3">
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-xs text-neutral-400 mb-1 block">Heading</label>
-                        <input
-                          type="text"
-                          value={config.footerData?.heading ?? "Don't miss the drop."}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            footerData: { ...config.footerData, heading: e.target.value }
-                          })}
-                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                        />
-                      </div>
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-xs text-neutral-400 mb-1 block">Subheading</label>
-                        <textarea
-                          value={config.footerData?.subheading ?? 'Join 50,000+ subscribers getting exclusive access to new releases, secret sales, and design insights.'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            footerData: { ...config.footerData, subheading: e.target.value }
-                          })}
-                          rows={2}
-                          className="w-full bg-neutral-800 border-0 rounded px-3 py-2 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none resize-none"
-                        />
-                      </div>
-                    </div>
-                    
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Form Labels</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-xs text-neutral-400 mb-1 block">Placeholder</label>
-                        <input
-                          type="text"
-                          value={config.footerData?.emailPlaceholder ?? 'Enter your email'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            footerData: { ...config.footerData, emailPlaceholder: e.target.value }
-                          })}
-                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                        />
-                      </div>
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-xs text-neutral-400 mb-1 block">Button</label>
-                        <input
-                          type="text"
-                          value={config.footerData?.buttonText ?? 'Subscribe'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            footerData: { ...config.footerData, buttonText: e.target.value }
-                          })}
-                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                        />
-                      </div>
-                    </div>
-                    
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Social Links</p>
-                    <button
-                      onClick={() => onConfigChange({
-                        ...config,
-                        footerData: { ...config.footerData, showSocialLinks: !(config.footerData?.showSocialLinks ?? true) }
-                      })}
-                      className={`w-full p-3 rounded-lg border transition-colors mb-3 ${
-                        (config.footerData?.showSocialLinks ?? true)
-                          ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-                          : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                      }`}
-                    >
-                      <span className="text-sm">Show Social Links</span>
-                    </button>
-                    
-                    {(config.footerData?.showSocialLinks ?? true) && (
-                      <div className="grid grid-cols-4 gap-2">
-                        {[
-                          { key: 'instagramLabel', defaultValue: 'Instagram' },
-                          { key: 'twitterLabel', defaultValue: 'Twitter' },
-                          { key: 'tiktokLabel', defaultValue: 'TikTok' },
-                          { key: 'youtubeLabel', defaultValue: 'YouTube' },
-                        ].map(({ key, defaultValue }) => (
-                          <div key={key} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
-                            <input
-                              type="text"
-                              value={config.footerData?.[key] ?? defaultValue}
-                              onChange={(e) => onConfigChange({
-                                ...config,
-                                footerData: { ...config.footerData, [key]: e.target.value }
-                              })}
-                              className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-xs focus:ring-1 focus:ring-emerald-500 outline-none"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Brand Footer Controls */}
-                {config.footerStyle === 'brand' && (
-                  <div className="space-y-3 mb-6">
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Contact Information</p>
-                    <div className="grid grid-cols-2 gap-3 mb-3">
-                      <button
-                        onClick={() => onConfigChange({
-                          ...config,
-                          footerData: { ...config.footerData, showAddress: !(config.footerData?.showAddress ?? true) }
-                        })}
-                        className={`p-3 rounded-lg border transition-colors ${
-                          (config.footerData?.showAddress ?? true)
-                            ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        <span className="text-sm">Show Address</span>
-                      </button>
-                      <button
-                        onClick={() => onConfigChange({
-                          ...config,
-                          footerData: { ...config.footerData, showContactInfo: !(config.footerData?.showContactInfo ?? true) }
-                        })}
-                        className={`p-3 rounded-lg border transition-colors ${
-                          (config.footerData?.showContactInfo ?? true)
-                            ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        <span className="text-sm">Show Contact</span>
-                      </button>
-                    </div>
-                    
-                    {(config.footerData?.showAddress ?? true) && (
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-xs text-neutral-400 mb-1 block">Address (use \\n for new lines)</label>
-                        <textarea
-                          value={config.footerData?.address ?? '100 Evolv Way\\nFloor 24, Suite 100\\nNew York, NY 10012'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            footerData: { ...config.footerData, address: e.target.value }
-                          })}
-                          rows={3}
-                          className="w-full bg-neutral-800 border-0 rounded px-3 py-2 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none resize-none"
-                        />
-                      </div>
-                    )}
-                    
-                    {(config.footerData?.showContactInfo ?? true) && (
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                          <label className="text-xs text-neutral-400 mb-1 block">Email</label>
-                          <input
-                            type="email"
-                            value={config.footerData?.email ?? 'hello@evolv.com'}
-                            onChange={(e) => onConfigChange({
-                              ...config,
-                              footerData: { ...config.footerData, email: e.target.value }
-                            })}
-                            className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                          />
-                        </div>
-                        <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                          <label className="text-xs text-neutral-400 mb-1 block">Phone</label>
-                          <input
-                            type="tel"
-                            value={config.footerData?.phone ?? '+1 (555) 000-0000'}
-                            onChange={(e) => onConfigChange({
-                              ...config,
-                              footerData: { ...config.footerData, phone: e.target.value }
-                            })}
-                            className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                          />
-                        </div>
-                      </div>
-                    )}
-                    
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Footer Labels</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-xs text-neutral-400 mb-1 block">Based In</label>
-                        <input
-                          type="text"
-                          value={config.footerData?.basedInLabel ?? 'Based in NYC'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            footerData: { ...config.footerData, basedInLabel: e.target.value }
-                          })}
-                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                        />
-                      </div>
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-xs text-neutral-400 mb-1 block">Shipping</label>
-                        <input
-                          type="text"
-                          value={config.footerData?.shippingLabel ?? 'Worldwide Shipping'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            footerData: { ...config.footerData, shippingLabel: e.target.value }
-                          })}
-                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Sitemap Footer Controls */}
-                {config.footerStyle === 'sitemap' && (
-                  <div className="space-y-3 mb-6">
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Column Titles</p>
-                    <div className="grid grid-cols-4 gap-3">
-                      {[
-                        { key: 'productsColumnTitle', defaultValue: 'Products' },
-                        { key: 'collectionsColumnTitle', defaultValue: 'Collections' },
-                        { key: 'supportColumnTitle', defaultValue: 'Support' },
-                        { key: 'legalColumnTitle', defaultValue: 'Legal' },
-                      ].map(({ key, defaultValue }) => (
-                        <div key={key} className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                          <label className="text-xs text-neutral-400 mb-1 block">{defaultValue}</label>
-                          <input
-                            type="text"
-                            value={config.footerData?.[key] ?? defaultValue}
-                            onChange={(e) => onConfigChange({
-                              ...config,
-                              footerData: { ...config.footerData, [key]: e.target.value }
-                            })}
-                            className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Features</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => onConfigChange({
-                          ...config,
-                          footerData: { ...config.footerData, showRegionSelector: !(config.footerData?.showRegionSelector ?? true) }
-                        })}
-                        className={`p-3 rounded-lg border transition-colors ${
-                          (config.footerData?.showRegionSelector ?? true)
-                            ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        <span className="text-sm">Region Selector</span>
-                      </button>
-                      <button
-                        onClick={() => onConfigChange({
-                          ...config,
-                          footerData: { ...config.footerData, showSecureCheckout: !(config.footerData?.showSecureCheckout ?? true) }
-                        })}
-                        className={`p-3 rounded-lg border transition-colors ${
-                          (config.footerData?.showSecureCheckout ?? true)
-                            ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        <span className="text-sm">Secure Checkout</span>
-                      </button>
-                    </div>
-                    
-                    {(config.footerData?.showRegionSelector ?? true) && (
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-xs text-neutral-400 mb-1 block">Region Text</label>
-                        <input
-                          type="text"
-                          value={config.footerData?.regionText ?? 'United States (USD $)'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            footerData: { ...config.footerData, regionText: e.target.value }
-                          })}
-                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                        />
-                      </div>
-                    )}
-                    
-                    {(config.footerData?.showSecureCheckout ?? true) && (
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-xs text-neutral-400 mb-1 block">Secure Checkout Text</label>
-                        <input
-                          type="text"
-                          value={config.footerData?.secureCheckoutText ?? 'Secure Checkout via Evolv Pass'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            footerData: { ...config.footerData, secureCheckoutText: e.target.value }
-                          })}
-                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                        />
-                      </div>
-                    )}
-                    
-                    <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                      <label className="text-xs text-neutral-400 mb-1 block">Copyright Text</label>
-                      <input
-                        type="text"
-                        value={config.footerData?.copyrightText ?? '© 2024 Evolv Commerce Operating System. Powered by React.'}
-                        onChange={(e) => onConfigChange({
-                          ...config,
-                          footerData: { ...config.footerData, copyrightText: e.target.value }
-                        })}
-                        className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                      />
-                    </div>
-                  </div>
-                )}
-
+                {/* Reset to Defaults */}
+                <button
+                  onClick={() => onConfigChange({ 
+                    ...config, 
+                    footerBackgroundColor: undefined, 
+                    footerTextColor: undefined, 
+                    footerAccentColor: undefined 
+                  })}
+                  className="w-full py-2.5 text-xs text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg border border-neutral-800 transition-colors"
+                >
+                  Reset to Default Colors
+                </button>
               </div>
             </div>
           </div>
-          </div>
 
           {/* Modal Footer */}
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-neutral-700">
-            <button
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-between items-center shrink-0">
+            <p className="text-xs text-neutral-500">
+              Current: <span className="text-white font-medium">{FOOTER_OPTIONS.find(f => f.id === config.footerStyle)?.name || 'Columns'}</span>
+            </p>
+            <button 
               onClick={() => setIsFooterModalOpen(false)}
-              className="px-6 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg font-bold text-sm transition-colors"
+              className="px-6 py-2 bg-orange-600 hover:bg-orange-500 rounded-lg font-bold text-sm transition-colors text-white"
             >
-              Close
+              Done
             </button>
           </div>
-
         </div>
       </div>
     );
   };
 
-  // --- SYSTEM BLOCK MODAL (Hero, Grid, Footer) ---
+  // --- SYSTEM BLOCK MODAL (Hero, Grid) ---
   const [warningFields, setWarningFields] = useState<string[]>([]);
   const [pendingVariant, setPendingVariant] = useState<string | null>(null);
 
@@ -2367,7 +1933,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           {/* Modal Content - Split View */}
           <div className="flex-1 flex overflow-hidden">
             {/* Left Panel - Style Selection */}
-            <div className="w-80 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative">
+            <div className="w-80 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative min-h-0">
               {/* WARNING OVERLAY */}
               {warningFields.length > 0 && (
                 <div className="absolute inset-0 z-50 bg-neutral-950/98 p-6 flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
@@ -2628,25 +2194,67 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <span className="text-xs text-neutral-500">Changes update instantly</span>
                   </div>
                   <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100 shadow-lg">
-                    {(() => {
-                      const HeaderComponent = HEADER_COMPONENTS[config.headerStyle as HeaderStyleId] || HEADER_COMPONENTS.canvas;
-                      return (
-                        <HeaderComponent
-                          storeName={config.name || 'Your Store'}
-                          logoUrl={config.logoUrl}
-                          logoHeight={config.logoHeight || 32}
-                          links={[
-                            { label: 'Shop', href: '/shop', active: false },
-                            { label: 'About', href: '/about', active: false },
-                            { label: 'Contact', href: '/contact', active: false },
-                          ]}
-                          cartCount={2}
-                          onOpenCart={() => {}}
-                          onLinkClick={() => {}}
-                          data={config.headerData}
-                        />
-                      );
-                    })()}
+                    {config.headerStyle === 'nebula' ? (
+                      <HeaderNebula
+                        storeName={config.name || 'Your Store'}
+                        logoUrl={config.logoUrl}
+                        logoHeight={config.logoHeight || 32}
+                        links={[
+                          { label: 'Shop', href: '/shop', active: false },
+                          { label: 'About', href: '/about', active: false },
+                          { label: 'Contact', href: '/contact', active: false },
+                        ]}
+                        cartCount={2}
+                        onOpenCart={() => {}}
+                        onLinkClick={() => {}}
+                        data={config.headerData}
+                      />
+                    ) : config.headerStyle === 'luxe' ? (
+                      <HeaderLuxe
+                        storeName={config.name || 'Your Store'}
+                        logoUrl={config.logoUrl}
+                        logoHeight={config.logoHeight || 32}
+                        links={[
+                          { label: 'Shop', href: '/shop', active: false },
+                          { label: 'About', href: '/about', active: false },
+                          { label: 'Contact', href: '/contact', active: false },
+                        ]}
+                        cartCount={2}
+                        onOpenCart={() => {}}
+                        onLinkClick={() => {}}
+                        data={config.headerData}
+                      />
+                    ) : config.headerStyle === 'pilot' ? (
+                      <HeaderPilot
+                        storeName={config.name || 'Your Store'}
+                        logoUrl={config.logoUrl}
+                        logoHeight={config.logoHeight || 32}
+                        links={[
+                          { label: 'Shop', href: '/shop', active: false },
+                          { label: 'About', href: '/about', active: false },
+                          { label: 'Contact', href: '/contact', active: false },
+                        ]}
+                        cartCount={2}
+                        onOpenCart={() => {}}
+                        onLinkClick={() => {}}
+                        data={config.headerData}
+                      />
+                    ) : (
+                      <HeaderCanvas
+                        storeName={config.name || 'Your Store'}
+                        logoUrl={config.logoUrl}
+                        logoHeight={config.logoHeight || 32}
+                        links={[
+                          { label: 'Shop', href: '/shop', active: false },
+                          { label: 'About', href: '/about', active: false },
+                          { label: 'Contact', href: '/contact', active: false },
+                        ]}
+                        cartCount={2}
+                        onOpenCart={() => {}}
+                        onLinkClick={() => {}}
+                        data={config.headerData}
+                      />
+                    )}
                   </div>
                 </div>
                 
@@ -2655,7 +2263,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <label className="text-sm font-bold text-white mb-3 block">Header Design</label>
                   <div className="grid grid-cols-4 gap-2">
                     {/* Available headers */}
-                    {HEADER_OPTIONS.map((header) => (
+                    {[
+                      { id: 'canvas', name: 'Classic' },
+                      { id: 'nebula', name: 'Glass' },
+                      { id: 'luxe', name: 'Luxury' },
+                      { id: 'pilot', name: 'Pro' },
+                    ].map((header) => (
                       <button
                         key={header.id}
                         onClick={() => onConfigChange({ ...config, headerStyle: header.id as any, headerData: {} })}
@@ -2720,8 +2333,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         { key: 'borderColor', label: 'Border', defaultValue: '#f3f4f6' },
                         { key: 'textColor', label: 'Text', defaultValue: '#6b7280' },
                         { key: 'textHoverColor', label: 'Text Hover', defaultValue: '#000000' },
-                        { key: 'cartBadgeColor', label: 'Cart Badge', defaultValue: '#000000' },
-                        { key: 'cartBadgeTextColor', label: 'Badge Text', defaultValue: '#ffffff' },
                       ].map(({ key, label, defaultValue }) => (
                         <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
                           <input
@@ -2738,78 +2349,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       ))}
                     </div>
                   </div>
-
-                  {/* Canvas-specific Controls */}
-                  {(config.headerStyle === 'canvas') && (
-                    <div className="space-y-3 mb-6">
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Search Styling</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
-                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
-                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#3b82f6' },
-                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
-                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
-                        ].map(({ key, label, defaultValue }) => (
-                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                            <input
-                              type="color"
-                              value={config.headerData?.[key] ?? defaultValue}
-                              onChange={(e) => onConfigChange({
-                                ...config,
-                                headerData: { ...config.headerData, [key]: e.target.value }
-                              })}
-                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                            />
-                            <span className="text-xs text-neutral-300">{label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Pop-specific Controls */}
-                  {(config.headerStyle === 'pop') && (
-                    <div className="space-y-3 mb-6">
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Accent Color</p>
-                      <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <input
-                          type="color"
-                          value={config.headerData?.accentColor ?? '#23A094'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, accentColor: e.target.value }
-                          })}
-                          className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                        />
-                        <span className="text-sm text-neutral-300">Accent Color (Teal)</span>
-                      </div>
-                      
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Search Styling</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
-                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
-                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#23A094' },
-                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
-                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
-                        ].map(({ key, label, defaultValue }) => (
-                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                            <input
-                              type="color"
-                              value={config.headerData?.[key] ?? defaultValue}
-                              onChange={(e) => onConfigChange({
-                                ...config,
-                                headerData: { ...config.headerData, [key]: e.target.value }
-                              })}
-                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                            />
-                            <span className="text-xs text-neutral-300">{label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Button/CTA Controls - only show for headers with CTA */}
                   {(config.headerStyle === 'pilot') && (
@@ -2837,7 +2376,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           { key: 'ctaBackgroundColor', label: 'Button Color', defaultValue: '#4f46e5' },
                           { key: 'ctaHoverColor', label: 'Button Hover', defaultValue: '#4338ca' },
                           { key: 'ctaTextColor', label: 'Button Text', defaultValue: '#ffffff' },
-                          { key: 'accentColor', label: 'Accent Color', defaultValue: '#4f46e5' },
+                          { key: 'cartBadgeColor', label: 'Badge Color', defaultValue: '#4f46e5' },
                         ].map(({ key, label, defaultValue }) => (
                           <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
                             <input
@@ -2854,68 +2393,27 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         ))}
                       </div>
                       
-                      {/* Toggle Buttons */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          onClick={() => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, showCTA: !(config.headerData?.showCTA ?? true) }
-                          })}
-                          className={`flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
-                            (config.headerData?.showCTA ?? true)
-                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                          }`}
-                        >
-                          <span className="text-sm">Button</span>
-                        </button>
-                        <button
-                          onClick={() => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, showLogoBadge: !(config.headerData?.showLogoBadge ?? true) }
-                          })}
-                          className={`flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
-                            (config.headerData?.showLogoBadge ?? true)
-                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                          }`}
-                        >
-                          <Hexagon size={16} />
-                          <span className="text-sm">Badge</span>
-                        </button>
-                      </div>
-                      
-                      {/* Search Colors */}
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Search Styling</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
-                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
-                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#4f46e5' },
-                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
-                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
-                        ].map(({ key, label, defaultValue }) => (
-                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                            <input
-                              type="color"
-                              value={config.headerData?.[key] ?? defaultValue}
-                              onChange={(e) => onConfigChange({
-                                ...config,
-                                headerData: { ...config.headerData, [key]: e.target.value }
-                              })}
-                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                            />
-                            <span className="text-xs text-neutral-300">{label}</span>
-                          </div>
-                        ))}
-                      </div>
+                      {/* Show/Hide CTA */}
+                      <button
+                        onClick={() => onConfigChange({
+                          ...config,
+                          headerData: { ...config.headerData, showCTA: !(config.headerData?.showCTA ?? true) }
+                        })}
+                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
+                          (config.headerData?.showCTA ?? true)
+                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                        }`}
+                      >
+                        <span className="text-sm">{(config.headerData?.showCTA ?? true) ? 'Button Visible' : 'Button Hidden'}</span>
+                      </button>
                     </div>
                   )}
 
                   {/* Luxe-specific Controls */}
                   {(config.headerStyle === 'luxe') && (
                     <div className="space-y-3 mb-6">
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Luxury Settings</p>
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Tagline</p>
                       
                       {/* Tagline Text */}
                       <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
@@ -2946,61 +2444,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <span className="text-sm text-neutral-300">Accent Color (Gold)</span>
                       </div>
                       
-                      {/* Toggle Buttons */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          onClick={() => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, showMenu: !(config.headerData?.showMenu ?? true) }
-                          })}
-                          className={`flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
-                            (config.headerData?.showMenu ?? true)
-                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                          }`}
-                        >
-                          <Menu size={16} />
-                          <span className="text-sm">Menu</span>
-                        </button>
-                        <button
-                          onClick={() => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, showTagline: !(config.headerData?.showTagline ?? true) }
-                          })}
-                          className={`flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
-                            (config.headerData?.showTagline ?? true)
-                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                          }`}
-                        >
-                          <span className="text-sm">Tagline</span>
-                        </button>
-                      </div>
-                      
-                      {/* Search Colors */}
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Search Styling</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
-                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
-                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#d4af37' },
-                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
-                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
-                        ].map(({ key, label, defaultValue }) => (
-                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                            <input
-                              type="color"
-                              value={config.headerData?.[key] ?? defaultValue}
-                              onChange={(e) => onConfigChange({
-                                ...config,
-                                headerData: { ...config.headerData, [key]: e.target.value }
-                              })}
-                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                            />
-                            <span className="text-xs text-neutral-300">{label}</span>
-                          </div>
-                        ))}
-                      </div>
+                      {/* Show/Hide Tagline */}
+                      <button
+                        onClick={() => onConfigChange({
+                          ...config,
+                          headerData: { ...config.headerData, showTagline: !(config.headerData?.showTagline ?? true) }
+                        })}
+                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
+                          (config.headerData?.showTagline ?? true)
+                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                        }`}
+                      >
+                        <span className="text-sm">{(config.headerData?.showTagline ?? true) ? 'Tagline Visible' : 'Tagline Hidden'}</span>
+                      </button>
                     </div>
                   )}
 
@@ -3037,195 +2494,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       >
                         <span className="text-sm">{(config.headerData?.showIndicatorDot ?? true) ? 'Indicator Dot Visible' : 'Indicator Dot Hidden'}</span>
                       </button>
-                      
-                      {/* Search Colors */}
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Search Styling</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
-                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
-                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#3b82f6' },
-                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
-                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
-                        ].map(({ key, label, defaultValue }) => (
-                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                            <input
-                              type="color"
-                              value={config.headerData?.[key] ?? defaultValue}
-                              onChange={(e) => onConfigChange({
-                                ...config,
-                                headerData: { ...config.headerData, [key]: e.target.value }
-                              })}
-                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                            />
-                            <span className="text-xs text-neutral-300">{label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Dynamic Ticker Controls - Shows for ANY header with ticker properties */}
-                  {(() => {
-                    const currentHeaderFields = HEADER_FIELDS[config.headerStyle] || [];
-                    const hasTicker = currentHeaderFields.some(field => field.startsWith('ticker'));
-                    
-                    if (!hasTicker) return null;
-                    
-                    // Determine which ticker fields are available
-                    const hasTickerBorder = currentHeaderFields.includes('tickerBorderColor');
-                    
-                    return (
-                      <div className="space-y-3 mb-6">
-                        <p className="text-xs text-neutral-400 uppercase tracking-wide">Ticker Banner</p>
-                        
-                        {/* Ticker Text */}
-                        <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                          <label className="text-sm text-neutral-300 mb-2 block">Ticker Text</label>
-                          <input
-                            type="text"
-                            value={config.headerData?.tickerText ?? (config.headerStyle === 'bunker' 
-                              ? 'FREE SHIPPING WORLDWIDE — 0% TRANSACTION FEES — NEXUS COMMERCE OS — BUILD THE FUTURE'
-                              : 'BREAKING NEWS • LATEST UPDATES • TRENDING NOW')}
-                            onChange={(e) => onConfigChange({
-                              ...config,
-                              headerData: { ...config.headerData, tickerText: e.target.value }
-                            })}
-                            className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
-                            placeholder="Enter ticker text"
-                          />
-                        </div>
-                        
-                        {/* Ticker Colors - Dynamically show available fields */}
-                        <div className="grid grid-cols-2 gap-3">
-                          {[
-                            currentHeaderFields.includes('tickerBackgroundColor') && { 
-                              key: 'tickerBackgroundColor', 
-                              label: 'Ticker Background', 
-                              defaultValue: config.headerStyle === 'bunker' ? '#000000' : '#dc2626' 
-                            },
-                            currentHeaderFields.includes('tickerTextColor') && { 
-                              key: 'tickerTextColor', 
-                              label: 'Ticker Text', 
-                              defaultValue: config.headerStyle === 'bunker' ? '#facc15' : '#ffffff' 
-                            },
-                            hasTickerBorder && { 
-                              key: 'tickerBorderColor', 
-                              label: 'Ticker Border', 
-                              defaultValue: '#000000' 
-                            },
-                          ].filter(Boolean).map((field: any) => (
-                            <div key={field.key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                              <input
-                                type="color"
-                                value={config.headerData?.[field.key] ?? field.defaultValue}
-                                onChange={(e) => onConfigChange({
-                                  ...config,
-                                  headerData: { ...config.headerData, [field.key]: e.target.value }
-                                })}
-                                className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                              />
-                              <span className="text-sm text-neutral-300">{field.label}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Venture-specific Controls */}
-                  {(config.headerStyle === 'venture') && (
-                    <div className="space-y-3 mb-6">
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Search Settings</p>
-                      
-                      {/* Search Placeholder */}
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-sm text-neutral-300 mb-2 block">Search Placeholder</label>
-                        <input
-                          type="text"
-                          value={config.headerData?.searchPlaceholder ?? "Search for 'Wireless Headphones' or 'Summer Collection'"}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, searchPlaceholder: e.target.value }
-                          })}
-                          className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
-                          placeholder="Search placeholder text"
-                        />
-                      </div>
-                      
-                      {/* Search Box Colors */}
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: 'searchBackgroundColor', label: 'Search Background', defaultValue: '#f9fafb' },
-                          { key: 'searchFocusBackgroundColor', label: 'Search Focus BG', defaultValue: '#ffffff' },
-                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#3b82f6' },
-                          { key: 'searchInputTextColor', label: 'Input Text', defaultValue: '#111827' },
-                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
-                        ].map(({ key, label, defaultValue }) => (
-                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                            <input
-                              type="color"
-                              value={config.headerData?.[key] ?? defaultValue}
-                              onChange={(e) => onConfigChange({
-                                ...config,
-                                headerData: { ...config.headerData, [key]: e.target.value }
-                              })}
-                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                            />
-                            <span className="text-xs text-neutral-300">{label}</span>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Keyboard Shortcut Toggle */}
-                      <button
-                        onClick={() => onConfigChange({
-                          ...config,
-                          headerData: { ...config.headerData, showKeyboardShortcut: !(config.headerData?.showKeyboardShortcut ?? true) }
-                        })}
-                        className={`w-full p-3 rounded-lg border transition-all ${
-                          (config.headerData?.showKeyboardShortcut ?? true)
-                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        <span className="text-sm">{(config.headerData?.showKeyboardShortcut ?? true) ? 'Keyboard Shortcut (⌘K) Visible' : 'Keyboard Shortcut Hidden'}</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Gullwing-specific Controls */}
-                  {(config.headerStyle === 'gullwing') && (
-                    <div className="space-y-3 mb-6">
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Centered Logo Design</p>
-                      <div className="bg-neutral-900/50 p-3 rounded-lg border border-neutral-700">
-                        <p className="text-xs text-neutral-400">Gullwing features a centered skewed logo container with symmetrical navigation split. Customize colors in the universal section above.</p>
-                      </div>
-                      
-                      {/* Search Colors */}
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Search Styling</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
-                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
-                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#3b82f6' },
-                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
-                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
-                        ].map(({ key, label, defaultValue }) => (
-                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                            <input
-                              type="color"
-                              value={config.headerData?.[key] ?? defaultValue}
-                              onChange={(e) => onConfigChange({
-                                ...config,
-                                headerData: { ...config.headerData, [key]: e.target.value }
-                              })}
-                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                            />
-                            <span className="text-xs text-neutral-300">{label}</span>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   )}
 
@@ -4193,7 +3461,6 @@ Return ONLY the JSON object, no markdown.`;
                 headerGlowEffect={config.headerGlowEffect}
                 headerButtonBgColor={config.headerButtonBgColor}
                 headerButtonTextColor={config.headerButtonTextColor}
-                data={config.headerData}
               />
             </div>
 
@@ -6424,7 +5691,7 @@ Return ONLY the JSON object, no markdown.`;
         return <ShippingManager storeId={storeId || null} />;
 
       case AdminTab.DESIGN:
-        const isAnyModalOpen = isHeaderModalOpen || isSystemModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
+        const isAnyModalOpen = isHeaderModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
         return (
           <div className="flex h-full w-full bg-neutral-950 overflow-hidden">
             {/* LEFT COLUMN: EDITOR */}
@@ -6739,14 +6006,14 @@ Return ONLY the JSON object, no markdown.`;
                                 </div>
                               </div>
                               
-                              <div className="flex items-center justify-between pt-2 border-t border-neutral-800/50">
+                                <div className="flex items-center justify-between pt-2 border-t border-neutral-800/50">
                                 <div className="flex items-center gap-1">
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       if (block.type === 'system-hero') { setSelectedBlockId(block.id); setSystemModalType('hero'); setIsSystemModalOpen(true); }
                                       else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setSystemModalType('grid'); setIsSystemModalOpen(true); }
-                                      else if (block.type === 'system-footer') { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }
+                                      else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
                                       else if (block.type.startsWith('system-')) { 
                                         // All other system blocks: just select them to open UniversalEditor
                                         setSelectedBlockId(block.id);
@@ -6788,12 +6055,12 @@ Return ONLY the JSON object, no markdown.`;
                     )}
                   </div>
 
-                  {/* 3. FOOTER - Dedicated footer customization */}
-                  <div className="bg-neutral-900 border border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.3)] rounded-xl overflow-hidden">
+                  {/* 3. FOOTER - Fixed site footer */}
+                  <div className="bg-neutral-900 border border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)] rounded-xl overflow-hidden">
                     <button onClick={() => setIsFooterModalOpen(true)} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
                       <div className="flex items-center gap-3"><div className="p-1.5 bg-emerald-900/30 text-emerald-400 rounded"><PanelBottom size={16} /></div><span className="font-bold text-sm text-white">Footer</span></div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-neutral-500 capitalize">{config.footerStyle || 'minimal'}</span>
+                        <span className="text-[10px] text-neutral-500">{FOOTER_OPTIONS.find(f => f.id === config.footerStyle)?.name}</span>
                         <ChevronRight size={14} className="text-neutral-600" />
                       </div>
                     </button>
@@ -7057,7 +6324,7 @@ Return ONLY the JSON object, no markdown.`;
                         setSelectedBlockId(blockId);
                         if (block.type === 'system-hero') { setSystemModalType('hero'); setIsSystemModalOpen(true); }
                         else if (block.type === 'system-grid') { setSystemModalType('grid'); setIsSystemModalOpen(true); }
-                        else if (block.type === 'system-footer') { setSystemModalType('footer'); setIsSystemModalOpen(true); }
+                        else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
                         else if (block.type.startsWith('system-')) {
                           // Other system blocks - UniversalEditor already opens via setSelectedBlockId
                         }
@@ -8283,8 +7550,8 @@ Return ONLY the JSON object, no markdown.`;
       {renderHeaderPreview()}
       {renderBlockArchitect()}
       {renderHeaderModal()}
-      {renderFooterModal()}
       {renderSystemBlockModal()}
+      {renderFooterModal()}
       {renderAddSectionLibrary()}
       {renderWelcomeWizard()}
       {renderAddPageModal()}
