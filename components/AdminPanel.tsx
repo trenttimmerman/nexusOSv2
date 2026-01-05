@@ -1658,10 +1658,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
           {/* Modal Content */}
           <div className="flex-1 min-h-0 p-6">
-            <div className="flex gap-6 h-full">
+            <div className="flex gap-6 h-full overflow-hidden">
               
               {/* Left Column: Controls (30%) */}
-              <div className="w-[30%] h-full overflow-y-auto custom-scrollbar pr-2">
+              <div className="w-[30%] overflow-y-auto custom-scrollbar pr-2">
                 
               {/* Footer Style Selection */}
               <div className="bg-neutral-800/30 p-4 rounded-xl border border-neutral-700/50 mb-6">
