@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Facebook, Twitter, Instagram, ArrowRight, Mail, Send, Globe, ShieldCheck, MapPin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, ArrowRight, Mail, Send, Globe, ShieldCheck, MapPin, Search, User, ShoppingBag } from 'lucide-react';
 
 interface FooterProps {
   storeName: string;
@@ -9,31 +9,54 @@ interface FooterProps {
   backgroundColor?: string;
   textColor?: string;
   accentColor?: string;
+  data?: Record<string, any>;
 }
 
 // 1. Minimal (Clean, barely there)
-export const FooterMinimal: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor }) => (
-  <footer 
-    className="border-t py-12 px-6 transition-colors"
-    style={{ 
-      backgroundColor: backgroundColor || '#ffffff',
-      borderColor: textColor ? `${textColor}20` : '#f5f5f5'
-    }}
-  >
-    <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-      <div className="font-bold text-lg" style={{ color: textColor || '#171717' }}>{storeName}</div>
-      <div className="flex gap-6 text-sm" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
-        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>Terms</a>
-        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>Privacy</a>
-        <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>Contact</a>
+export const FooterMinimal: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor, data = {} }) => {
+  const showSearch = data.showSearch ?? false;
+  const showAccount = data.showAccount ?? false;
+  const showCart = data.showCart ?? false;
+  const showTerms = data.showTerms ?? true;
+  const showPrivacy = data.showPrivacy ?? true;
+  const showContact = data.showContact ?? true;
+  const showInstagram = data.showInstagram ?? true;
+  const showTwitter = data.showTwitter ?? true;
+  
+  const termsLabel = data.termsLabel || 'Terms';
+  const privacyLabel = data.privacyLabel || 'Privacy';
+  const contactLabel = data.contactLabel || 'Contact';
+  
+  return (
+    <footer 
+      className="border-t py-12 px-6 transition-colors"
+      style={{ 
+        backgroundColor: backgroundColor || '#ffffff',
+        borderColor: textColor ? `${textColor}20` : '#f5f5f5'
+      }}
+    >
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="font-bold text-lg" style={{ color: textColor || '#171717' }}>{storeName}</div>
+        
+        {/* Links */}
+        <div className="flex gap-6 text-sm" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
+          {showTerms && <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>{termsLabel}</a>}
+          {showPrivacy && <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>{privacyLabel}</a>}
+          {showContact && <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>{contactLabel}</a>}
+        </div>
+        
+        {/* Icons */}
+        <div className="flex gap-4 items-center">
+          {showSearch && <Search size={18} className="hover:opacity-80 transition-opacity cursor-pointer" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }} />}
+          {showAccount && <User size={18} className="hover:opacity-80 transition-opacity cursor-pointer" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }} />}
+          {showCart && <ShoppingBag size={18} className="hover:opacity-80 transition-opacity cursor-pointer" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }} />}
+          {showInstagram && <Instagram size={18} className="hover:opacity-80 transition-opacity cursor-pointer" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }} />}
+          {showTwitter && <Twitter size={18} className="hover:opacity-80 transition-opacity cursor-pointer" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }} />}
+        </div>
       </div>
-      <div className="flex gap-4">
-        <Instagram size={18} className="hover:opacity-80 transition-opacity cursor-pointer" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }} />
-        <Twitter size={18} className="hover:opacity-80 transition-opacity cursor-pointer" style={{ color: textColor ? `${textColor}99` : '#a3a3a3' }} />
-      </div>
-    </div>
-  </footer>
-);
+    </footer>
+  );
+};
 
 // 2. Columns (Standard E-commerce)
 export const FooterColumns: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor }) => (

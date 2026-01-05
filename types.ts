@@ -160,6 +160,7 @@ export interface StoreConfig {
   footerBackgroundColor?: string;
   footerTextColor?: string;
   footerAccentColor?: string;
+  footerData?: Record<string, any>; // Per-footer customization data
   
   primaryColor: string;
   accentColor?: string; // Secondary accent color

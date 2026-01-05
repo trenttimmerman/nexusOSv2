@@ -263,6 +263,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                     backgroundColor={config.footerBackgroundColor}
                     textColor={config.footerTextColor}
                     accentColor={config.footerAccentColor}
+                    data={config.footerData}
                   />
                   {showCartDrawer && <CartDrawer />}
               </div>
@@ -679,6 +680,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         backgroundColor={config.footerBackgroundColor}
         textColor={config.footerTextColor}
         accentColor={config.footerAccentColor}
+        data={config.footerData}
       />
       {showCartDrawer && <CartDrawer />}
       

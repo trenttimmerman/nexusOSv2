@@ -156,7 +156,9 @@ import {
   Lightbulb,
   Circle,
   Lock,
-  Unlock
+  Unlock,
+  Instagram,
+  Twitter
 } from 'lucide-react';
 
 // Page type options for creating new pages
@@ -1668,6 +1670,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     backgroundColor={config.footerBackgroundColor}
                     textColor={config.footerTextColor}
                     accentColor={config.footerAccentColor}
+                    data={config.footerData}
                   />
                 </div>
               </div>
@@ -1724,6 +1727,82 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     ))}
                   </div>
                 </div>
+
+                {/* Minimal Footer Controls */}
+                {config.footerStyle === 'minimal' && (
+                  <>
+                    {/* Show/Hide Icons */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Show/Hide Icons</p>
+                      <div className="grid grid-cols-5 gap-2">
+                        {[
+                          { key: 'showSearch', label: 'Search', icon: Search },
+                          { key: 'showAccount', label: 'Account', icon: User },
+                          { key: 'showCart', label: 'Cart', icon: ShoppingBag },
+                          { key: 'showInstagram', label: 'Instagram', icon: Instagram },
+                          { key: 'showTwitter', label: 'Twitter', icon: Twitter },
+                        ].map(({ key, label, icon: Icon }) => (
+                          <button
+                            key={key}
+                            onClick={() => onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, [key]: !(config.footerData?.[key] ?? (key === 'showInstagram' || key === 'showTwitter')) }
+                            })}
+                            className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-colors ${
+                              (config.footerData?.[key] ?? (key === 'showInstagram' || key === 'showTwitter'))
+                                ? 'bg-orange-500/20 border-orange-500/50 text-orange-400'
+                                : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                            }`}
+                          >
+                            <Icon size={16} />
+                            <span className="text-[10px]">{label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Link Controls */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Footer Links</p>
+                      <div className="space-y-2">
+                        {[
+                          { key: 'showTerms', labelKey: 'termsLabel', defaultLabel: 'Terms' },
+                          { key: 'showPrivacy', labelKey: 'privacyLabel', defaultLabel: 'Privacy' },
+                          { key: 'showContact', labelKey: 'contactLabel', defaultLabel: 'Contact' },
+                        ].map(({ key, labelKey, defaultLabel }) => (
+                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                            <button
+                              onClick={() => onConfigChange({
+                                ...config,
+                                footerData: { ...config.footerData, [key]: !(config.footerData?.[key] ?? true) }
+                              })}
+                              className={`w-10 h-6 rounded-full transition-colors relative ${
+                                (config.footerData?.[key] ?? true) ? 'bg-orange-500' : 'bg-neutral-700'
+                              }`}
+                            >
+                              <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                                (config.footerData?.[key] ?? true) ? 'left-5' : 'left-1'
+                              }`} />
+                            </button>
+                            <input
+                              type="text"
+                              value={config.footerData?.[labelKey] ?? defaultLabel}
+                              onChange={(e) => onConfigChange({
+                                ...config,
+                                footerData: { ...config.footerData, [labelKey]: e.target.value }
+                              })}
+                              disabled={!(config.footerData?.[key] ?? true)}
+                              className={`flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-1.5 text-sm focus:border-orange-500 outline-none ${
+                                (config.footerData?.[key] ?? true) ? 'text-white' : 'text-neutral-600'
+                              }`}
+                              placeholder={defaultLabel}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 {/* Reset to Defaults */}
                 <button
