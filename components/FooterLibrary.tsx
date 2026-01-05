@@ -144,37 +144,7 @@ export const FooterNewsletter: React.FC<FooterProps> = ({ storeName, primaryColo
   </footer>
 );
 
-// 4. Brand (Typography Heavy)
-export const FooterBrand: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor }) => (
-  <footer className="pt-24 pb-8 px-6 overflow-hidden transition-colors" style={{ backgroundColor: backgroundColor || '#f0f0f0' }}>
-    <div className="max-w-7xl mx-auto mb-24 grid grid-cols-1 md:grid-cols-2 gap-12">
-       <div>
-          <span className="block text-xs font-bold uppercase tracking-widest mb-4" style={{ color: textColor ? `${textColor}80` : '#a3a3a3' }}>Headquarters</span>
-          <p className="text-xl font-medium leading-relaxed" style={{ color: textColor || '#171717' }}>
-             100 Evolv Way<br/>
-             Floor 24, Suite 100<br/>
-             New York, NY 10012
-          </p>
-       </div>
-       <div className="flex flex-col md:items-end">
-          <span className="block text-xs font-bold uppercase tracking-widest mb-4" style={{ color: textColor ? `${textColor}80` : '#a3a3a3' }}>Connect</span>
-          <a href="mailto:hello@evolv.com" className="text-xl font-medium hover:underline mb-2" style={{ color: accentColor || textColor || '#171717' }}>hello@{storeName.toLowerCase()}.com</a>
-          <p className="text-xl font-medium" style={{ color: textColor || '#171717' }}>+1 (555) 000-0000</p>
-       </div>
-    </div>
-    
-    <div className="border-t pt-8 mb-4 flex justify-between text-xs font-bold uppercase tracking-wider" style={{ borderColor: textColor ? `${textColor}30` : '#d4d4d4', color: textColor ? `${textColor}80` : '#737373' }}>
-       <span>Based in NYC</span>
-       <span>Worldwide Shipping</span>
-    </div>
-    
-    <h1 className="text-[15vw] leading-none font-black tracking-tighter select-none text-center md:text-left" style={{ color: textColor ? `${textColor}30` : '#d4d4d4' }}>
-       {storeName.toUpperCase()}
-    </h1>
-  </footer>
-);
-
-// 5. Sitemap (Information Dense)
+// 4. Sitemap (Information Dense)
 export const FooterSitemap: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor }) => (
   <footer 
     className="py-16 px-6 text-sm border-t-4 transition-colors" 
@@ -250,7 +220,6 @@ export const FOOTER_COMPONENTS = {
   minimal: FooterMinimal,
   columns: FooterColumns,
   newsletter: FooterNewsletter,
-  brand: FooterBrand,
   sitemap: FooterSitemap
 };
 
@@ -258,7 +227,6 @@ export const FOOTER_OPTIONS = [
   { id: 'minimal', name: 'Minimal', description: 'Clean & Simple', date: '2024-01-01', popularity: 80 },
   { id: 'columns', name: 'Columns', description: 'Standard Ecommerce', date: '2024-02-15', popularity: 95 },
   { id: 'newsletter', name: 'Newsletter', description: 'Conversion Focused', date: '2024-05-20', popularity: 85 },
-  { id: 'brand', name: 'Brand', description: 'Big Typography', date: '2024-08-10', popularity: 70 },
   { id: 'sitemap', name: 'Sitemap', description: 'Information Dense', date: '2024-04-05', popularity: 60 },
 ];
 
@@ -266,6 +234,5 @@ export const FOOTER_FIELDS: Record<string, string[]> = {
   minimal: ['copyrightText', 'termsLabel', 'privacyLabel', 'contactLabel', 'showInstagram', 'showTwitter'],
   columns: ['tagline', 'copyrightText', 'shopColumnTitle', 'companyColumnTitle', 'supportColumnTitle'],
   newsletter: ['heading', 'subheading', 'buttonText', 'copyrightText', 'instagramLabel', 'twitterLabel', 'tiktokLabel', 'youtubeLabel'],
-  brand: ['address', 'email', 'phone', 'basedInLabel', 'shippingLabel'],
   sitemap: ['regionText', 'copyrightText', 'productsColumnTitle', 'collectionsColumnTitle', 'supportColumnTitle', 'legalColumnTitle'],
 };

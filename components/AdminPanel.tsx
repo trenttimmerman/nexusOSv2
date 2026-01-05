@@ -1675,7 +1675,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               {/* Footer Design Selection */}
               <div className="bg-neutral-800/30 p-4 rounded-xl border border-neutral-700/50 mb-6">
                 <label className="text-sm font-bold text-white mb-3 block">Footer Design</label>
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-4 gap-2">
                   {FOOTER_OPTIONS.map((footer) => (
                     <button
                       key={footer.id}
