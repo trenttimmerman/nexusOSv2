@@ -816,10 +816,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // MODAL STATES
   const [isHeaderModalOpen, setIsHeaderModalOpen] = useState(false);
+  const [isFooterModalOpen, setIsFooterModalOpen] = useState(false);
   const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
   const [systemModalType, setSystemModalType] = useState<'hero' | 'grid' | 'footer' | null>(null);
   const [isInterfaceModalOpen, setIsInterfaceModalOpen] = useState(false);
   const [previewingHeaderId, setPreviewingHeaderId] = useState<HeaderStyleId | null>(null);
+  const [previewingFooterId, setPreviewingFooterId] = useState<FooterStyleId | null>(null);
   const [settingsTab, setSettingsTab] = useState<'identity' | 'typography' | 'colors' | 'seo' | 'header' | 'scrollbar'>('identity');
   const [previewingScrollbar, setPreviewingScrollbar] = useState<string | null>(null);
 
@@ -1620,6 +1622,567 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           >
             Close
           </button>
+        </div>
+      </div>
+    );
+  };
+
+  // --- FOOTER CONFIG MODAL ---
+  const renderFooterModal = () => {
+    if (!isFooterModalOpen) return null;
+    
+    const currentFooterFields = FOOTER_FIELDS[config.footerStyle] || [];
+    
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
+          
+          {/* Modal Header */}
+          <div className="flex items-center justify-between p-6 border-b border-neutral-700">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-emerald-600/20 rounded-xl">
+                <PanelBottom size={24} className="text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Footer Studio</h3>
+                <p className="text-sm text-neutral-400">Customize your store's footer</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setIsFooterModalOpen(false)}
+              className="p-2 hover:bg-neutral-800 rounded-lg transition-colors text-neutral-400 hover:text-white"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Modal Content */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <div className="max-w-4xl mx-auto">
+              
+              {/* Live Preview */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-neutral-400 uppercase tracking-wide">Live Preview</p>
+                  <span className="text-xs text-neutral-500">Changes update instantly</span>
+                </div>
+                <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100 shadow-lg">
+                  {(() => {
+                    const FooterComponent = FOOTER_COMPONENTS[config.footerStyle as FooterStyleId] || FOOTER_COMPONENTS.minimal;
+                    return (
+                      <FooterComponent
+                        storeName={config.name || 'Your Store'}
+                        primaryColor={config.primaryColor}
+                        data={config.footerData}
+                      />
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Footer Style Selection */}
+              <div className="bg-neutral-800/30 p-4 rounded-xl border border-neutral-700/50 mb-6">
+                <label className="text-sm font-bold text-white mb-3 block">Footer Design</label>
+                <div className="grid grid-cols-5 gap-2">
+                  {FOOTER_OPTIONS.map((footer) => (
+                    <button
+                      key={footer.id}
+                      onClick={() => {
+                        setPreviewingFooterId(footer.id as FooterStyleId);
+                        onConfigChange({ ...config, footerStyle: footer.id as any, footerData: {} });
+                      }}
+                      className={`p-3 rounded-lg border-2 text-center transition-all ${
+                        config.footerStyle === footer.id
+                          ? 'border-emerald-500 bg-emerald-500/10'
+                          : 'border-neutral-700 hover:border-neutral-600'
+                      }`}
+                    >
+                      <span className={`text-xs font-bold block mb-1 ${config.footerStyle === footer.id ? 'text-emerald-400' : 'text-white'}`}>
+                        {footer.name}
+                      </span>
+                      <span className="text-[10px] text-neutral-500">{footer.description}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer Customization */}
+              <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50">
+                <div className="flex items-center justify-between mb-4">
+                  <label className="text-sm font-bold text-white">Customize Footer</label>
+                  <span className="text-xs px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg">
+                    {FOOTER_OPTIONS.find(f => f.id === config.footerStyle)?.name || 'Minimal'}
+                  </span>
+                </div>
+
+                {/* Universal Color Controls */}
+                {currentFooterFields.some(field => ['backgroundColor', 'textColor', 'accentColor', 'borderColor'].includes(field)) && (
+                  <div className="space-y-3 mb-6">
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Colors</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        currentFooterFields.includes('backgroundColor') && { key: 'backgroundColor', label: 'Background', defaultValue: '#ffffff' },
+                        currentFooterFields.includes('textColor') && { key: 'textColor', label: 'Text', defaultValue: '#171717' },
+                        currentFooterFields.includes('accentColor') && { key: 'accentColor', label: 'Accent', defaultValue: '#737373' },
+                        currentFooterFields.includes('borderColor') && { key: 'borderColor', label: 'Border', defaultValue: '#e5e5e5' },
+                      ].filter(Boolean).map((field: any) => (
+                        <div key={field.key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                          <input
+                            type="color"
+                            value={config.footerData?.[field.key] ?? field.defaultValue}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, [field.key]: e.target.value }
+                            })}
+                            className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                          />
+                          <span className="text-sm text-neutral-300">{field.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Minimal Footer Controls */}
+                {config.footerStyle === 'minimal' && (
+                  <div className="space-y-3 mb-6">
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Link Labels</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { key: 'termsLabel', label: 'Terms', defaultValue: 'Terms' },
+                        { key: 'privacyLabel', label: 'Privacy', defaultValue: 'Privacy' },
+                        { key: 'contactLabel', label: 'Contact', defaultValue: 'Contact' },
+                      ].map(({ key, label, defaultValue }) => (
+                        <div key={key} className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                          <label className="text-xs text-neutral-400 mb-1 block">{label}</label>
+                          <input
+                            type="text"
+                            value={config.footerData?.[key] ?? defaultValue}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, [key]: e.target.value }
+                            })}
+                            className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Social Media</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { key: 'showInstagram', label: 'Instagram' },
+                        { key: 'showTwitter', label: 'Twitter' },
+                        { key: 'showFacebook', label: 'Facebook' },
+                      ].map(({ key, label }) => (
+                        <button
+                          key={key}
+                          onClick={() => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, [key]: !(config.footerData?.[key] ?? true) }
+                          })}
+                          className={`flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
+                            (config.footerData?.[key] ?? (key === 'showFacebook' ? false : true))
+                              ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                          }`}
+                        >
+                          <span className="text-sm">{label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Columns Footer Controls */}
+                {config.footerStyle === 'columns' && (
+                  <div className="space-y-3 mb-6">
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Tagline</p>
+                    <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                      <textarea
+                        value={config.footerData?.tagline ?? 'Designed for the future of commerce. We build tools that empower creators to sell without limits.'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, tagline: e.target.value }
+                        })}
+                        rows={2}
+                        className="w-full bg-neutral-800 border-0 rounded px-3 py-2 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none resize-none"
+                      />
+                    </div>
+                    
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Column Titles</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { key: 'shopColumnTitle', label: 'Shop', defaultValue: 'Shop' },
+                        { key: 'companyColumnTitle', label: 'Company', defaultValue: 'Company' },
+                        { key: 'supportColumnTitle', label: 'Support', defaultValue: 'Support' },
+                      ].map(({ key, label, defaultValue }) => (
+                        <div key={key} className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                          <label className="text-xs text-neutral-400 mb-1 block">{label}</label>
+                          <input
+                            type="text"
+                            value={config.footerData?.[key] ?? defaultValue}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, [key]: e.target.value }
+                            })}
+                            className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Copyright & Features</p>
+                    <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700 mb-3">
+                      <label className="text-xs text-neutral-400 mb-1 block">Copyright Text</label>
+                      <input
+                        type="text"
+                        value={config.footerData?.copyrightText ?? '© 2024 All rights reserved.'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, copyrightText: e.target.value }
+                        })}
+                        className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                      />
+                    </div>
+                    
+                    <button
+                      onClick={() => onConfigChange({
+                        ...config,
+                        footerData: { ...config.footerData, showPaymentIcons: !(config.footerData?.showPaymentIcons ?? true) }
+                      })}
+                      className={`w-full p-3 rounded-lg border transition-colors ${
+                        (config.footerData?.showPaymentIcons ?? true)
+                          ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                          : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                      }`}
+                    >
+                      <span className="text-sm">Payment Icons</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Newsletter Footer Controls */}
+                {config.footerStyle === 'newsletter' && (
+                  <div className="space-y-3 mb-6">
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Copy</p>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-xs text-neutral-400 mb-1 block">Heading</label>
+                        <input
+                          type="text"
+                          value={config.footerData?.heading ?? "Don't miss the drop."}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, heading: e.target.value }
+                          })}
+                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                        />
+                      </div>
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-xs text-neutral-400 mb-1 block">Subheading</label>
+                        <textarea
+                          value={config.footerData?.subheading ?? 'Join 50,000+ subscribers getting exclusive access to new releases, secret sales, and design insights.'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, subheading: e.target.value }
+                          })}
+                          rows={2}
+                          className="w-full bg-neutral-800 border-0 rounded px-3 py-2 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none resize-none"
+                        />
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Form Labels</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-xs text-neutral-400 mb-1 block">Placeholder</label>
+                        <input
+                          type="text"
+                          value={config.footerData?.emailPlaceholder ?? 'Enter your email'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, emailPlaceholder: e.target.value }
+                          })}
+                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                        />
+                      </div>
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-xs text-neutral-400 mb-1 block">Button</label>
+                        <input
+                          type="text"
+                          value={config.footerData?.buttonText ?? 'Subscribe'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, buttonText: e.target.value }
+                          })}
+                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                        />
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Social Links</p>
+                    <button
+                      onClick={() => onConfigChange({
+                        ...config,
+                        footerData: { ...config.footerData, showSocialLinks: !(config.footerData?.showSocialLinks ?? true) }
+                      })}
+                      className={`w-full p-3 rounded-lg border transition-colors mb-3 ${
+                        (config.footerData?.showSocialLinks ?? true)
+                          ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                          : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                      }`}
+                    >
+                      <span className="text-sm">Show Social Links</span>
+                    </button>
+                    
+                    {(config.footerData?.showSocialLinks ?? true) && (
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          { key: 'instagramLabel', defaultValue: 'Instagram' },
+                          { key: 'twitterLabel', defaultValue: 'Twitter' },
+                          { key: 'tiktokLabel', defaultValue: 'TikTok' },
+                          { key: 'youtubeLabel', defaultValue: 'YouTube' },
+                        ].map(({ key, defaultValue }) => (
+                          <div key={key} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <input
+                              type="text"
+                              value={config.footerData?.[key] ?? defaultValue}
+                              onChange={(e) => onConfigChange({
+                                ...config,
+                                footerData: { ...config.footerData, [key]: e.target.value }
+                              })}
+                              className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-xs focus:ring-1 focus:ring-emerald-500 outline-none"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Brand Footer Controls */}
+                {config.footerStyle === 'brand' && (
+                  <div className="space-y-3 mb-6">
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Contact Information</p>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <button
+                        onClick={() => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, showAddress: !(config.footerData?.showAddress ?? true) }
+                        })}
+                        className={`p-3 rounded-lg border transition-colors ${
+                          (config.footerData?.showAddress ?? true)
+                            ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                        }`}
+                      >
+                        <span className="text-sm">Show Address</span>
+                      </button>
+                      <button
+                        onClick={() => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, showContactInfo: !(config.footerData?.showContactInfo ?? true) }
+                        })}
+                        className={`p-3 rounded-lg border transition-colors ${
+                          (config.footerData?.showContactInfo ?? true)
+                            ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                        }`}
+                      >
+                        <span className="text-sm">Show Contact</span>
+                      </button>
+                    </div>
+                    
+                    {(config.footerData?.showAddress ?? true) && (
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-xs text-neutral-400 mb-1 block">Address (use \\n for new lines)</label>
+                        <textarea
+                          value={config.footerData?.address ?? '100 Evolv Way\\nFloor 24, Suite 100\\nNew York, NY 10012'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, address: e.target.value }
+                          })}
+                          rows={3}
+                          className="w-full bg-neutral-800 border-0 rounded px-3 py-2 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none resize-none"
+                        />
+                      </div>
+                    )}
+                    
+                    {(config.footerData?.showContactInfo ?? true) && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                          <label className="text-xs text-neutral-400 mb-1 block">Email</label>
+                          <input
+                            type="email"
+                            value={config.footerData?.email ?? 'hello@evolv.com'}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, email: e.target.value }
+                            })}
+                            className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                          />
+                        </div>
+                        <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                          <label className="text-xs text-neutral-400 mb-1 block">Phone</label>
+                          <input
+                            type="tel"
+                            value={config.footerData?.phone ?? '+1 (555) 000-0000'}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, phone: e.target.value }
+                            })}
+                            className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Footer Labels</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-xs text-neutral-400 mb-1 block">Based In</label>
+                        <input
+                          type="text"
+                          value={config.footerData?.basedInLabel ?? 'Based in NYC'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, basedInLabel: e.target.value }
+                          })}
+                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                        />
+                      </div>
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-xs text-neutral-400 mb-1 block">Shipping</label>
+                        <input
+                          type="text"
+                          value={config.footerData?.shippingLabel ?? 'Worldwide Shipping'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, shippingLabel: e.target.value }
+                          })}
+                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sitemap Footer Controls */}
+                {config.footerStyle === 'sitemap' && (
+                  <div className="space-y-3 mb-6">
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Column Titles</p>
+                    <div className="grid grid-cols-4 gap-3">
+                      {[
+                        { key: 'productsColumnTitle', defaultValue: 'Products' },
+                        { key: 'collectionsColumnTitle', defaultValue: 'Collections' },
+                        { key: 'supportColumnTitle', defaultValue: 'Support' },
+                        { key: 'legalColumnTitle', defaultValue: 'Legal' },
+                      ].map(({ key, defaultValue }) => (
+                        <div key={key} className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                          <label className="text-xs text-neutral-400 mb-1 block">{defaultValue}</label>
+                          <input
+                            type="text"
+                            value={config.footerData?.[key] ?? defaultValue}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, [key]: e.target.value }
+                            })}
+                            className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Features</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, showRegionSelector: !(config.footerData?.showRegionSelector ?? true) }
+                        })}
+                        className={`p-3 rounded-lg border transition-colors ${
+                          (config.footerData?.showRegionSelector ?? true)
+                            ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                        }`}
+                      >
+                        <span className="text-sm">Region Selector</span>
+                      </button>
+                      <button
+                        onClick={() => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, showSecureCheckout: !(config.footerData?.showSecureCheckout ?? true) }
+                        })}
+                        className={`p-3 rounded-lg border transition-colors ${
+                          (config.footerData?.showSecureCheckout ?? true)
+                            ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                        }`}
+                      >
+                        <span className="text-sm">Secure Checkout</span>
+                      </button>
+                    </div>
+                    
+                    {(config.footerData?.showRegionSelector ?? true) && (
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-xs text-neutral-400 mb-1 block">Region Text</label>
+                        <input
+                          type="text"
+                          value={config.footerData?.regionText ?? 'United States (USD $)'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, regionText: e.target.value }
+                          })}
+                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                        />
+                      </div>
+                    )}
+                    
+                    {(config.footerData?.showSecureCheckout ?? true) && (
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-xs text-neutral-400 mb-1 block">Secure Checkout Text</label>
+                        <input
+                          type="text"
+                          value={config.footerData?.secureCheckoutText ?? 'Secure Checkout via Evolv Pass'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, secureCheckoutText: e.target.value }
+                          })}
+                          className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                      <label className="text-xs text-neutral-400 mb-1 block">Copyright Text</label>
+                      <input
+                        type="text"
+                        value={config.footerData?.copyrightText ?? '© 2024 Evolv Commerce Operating System. Powered by React.'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, copyrightText: e.target.value }
+                        })}
+                        className="w-full bg-neutral-800 border-0 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Footer */}
+          <div className="flex items-center justify-end gap-3 p-6 border-t border-neutral-700">
+            <button
+              onClick={() => setIsFooterModalOpen(false)}
+              className="px-6 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg font-bold text-sm transition-colors"
+            >
+              Close
+            </button>
+          </div>
+
         </div>
       </div>
     );
@@ -5904,6 +6467,17 @@ Return ONLY the JSON object, no markdown.`;
                     </button>
                   </div>
 
+                  {/* FOOTER EDITOR - Dedicated footer customization */}
+                  <div className="bg-neutral-900 border border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.3)] rounded-xl overflow-hidden">
+                    <button onClick={() => setIsFooterModalOpen(true)} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
+                      <div className="flex items-center gap-3"><div className="p-1.5 bg-emerald-900/30 text-emerald-400 rounded"><PanelBottom size={16} /></div><span className="font-bold text-sm text-white">Edit Footer</span></div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-neutral-500 capitalize">{config.footerStyle || 'minimal'}</span>
+                        <ChevronRight size={14} className="text-neutral-600" />
+                      </div>
+                    </button>
+                  </div>
+
                   {/* Pages & Navigation */}
                   <div className="bg-neutral-900 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-xl overflow-hidden">
                     <button onClick={() => setDesignSections(prev => ({ ...prev, pages: !prev.pages }))} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
@@ -7716,6 +8290,7 @@ Return ONLY the JSON object, no markdown.`;
       {renderHeaderPreview()}
       {renderBlockArchitect()}
       {renderHeaderModal()}
+      {renderFooterModal()}
       {renderSystemBlockModal()}
       {renderAddSectionLibrary()}
       {renderWelcomeWizard()}
