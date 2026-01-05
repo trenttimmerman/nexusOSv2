@@ -791,3 +791,6 @@ export const HEADER_OPTIONS = [
 - [ ] Preview updates immediately
 - [ ] No console errors
 - [ ] Documented in handoff notes
+
+
+systematic check of EVERY header's DEFAULTS against HEADER_FIELDS

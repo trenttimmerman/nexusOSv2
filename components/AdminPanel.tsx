@@ -2567,6 +2567,49 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
                   )}
 
+                  {/* Ticker-specific Controls */}
+                  {(config.headerStyle === 'ticker') && (
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Ticker Banner</p>
+                      
+                      {/* Ticker Text */}
+                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                        <label className="text-sm text-neutral-300 mb-2 block">Ticker Text</label>
+                        <input
+                          type="text"
+                          value={config.headerData?.tickerText ?? 'BREAKING NEWS • LATEST UPDATES • TRENDING NOW'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            headerData: { ...config.headerData, tickerText: e.target.value }
+                          })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
+                          placeholder="BREAKING NEWS • LATEST UPDATES"
+                        />
+                      </div>
+                      
+                      {/* Ticker Colors */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: 'tickerBackgroundColor', label: 'Ticker Background', defaultValue: '#dc2626' },
+                          { key: 'tickerTextColor', label: 'Ticker Text', defaultValue: '#ffffff' },
+                        ].map(({ key, label, defaultValue }) => (
+                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={config.headerData?.[key] ?? defaultValue}
+                              onChange={(e) => onConfigChange({
+                                ...config,
+                                headerData: { ...config.headerData, [key]: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-sm text-neutral-300">{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Venture-specific Controls */}
                   {(config.headerStyle === 'venture') && (
                     <div className="space-y-3 mb-6">
