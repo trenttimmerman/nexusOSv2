@@ -1888,14 +1888,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 {/* Columns Footer Controls */}
                 {config.footerStyle === 'columns' && (
                   <>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Columns Footer Controls */}
-                {config.footerStyle === 'columns' && (
-                  <>
                     {/* Tagline */}
                     <div className="space-y-3 mb-6">
                       <p className="text-xs text-neutral-400 uppercase tracking-wide">Tagline / Description</p>
