@@ -1171,6 +1171,346 @@ export const FooterTerminal: React.FC<FooterProps> = ({ storeName, backgroundCol
   );
 };
 
+// Footer 27 - Aurora (Northern Lights)
+export const FooterAurora: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor, data: dataRaw = {} }) => {
+  const data = typeof dataRaw === 'string' ? {} : dataRaw;
+  
+  const heading = data.heading || storeName || 'Northern Lights Inc.';
+  const subheading = data.subheading || 'Navigating the digital cosmos with grace and style.';
+  const copyrightText = data.copyrightText || `© ${new Date().getFullYear()} All rights reserved.`;
+  const color1 = data.color1 || '#9333ea'; // purple
+  const color2 = data.color2 || '#14b8a6'; // teal
+  const color3 = data.color3 || '#f43f5e'; // rose
+  
+  const navLinks = data.navLinks || [
+    { label: 'Products', link: '' },
+    { label: 'Showcase', link: '' },
+    { label: 'About Us', link: '' },
+    { label: 'Contact', link: '' }
+  ];
+
+  const auroraContainerStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    zIndex: 0,
+    pointerEvents: 'none',
+    filter: 'blur(80px)',
+  };
+
+  return (
+    <>
+      <style>
+        {`
+        @keyframes aurora-anim-1 {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+          50% { transform: translate(-30%, -60%) scale(1.5); opacity: 0.5; }
+          100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+        }
+        @keyframes aurora-anim-2 {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: 0.2; }
+          50% { transform: translate(-70%, -40%) scale(1.5); opacity: 0.4; }
+          100% { transform: translate(-50%, -50%) scale(1); opacity: 0.2; }
+        }
+        @keyframes aurora-anim-3 {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: 0.2; }
+          50% { transform: translate(-40%, -30%) scale(1.3); opacity: 0.3; }
+          100% { transform: translate(-50%, -50%) scale(1); opacity: 0.2; }
+        }
+        `}
+      </style>
+      <footer className="relative overflow-hidden" style={{ backgroundColor: backgroundColor || '#111827', color: textColor || '#d1d5db' }}>
+        <div style={auroraContainerStyle}>
+          <div 
+            className="absolute top-1/2 left-1/2 w-[150%] h-[150%]"
+            style={{
+              backgroundImage: `radial-gradient(circle, ${color1}, transparent, transparent)`,
+              animation: 'aurora-anim-1 20s ease-in-out infinite',
+            }}
+          />
+          <div 
+            className="absolute top-1/2 left-1/2 w-[150%] h-[150%]"
+            style={{
+              backgroundImage: `radial-gradient(circle, ${color2}, transparent, transparent)`,
+              animation: 'aurora-anim-2 25s ease-in-out infinite',
+            }}
+          />
+          <div 
+            className="absolute top-1/2 left-1/2 w-[150%] h-[150%]"
+            style={{
+              backgroundImage: `radial-gradient(circle, ${color3}, transparent, transparent)`,
+              animation: 'aurora-anim-3 18s ease-in-out infinite',
+            }}
+          />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold" style={{ color: textColor || 'white' }}>{heading}</h2>
+          <p className="mt-4 max-w-xl mx-auto">{subheading}</p>
+          <div className="mt-8 flex justify-center gap-x-8 gap-y-4 flex-wrap">
+            {navLinks.map((item: any, idx: number) => (
+              <a 
+                key={idx} 
+                href={item.link === 'external' ? item.externalUrl : (item.link ? `/${item.link}` : '#')}
+                className="font-semibold transition-colors hover:opacity-80"
+                style={{ color: accentColor || 'white' }}
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+          <div className="mt-12 text-sm opacity-60">
+            <p>{copyrightText}</p>
+          </div>
+        </div>
+      </footer>
+    </>
+  );
+};
+
+// Footer 28 - Ripple (Interactive Water Effect)
+export const FooterRipple: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor, data: dataRaw = {} }) => {
+  const data = typeof dataRaw === 'string' ? {} : dataRaw;
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  
+  const heading = data.heading || storeName || 'Ripple Effect';
+  const subheading = data.subheading || 'Move your mouse to interact.';
+  const bgImage = data.bgImage || 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&q=80';
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    let width = canvas.offsetWidth;
+    let height = canvas.offsetHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    let buffer1: number[] = new Array(width * height).fill(0);
+    let buffer2: number[] = new Array(width * height).fill(0);
+    let temp: number[];
+    
+    let isRunning = true;
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = bgImage;
+    imageRef.current = img;
+
+    const disturb = (x: number, y: number, pressure: number) => {
+      if (x > 2 && x < width - 2 && y > 2 && y < height - 2) {
+        const index = x + y * width;
+        buffer1[index] += pressure;
+      }
+    };
+
+    const process = () => {
+      const imgData = ctx.getImageData(0, 0, width, height);
+      const data = imgData.data;
+
+      for (let i = 1; i < width - 1; i++) {
+        for (let j = 1; j < height - 1; j++) {
+          const index = i + j * width;
+          const shock = ((buffer1[index - 1] + buffer1[index + 1] + buffer1[index - width] + buffer1[index + width]) / 2) - buffer2[index];
+          buffer2[index] = shock * 0.98;
+        }
+      }
+      
+      for (let i = 0; i < width * height; i++) {
+        const x = i % width;
+        const y = Math.floor(i / width);
+        
+        const xOffset = Math.floor((buffer2[(x - 1) + y * width] - buffer2[(x + 1) + y * width]));
+        const yOffset = Math.floor((buffer2[x + (y - 1) * width] - buffer2[x + (y + 1) * width]));
+
+        const originalIndex = (i) * 4;
+        const targetIndex = (i + xOffset + yOffset * width) * 4;
+
+        data[originalIndex] = data[targetIndex];
+        data[originalIndex+1] = data[targetIndex+1];
+        data[originalIndex+2] = data[targetIndex+2];
+      }
+      ctx.putImageData(imgData, 0, 0);
+
+      temp = buffer1;
+      buffer1 = buffer2;
+      buffer2 = temp;
+    };
+
+    const drawBg = () => {
+      if (imageRef.current?.complete) {
+        ctx.drawImage(imageRef.current, 0, 0, width, height);
+      }
+    };
+
+    const loop = () => {
+      if (!isRunning) return;
+      drawBg();
+      process();
+      requestAnimationFrame(loop);
+    };
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      disturb(Math.floor(e.clientX - rect.left), Math.floor(e.clientY - rect.top), 1500);
+    };
+    
+    canvas.addEventListener('mousemove', handleMouseMove);
+    
+    img.onload = () => {
+      drawBg();
+      loop();
+    };
+
+    return () => {
+      isRunning = false;
+      canvas.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [bgImage]);
+
+  return (
+    <footer className="relative h-80 flex items-center justify-center" style={{ backgroundColor: backgroundColor || '#111827', color: textColor || '#d1d5db' }}>
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+      <div className="relative z-10 text-center p-4">
+        <h2 className="text-4xl font-bold backdrop-blur-sm p-2 rounded" style={{ color: textColor || 'white' }}>{heading}</h2>
+        <p className="backdrop-blur-sm p-1 rounded">{subheading}</p>
+      </div>
+    </footer>
+  );
+};
+
+// Footer 29 - Glitch (Cyberpunk Effect)
+export const FooterGlitch: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor, data: dataRaw = {} }) => {
+  const data = typeof dataRaw === 'string' ? {} : dataRaw;
+  
+  const brandName = data.brandName || storeName || 'CYBERCORP';
+  const copyrightText = data.copyrightText || `© ${new Date().getFullYear()} ${brandName}. All rights reserved.`;
+  const glitchColor1 = data.glitchColor1 || '#ff00c1';
+  const glitchColor2 = data.glitchColor2 || '#00fff9';
+  const borderColor = data.borderColor || '#d946ef'; // fuchsia-500
+  
+  const navLinks = data.navLinks || [
+    { label: 'Network', link: '' },
+    { label: 'Security', link: '' },
+    { label: 'Data', link: '' },
+    { label: 'Careers', link: '' }
+  ];
+
+  return (
+    <>
+      <style>
+        {`
+        .footer-glitch-text {
+          position: relative;
+          text-decoration: none;
+          text-transform: uppercase;
+          letter-spacing: 0.2em;
+          display: inline-block;
+        }
+        .footer-glitch-text:hover:before,
+        .footer-glitch-text:hover:after {
+          content: attr(data-text);
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: ${backgroundColor || '#111827'};
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+        }
+        .footer-glitch-text:hover:before {
+          left: 2px;
+          text-shadow: -1px 0 ${glitchColor1};
+          animation: footer-glitch-1 2s infinite linear alternate-reverse;
+        }
+        .footer-glitch-text:hover:after {
+          left: -2px;
+          text-shadow: -1px 0 ${glitchColor2};
+          animation: footer-glitch-2 2s infinite linear alternate-reverse;
+        }
+
+        @keyframes footer-glitch-1 {
+          0% { clip: rect(42px, 9999px, 44px, 0); }
+          5% { clip: rect(12px, 9999px, 62px, 0); }
+          10% { clip: rect(8px, 9999px, 90px, 0); }
+          15% { clip: rect(61px, 9999px, 14px, 0); }
+          20% { clip: rect(32px, 9999px, 80px, 0); }
+          25% { clip: rect(50px, 9999px, 100px, 0); }
+          30% { clip: rect(24px, 9999px, 68px, 0); }
+          35% { clip: rect(97px, 9999px, 41px, 0); }
+          40% { clip: rect(27px, 9999px, 56px, 0); }
+          45% { clip: rect(83px, 9999px, 29px, 0); }
+          50% { clip: rect(64px, 9999px, 83px, 0); }
+          55% { clip: rect(10px, 9999px, 60px, 0); }
+          60% { clip: rect(39px, 9999px, 2px, 0); }
+          65% { clip: rect(74px, 9999px, 52px, 0); }
+          70% { clip: rect(58px, 9999px, 91px, 0); }
+          75% { clip: rect(44px, 9999px, 1px, 0); }
+          80% { clip: rect(13px, 9999px, 76px, 0); }
+          85% { clip: rect(43px, 9999px, 35px, 0); }
+          90% { clip: rect(93px, 9999px, 23px, 0); }
+          95% { clip: rect(41px, 9999px, 73px, 0); }
+          100% { clip: rect(3px, 9999px, 86px, 0); }
+        }
+        @keyframes footer-glitch-2 {
+          0% { clip: rect(7px, 9999px, 98px, 0); }
+          5% { clip: rect(86px, 9999px, 55px, 0); }
+          10% { clip: rect(43px, 9999px, 21px, 0); }
+          15% { clip: rect(65px, 9999px, 3px, 0); }
+          20% { clip: rect(9px, 9999px, 78px, 0); }
+          25% { clip: rect(69px, 9999px, 48px, 0); }
+          30% { clip: rect(3px, 9999px, 94px, 0); }
+          35% { clip: rect(53px, 9999px, 33px, 0); }
+          40% { clip: rect(19px, 9999px, 82px, 0); }
+          45% { clip: rect(78px, 9999px, 12px, 0); }
+          50% { clip: rect(49px, 9999px, 63px, 0); }
+          55% { clip: rect(22px, 9999px, 81px, 0); }
+          60% { clip: rect(75px, 9999px, 40px, 0); }
+          65% { clip: rect(15px, 9999px, 95px, 0); }
+          70% { clip: rect(88px, 9999px, 37px, 0); }
+          75% { clip: rect(47px, 9999px, 8px, 0); }
+          80% { clip: rect(28px, 9999px, 66px, 0); }
+          85% { clip: rect(89px, 9999px, 20px, 0); }
+          90% { clip: rect(5px, 9999px, 51px, 0); }
+          95% { clip: rect(71px, 9999px, 18px, 0); }
+          100% { clip: rect(62px, 9999px, 45px, 0); }
+        }
+        `}
+      </style>
+      <footer className="py-16 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: backgroundColor || '#111827', color: textColor || '#9ca3af', borderTop: `2px solid ${borderColor}` }}>
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="text-2xl font-bold">
+            <a href="#" className="footer-glitch-text" data-text={brandName} style={{ color: textColor || 'white' }}>{brandName}</a>
+          </div>
+          <nav className="flex flex-wrap justify-center gap-x-6 gap-y-3 font-semibold text-sm">
+            {navLinks.map((item: any, idx: number) => (
+              <a 
+                key={idx}
+                href={item.link === 'external' ? item.externalUrl : (item.link ? `/${item.link}` : '#')}
+                className="footer-glitch-text" 
+                data-text={item.label}
+                style={{ color: textColor || 'white' }}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+          <p className="text-xs opacity-60">
+            {copyrightText}
+          </p>
+        </div>
+      </footer>
+    </>
+  );
+};
+
 export const FOOTER_COMPONENTS: Record<string, React.FC<FooterProps>> = {
   minimal: FooterMinimal,
   columns: FooterColumns,
@@ -1182,7 +1522,10 @@ export const FOOTER_COMPONENTS: Record<string, React.FC<FooterProps>> = {
   parallax: FooterParallax,
   gooey: FooterGooey,
   constellation: FooterConstellation,
-  terminal: FooterTerminal
+  terminal: FooterTerminal,
+  aurora: FooterAurora,
+  ripple: FooterRipple,
+  glitch: FooterGlitch
 };
 
 export const FOOTER_OPTIONS = [
@@ -1197,6 +1540,9 @@ export const FOOTER_OPTIONS = [
   { id: 'gooey', name: 'Gooey', description: 'Blob Animation', date: '2024-09-01', popularity: 68 },
   { id: 'constellation', name: 'Constellation', description: 'Interactive Stars', date: '2024-09-15', popularity: 65 },
   { id: 'terminal', name: 'Terminal', description: 'CRT Retro', date: '2024-10-01', popularity: 62 },
+  { id: 'aurora', name: 'Aurora', description: 'Northern Lights', date: '2024-10-15', popularity: 74 },
+  { id: 'ripple', name: 'Ripple', description: 'Water Effect', date: '2024-11-01', popularity: 67 },
+  { id: 'glitch', name: 'Glitch', description: 'Cyberpunk Text', date: '2024-11-15', popularity: 71 },
 ];
 
 export const FOOTER_FIELDS: Record<string, string[]> = {
@@ -1211,4 +1557,7 @@ export const FOOTER_FIELDS: Record<string, string[]> = {
   gooey: ['heading', 'subheading', 'buttonText', 'blob1Color', 'blob2Color', 'blob3Color'],
   constellation: ['heading', 'subheading', 'link1Label', 'link2Label', 'link3Label'],
   terminal: ['systemMessage', 'copyrightText', 'ipAddress', 'userName', 'col1Title', 'col2Title', 'col3Title'],
+  aurora: ['heading', 'subheading', 'copyrightText', 'color1', 'color2', 'color3'],
+  ripple: ['heading', 'subheading', 'bgImage'],
+  glitch: ['brandName', 'copyrightText', 'glitchColor1', 'glitchColor2', 'borderColor'],
 };
