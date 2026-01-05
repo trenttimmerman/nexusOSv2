@@ -70,69 +70,114 @@ export const FooterMinimal: React.FC<FooterProps> = ({ storeName, backgroundColo
 };
 
 // 2. Columns (Standard E-commerce)
-export const FooterColumns: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor }) => (
-  <footer 
-    className="border-t py-20 px-6 text-sm transition-colors"
-    style={{ 
-      backgroundColor: backgroundColor || '#fafafa',
-      borderColor: textColor ? `${textColor}20` : '#e5e5e5'
-    }}
-  >
-    <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12">
-      <div className="col-span-2 lg:col-span-2">
-        <h3 className="font-bold text-xl mb-6" style={{ color: textColor || '#171717' }}>{storeName}</h3>
-        <p className="max-w-sm mb-6 leading-relaxed" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
-          Designed for the future of commerce. We build tools that empower creators to sell without limits.
-        </p>
-        <div className="flex gap-2">
-           <div className="w-8 h-8 rounded border flex items-center justify-center" style={{ borderColor: textColor ? `${textColor}30` : '#e5e5e5', backgroundColor: backgroundColor || '#ffffff' }}>
-             <span className="font-bold text-[10px]" style={{ color: textColor || '#171717' }}>VISA</span>
-           </div>
-           <div className="w-8 h-8 rounded border flex items-center justify-center" style={{ borderColor: textColor ? `${textColor}30` : '#e5e5e5', backgroundColor: backgroundColor || '#ffffff' }}>
-             <span className="font-bold text-[10px]" style={{ color: textColor || '#171717' }}>MC</span>
-           </div>
-           <div className="w-8 h-8 rounded border flex items-center justify-center" style={{ borderColor: textColor ? `${textColor}30` : '#e5e5e5', backgroundColor: backgroundColor || '#ffffff' }}>
-             <span className="font-bold text-[10px]" style={{ color: textColor || '#171717' }}>PAY</span>
-           </div>
+export const FooterColumns: React.FC<FooterProps> = ({ storeName, backgroundColor, textColor, accentColor, data = {} }) => {
+  const tagline = data.tagline || 'Designed for the future of commerce. We build tools that empower creators to sell without limits.';
+  const copyrightText = data.copyrightText || `© 2024 ${storeName} Inc. All rights reserved.`;
+  const showPaymentBadges = data.showPaymentBadges ?? true;
+  
+  // Column 1: Shop
+  const shopTitle = data.shopTitle || 'Shop';
+  const shopLinks = data.shopLinks || [
+    { label: 'New Arrivals', link: '' },
+    { label: 'Best Sellers', link: '' },
+    { label: 'Accessories', link: '' },
+    { label: 'Sale', link: '' },
+  ];
+  
+  // Column 2: Company
+  const companyTitle = data.companyTitle || 'Company';
+  const companyLinks = data.companyLinks || [
+    { label: 'About Us', link: '' },
+    { label: 'Careers', link: '' },
+    { label: 'Press', link: '' },
+    { label: 'Sustainability', link: '' },
+  ];
+  
+  // Column 3: Support
+  const supportTitle = data.supportTitle || 'Support';
+  const supportLinks = data.supportLinks || [
+    { label: 'Help Center', link: '' },
+    { label: 'Returns', link: '' },
+    { label: 'Shipping', link: '' },
+    { label: 'Contact', link: '' },
+  ];
+  
+  // Bottom links
+  const showPrivacyPolicy = data.showPrivacyPolicy ?? true;
+  const privacyPolicyLabel = data.privacyPolicyLabel || 'Privacy Policy';
+  const privacyPolicyLink = data.privacyPolicyLink || '';
+  const showTermsOfService = data.showTermsOfService ?? true;
+  const termsOfServiceLabel = data.termsOfServiceLabel || 'Terms of Service';
+  const termsOfServiceLink = data.termsOfServiceLink || '';
+
+  const getHref = (link: string, urlKey?: string) => {
+    if (link === 'external' && urlKey) return data[urlKey] || '#';
+    return link || '#';
+  };
+
+  return (
+    <footer 
+      className="border-t py-20 px-6 text-sm transition-colors"
+      style={{ 
+        backgroundColor: backgroundColor || '#fafafa',
+        borderColor: textColor ? `${textColor}20` : '#e5e5e5'
+      }}
+    >
+      <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12">
+        <div className="col-span-2 lg:col-span-2">
+          <h3 className="font-bold text-xl mb-6" style={{ color: textColor || '#171717' }}>{storeName}</h3>
+          <p className="max-w-sm mb-6 leading-relaxed" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
+            {tagline}
+          </p>
+          {showPaymentBadges && (
+            <div className="flex gap-2">
+              <div className="w-8 h-8 rounded border flex items-center justify-center" style={{ borderColor: textColor ? `${textColor}30` : '#e5e5e5', backgroundColor: backgroundColor || '#ffffff' }}>
+                <span className="font-bold text-[10px]" style={{ color: textColor || '#171717' }}>VISA</span>
+              </div>
+              <div className="w-8 h-8 rounded border flex items-center justify-center" style={{ borderColor: textColor ? `${textColor}30` : '#e5e5e5', backgroundColor: backgroundColor || '#ffffff' }}>
+                <span className="font-bold text-[10px]" style={{ color: textColor || '#171717' }}>MC</span>
+              </div>
+              <div className="w-8 h-8 rounded border flex items-center justify-center" style={{ borderColor: textColor ? `${textColor}30` : '#e5e5e5', backgroundColor: backgroundColor || '#ffffff' }}>
+                <span className="font-bold text-[10px]" style={{ color: textColor || '#171717' }}>PAY</span>
+              </div>
+            </div>
+          )}
+        </div>
+        <div>
+          <h4 className="font-bold mb-4" style={{ color: textColor || '#171717' }}>{shopTitle}</h4>
+          <ul className="space-y-3" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
+            {shopLinks.map((item: any, i: number) => (
+              <li key={i}><a href={item.link || '#'} className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>{item.label}</a></li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-bold mb-4" style={{ color: textColor || '#171717' }}>{companyTitle}</h4>
+          <ul className="space-y-3" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
+            {companyLinks.map((item: any, i: number) => (
+              <li key={i}><a href={item.link || '#'} className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>{item.label}</a></li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-bold mb-4" style={{ color: textColor || '#171717' }}>{supportTitle}</h4>
+          <ul className="space-y-3" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
+            {supportLinks.map((item: any, i: number) => (
+              <li key={i}><a href={item.link || '#'} className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>{item.label}</a></li>
+            ))}
+          </ul>
         </div>
       </div>
-      <div>
-        <h4 className="font-bold mb-4" style={{ color: textColor || '#171717' }}>Shop</h4>
-        <ul className="space-y-3" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
-          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>New Arrivals</li>
-          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Best Sellers</li>
-          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Accessories</li>
-          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Sale</li>
-        </ul>
+      <div className="max-w-7xl mx-auto mt-16 pt-8 border-t flex flex-col md:flex-row justify-between text-xs" style={{ borderColor: textColor ? `${textColor}20` : '#e5e5e5', color: textColor ? `${textColor}80` : '#a3a3a3' }}>
+        <p>{copyrightText}</p>
+        <div className="flex gap-4 mt-4 md:mt-0">
+          {showPrivacyPolicy && <a href={getHref(privacyPolicyLink, 'privacyPolicyLinkUrl')} className="hover:opacity-80">{privacyPolicyLabel}</a>}
+          {showTermsOfService && <a href={getHref(termsOfServiceLink, 'termsOfServiceLinkUrl')} className="hover:opacity-80">{termsOfServiceLabel}</a>}
+        </div>
       </div>
-      <div>
-        <h4 className="font-bold mb-4" style={{ color: textColor || '#171717' }}>Company</h4>
-        <ul className="space-y-3" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
-          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>About Us</li>
-          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Careers</li>
-          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Press</li>
-          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Sustainability</li>
-        </ul>
-      </div>
-      <div>
-        <h4 className="font-bold mb-4" style={{ color: textColor || '#171717' }}>Support</h4>
-        <ul className="space-y-3" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
-          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Help Center</li>
-          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Returns</li>
-          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Shipping</li>
-          <li className="hover:opacity-80 cursor-pointer" style={{ color: accentColor || undefined }}>Contact</li>
-        </ul>
-      </div>
-    </div>
-    <div className="max-w-7xl mx-auto mt-16 pt-8 border-t flex flex-col md:flex-row justify-between text-xs" style={{ borderColor: textColor ? `${textColor}20` : '#e5e5e5', color: textColor ? `${textColor}80` : '#a3a3a3' }}>
-      <p>&copy; 2024 {storeName} Inc. All rights reserved.</p>
-      <div className="flex gap-4 mt-4 md:mt-0">
-         <span>Privacy Policy</span>
-         <span>Terms of Service</span>
-      </div>
-    </div>
-  </footer>
-);
+    </footer>
+  );
+};
 
 // 3. Newsletter (Conversion Focused)
 export const FooterNewsletter: React.FC<FooterProps> = ({ storeName, primaryColor, backgroundColor, textColor, accentColor }) => (

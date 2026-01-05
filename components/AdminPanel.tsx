@@ -1844,6 +1844,248 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </>
                 )}
 
+                {/* Columns Footer Controls */}
+                {config.footerStyle === 'columns' && (
+                  <>
+                    {/* Tagline */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Tagline / Description</p>
+                      <textarea
+                        value={config.footerData?.tagline || 'Designed for the future of commerce. We build tools that empower creators to sell without limits.'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, tagline: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none resize-none"
+                        rows={3}
+                        placeholder="Your store tagline..."
+                      />
+                    </div>
+
+                    {/* Show/Hide Elements */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Show/Hide Elements</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, showPaymentBadges: !(config.footerData?.showPaymentBadges ?? true) }
+                          })}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
+                            (config.footerData?.showPaymentBadges ?? true)
+                              ? 'bg-orange-500/20 border-orange-500/50 text-orange-400'
+                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                          }`}
+                        >
+                          <CreditCard size={14} />
+                          <span className="text-xs">Payment Badges</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Link Columns */}
+                    {['shop', 'company', 'support'].map((columnKey) => {
+                      const titleKey = `${columnKey}Title`;
+                      const linksKey = `${columnKey}Links`;
+                      const defaultTitle = columnKey.charAt(0).toUpperCase() + columnKey.slice(1);
+                      const defaultLinks = columnKey === 'shop' 
+                        ? [{ label: 'New Arrivals', link: '' }, { label: 'Best Sellers', link: '' }, { label: 'Accessories', link: '' }, { label: 'Sale', link: '' }]
+                        : columnKey === 'company'
+                        ? [{ label: 'About Us', link: '' }, { label: 'Careers', link: '' }, { label: 'Press', link: '' }, { label: 'Sustainability', link: '' }]
+                        : [{ label: 'Help Center', link: '' }, { label: 'Returns', link: '' }, { label: 'Shipping', link: '' }, { label: 'Contact', link: '' }];
+                      
+                      const links = config.footerData?.[linksKey] || defaultLinks;
+
+                      return (
+                        <div key={columnKey} className="space-y-3 mb-6">
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs text-neutral-400 uppercase tracking-wide">{defaultTitle} Column</p>
+                          </div>
+                          
+                          {/* Column Title */}
+                          <input
+                            type="text"
+                            value={config.footerData?.[titleKey] || defaultTitle}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, [titleKey]: e.target.value }
+                            })}
+                            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none font-bold"
+                            placeholder="Column title..."
+                          />
+                          
+                          {/* Links */}
+                          <div className="space-y-2">
+                            {links.map((item: any, idx: number) => (
+                              <div key={idx} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <input
+                                    type="text"
+                                    value={item.label}
+                                    onChange={(e) => {
+                                      const newLinks = [...links];
+                                      newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                      onConfigChange({
+                                        ...config,
+                                        footerData: { ...config.footerData, [linksKey]: newLinks }
+                                      });
+                                    }}
+                                    className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-white focus:border-orange-500 outline-none"
+                                    placeholder="Link label..."
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const newLinks = links.filter((_: any, i: number) => i !== idx);
+                                      onConfigChange({
+                                        ...config,
+                                        footerData: { ...config.footerData, [linksKey]: newLinks }
+                                      });
+                                    }}
+                                    className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Link size={10} className="text-neutral-600" />
+                                  <select
+                                    value={item.link || ''}
+                                    onChange={(e) => {
+                                      const newLinks = [...links];
+                                      newLinks[idx] = { ...newLinks[idx], link: e.target.value };
+                                      onConfigChange({
+                                        ...config,
+                                        footerData: { ...config.footerData, [linksKey]: newLinks }
+                                      });
+                                    }}
+                                    className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                  >
+                                    <option value="">No link</option>
+                                    {localPages.map(page => (
+                                      <option key={page.id} value={page.slug || '/'}>
+                                        {page.title || page.slug}
+                                      </option>
+                                    ))}
+                                    <option value="external">Custom URL...</option>
+                                  </select>
+                                </div>
+                                {item.link === 'external' && (
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <ExternalLink size={10} className="text-neutral-600" />
+                                    <input
+                                      type="text"
+                                      value={item.externalUrl || ''}
+                                      onChange={(e) => {
+                                        const newLinks = [...links];
+                                        newLinks[idx] = { ...newLinks[idx], externalUrl: e.target.value };
+                                        onConfigChange({
+                                          ...config,
+                                          footerData: { ...config.footerData, [linksKey]: newLinks }
+                                        });
+                                      }}
+                                      className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                      placeholder="https://..."
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                            <button
+                              onClick={() => {
+                                const newLinks = [...links, { label: 'New Link', link: '' }];
+                                onConfigChange({
+                                  ...config,
+                                  footerData: { ...config.footerData, [linksKey]: newLinks }
+                                });
+                              }}
+                              className="w-full py-1.5 text-[10px] text-neutral-500 hover:text-orange-400 border border-dashed border-neutral-700 hover:border-orange-500 rounded transition-colors"
+                            >
+                              + Add Link
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Copyright Text */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Copyright Text</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.copyrightText || `© 2024 ${config.name} Inc. All rights reserved.`}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, copyrightText: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                        placeholder="© 2024 Your Company..."
+                      />
+                    </div>
+
+                    {/* Bottom Links (Privacy Policy, Terms) */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Bottom Links</p>
+                      <div className="space-y-2">
+                        {[
+                          { key: 'showPrivacyPolicy', labelKey: 'privacyPolicyLabel', linkKey: 'privacyPolicyLink', defaultLabel: 'Privacy Policy' },
+                          { key: 'showTermsOfService', labelKey: 'termsOfServiceLabel', linkKey: 'termsOfServiceLink', defaultLabel: 'Terms of Service' },
+                        ].map(({ key, labelKey, linkKey, defaultLabel }) => (
+                          <div key={key} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <div className="flex items-center gap-2 mb-1">
+                              <button
+                                onClick={() => onConfigChange({
+                                  ...config,
+                                  footerData: { ...config.footerData, [key]: !(config.footerData?.[key] ?? true) }
+                                })}
+                                className={`w-8 h-5 rounded-full transition-colors relative shrink-0 ${
+                                  (config.footerData?.[key] ?? true) ? 'bg-orange-500' : 'bg-neutral-700'
+                                }`}
+                              >
+                                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                                  (config.footerData?.[key] ?? true) ? 'left-3.5' : 'left-0.5'
+                                }`} />
+                              </button>
+                              <input
+                                type="text"
+                                value={config.footerData?.[labelKey] ?? defaultLabel}
+                                onChange={(e) => onConfigChange({
+                                  ...config,
+                                  footerData: { ...config.footerData, [labelKey]: e.target.value }
+                                })}
+                                disabled={!(config.footerData?.[key] ?? true)}
+                                className={`flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs focus:border-orange-500 outline-none ${
+                                  (config.footerData?.[key] ?? true) ? 'text-white' : 'text-neutral-600'
+                                }`}
+                              />
+                            </div>
+                            {(config.footerData?.[key] ?? true) && (
+                              <div className="flex items-center gap-2 ml-10">
+                                <Link size={10} className="text-neutral-600" />
+                                <select
+                                  value={config.footerData?.[linkKey] ?? ''}
+                                  onChange={(e) => onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, [linkKey]: e.target.value }
+                                  })}
+                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                >
+                                  <option value="">No link</option>
+                                  {localPages.map(page => (
+                                    <option key={page.id} value={page.slug || '/'}>
+                                      {page.title || page.slug}
+                                    </option>
+                                  ))}
+                                  <option value="external">Custom URL...</option>
+                                </select>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
                 {/* Reset to Defaults */}
                 <button
                   onClick={() => onConfigChange({ 
