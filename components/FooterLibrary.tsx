@@ -27,6 +27,17 @@ export const FooterMinimal: React.FC<FooterProps> = ({ storeName, backgroundColo
   const privacyLabel = data.privacyLabel || 'Privacy';
   const contactLabel = data.contactLabel || 'Contact';
   
+  // Get link URLs (support both page slugs and external URLs)
+  const getLink = (linkKey: string, urlKey: string) => {
+    const link = data[linkKey];
+    if (link === 'external') return data[urlKey] || '#';
+    return link || '#';
+  };
+  
+  const termsHref = getLink('termsLink', 'termsLinkUrl');
+  const privacyHref = getLink('privacyLink', 'privacyLinkUrl');
+  const contactHref = getLink('contactLink', 'contactLinkUrl');
+  
   return (
     <footer 
       className="border-t py-12 px-6 transition-colors"
@@ -40,9 +51,9 @@ export const FooterMinimal: React.FC<FooterProps> = ({ storeName, backgroundColo
         
         {/* Links */}
         <div className="flex gap-6 text-sm" style={{ color: textColor ? `${textColor}99` : '#737373' }}>
-          {showTerms && <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>{termsLabel}</a>}
-          {showPrivacy && <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>{privacyLabel}</a>}
-          {showContact && <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>{contactLabel}</a>}
+          {showTerms && <a href={termsHref} className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>{termsLabel}</a>}
+          {showPrivacy && <a href={privacyHref} className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>{privacyLabel}</a>}
+          {showContact && <a href={contactHref} className="hover:opacity-80 transition-opacity" style={{ color: accentColor || textColor || '#737373' }}>{contactLabel}</a>}
         </div>
         
         {/* Icons */}

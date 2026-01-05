@@ -1766,37 +1766,77 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <p className="text-xs text-neutral-400 uppercase tracking-wide">Footer Links</p>
                       <div className="space-y-2">
                         {[
-                          { key: 'showTerms', labelKey: 'termsLabel', defaultLabel: 'Terms' },
-                          { key: 'showPrivacy', labelKey: 'privacyLabel', defaultLabel: 'Privacy' },
-                          { key: 'showContact', labelKey: 'contactLabel', defaultLabel: 'Contact' },
-                        ].map(({ key, labelKey, defaultLabel }) => (
-                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                            <button
-                              onClick={() => onConfigChange({
-                                ...config,
-                                footerData: { ...config.footerData, [key]: !(config.footerData?.[key] ?? true) }
-                              })}
-                              className={`w-10 h-6 rounded-full transition-colors relative ${
-                                (config.footerData?.[key] ?? true) ? 'bg-orange-500' : 'bg-neutral-700'
-                              }`}
-                            >
-                              <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                                (config.footerData?.[key] ?? true) ? 'left-5' : 'left-1'
-                              }`} />
-                            </button>
-                            <input
-                              type="text"
-                              value={config.footerData?.[labelKey] ?? defaultLabel}
-                              onChange={(e) => onConfigChange({
-                                ...config,
-                                footerData: { ...config.footerData, [labelKey]: e.target.value }
-                              })}
-                              disabled={!(config.footerData?.[key] ?? true)}
-                              className={`flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-1.5 text-sm focus:border-orange-500 outline-none ${
-                                (config.footerData?.[key] ?? true) ? 'text-white' : 'text-neutral-600'
-                              }`}
-                              placeholder={defaultLabel}
-                            />
+                          { key: 'showTerms', labelKey: 'termsLabel', linkKey: 'termsLink', defaultLabel: 'Terms' },
+                          { key: 'showPrivacy', labelKey: 'privacyLabel', linkKey: 'privacyLink', defaultLabel: 'Privacy' },
+                          { key: 'showContact', labelKey: 'contactLabel', linkKey: 'contactLink', defaultLabel: 'Contact' },
+                        ].map(({ key, labelKey, linkKey, defaultLabel }) => (
+                          <div key={key} className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                            <div className="flex items-center gap-3 mb-2">
+                              <button
+                                onClick={() => onConfigChange({
+                                  ...config,
+                                  footerData: { ...config.footerData, [key]: !(config.footerData?.[key] ?? true) }
+                                })}
+                                className={`w-10 h-6 rounded-full transition-colors relative shrink-0 ${
+                                  (config.footerData?.[key] ?? true) ? 'bg-orange-500' : 'bg-neutral-700'
+                                }`}
+                              >
+                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                                  (config.footerData?.[key] ?? true) ? 'left-5' : 'left-1'
+                                }`} />
+                              </button>
+                              <input
+                                type="text"
+                                value={config.footerData?.[labelKey] ?? defaultLabel}
+                                onChange={(e) => onConfigChange({
+                                  ...config,
+                                  footerData: { ...config.footerData, [labelKey]: e.target.value }
+                                })}
+                                disabled={!(config.footerData?.[key] ?? true)}
+                                className={`flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-1.5 text-sm focus:border-orange-500 outline-none ${
+                                  (config.footerData?.[key] ?? true) ? 'text-white' : 'text-neutral-600'
+                                }`}
+                                placeholder={defaultLabel}
+                              />
+                            </div>
+                            {(config.footerData?.[key] ?? true) && (
+                              <div className="flex items-center gap-2 ml-[52px]">
+                                <Link size={12} className="text-neutral-500" />
+                                <select
+                                  value={config.footerData?.[linkKey] ?? ''}
+                                  onChange={(e) => onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, [linkKey]: e.target.value }
+                                  })}
+                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-2 py-1 text-xs text-neutral-300 focus:border-orange-500 outline-none"
+                                >
+                                  <option value="">No link</option>
+                                  <option value="#" disabled className="text-neutral-500">── Pages ──</option>
+                                  {localPages.map(page => (
+                                    <option key={page.id} value={page.slug || '/'}>
+                                      {page.title || page.slug}
+                                    </option>
+                                  ))}
+                                  <option value="#" disabled className="text-neutral-500">── External ──</option>
+                                  <option value="external">Custom URL...</option>
+                                </select>
+                              </div>
+                            )}
+                            {(config.footerData?.[key] ?? true) && config.footerData?.[linkKey] === 'external' && (
+                              <div className="flex items-center gap-2 ml-[52px] mt-2">
+                                <ExternalLink size={12} className="text-neutral-500" />
+                                <input
+                                  type="text"
+                                  value={config.footerData?.[`${linkKey}Url`] ?? ''}
+                                  onChange={(e) => onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, [`${linkKey}Url`]: e.target.value }
+                                  })}
+                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-2 py-1 text-xs text-neutral-300 focus:border-orange-500 outline-none"
+                                  placeholder="https://example.com"
+                                />
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
