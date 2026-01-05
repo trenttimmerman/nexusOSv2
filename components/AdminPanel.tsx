@@ -1657,14 +1657,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
 
           {/* Modal Content */}
-          <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-6 p-6">
-            
-            {/* Live Preview - Sticky */}
-            <div className="lg:w-2/5 flex-shrink-0">
-              <div className="lg:sticky lg:top-0 space-y-2">
-                <div className="flex items-center justify-between">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <div className="max-w-4xl mx-auto">
+              
+              {/* Live Preview - Sticky */}
+              <div className="sticky top-0 z-10 bg-neutral-900 pb-6 mb-6">
+                <div className="flex items-center justify-between mb-2">
                   <p className="text-xs text-neutral-400 uppercase tracking-wide">Live Preview</p>
-                  <span className="text-xs text-neutral-500">Updates instantly</span>
+                  <span className="text-xs text-neutral-500">Changes update instantly</span>
                 </div>
                 <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100 shadow-lg">
                   {(() => {
@@ -1679,11 +1679,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   })()}
                 </div>
               </div>
-            </div>
-
-            {/* Controls - Scrollable */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <div className="space-y-6">
 
               {/* Footer Style Selection */}
               <div className="bg-neutral-800/30 p-4 rounded-xl border border-neutral-700/50 mb-6">
@@ -2174,7 +2169,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
                 )}
 
-              </div>
               </div>
             </div>
           </div>
