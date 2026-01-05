@@ -1761,84 +1761,133 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </div>
                     </div>
 
-                    {/* Link Controls */}
+                    {/* Dynamic Footer Links */}
                     <div className="space-y-3 mb-6">
                       <p className="text-xs text-neutral-400 uppercase tracking-wide">Footer Links</p>
                       <div className="space-y-2">
-                        {[
-                          { key: 'showTerms', labelKey: 'termsLabel', linkKey: 'termsLink', defaultLabel: 'Terms' },
-                          { key: 'showPrivacy', labelKey: 'privacyLabel', linkKey: 'privacyLink', defaultLabel: 'Privacy' },
-                          { key: 'showContact', labelKey: 'contactLabel', linkKey: 'contactLink', defaultLabel: 'Contact' },
-                        ].map(({ key, labelKey, linkKey, defaultLabel }) => (
-                          <div key={key} className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                            <div className="flex items-center gap-3 mb-2">
-                              <button
-                                onClick={() => onConfigChange({
-                                  ...config,
-                                  footerData: { ...config.footerData, [key]: !(config.footerData?.[key] ?? true) }
-                                })}
-                                className={`w-10 h-6 rounded-full transition-colors relative shrink-0 ${
-                                  (config.footerData?.[key] ?? true) ? 'bg-orange-500' : 'bg-neutral-700'
-                                }`}
-                              >
-                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                                  (config.footerData?.[key] ?? true) ? 'left-5' : 'left-1'
-                                }`} />
-                              </button>
+                        {(config.footerData?.footerLinks || [
+                          { label: 'Terms', link: '' },
+                          { label: 'Privacy', link: '' },
+                          { label: 'Contact', link: '' }
+                        ]).map((item: any, idx: number) => (
+                          <div key={idx} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <div className="flex items-center gap-2 mb-1">
                               <input
                                 type="text"
-                                value={config.footerData?.[labelKey] ?? defaultLabel}
-                                onChange={(e) => onConfigChange({
-                                  ...config,
-                                  footerData: { ...config.footerData, [labelKey]: e.target.value }
-                                })}
-                                disabled={!(config.footerData?.[key] ?? true)}
-                                className={`flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-1.5 text-sm focus:border-orange-500 outline-none ${
-                                  (config.footerData?.[key] ?? true) ? 'text-white' : 'text-neutral-600'
-                                }`}
-                                placeholder={defaultLabel}
-                              />
-                            </div>
-                            {(config.footerData?.[key] ?? true) && (
-                              <div className="flex items-center gap-2 ml-[52px]">
-                                <Link size={12} className="text-neutral-500" />
-                                <select
-                                  value={config.footerData?.[linkKey] ?? ''}
-                                  onChange={(e) => onConfigChange({
+                                value={item.label}
+                                onChange={(e) => {
+                                  const links = config.footerData?.footerLinks || [
+                                    { label: 'Terms', link: '' },
+                                    { label: 'Privacy', link: '' },
+                                    { label: 'Contact', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                  onConfigChange({
                                     ...config,
-                                    footerData: { ...config.footerData, [linkKey]: e.target.value }
-                                  })}
-                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-2 py-1 text-xs text-neutral-300 focus:border-orange-500 outline-none"
-                                >
-                                  <option value="">No link</option>
-                                  <option value="#" disabled className="text-neutral-500">── Pages ──</option>
-                                  {localPages.map(page => (
-                                    <option key={page.id} value={page.slug || '/'}>
-                                      {page.title || page.slug}
-                                    </option>
-                                  ))}
-                                  <option value="#" disabled className="text-neutral-500">── External ──</option>
-                                  <option value="external">Custom URL...</option>
-                                </select>
-                              </div>
-                            )}
-                            {(config.footerData?.[key] ?? true) && config.footerData?.[linkKey] === 'external' && (
-                              <div className="flex items-center gap-2 ml-[52px] mt-2">
-                                <ExternalLink size={12} className="text-neutral-500" />
+                                    footerData: { ...config.footerData, footerLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-white focus:border-orange-500 outline-none"
+                                placeholder="Link label..."
+                              />
+                              <button
+                                onClick={() => {
+                                  const links = config.footerData?.footerLinks || [
+                                    { label: 'Terms', link: '' },
+                                    { label: 'Privacy', link: '' },
+                                    { label: 'Contact', link: '' }
+                                  ];
+                                  const newLinks = links.filter((_: any, i: number) => i !== idx);
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, footerLinks: newLinks }
+                                  });
+                                }}
+                                className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Link size={10} className="text-neutral-600" />
+                              <select
+                                value={item.link || ''}
+                                onChange={(e) => {
+                                  const links = config.footerData?.footerLinks || [
+                                    { label: 'Terms', link: '' },
+                                    { label: 'Privacy', link: '' },
+                                    { label: 'Contact', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], link: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, footerLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                              >
+                                <option value="">No link</option>
+                                {localPages.map(page => (
+                                  <option key={page.id} value={page.slug || '/'}>
+                                    {page.title || page.slug}
+                                  </option>
+                                ))}
+                                <option value="external">Custom URL...</option>
+                              </select>
+                            </div>
+                            {item.link === 'external' && (
+                              <div className="flex items-center gap-2 mt-1">
+                                <ExternalLink size={10} className="text-neutral-600" />
                                 <input
                                   type="text"
-                                  value={config.footerData?.[`${linkKey}Url`] ?? ''}
-                                  onChange={(e) => onConfigChange({
-                                    ...config,
-                                    footerData: { ...config.footerData, [`${linkKey}Url`]: e.target.value }
-                                  })}
-                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-2 py-1 text-xs text-neutral-300 focus:border-orange-500 outline-none"
-                                  placeholder="https://example.com"
+                                  value={item.externalUrl || ''}
+                                  onChange={(e) => {
+                                    const links = config.footerData?.footerLinks || [
+                                      { label: 'Terms', link: '' },
+                                      { label: 'Privacy', link: '' },
+                                      { label: 'Contact', link: '' }
+                                    ];
+                                    const newLinks = [...links];
+                                    newLinks[idx] = { ...newLinks[idx], externalUrl: e.target.value };
+                                    onConfigChange({
+                                      ...config,
+                                      footerData: { ...config.footerData, footerLinks: newLinks }
+                                    });
+                                  }}
+                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                  placeholder="https://..."
                                 />
                               </div>
                             )}
                           </div>
                         ))}
+                        <button
+                          onClick={() => {
+                            const links = config.footerData?.footerLinks || [
+                              { label: 'Terms', link: '' },
+                              { label: 'Privacy', link: '' },
+                              { label: 'Contact', link: '' }
+                            ];
+                            const newLinks = [...links, { label: 'New Link', link: '' }];
+                            onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, footerLinks: newLinks }
+                            });
+                          }}
+                          className="w-full py-1.5 text-[10px] text-neutral-500 hover:text-orange-400 border border-dashed border-neutral-700 hover:border-orange-500 rounded transition-colors"
+                        >
+                          + Add Link
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Columns Footer Controls */}
+                {config.footerStyle === 'columns' && (
+                  <>
                       </div>
                     </div>
                   </>
@@ -2141,62 +2190,100 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </div>
                     </div>
 
-                    {/* Social Links */}
+                    {/* Dynamic Social Links */}
                     <div className="space-y-3 mb-6">
                       <p className="text-xs text-neutral-400 uppercase tracking-wide">Social Links</p>
                       <div className="space-y-2">
-                        {[
-                          { key: 'showInstagram', labelKey: 'instagramLabel', linkKey: 'instagramLink', defaultLabel: 'Instagram', icon: Instagram },
-                          { key: 'showTwitter', labelKey: 'twitterLabel', linkKey: 'twitterLink', defaultLabel: 'Twitter', icon: Twitter },
-                          { key: 'showTiktok', labelKey: 'tiktokLabel', linkKey: 'tiktokLink', defaultLabel: 'TikTok', icon: User },
-                          { key: 'showYoutube', labelKey: 'youtubeLabel', linkKey: 'youtubeLink', defaultLabel: 'YouTube', icon: User },
-                        ].map(({ key, labelKey, linkKey, defaultLabel, icon: Icon }) => (
-                          <div key={key} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                        {(config.footerData?.socialLinks || [
+                          { label: 'Instagram', link: '' },
+                          { label: 'Twitter', link: '' },
+                          { label: 'TikTok', link: '' },
+                          { label: 'YouTube', link: '' }
+                        ]).map((item: any, idx: number) => (
+                          <div key={idx} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
                             <div className="flex items-center gap-2 mb-1">
-                              <button
-                                onClick={() => onConfigChange({
-                                  ...config,
-                                  footerData: { ...config.footerData, [key]: !(config.footerData?.[key] ?? true) }
-                                })}
-                                className={`w-8 h-5 rounded-full transition-colors relative shrink-0 ${
-                                  (config.footerData?.[key] ?? true) ? 'bg-orange-500' : 'bg-neutral-700'
-                                }`}
-                              >
-                                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
-                                  (config.footerData?.[key] ?? true) ? 'left-3.5' : 'left-0.5'
-                                }`} />
-                              </button>
-                              <Icon size={14} className="text-neutral-500" />
                               <input
                                 type="text"
-                                value={config.footerData?.[labelKey] ?? defaultLabel}
-                                onChange={(e) => onConfigChange({
-                                  ...config,
-                                  footerData: { ...config.footerData, [labelKey]: e.target.value }
-                                })}
-                                disabled={!(config.footerData?.[key] ?? true)}
-                                className={`flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs focus:border-orange-500 outline-none ${
-                                  (config.footerData?.[key] ?? true) ? 'text-white' : 'text-neutral-600'
-                                }`}
+                                value={item.label}
+                                onChange={(e) => {
+                                  const links = config.footerData?.socialLinks || [
+                                    { label: 'Instagram', link: '' },
+                                    { label: 'Twitter', link: '' },
+                                    { label: 'TikTok', link: '' },
+                                    { label: 'YouTube', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, socialLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-white focus:border-orange-500 outline-none"
+                                placeholder="Link label..."
+                              />
+                              <button
+                                onClick={() => {
+                                  const links = config.footerData?.socialLinks || [
+                                    { label: 'Instagram', link: '' },
+                                    { label: 'Twitter', link: '' },
+                                    { label: 'TikTok', link: '' },
+                                    { label: 'YouTube', link: '' }
+                                  ];
+                                  const newLinks = links.filter((_: any, i: number) => i !== idx);
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, socialLinks: newLinks }
+                                  });
+                                }}
+                                className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Link size={10} className="text-neutral-600" />
+                              <input
+                                type="text"
+                                value={item.link || ''}
+                                onChange={(e) => {
+                                  const links = config.footerData?.socialLinks || [
+                                    { label: 'Instagram', link: '' },
+                                    { label: 'Twitter', link: '' },
+                                    { label: 'TikTok', link: '' },
+                                    { label: 'YouTube', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], link: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, socialLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                placeholder="https://instagram.com/yourhandle"
                               />
                             </div>
-                            {(config.footerData?.[key] ?? true) && (
-                              <div className="flex items-center gap-2 ml-10">
-                                <Link size={10} className="text-neutral-600" />
-                                <input
-                                  type="text"
-                                  value={config.footerData?.[linkKey] ?? ''}
-                                  onChange={(e) => onConfigChange({
-                                    ...config,
-                                    footerData: { ...config.footerData, [linkKey]: e.target.value }
-                                  })}
-                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
-                                  placeholder="https://instagram.com/yourhandle"
-                                />
-                              </div>
-                            )}
                           </div>
                         ))}
+                        <button
+                          onClick={() => {
+                            const links = config.footerData?.socialLinks || [
+                              { label: 'Instagram', link: '' },
+                              { label: 'Twitter', link: '' },
+                              { label: 'TikTok', link: '' },
+                              { label: 'YouTube', link: '' }
+                            ];
+                            const newLinks = [...links, { label: 'New Social', link: '' }];
+                            onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, socialLinks: newLinks }
+                            });
+                          }}
+                          className="w-full py-1.5 text-[10px] text-neutral-500 hover:text-orange-400 border border-dashed border-neutral-700 hover:border-orange-500 rounded transition-colors"
+                        >
+                          + Add Social Link
+                        </button>
                       </div>
                     </div>
 
@@ -2397,6 +2484,1240 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         })}
                         className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
                         placeholder="© 2024 Your Company..."
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Origami Footer Controls */}
+                {config.footerStyle === 'origami' && (
+                  <>
+                    {/* Header Content */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Header Panel</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.heading || "Let's Connect"}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, heading: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none font-bold"
+                        placeholder="Heading..."
+                      />
+                      <input
+                        type="text"
+                        value={config.footerData?.subheading || "We're always open to new ideas and collaborations."}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, subheading: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                        placeholder="Subheading..."
+                      />
+                    </div>
+
+                    {/* Link Columns */}
+                    {[
+                      { key: 'col1', defaultTitle: 'Product', defaultLinks: [{ label: 'Features', link: '' }, { label: 'Pricing', link: '' }] },
+                      { key: 'col2', defaultTitle: 'Company', defaultLinks: [{ label: 'About Us', link: '' }, { label: 'Blog', link: '' }] },
+                      { key: 'col3', defaultTitle: 'Social', defaultLinks: [{ label: 'Twitter', link: '' }, { label: 'LinkedIn', link: '' }] },
+                      { key: 'col4', defaultTitle: 'Legal', defaultLinks: [{ label: 'Privacy', link: '' }, { label: 'Terms', link: '' }] },
+                    ].map(({ key, defaultTitle, defaultLinks }) => {
+                      const titleKey = `${key}Title`;
+                      const linksKey = `${key}Links`;
+                      const links = config.footerData?.[linksKey] || defaultLinks;
+
+                      return (
+                        <div key={key} className="space-y-3 mb-6">
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs text-neutral-400 uppercase tracking-wide">{defaultTitle} Column</p>
+                          </div>
+                          
+                          {/* Column Title */}
+                          <input
+                            type="text"
+                            value={config.footerData?.[titleKey] || defaultTitle}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, [titleKey]: e.target.value }
+                            })}
+                            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none font-bold"
+                            placeholder="Column title..."
+                          />
+                          
+                          {/* Links */}
+                          <div className="space-y-2">
+                            {links.map((item: any, idx: number) => (
+                              <div key={idx} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <input
+                                    type="text"
+                                    value={item.label}
+                                    onChange={(e) => {
+                                      const newLinks = [...links];
+                                      newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                      onConfigChange({
+                                        ...config,
+                                        footerData: { ...config.footerData, [linksKey]: newLinks }
+                                      });
+                                    }}
+                                    className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-white focus:border-orange-500 outline-none"
+                                    placeholder="Link label..."
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const newLinks = links.filter((_: any, i: number) => i !== idx);
+                                      onConfigChange({
+                                        ...config,
+                                        footerData: { ...config.footerData, [linksKey]: newLinks }
+                                      });
+                                    }}
+                                    className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Link size={10} className="text-neutral-600" />
+                                  <select
+                                    value={item.link || ''}
+                                    onChange={(e) => {
+                                      const newLinks = [...links];
+                                      newLinks[idx] = { ...newLinks[idx], link: e.target.value };
+                                      onConfigChange({
+                                        ...config,
+                                        footerData: { ...config.footerData, [linksKey]: newLinks }
+                                      });
+                                    }}
+                                    className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                  >
+                                    <option value="">No link</option>
+                                    {localPages.map(page => (
+                                      <option key={page.id} value={page.slug || '/'}>
+                                        {page.title || page.slug}
+                                      </option>
+                                    ))}
+                                    <option value="external">Custom URL...</option>
+                                  </select>
+                                </div>
+                                {item.link === 'external' && (
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <ExternalLink size={10} className="text-neutral-600" />
+                                    <input
+                                      type="text"
+                                      value={item.externalUrl || ''}
+                                      onChange={(e) => {
+                                        const newLinks = [...links];
+                                        newLinks[idx] = { ...newLinks[idx], externalUrl: e.target.value };
+                                        onConfigChange({
+                                          ...config,
+                                          footerData: { ...config.footerData, [linksKey]: newLinks }
+                                        });
+                                      }}
+                                      className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                      placeholder="https://..."
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                            <button
+                              onClick={() => {
+                                const newLinks = [...links, { label: 'New Link', link: '' }];
+                                onConfigChange({
+                                  ...config,
+                                  footerData: { ...config.footerData, [linksKey]: newLinks }
+                                });
+                              }}
+                              className="w-full py-1.5 text-[10px] text-neutral-500 hover:text-orange-400 border border-dashed border-neutral-700 hover:border-orange-500 rounded transition-colors"
+                            >
+                              + Add Link
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Copyright Text */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Copyright Text</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.copyrightText || `© ${new Date().getFullYear()} ${config.name}. All rights reserved.`}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, copyrightText: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                        placeholder="© 2024 Your Company..."
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* DataScape Footer Controls */}
+                {config.footerStyle === 'datascape' && (
+                  <>
+                    {/* Info */}
+                    <div className="bg-cyan-900/20 border border-cyan-800/30 rounded-lg p-3 mb-6">
+                      <p className="text-xs text-cyan-400">
+                        🌐 Interactive 3D terrain visualization. The terrain colors adapt to your Background and Accent colors.
+                      </p>
+                    </div>
+
+                    {/* Copyright Text */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Copyright Text</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.copyrightText || `© ${new Date().getFullYear()} All rights reserved.`}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, copyrightText: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                        placeholder="© 2024 Your Company..."
+                      />
+                    </div>
+
+                    {/* Dynamic Navigation Links */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Navigation Links</p>
+                      <div className="space-y-2">
+                        {(config.footerData?.navLinks || [
+                          { label: 'API', link: '' },
+                          { label: 'Status', link: '' },
+                          { label: 'Docs', link: '' }
+                        ]).map((item: any, idx: number) => (
+                          <div key={idx} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <div className="flex items-center gap-2 mb-1">
+                              <input
+                                type="text"
+                                value={item.label}
+                                onChange={(e) => {
+                                  const links = config.footerData?.navLinks || [
+                                    { label: 'API', link: '' },
+                                    { label: 'Status', link: '' },
+                                    { label: 'Docs', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, navLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-white focus:border-orange-500 outline-none"
+                                placeholder="Link label..."
+                              />
+                              <button
+                                onClick={() => {
+                                  const links = config.footerData?.navLinks || [
+                                    { label: 'API', link: '' },
+                                    { label: 'Status', link: '' },
+                                    { label: 'Docs', link: '' }
+                                  ];
+                                  const newLinks = links.filter((_: any, i: number) => i !== idx);
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, navLinks: newLinks }
+                                  });
+                                }}
+                                className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Link size={10} className="text-neutral-600" />
+                              <select
+                                value={item.link || ''}
+                                onChange={(e) => {
+                                  const links = config.footerData?.navLinks || [
+                                    { label: 'API', link: '' },
+                                    { label: 'Status', link: '' },
+                                    { label: 'Docs', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], link: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, navLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                              >
+                                <option value="">No link</option>
+                                {localPages.map(page => (
+                                  <option key={page.id} value={page.slug || '/'}>
+                                    {page.title || page.slug}
+                                  </option>
+                                ))}
+                                <option value="external">Custom URL...</option>
+                              </select>
+                            </div>
+                            {item.link === 'external' && (
+                              <div className="flex items-center gap-2 mt-1">
+                                <ExternalLink size={10} className="text-neutral-600" />
+                                <input
+                                  type="text"
+                                  value={item.externalUrl || ''}
+                                  onChange={(e) => {
+                                    const links = config.footerData?.navLinks || [
+                                      { label: 'API', link: '' },
+                                      { label: 'Status', link: '' },
+                                      { label: 'Docs', link: '' }
+                                    ];
+                                    const newLinks = [...links];
+                                    newLinks[idx] = { ...newLinks[idx], externalUrl: e.target.value };
+                                    onConfigChange({
+                                      ...config,
+                                      footerData: { ...config.footerData, navLinks: newLinks }
+                                    });
+                                  }}
+                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                  placeholder="https://..."
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => {
+                            const links = config.footerData?.navLinks || [
+                              { label: 'API', link: '' },
+                              { label: 'Status', link: '' },
+                              { label: 'Docs', link: '' }
+                            ];
+                            const newLinks = [...links, { label: 'New Link', link: '' }];
+                            onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, navLinks: newLinks }
+                            });
+                          }}
+                          className="w-full py-1.5 text-[10px] text-neutral-500 hover:text-orange-400 border border-dashed border-neutral-700 hover:border-orange-500 rounded transition-colors"
+                        >
+                          + Add Link
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Kinetic Footer Controls */}
+                {config.footerStyle === 'kinetic' && (
+                  <>
+                    {/* Dynamic Animated Navigation Links */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Animated Navigation Links</p>
+                      <p className="text-[10px] text-neutral-500 mb-2">Large animated text that reveals on hover with character stagger effect</p>
+                      <div className="space-y-2">
+                        {(config.footerData?.animatedLinks || [
+                          { label: 'Our Work', link: '' },
+                          { label: 'About Us', link: '' },
+                          { label: 'Get In Touch', link: '' }
+                        ]).map((item: any, idx: number) => (
+                          <div key={idx} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <div className="flex items-center gap-2 mb-1">
+                              <input
+                                type="text"
+                                value={item.label}
+                                onChange={(e) => {
+                                  const links = config.footerData?.animatedLinks || [
+                                    { label: 'Our Work', link: '' },
+                                    { label: 'About Us', link: '' },
+                                    { label: 'Get In Touch', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, animatedLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-white font-bold focus:border-orange-500 outline-none"
+                                placeholder="Link text..."
+                              />
+                              <button
+                                onClick={() => {
+                                  const links = config.footerData?.animatedLinks || [
+                                    { label: 'Our Work', link: '' },
+                                    { label: 'About Us', link: '' },
+                                    { label: 'Get In Touch', link: '' }
+                                  ];
+                                  const newLinks = links.filter((_: any, i: number) => i !== idx);
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, animatedLinks: newLinks }
+                                  });
+                                }}
+                                className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Link size={10} className="text-neutral-600" />
+                              <select
+                                value={item.link || ''}
+                                onChange={(e) => {
+                                  const links = config.footerData?.animatedLinks || [
+                                    { label: 'Our Work', link: '' },
+                                    { label: 'About Us', link: '' },
+                                    { label: 'Get In Touch', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], link: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, animatedLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                              >
+                                <option value="">No link</option>
+                                {localPages.map(page => (
+                                  <option key={page.id} value={page.slug || '/'}>
+                                    {page.title || page.slug}
+                                  </option>
+                                ))}
+                                <option value="external">Custom URL...</option>
+                              </select>
+                            </div>
+                            {item.link === 'external' && (
+                              <div className="flex items-center gap-2 mt-1">
+                                <ExternalLink size={10} className="text-neutral-600" />
+                                <input
+                                  type="text"
+                                  value={item.externalUrl || ''}
+                                  onChange={(e) => {
+                                    const links = config.footerData?.animatedLinks || [
+                                      { label: 'Our Work', link: '' },
+                                      { label: 'About Us', link: '' },
+                                      { label: 'Get In Touch', link: '' }
+                                    ];
+                                    const newLinks = [...links];
+                                    newLinks[idx] = { ...newLinks[idx], externalUrl: e.target.value };
+                                    onConfigChange({
+                                      ...config,
+                                      footerData: { ...config.footerData, animatedLinks: newLinks }
+                                    });
+                                  }}
+                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                  placeholder="https://..."
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => {
+                            const links = config.footerData?.animatedLinks || [
+                              { label: 'Our Work', link: '' },
+                              { label: 'About Us', link: '' },
+                              { label: 'Get In Touch', link: '' }
+                            ];
+                            const newLinks = [...links, { label: 'New Link', link: '' }];
+                            onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, animatedLinks: newLinks }
+                            });
+                          }}
+                          className="w-full py-1.5 text-[10px] text-neutral-500 hover:text-orange-400 border border-dashed border-neutral-700 hover:border-orange-500 rounded transition-colors"
+                        >
+                          + Add Animated Link
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Dynamic Social Links */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Social Links</p>
+                      <div className="space-y-2">
+                        {(config.footerData?.socialLinks || [
+                          { label: 'Twitter', link: '' },
+                          { label: 'LinkedIn', link: '' }
+                        ]).map((item: any, idx: number) => (
+                          <div key={idx} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <div className="flex items-center gap-2 mb-1">
+                              <input
+                                type="text"
+                                value={item.label}
+                                onChange={(e) => {
+                                  const links = config.footerData?.socialLinks || [
+                                    { label: 'Twitter', link: '' },
+                                    { label: 'LinkedIn', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, socialLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-white focus:border-orange-500 outline-none"
+                                placeholder="Link label..."
+                              />
+                              <button
+                                onClick={() => {
+                                  const links = config.footerData?.socialLinks || [
+                                    { label: 'Twitter', link: '' },
+                                    { label: 'LinkedIn', link: '' }
+                                  ];
+                                  const newLinks = links.filter((_: any, i: number) => i !== idx);
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, socialLinks: newLinks }
+                                  });
+                                }}
+                                className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Link size={10} className="text-neutral-600" />
+                              <input
+                                type="text"
+                                value={item.link || ''}
+                                onChange={(e) => {
+                                  const links = config.footerData?.socialLinks || [
+                                    { label: 'Twitter', link: '' },
+                                    { label: 'LinkedIn', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], link: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, socialLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                placeholder="https://twitter.com/yourhandle"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => {
+                            const links = config.footerData?.socialLinks || [
+                              { label: 'Twitter', link: '' },
+                              { label: 'LinkedIn', link: '' }
+                            ];
+                            const newLinks = [...links, { label: 'New Social', link: '' }];
+                            onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, socialLinks: newLinks }
+                            });
+                          }}
+                          className="w-full py-1.5 text-[10px] text-neutral-500 hover:text-orange-400 border border-dashed border-neutral-700 hover:border-orange-500 rounded transition-colors"
+                        >
+                          + Add Social Link
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Copyright Text */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Copyright Text</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.copyrightText || `© ${new Date().getFullYear()} ${config.name}.`}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, copyrightText: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                        placeholder="© 2024 Your Company..."
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Parallax Footer Controls */}
+                {config.footerStyle === 'parallax' && (
+                  <>
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Content</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.heading || 'Explore the Horizon'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, heading: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none font-bold"
+                        placeholder="Heading..."
+                      />
+                      <input
+                        type="text"
+                        value={config.footerData?.subheading || 'Our journey continues beyond the peaks.'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, subheading: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                        placeholder="Subheading..."
+                      />
+                    </div>
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, showButton: !(config.footerData?.showButton ?? true) }
+                          })}
+                          className={`w-8 h-5 rounded-full transition-colors relative shrink-0 ${
+                            (config.footerData?.showButton ?? true) ? 'bg-orange-500' : 'bg-neutral-700'
+                          }`}
+                        >
+                          <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                            (config.footerData?.showButton ?? true) ? 'left-3.5' : 'left-0.5'
+                          }`} />
+                        </button>
+                        <span className="text-xs text-neutral-400">Show Button</span>
+                      </div>
+                      {(config.footerData?.showButton ?? true) && (
+                        <input
+                          type="text"
+                          value={config.footerData?.buttonText || 'Start Exploring'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, buttonText: e.target.value }
+                          })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                          placeholder="Button text..."
+                        />
+                      )}
+                    </div>
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Background Images (URLs)</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.bgImage1 || ''}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, bgImage1: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white focus:border-orange-500 outline-none"
+                        placeholder="Layer 1 image URL..."
+                      />
+                      <input
+                        type="text"
+                        value={config.footerData?.bgImage2 || ''}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, bgImage2: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white focus:border-orange-500 outline-none"
+                        placeholder="Layer 2 image URL..."
+                      />
+                    </div>
+
+                    {/* Dynamic Navigation Links */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Navigation Links</p>
+                      <div className="space-y-2">
+                        {(config.footerData?.navLinks || [
+                          { label: 'Home', link: '' },
+                          { label: 'About', link: '' },
+                          { label: 'Contact', link: '' }
+                        ]).map((item: any, idx: number) => (
+                          <div key={idx} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <div className="flex items-center gap-2 mb-1">
+                              <input
+                                type="text"
+                                value={item.label}
+                                onChange={(e) => {
+                                  const links = config.footerData?.navLinks || [
+                                    { label: 'Home', link: '' },
+                                    { label: 'About', link: '' },
+                                    { label: 'Contact', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, navLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-white focus:border-orange-500 outline-none"
+                                placeholder="Link label..."
+                              />
+                              <button
+                                onClick={() => {
+                                  const links = config.footerData?.navLinks || [
+                                    { label: 'Home', link: '' },
+                                    { label: 'About', link: '' },
+                                    { label: 'Contact', link: '' }
+                                  ];
+                                  const newLinks = links.filter((_: any, i: number) => i !== idx);
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, navLinks: newLinks }
+                                  });
+                                }}
+                                className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Link size={10} className="text-neutral-600" />
+                              <select
+                                value={item.link || ''}
+                                onChange={(e) => {
+                                  const links = config.footerData?.navLinks || [
+                                    { label: 'Home', link: '' },
+                                    { label: 'About', link: '' },
+                                    { label: 'Contact', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], link: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, navLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                              >
+                                <option value="">No link</option>
+                                {localPages.map(page => (
+                                  <option key={page.id} value={page.slug || '/'}>
+                                    {page.title || page.slug}
+                                  </option>
+                                ))}
+                                <option value="external">Custom URL...</option>
+                              </select>
+                            </div>
+                            {item.link === 'external' && (
+                              <div className="flex items-center gap-2 mt-1">
+                                <ExternalLink size={10} className="text-neutral-600" />
+                                <input
+                                  type="text"
+                                  value={item.externalUrl || ''}
+                                  onChange={(e) => {
+                                    const links = config.footerData?.navLinks || [
+                                      { label: 'Home', link: '' },
+                                      { label: 'About', link: '' },
+                                      { label: 'Contact', link: '' }
+                                    ];
+                                    const newLinks = [...links];
+                                    newLinks[idx] = { ...newLinks[idx], externalUrl: e.target.value };
+                                    onConfigChange({
+                                      ...config,
+                                      footerData: { ...config.footerData, navLinks: newLinks }
+                                    });
+                                  }}
+                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                  placeholder="https://..."
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => {
+                            const links = config.footerData?.navLinks || [
+                              { label: 'Home', link: '' },
+                              { label: 'About', link: '' },
+                              { label: 'Contact', link: '' }
+                            ];
+                            const newLinks = [...links, { label: 'New Link', link: '' }];
+                            onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, navLinks: newLinks }
+                            });
+                          }}
+                          className="w-full py-1.5 text-[10px] text-neutral-500 hover:text-orange-400 border border-dashed border-neutral-700 hover:border-orange-500 rounded transition-colors"
+                        >
+                          + Add Link
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Gooey Footer Controls */}
+                {config.footerStyle === 'gooey' && (
+                  <>
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Content</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.heading || "Let's Create Something Fluid."}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, heading: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none font-bold"
+                        placeholder="Heading..."
+                      />
+                      <textarea
+                        value={config.footerData?.subheading || 'We believe in adaptable, dynamic solutions that flow with your needs.'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, subheading: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none resize-none"
+                        rows={2}
+                        placeholder="Subheading..."
+                      />
+                    </div>
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, showButton: !(config.footerData?.showButton ?? true) }
+                          })}
+                          className={`w-8 h-5 rounded-full transition-colors relative shrink-0 ${
+                            (config.footerData?.showButton ?? true) ? 'bg-orange-500' : 'bg-neutral-700'
+                          }`}
+                        >
+                          <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                            (config.footerData?.showButton ?? true) ? 'left-3.5' : 'left-0.5'
+                          }`} />
+                        </button>
+                        <span className="text-xs text-neutral-400">Show Button</span>
+                      </div>
+                      {(config.footerData?.showButton ?? true) && (
+                        <input
+                          type="text"
+                          value={config.footerData?.buttonText || 'Get in Touch'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, buttonText: e.target.value }
+                          })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                          placeholder="Button text..."
+                        />
+                      )}
+                    </div>
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Blob Colors</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { key: 'blob1Color', default: '#6366F1' },
+                          { key: 'blob2Color', default: '#A855F7' },
+                          { key: 'blob3Color', default: '#F43F5E' },
+                        ].map(({ key, default: defaultColor }) => (
+                          <div key={key} className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={config.footerData?.[key] || defaultColor}
+                              onChange={(e) => onConfigChange({
+                                ...config,
+                                footerData: { ...config.footerData, [key]: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded cursor-pointer"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Dynamic Navigation Links */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Navigation Links</p>
+                      <div className="space-y-2">
+                        {(config.footerData?.navLinks || [
+                          { label: 'Home', link: '' },
+                          { label: 'About', link: '' },
+                          { label: 'Contact', link: '' }
+                        ]).map((item: any, idx: number) => (
+                          <div key={idx} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <div className="flex items-center gap-2 mb-1">
+                              <input
+                                type="text"
+                                value={item.label}
+                                onChange={(e) => {
+                                  const links = config.footerData?.navLinks || [
+                                    { label: 'Home', link: '' },
+                                    { label: 'About', link: '' },
+                                    { label: 'Contact', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, navLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-white focus:border-orange-500 outline-none"
+                                placeholder="Link label..."
+                              />
+                              <button
+                                onClick={() => {
+                                  const links = config.footerData?.navLinks || [
+                                    { label: 'Home', link: '' },
+                                    { label: 'About', link: '' },
+                                    { label: 'Contact', link: '' }
+                                  ];
+                                  const newLinks = links.filter((_: any, i: number) => i !== idx);
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, navLinks: newLinks }
+                                  });
+                                }}
+                                className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Link size={10} className="text-neutral-600" />
+                              <select
+                                value={item.link || ''}
+                                onChange={(e) => {
+                                  const links = config.footerData?.navLinks || [
+                                    { label: 'Home', link: '' },
+                                    { label: 'About', link: '' },
+                                    { label: 'Contact', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], link: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, navLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                              >
+                                <option value="">No link</option>
+                                {localPages.map(page => (
+                                  <option key={page.id} value={page.slug || '/'}>
+                                    {page.title || page.slug}
+                                  </option>
+                                ))}
+                                <option value="external">Custom URL...</option>
+                              </select>
+                            </div>
+                            {item.link === 'external' && (
+                              <div className="flex items-center gap-2 mt-1">
+                                <ExternalLink size={10} className="text-neutral-600" />
+                                <input
+                                  type="text"
+                                  value={item.externalUrl || ''}
+                                  onChange={(e) => {
+                                    const links = config.footerData?.navLinks || [
+                                      { label: 'Home', link: '' },
+                                      { label: 'About', link: '' },
+                                      { label: 'Contact', link: '' }
+                                    ];
+                                    const newLinks = [...links];
+                                    newLinks[idx] = { ...newLinks[idx], externalUrl: e.target.value };
+                                    onConfigChange({
+                                      ...config,
+                                      footerData: { ...config.footerData, navLinks: newLinks }
+                                    });
+                                  }}
+                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                  placeholder="https://..."
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => {
+                            const links = config.footerData?.navLinks || [
+                              { label: 'Home', link: '' },
+                              { label: 'About', link: '' },
+                              { label: 'Contact', link: '' }
+                            ];
+                            const newLinks = [...links, { label: 'New Link', link: '' }];
+                            onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, navLinks: newLinks }
+                            });
+                          }}
+                          className="w-full py-1.5 text-[10px] text-neutral-500 hover:text-orange-400 border border-dashed border-neutral-700 hover:border-orange-500 rounded transition-colors"
+                        >
+                          + Add Link
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Constellation Footer Controls */}
+                {config.footerStyle === 'constellation' && (
+                  <>
+                    <div className="bg-indigo-900/20 border border-indigo-800/30 rounded-lg p-3 mb-6">
+                      <p className="text-xs text-indigo-400">
+                        ✨ Interactive star field. Stars connect when your mouse hovers nearby.
+                      </p>
+                    </div>
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Content</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.heading || 'Connect the Dots'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, heading: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none font-bold"
+                        placeholder="Heading..."
+                      />
+                      <input
+                        type="text"
+                        value={config.footerData?.subheading || 'Interactive constellation map. Move your mouse.'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, subheading: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                        placeholder="Subheading..."
+                      />
+                    </div>
+
+                    {/* Dynamic Navigation Links */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Navigation Links</p>
+                      <div className="space-y-2">
+                        {(config.footerData?.navLinks || [
+                          { label: 'Home', link: '' },
+                          { label: 'About', link: '' },
+                          { label: 'Contact', link: '' }
+                        ]).map((item: any, idx: number) => (
+                          <div key={idx} className="bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <div className="flex items-center gap-2 mb-1">
+                              <input
+                                type="text"
+                                value={item.label}
+                                onChange={(e) => {
+                                  const links = config.footerData?.navLinks || [
+                                    { label: 'Home', link: '' },
+                                    { label: 'About', link: '' },
+                                    { label: 'Contact', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, navLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-white focus:border-orange-500 outline-none"
+                                placeholder="Link label..."
+                              />
+                              <button
+                                onClick={() => {
+                                  const links = config.footerData?.navLinks || [
+                                    { label: 'Home', link: '' },
+                                    { label: 'About', link: '' },
+                                    { label: 'Contact', link: '' }
+                                  ];
+                                  const newLinks = links.filter((_: any, i: number) => i !== idx);
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, navLinks: newLinks }
+                                  });
+                                }}
+                                className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Link size={10} className="text-neutral-600" />
+                              <select
+                                value={item.link || ''}
+                                onChange={(e) => {
+                                  const links = config.footerData?.navLinks || [
+                                    { label: 'Home', link: '' },
+                                    { label: 'About', link: '' },
+                                    { label: 'Contact', link: '' }
+                                  ];
+                                  const newLinks = [...links];
+                                  newLinks[idx] = { ...newLinks[idx], link: e.target.value };
+                                  onConfigChange({
+                                    ...config,
+                                    footerData: { ...config.footerData, navLinks: newLinks }
+                                  });
+                                }}
+                                className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                              >
+                                <option value="">No link</option>
+                                {localPages.map(page => (
+                                  <option key={page.id} value={page.slug || '/'}>
+                                    {page.title || page.slug}
+                                  </option>
+                                ))}
+                                <option value="external">Custom URL...</option>
+                              </select>
+                            </div>
+                            {item.link === 'external' && (
+                              <div className="flex items-center gap-2 mt-1">
+                                <ExternalLink size={10} className="text-neutral-600" />
+                                <input
+                                  type="text"
+                                  value={item.externalUrl || ''}
+                                  onChange={(e) => {
+                                    const links = config.footerData?.navLinks || [
+                                      { label: 'Home', link: '' },
+                                      { label: 'About', link: '' },
+                                      { label: 'Contact', link: '' }
+                                    ];
+                                    const newLinks = [...links];
+                                    newLinks[idx] = { ...newLinks[idx], externalUrl: e.target.value };
+                                    onConfigChange({
+                                      ...config,
+                                      footerData: { ...config.footerData, navLinks: newLinks }
+                                    });
+                                  }}
+                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-neutral-400 focus:border-orange-500 outline-none"
+                                  placeholder="https://..."
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => {
+                            const links = config.footerData?.navLinks || [
+                              { label: 'Home', link: '' },
+                              { label: 'About', link: '' },
+                              { label: 'Contact', link: '' }
+                            ];
+                            const newLinks = [...links, { label: 'New Link', link: '' }];
+                            onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, navLinks: newLinks }
+                            });
+                          }}
+                          className="w-full py-1.5 text-[10px] text-neutral-500 hover:text-orange-400 border border-dashed border-neutral-700 hover:border-orange-500 rounded transition-colors"
+                        >
+                          + Add Link
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Terminal Footer Controls */}
+                {config.footerStyle === 'terminal' && (
+                  <>
+                    <div className="bg-green-900/20 border border-green-800/30 rounded-lg p-3 mb-6">
+                      <p className="text-xs text-green-400 font-mono">
+                        &gt; CRT-style terminal footer with scanline effects
+                      </p>
+                    </div>
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">System Display</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.systemMessage || 'SYSTEM READY.'}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, systemMessage: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none font-mono"
+                        placeholder="System message..."
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={config.footerData?.ipAddress || '127.0.0.1'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, ipAddress: e.target.value }
+                          })}
+                          className="bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white focus:border-orange-500 outline-none font-mono"
+                          placeholder="IP Address..."
+                        />
+                        <input
+                          type="text"
+                          value={config.footerData?.userName || 'GUEST'}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            footerData: { ...config.footerData, userName: e.target.value }
+                          })}
+                          className="bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white focus:border-orange-500 outline-none font-mono"
+                          placeholder="User name..."
+                        />
+                      </div>
+                    </div>
+                    {/* Terminal columns */}
+                    {[
+                      { key: 'col1', defaultTitle: '[NAV]', defaultLinks: [{ label: '/home', link: '' }, { label: '/about', link: '' }, { label: '/contact', link: '' }] },
+                      { key: 'col2', defaultTitle: '[DATA]', defaultLinks: [{ label: 'API_DOCS', link: '' }, { label: 'STATUS', link: '' }, { label: 'RESOURCES', link: '' }] },
+                      { key: 'col3', defaultTitle: '[SOCIAL]', defaultLinks: [{ label: 'TWITTER', link: '' }, { label: 'GITHUB', link: '' }] },
+                    ].map(({ key, defaultTitle, defaultLinks }) => {
+                      const titleKey = `${key}Title`;
+                      const linksKey = `${key}Links`;
+                      const links = config.footerData?.[linksKey] || defaultLinks;
+
+                      return (
+                        <div key={key} className="space-y-3 mb-4">
+                          <input
+                            type="text"
+                            value={config.footerData?.[titleKey] || defaultTitle}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              footerData: { ...config.footerData, [titleKey]: e.target.value }
+                            })}
+                            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white focus:border-orange-500 outline-none font-mono font-bold"
+                          />
+                          <div className="space-y-1">
+                            {links.map((item: any, idx: number) => (
+                              <div key={idx} className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={item.label}
+                                  onChange={(e) => {
+                                    const newLinks = [...links];
+                                    newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                    onConfigChange({
+                                      ...config,
+                                      footerData: { ...config.footerData, [linksKey]: newLinks }
+                                    });
+                                  }}
+                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-[10px] text-white focus:border-orange-500 outline-none font-mono"
+                                />
+                                <button
+                                  onClick={() => {
+                                    const newLinks = links.filter((_: any, i: number) => i !== idx);
+                                    onConfigChange({
+                                      ...config,
+                                      footerData: { ...config.footerData, [linksKey]: newLinks }
+                                    });
+                                  }}
+                                  className="p-1 text-neutral-500 hover:text-red-400"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </div>
+                            ))}
+                            <button
+                              onClick={() => {
+                                const newLinks = [...links, { label: 'NEW_LINK', link: '' }];
+                                onConfigChange({
+                                  ...config,
+                                  footerData: { ...config.footerData, [linksKey]: newLinks }
+                                });
+                              }}
+                              className="w-full py-1 text-[10px] text-neutral-500 hover:text-green-400 border border-dashed border-neutral-700 hover:border-green-500 rounded font-mono"
+                            >
+                              + ADD_LINK
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Copyright</p>
+                      <input
+                        type="text"
+                        value={config.footerData?.copyrightText || `© ${new Date().getFullYear()} ${config.name}. All operations normal.`}
+                        onChange={(e) => onConfigChange({
+                          ...config,
+                          footerData: { ...config.footerData, copyrightText: e.target.value }
+                        })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white focus:border-orange-500 outline-none font-mono"
                       />
                     </div>
                   </>
