@@ -1657,11 +1657,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
 
           {/* Modal Content */}
-          <div className="flex-1 p-6">
-            <div className="flex gap-6" style={{ height: 'calc(90vh - 200px)' }}>
+          <div className="flex-1 overflow-hidden p-6">
+            <div className="flex flex-col gap-6 h-full">
               
-              {/* Left Column: Controls (30%) */}
-              <div className="w-[30%] flex-shrink-0 h-full overflow-y-scroll custom-scrollbar pr-2">
+              {/* Top Row: Live Preview */}
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-neutral-400 uppercase tracking-wide">Live Preview</p>
+                  <span className="text-xs text-neutral-500">Changes update instantly</span>
+                </div>
+                <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100 shadow-lg">
+                  {(() => {
+                    const FooterComponent = FOOTER_COMPONENTS[config.footerStyle as FooterStyleId] || FOOTER_COMPONENTS.minimal;
+                    return (
+                      <FooterComponent
+                        storeName={config.name || 'Your Store'}
+                        primaryColor={config.primaryColor}
+                        data={config.footerData}
+                      />
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Bottom Row: Scrollable Controls */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
                 
               {/* Footer Style Selection */}
               <div className="bg-neutral-800/30 p-4 rounded-xl border border-neutral-700/50 mb-6">
@@ -2153,31 +2173,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 )}
 
               </div>
-              </div>
-
-              {/* Right Column: Live Preview (70%) - Sticky */}
-              <div className="w-[70%] overflow-y-auto custom-scrollbar">
-                <div className="sticky top-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Live Preview</p>
-                    <span className="text-xs text-neutral-500">Changes update instantly</span>
-                  </div>
-                  <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100 shadow-lg">
-                    {(() => {
-                      const FooterComponent = FOOTER_COMPONENTS[config.footerStyle as FooterStyleId] || FOOTER_COMPONENTS.minimal;
-                      return (
-                        <FooterComponent
-                          storeName={config.name || 'Your Store'}
-                          primaryColor={config.primaryColor}
-                          data={config.footerData}
-                        />
-                      );
-                    })()}
-                  </div>
-                </div>
-              </div>
-
             </div>
+          </div>
           </div>
 
           {/* Modal Footer */}
