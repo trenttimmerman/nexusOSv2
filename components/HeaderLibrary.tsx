@@ -3729,7 +3729,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
     'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
-    'accentColor', 'taglineColor', 'taglineText', 'cartBadgeColor',
+    'accentColor', 'taglineColor', 'taglineText', 'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
   pilot: [
@@ -3763,7 +3763,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor', 'searchFocusBorderColor',
     'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
-    'cartBadgeColor', 'cartBadgeTextColor',
+    'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
   gullwing: [
@@ -3771,7 +3771,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
     'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
-    'cartBadgeColor', 'cartBadgeTextColor',
+    'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
   protocol: [
