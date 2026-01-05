@@ -2731,13 +2731,933 @@ export const HeaderModul: React.FC<HeaderProps> = ({
   );
 };
 
+// Default values for HeaderStark (Ultra minimal brutalist design)
+const STARK_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  searchPlaceholder: "Search...",
+  searchBackgroundColor: '#ffffff',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#000000',
+  searchInputTextColor: '#000000',
+  searchPlaceholderColor: '#666666',
+  backgroundColor: '#ffffff',
+  borderColor: '#000000',
+  textColor: '#000000',
+  textHoverColor: '#666666',
+  accentColor: '#000000',
+  cartBadgeColor: '#000000',
+  cartBadgeTextColor: '#ffffff',
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// 17. HeaderStark - Ultra minimal brutalist design with stark contrast
+export const HeaderStark: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...STARK_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+
+  return (
+    <header 
+      className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50`}
+      style={{ 
+        backgroundColor: settings.backgroundColor,
+        borderBottom: `4px solid ${settings.borderColor}`,
+      }}
+    >
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="flex items-center justify-between">
+          {/* Logo - bold and stark */}
+          <div 
+            className="cursor-pointer"
+            onClick={onLogoClick}
+          >
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt={storeName} 
+                style={{ height: `${logoHeight || 24}px` }}
+                className="h-auto"
+              />
+            ) : (
+              <span 
+                className="text-2xl font-black uppercase"
+                style={{ color: settings.textColor }}
+              >
+                {storeName}
+              </span>
+            )}
+          </div>
+          
+          {/* Navigation - minimal spacing */}
+          <nav className="hidden md:flex items-center gap-12">
+            {(links || []).map(l => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLinkClick?.(l.href);
+                }}
+                className="text-sm font-bold uppercase"
+                style={{ 
+                  color: settings.textColor,
+                  textDecoration: l.active ? 'underline' : 'none',
+                  textDecorationThickness: '3px',
+                  textUnderlineOffset: '4px',
+                }}
+              >
+                {l.label}
+              </a>
+            ))}
+          </nav>
+          
+          {/* Actions - stark and simple */}
+          <div className="flex items-center gap-1">
+            {settings.showSearch && (
+              <>
+                {searchOpen ? (
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      placeholder={settings.searchPlaceholder}
+                      className="w-40 px-3 py-1 text-sm border-b-2 focus:outline-none bg-transparent"
+                      style={{ 
+                        borderColor: settings.searchFocusBorderColor,
+                        color: settings.searchInputTextColor,
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => setSearchOpen(false), 150);
+                      }}
+                      autoFocus
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="p-3"
+                    style={{ color: settings.textColor }}
+                  >
+                    <Search size={18} strokeWidth={2.5} />
+                  </button>
+                )}
+              </>
+            )}
+            
+            {settings.showAccount && (
+              <button 
+                className="p-3"
+                style={{ color: settings.textColor }}
+              >
+                <User size={18} strokeWidth={2.5} />
+              </button>
+            )}
+            
+            {settings.showCart && (
+              <button 
+                onClick={onOpenCart}
+                className="relative p-3"
+                style={{ color: settings.textColor }}
+              >
+                <ShoppingBag size={18} strokeWidth={2.5} />
+                {cartCount > 0 && (
+                  <span 
+                    className="absolute top-1 right-1 min-w-[16px] h-4 px-1 text-[10px] flex items-center justify-center font-black"
+                    style={{ 
+                      backgroundColor: settings.cartBadgeColor,
+                      color: settings.cartBadgeTextColor,
+                    }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// Default values for HeaderOffset (Asymmetric offset layout)
+const OFFSET_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  searchPlaceholder: "Search...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#f97316',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
+  backgroundColor: '#fafafa',
+  borderColor: '#e5e7eb',
+  textColor: '#1f2937',
+  textHoverColor: '#f97316',
+  accentColor: '#f97316',
+  cartBadgeColor: '#f97316',
+  cartBadgeTextColor: '#ffffff',
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// 18. HeaderOffset - Asymmetric design with staggered elements
+export const HeaderOffset: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...OFFSET_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+
+  return (
+    <header 
+      className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50`}
+      style={{ 
+        backgroundColor: settings.backgroundColor,
+      }}
+    >
+      {/* Top bar - offset to the right */}
+      <div className="border-b" style={{ borderColor: settings.borderColor }}>
+        <div className="max-w-7xl mx-auto px-6 py-2 flex justify-end gap-6">
+          <div className="flex items-center gap-4">
+            {settings.showSearch && (
+              <>
+                {searchOpen ? (
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      placeholder={settings.searchPlaceholder}
+                      className="w-48 px-3 py-1.5 text-sm rounded border focus:outline-none"
+                      style={{ 
+                        backgroundColor: settings.searchFocusBackgroundColor,
+                        borderColor: settings.searchFocusBorderColor,
+                        color: settings.searchInputTextColor,
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => setSearchOpen(false), 150);
+                      }}
+                      autoFocus
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="text-xs uppercase tracking-wider"
+                    style={{ color: settings.textColor }}
+                  >
+                    <Search size={16} />
+                  </button>
+                )}
+              </>
+            )}
+            
+            {settings.showAccount && (
+              <button 
+                style={{ color: settings.textColor }}
+              >
+                <User size={16} />
+              </button>
+            )}
+            
+            {settings.showCart && (
+              <button 
+                onClick={onOpenCart}
+                className="relative"
+                style={{ color: settings.textColor }}
+              >
+                <ShoppingBag size={16} />
+                {cartCount > 0 && (
+                  <span 
+                    className="absolute -top-1 -right-2 min-w-[16px] h-4 px-1 rounded-full text-[10px] flex items-center justify-center font-bold"
+                    style={{ 
+                      backgroundColor: settings.cartBadgeColor,
+                      color: settings.cartBadgeTextColor,
+                    }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Main bar - offset to the left */}
+      <div className="max-w-7xl mx-auto px-6 py-5">
+        <div className="flex items-center gap-12">
+          {/* Logo */}
+          <div 
+            className="cursor-pointer"
+            onClick={onLogoClick}
+          >
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt={storeName} 
+                style={{ height: `${logoHeight || 36}px` }}
+                className="h-auto"
+              />
+            ) : (
+              <span 
+                className="text-xl font-bold"
+                style={{ color: settings.textColor }}
+              >
+                {storeName}
+              </span>
+            )}
+          </div>
+          
+          {/* Navigation - staggered */}
+          <nav className="hidden md:flex items-center gap-8 flex-1">
+            {(links || []).map((l, idx) => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLinkClick?.(l.href);
+                }}
+                className="text-sm font-medium transition-colors relative"
+                style={{ 
+                  color: l.active ? settings.accentColor : settings.textColor,
+                  marginTop: `${(idx % 2) * 8}px`, // Stagger every other link
+                }}
+                onMouseEnter={(e) => {
+                  if (!l.active) e.currentTarget.style.color = settings.textHoverColor!;
+                }}
+                onMouseLeave={(e) => {
+                  if (!l.active) e.currentTarget.style.color = settings.textColor!;
+                }}
+              >
+                {l.label}
+                {l.active && (
+                  <span 
+                    className="absolute -bottom-1 left-0 w-full h-0.5"
+                    style={{ backgroundColor: settings.accentColor }}
+                  />
+                )}
+              </a>
+            ))}
+          </nav>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// Default values for HeaderTicker (News/media style with ticker)
+const TICKER_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  searchPlaceholder: "Search...",
+  searchBackgroundColor: '#f9fafb',
+  searchFocusBackgroundColor: '#ffffff',
+  searchFocusBorderColor: '#dc2626',
+  searchInputTextColor: '#111827',
+  searchPlaceholderColor: '#9ca3af',
+  backgroundColor: '#ffffff',
+  borderColor: '#e5e7eb',
+  textColor: '#111827',
+  textHoverColor: '#dc2626',
+  accentColor: '#dc2626',
+  cartBadgeColor: '#dc2626',
+  cartBadgeTextColor: '#ffffff',
+  tickerBackgroundColor: '#dc2626',
+  tickerTextColor: '#ffffff',
+  tickerText: 'BREAKING NEWS • LATEST UPDATES • TRENDING NOW',
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// 19. HeaderTicker - News/media style with scrolling ticker
+export const HeaderTicker: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...TICKER_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+
+  return (
+    <header 
+      className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50`}
+      style={{ backgroundColor: settings.backgroundColor }}
+    >
+      {/* Ticker bar */}
+      <div 
+        className="overflow-hidden py-1.5 relative"
+        style={{ 
+          backgroundColor: settings.tickerBackgroundColor,
+          color: settings.tickerTextColor,
+        }}
+      >
+        <div className="flex animate-scroll whitespace-nowrap">
+          <span className="text-xs font-bold tracking-wider px-4">{settings.tickerText}</span>
+          <span className="text-xs font-bold tracking-wider px-4">{settings.tickerText}</span>
+          <span className="text-xs font-bold tracking-wider px-4">{settings.tickerText}</span>
+        </div>
+      </div>
+      
+      {/* Main header */}
+      <div className="border-b" style={{ borderColor: settings.borderColor }}>
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between gap-8">
+            {/* Logo */}
+            <div 
+              className="cursor-pointer"
+              onClick={onLogoClick}
+            >
+              {logoUrl ? (
+                <img 
+                  src={logoUrl} 
+                  alt={storeName} 
+                  style={{ height: `${logoHeight || 32}px` }}
+                  className="h-auto"
+                />
+              ) : (
+                <span 
+                  className="text-xl font-black uppercase tracking-tight"
+                  style={{ color: settings.textColor }}
+                >
+                  {storeName}
+                </span>
+              )}
+            </div>
+            
+            {/* Navigation */}
+            <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
+              {(links || []).map(l => (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onLinkClick?.(l.href);
+                  }}
+                  className="text-sm font-semibold uppercase tracking-wide transition-colors"
+                  style={{ 
+                    color: l.active ? settings.accentColor : settings.textColor,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!l.active) e.currentTarget.style.color = settings.textHoverColor!;
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!l.active) e.currentTarget.style.color = settings.textColor!;
+                  }}
+                >
+                  {l.label}
+                </a>
+              ))}
+            </nav>
+            
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              {settings.showSearch && (
+                <>
+                  {searchOpen ? (
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder={settings.searchPlaceholder}
+                        className="w-48 px-4 py-2 text-sm rounded-full border-2 focus:outline-none"
+                        style={{ 
+                          backgroundColor: settings.searchFocusBackgroundColor,
+                          borderColor: settings.searchFocusBorderColor,
+                          color: settings.searchInputTextColor,
+                        }}
+                        onBlur={() => {
+                          setTimeout(() => setSearchOpen(false), 150);
+                        }}
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setSearchOpen(true)}
+                      className="p-2"
+                      style={{ color: settings.textColor }}
+                    >
+                      <Search size={20} />
+                    </button>
+                  )}
+                </>
+              )}
+              
+              {settings.showAccount && (
+                <button 
+                  className="p-2"
+                  style={{ color: settings.textColor }}
+                >
+                  <User size={20} />
+                </button>
+              )}
+              
+              {settings.showCart && (
+                <button 
+                  onClick={onOpenCart}
+                  className="relative p-2"
+                  style={{ color: settings.textColor }}
+                >
+                  <ShoppingBag size={20} />
+                  {cartCount > 0 && (
+                    <span 
+                      className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] flex items-center justify-center font-bold"
+                      style={{ 
+                        backgroundColor: settings.cartBadgeColor,
+                        color: settings.cartBadgeTextColor,
+                      }}
+                    >
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <style>{`
+        @keyframes scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-33.333%); }
+        }
+        .animate-scroll {
+          animation: scroll 20s linear infinite;
+        }
+      `}</style>
+    </header>
+  );
+};
+
+// Default values for HeaderNoir (Dark film noir aesthetic)
+const NOIR_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  searchPlaceholder: "Search...",
+  searchBackgroundColor: '#1a1a1a',
+  searchFocusBackgroundColor: '#0a0a0a',
+  searchFocusBorderColor: '#f5f5f5',
+  searchInputTextColor: '#f5f5f5',
+  searchPlaceholderColor: '#737373',
+  backgroundColor: '#0a0a0a',
+  borderColor: '#262626',
+  textColor: '#f5f5f5',
+  textHoverColor: '#ffffff',
+  accentColor: '#f5f5f5',
+  cartBadgeColor: '#f5f5f5',
+  cartBadgeTextColor: '#0a0a0a',
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// 20. HeaderNoir - Dark film noir aesthetic with dramatic contrast
+export const HeaderNoir: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...NOIR_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+
+  return (
+    <header 
+      className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50`}
+      style={{ 
+        backgroundColor: settings.backgroundColor,
+        borderBottom: `1px solid ${settings.borderColor}`,
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.8)',
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-8 py-5">
+        <div className="flex items-center justify-between gap-8">
+          {/* Logo with noir styling */}
+          <div 
+            className="cursor-pointer group"
+            onClick={onLogoClick}
+          >
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt={storeName} 
+                style={{ 
+                  height: `${logoHeight || 36}px`,
+                  filter: 'brightness(1) contrast(1.2)',
+                }}
+                className="h-auto transition-all group-hover:brightness-110"
+              />
+            ) : (
+              <span 
+                className="text-2xl font-bold tracking-tight transition-all group-hover:tracking-wide"
+                style={{ 
+                  color: settings.textColor,
+                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)',
+                }}
+              >
+                {storeName}
+              </span>
+            )}
+          </div>
+          
+          {/* Navigation with film noir style */}
+          <nav className="hidden md:flex items-center gap-8 flex-1 justify-center">
+            {(links || []).map(l => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLinkClick?.(l.href);
+                }}
+                className="text-sm font-medium uppercase tracking-widest relative transition-all"
+                style={{ 
+                  color: l.active ? settings.accentColor : settings.textColor,
+                  opacity: l.active ? 1 : 0.8,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                  e.currentTarget.style.letterSpacing = '0.2em';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = l.active ? '1' : '0.8';
+                  e.currentTarget.style.letterSpacing = '0.15em';
+                }}
+              >
+                {l.label}
+                {l.active && (
+                  <span 
+                    className="absolute -bottom-1 left-0 right-0 h-px"
+                    style={{ 
+                      backgroundColor: settings.accentColor,
+                      boxShadow: '0 0 8px rgba(245, 245, 245, 0.6)',
+                    }}
+                  />
+                )}
+              </a>
+            ))}
+          </nav>
+          
+          {/* Actions with noir contrast */}
+          <div className="flex items-center gap-2">
+            {settings.showSearch && (
+              <>
+                {searchOpen ? (
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      placeholder={settings.searchPlaceholder}
+                      className="w-56 px-4 py-2 pr-10 text-sm border focus:outline-none"
+                      style={{ 
+                        backgroundColor: settings.searchFocusBackgroundColor,
+                        borderColor: settings.searchFocusBorderColor,
+                        color: settings.searchInputTextColor,
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => setSearchOpen(false), 150);
+                      }}
+                      autoFocus
+                    />
+                    <Search 
+                      size={16} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: settings.searchPlaceholderColor }}
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="p-2.5 transition-opacity hover:opacity-70"
+                    style={{ color: settings.textColor }}
+                  >
+                    <Search size={20} />
+                  </button>
+                )}
+              </>
+            )}
+            
+            {settings.showAccount && (
+              <button 
+                className="p-2.5 transition-opacity hover:opacity-70"
+                style={{ color: settings.textColor }}
+              >
+                <User size={20} />
+              </button>
+            )}
+            
+            {settings.showCart && (
+              <button 
+                onClick={onOpenCart}
+                className="relative p-2.5 transition-opacity hover:opacity-70"
+                style={{ color: settings.textColor }}
+              >
+                <ShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <span 
+                    className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] flex items-center justify-center font-bold"
+                    style={{ 
+                      backgroundColor: settings.cartBadgeColor,
+                      color: settings.cartBadgeTextColor,
+                      boxShadow: '0 0 10px rgba(245, 245, 245, 0.4)',
+                    }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// Default values for HeaderGhost (Transparent overlay style)
+const GHOST_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  searchPlaceholder: "Search...",
+  searchBackgroundColor: 'rgba(255, 255, 255, 0.1)',
+  searchFocusBackgroundColor: 'rgba(255, 255, 255, 0.2)',
+  searchFocusBorderColor: '#ffffff',
+  searchInputTextColor: '#ffffff',
+  searchPlaceholderColor: 'rgba(255, 255, 255, 0.6)',
+  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  borderColor: 'rgba(255, 255, 255, 0.2)',
+  textColor: '#ffffff',
+  textHoverColor: '#ffffff',
+  accentColor: '#ffffff',
+  cartBadgeColor: '#ffffff',
+  cartBadgeTextColor: '#000000',
+  sticky: true,
+  maxWidth: 'full',
+};
+
+// 21. HeaderGhost - Transparent overlay with glassmorphism
+export const HeaderGhost: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  data = {},
+}) => {
+  const settings = { ...GHOST_DEFAULTS, ...data };
+  const [searchOpen, setSearchOpen] = React.useState(false);
+
+  return (
+    <header 
+      className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50 backdrop-blur-lg`}
+      style={{ 
+        backgroundColor: settings.backgroundColor,
+        borderBottom: `1px solid ${settings.borderColor}`,
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex items-center justify-between gap-8">
+          {/* Logo with ghost effect */}
+          <div 
+            className="cursor-pointer transition-all hover:scale-105"
+            onClick={onLogoClick}
+          >
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt={storeName} 
+                style={{ 
+                  height: `${logoHeight || 32}px`,
+                  filter: 'brightness(1.2) drop-shadow(0 2px 8px rgba(255, 255, 255, 0.3))',
+                }}
+                className="h-auto"
+              />
+            ) : (
+              <span 
+                className="text-xl font-semibold tracking-wide"
+                style={{ 
+                  color: settings.textColor,
+                  textShadow: '0 2px 8px rgba(255, 255, 255, 0.3)',
+                }}
+              >
+                {storeName}
+              </span>
+            )}
+          </div>
+          
+          {/* Navigation with glass effect */}
+          <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
+            {(links || []).map(l => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLinkClick?.(l.href);
+                }}
+                className="text-sm font-medium tracking-wide px-3 py-1.5 rounded transition-all"
+                style={{ 
+                  color: settings.textColor,
+                  backgroundColor: l.active ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                  backdropFilter: l.active ? 'blur(8px)' : 'none',
+                }}
+                onMouseEnter={(e) => {
+                  if (!l.active) {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                    e.currentTarget.style.backdropFilter = 'blur(8px)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!l.active) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.backdropFilter = 'none';
+                  }
+                }}
+              >
+                {l.label}
+              </a>
+            ))}
+          </nav>
+          
+          {/* Actions with glass styling */}
+          <div className="flex items-center gap-2">
+            {settings.showSearch && (
+              <>
+                {searchOpen ? (
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      placeholder={settings.searchPlaceholder}
+                      className="w-52 px-4 py-2 pr-10 text-sm rounded-full backdrop-blur-md border focus:outline-none"
+                      style={{ 
+                        backgroundColor: settings.searchFocusBackgroundColor,
+                        borderColor: settings.searchFocusBorderColor,
+                        color: settings.searchInputTextColor,
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => setSearchOpen(false), 150);
+                      }}
+                      autoFocus
+                    />
+                    <Search 
+                      size={16} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: settings.searchPlaceholderColor }}
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="p-2 rounded-full transition-all"
+                    style={{ 
+                      color: settings.textColor,
+                      backgroundColor: 'transparent',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    <Search size={20} />
+                  </button>
+                )}
+              </>
+            )}
+            
+            {settings.showAccount && (
+              <button 
+                className="p-2 rounded-full transition-all"
+                style={{ 
+                  color: settings.textColor,
+                  backgroundColor: 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <User size={20} />
+              </button>
+            )}
+            
+            {settings.showCart && (
+              <button 
+                onClick={onOpenCart}
+                className="relative p-2 rounded-full transition-all"
+                style={{ 
+                  color: settings.textColor,
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+                }}
+              >
+                <ShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <span 
+                    className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] flex items-center justify-center font-bold"
+                    style={{ 
+                      backgroundColor: settings.cartBadgeColor,
+                      color: settings.cartBadgeTextColor,
+                    }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
 
 // Other headers still use placeholder - restore from HeaderLibrary.archive.tsx as needed
-export const HeaderStark = PlaceholderHeader;
-export const HeaderOffset = PlaceholderHeader;
-export const HeaderTicker = PlaceholderHeader;
-export const HeaderNoir = PlaceholderHeader;
-export const HeaderGhost = PlaceholderHeader;
 
 export const HEADER_COMPONENTS: Record<string, React.FC<HeaderProps>> = {
   canvas: HeaderCanvas,
@@ -2780,6 +3700,11 @@ export const HEADER_OPTIONS = [
   { id: 'portfolio', name: 'Creative Agency', description: 'Asymmetric layout', date: '2025-01-04', popularity: 78 },
   { id: 'metro', name: 'Clean Minimal', description: 'Grid-based precision', date: '2025-01-04', popularity: 81 },
   { id: 'modul', name: 'Modular Blocks', description: 'Compartmentalized', date: '2025-01-04', popularity: 74 },
+  { id: 'stark', name: 'Ultra Minimal', description: 'Brutalist design', date: '2025-01-05', popularity: 72 },
+  { id: 'offset', name: 'Asymmetric', description: 'Staggered elements', date: '2025-01-05', popularity: 76 },
+  { id: 'ticker', name: 'News/Media', description: 'Scrolling ticker', date: '2025-01-05', popularity: 79 },
+  { id: 'noir', name: 'Film Noir', description: 'Dark dramatic', date: '2025-01-05', popularity: 83 },
+  { id: 'ghost', name: 'Transparent', description: 'Glassmorphism', date: '2025-01-05', popularity: 87 },
 ];
 
 export const HEADER_FIELDS: Record<string, string[]> = {
@@ -2919,7 +3844,50 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
-  // Placeholders for remaining headers
-  stark: [], 
-  offset: [], ticker: [], noir: [], ghost: [],
+  stark: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  offset: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  ticker: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor',
+    'tickerBackgroundColor', 'tickerTextColor', 'tickerText',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  noir: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  ghost: [
+    'showSearch', 'showAccount', 'showCart',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchFocusBackgroundColor',
+    'searchFocusBorderColor', 'searchInputTextColor', 'searchPlaceholderColor',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
 };
