@@ -6467,18 +6467,7 @@ Return ONLY the JSON object, no markdown.`;
                     </button>
                   </div>
 
-                  {/* FOOTER EDITOR - Dedicated footer customization */}
-                  <div className="bg-neutral-900 border border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.3)] rounded-xl overflow-hidden">
-                    <button onClick={() => setIsFooterModalOpen(true)} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
-                      <div className="flex items-center gap-3"><div className="p-1.5 bg-emerald-900/30 text-emerald-400 rounded"><PanelBottom size={16} /></div><span className="font-bold text-sm text-white">Edit Footer</span></div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-neutral-500 capitalize">{config.footerStyle || 'minimal'}</span>
-                        <ChevronRight size={14} className="text-neutral-600" />
-                      </div>
-                    </button>
-                  </div>
-
-                  {/* Pages & Navigation */}
+                  {/* Pages & Navigation */
                   <div className="bg-neutral-900 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-xl overflow-hidden">
                     <button onClick={() => setDesignSections(prev => ({ ...prev, pages: !prev.pages }))} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
                       <div className="flex items-center gap-3"><div className="p-1.5 bg-neutral-800 rounded text-neutral-400"><FileText size={16} /></div><span className="font-bold text-sm text-white">Pages & Navigation</span></div><ChevronDown size={16} className={`text-neutral-500 transition-transform ${designSections.pages ? 'rotate-180' : ''}`} />
@@ -6795,12 +6784,12 @@ Return ONLY the JSON object, no markdown.`;
                     )}
                   </div>
 
-                  {/* 3. FOOTER - Fixed site footer */}
-                  <div className="bg-neutral-900 border border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)] rounded-xl overflow-hidden">
-                    <button onClick={() => { setSelectedBlockId(null); setSystemModalType('footer'); setIsSystemModalOpen(true); }} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
+                  {/* 3. FOOTER - Dedicated footer customization */}
+                  <div className="bg-neutral-900 border border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.3)] rounded-xl overflow-hidden">
+                    <button onClick={() => setIsFooterModalOpen(true)} className="w-full flex items-center justify-between p-4 hover:bg-neutral-800 transition-colors">
                       <div className="flex items-center gap-3"><div className="p-1.5 bg-emerald-900/30 text-emerald-400 rounded"><PanelBottom size={16} /></div><span className="font-bold text-sm text-white">Footer</span></div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-neutral-500">{FOOTER_OPTIONS.find(f => f.id === config.footerStyle)?.name}</span>
+                        <span className="text-[10px] text-neutral-500 capitalize">{config.footerStyle || 'minimal'}</span>
                         <ChevronRight size={14} className="text-neutral-600" />
                       </div>
                     </button>
