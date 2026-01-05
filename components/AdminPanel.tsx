@@ -2498,117 +2498,73 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
                   )}
 
-                  {/* Bunker-specific Controls */}
-                  {(config.headerStyle === 'bunker') && (
-                    <div className="space-y-3 mb-6">
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Ticker Banner</p>
-                      
-                      {/* Ticker Text */}
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-sm text-neutral-300 mb-2 block">Ticker Text</label>
-                        <input
-                          type="text"
-                          value={config.headerData?.tickerText ?? 'FREE SHIPPING WORLDWIDE — 0% TRANSACTION FEES — NEXUS COMMERCE OS — BUILD THE FUTURE'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, tickerText: e.target.value }
-                          })}
-                          className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
-                          placeholder="FREE SHIPPING WORLDWIDE"
-                        />
+                  {/* Dynamic Ticker Controls - Shows for ANY header with ticker properties */}
+                  {(() => {
+                    const currentHeaderFields = HEADER_FIELDS[config.headerStyle] || [];
+                    const hasTicker = currentHeaderFields.some(field => field.startsWith('ticker'));
+                    
+                    if (!hasTicker) return null;
+                    
+                    // Determine which ticker fields are available
+                    const hasTickerBorder = currentHeaderFields.includes('tickerBorderColor');
+                    
+                    return (
+                      <div className="space-y-3 mb-6">
+                        <p className="text-xs text-neutral-400 uppercase tracking-wide">Ticker Banner</p>
+                        
+                        {/* Ticker Text */}
+                        <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                          <label className="text-sm text-neutral-300 mb-2 block">Ticker Text</label>
+                          <input
+                            type="text"
+                            value={config.headerData?.tickerText ?? (config.headerStyle === 'bunker' 
+                              ? 'FREE SHIPPING WORLDWIDE — 0% TRANSACTION FEES — NEXUS COMMERCE OS — BUILD THE FUTURE'
+                              : 'BREAKING NEWS • LATEST UPDATES • TRENDING NOW')}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              headerData: { ...config.headerData, tickerText: e.target.value }
+                            })}
+                            className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
+                            placeholder="Enter ticker text"
+                          />
+                        </div>
+                        
+                        {/* Ticker Colors - Dynamically show available fields */}
+                        <div className="grid grid-cols-2 gap-3">
+                          {[
+                            currentHeaderFields.includes('tickerBackgroundColor') && { 
+                              key: 'tickerBackgroundColor', 
+                              label: 'Ticker Background', 
+                              defaultValue: config.headerStyle === 'bunker' ? '#000000' : '#dc2626' 
+                            },
+                            currentHeaderFields.includes('tickerTextColor') && { 
+                              key: 'tickerTextColor', 
+                              label: 'Ticker Text', 
+                              defaultValue: config.headerStyle === 'bunker' ? '#facc15' : '#ffffff' 
+                            },
+                            hasTickerBorder && { 
+                              key: 'tickerBorderColor', 
+                              label: 'Ticker Border', 
+                              defaultValue: '#000000' 
+                            },
+                          ].filter(Boolean).map((field: any) => (
+                            <div key={field.key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
+                              <input
+                                type="color"
+                                value={config.headerData?.[field.key] ?? field.defaultValue}
+                                onChange={(e) => onConfigChange({
+                                  ...config,
+                                  headerData: { ...config.headerData, [field.key]: e.target.value }
+                                })}
+                                className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                              />
+                              <span className="text-sm text-neutral-300">{field.label}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      
-                      {/* Ticker Colors */}
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: 'tickerBackgroundColor', label: 'Ticker Background', defaultValue: '#000000' },
-                          { key: 'tickerTextColor', label: 'Ticker Text', defaultValue: '#facc15' },
-                          { key: 'tickerBorderColor', label: 'Ticker Border', defaultValue: '#000000' },
-                        ].map(({ key, label, defaultValue }) => (
-                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                            <input
-                              type="color"
-                              value={config.headerData?.[key] ?? defaultValue}
-                              onChange={(e) => onConfigChange({
-                                ...config,
-                                headerData: { ...config.headerData, [key]: e.target.value }
-                              })}
-                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                            />
-                            <span className="text-sm text-neutral-300">{label}</span>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Search Colors */}
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide mt-4">Search Styling</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: 'searchBackgroundColor', label: 'Search BG', defaultValue: '#f9fafb' },
-                          { key: 'searchFocusBackgroundColor', label: 'Focus BG', defaultValue: '#ffffff' },
-                          { key: 'searchFocusBorderColor', label: 'Focus Border', defaultValue: '#000000' },
-                          { key: 'searchInputTextColor', label: 'Text', defaultValue: '#111827' },
-                          { key: 'searchPlaceholderColor', label: 'Placeholder', defaultValue: '#9ca3af' },
-                        ].map(({ key, label, defaultValue }) => (
-                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                            <input
-                              type="color"
-                              value={config.headerData?.[key] ?? defaultValue}
-                              onChange={(e) => onConfigChange({
-                                ...config,
-                                headerData: { ...config.headerData, [key]: e.target.value }
-                              })}
-                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                            />
-                            <span className="text-xs text-neutral-300">{label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Ticker-specific Controls */}
-                  {(config.headerStyle === 'ticker') && (
-                    <div className="space-y-3 mb-6">
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Ticker Banner</p>
-                      
-                      {/* Ticker Text */}
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-sm text-neutral-300 mb-2 block">Ticker Text</label>
-                        <input
-                          type="text"
-                          value={config.headerData?.tickerText ?? 'BREAKING NEWS • LATEST UPDATES • TRENDING NOW'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, tickerText: e.target.value }
-                          })}
-                          className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
-                          placeholder="BREAKING NEWS • LATEST UPDATES"
-                        />
-                      </div>
-                      
-                      {/* Ticker Colors */}
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: 'tickerBackgroundColor', label: 'Ticker Background', defaultValue: '#dc2626' },
-                          { key: 'tickerTextColor', label: 'Ticker Text', defaultValue: '#ffffff' },
-                        ].map(({ key, label, defaultValue }) => (
-                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                            <input
-                              type="color"
-                              value={config.headerData?.[key] ?? defaultValue}
-                              onChange={(e) => onConfigChange({
-                                ...config,
-                                headerData: { ...config.headerData, [key]: e.target.value }
-                              })}
-                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                            />
-                            <span className="text-sm text-neutral-300">{label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {/* Venture-specific Controls */}
                   {(config.headerStyle === 'venture') && (
