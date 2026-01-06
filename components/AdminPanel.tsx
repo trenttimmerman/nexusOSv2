@@ -4398,6 +4398,34 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
                           placeholder="e.g., Shop Now"
                         />
+                        <div className="flex items-center gap-2 mt-1">
+                          <Link size={12} className="text-neutral-600" />
+                          <select
+                            value={heroData.buttonLink || ''}
+                            onChange={(e) => updateHeroData({ buttonLink: e.target.value })}
+                            className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-purple-500 outline-none"
+                          >
+                            <option value="">No link</option>
+                            {localPages.map(page => (
+                              <option key={page.id} value={page.slug || '/'}>
+                                {page.title || page.slug}
+                              </option>
+                            ))}
+                            <option value="external">Custom URL...</option>
+                          </select>
+                        </div>
+                        {heroData.buttonLink === 'external' && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <ExternalLink size={12} className="text-neutral-600" />
+                            <input
+                              type="text"
+                              value={heroData.buttonExternalUrl || ''}
+                              onChange={(e) => updateHeroData({ buttonExternalUrl: e.target.value })}
+                              className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-purple-500 outline-none"
+                              placeholder="https://..."
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -4411,6 +4439,34 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
                           placeholder="e.g., Learn More"
                         />
+                        <div className="flex items-center gap-2 mt-1">
+                          <Link size={12} className="text-neutral-600" />
+                          <select
+                            value={heroData.secondaryButtonLink || ''}
+                            onChange={(e) => updateHeroData({ secondaryButtonLink: e.target.value })}
+                            className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-purple-500 outline-none"
+                          >
+                            <option value="">No link</option>
+                            {localPages.map(page => (
+                              <option key={page.id} value={page.slug || '/'}>
+                                {page.title || page.slug}
+                              </option>
+                            ))}
+                            <option value="external">Custom URL...</option>
+                          </select>
+                        </div>
+                        {heroData.secondaryButtonLink === 'external' && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <ExternalLink size={12} className="text-neutral-600" />
+                            <input
+                              type="text"
+                              value={heroData.secondaryButtonExternalUrl || ''}
+                              onChange={(e) => updateHeroData({ secondaryButtonExternalUrl: e.target.value })}
+                              className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-purple-500 outline-none"
+                              placeholder="https://..."
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -4431,16 +4487,49 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     {availableFields.includes('link1Label') && (
                       <div className="space-y-1.5">
                         <label className="text-xs text-neutral-400">Navigation Links</label>
-                        <div className="space-y-2">
-                          {['link1Label', 'link2Label', 'link3Label'].map((key, idx) => (
-                            <input
-                              key={key}
-                              type="text"
-                              value={heroData[key] || ''}
-                              onChange={(e) => updateHeroData({ [key]: e.target.value })}
-                              className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
-                              placeholder={`Link ${idx + 1}`}
-                            />
+                        <div className="space-y-3">
+                          {[
+                            { labelKey: 'link1Label', linkKey: 'link1Href', externalKey: 'link1ExternalUrl' },
+                            { labelKey: 'link2Label', linkKey: 'link2Href', externalKey: 'link2ExternalUrl' },
+                            { labelKey: 'link3Label', linkKey: 'link3Href', externalKey: 'link3ExternalUrl' }
+                          ].map(({ labelKey, linkKey, externalKey }, idx) => (
+                            <div key={labelKey} className="space-y-1 p-2 bg-neutral-900/50 rounded-lg border border-neutral-700">
+                              <input
+                                type="text"
+                                value={heroData[labelKey] || ''}
+                                onChange={(e) => updateHeroData({ [labelKey]: e.target.value })}
+                                className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-purple-500 outline-none"
+                                placeholder={`Link ${idx + 1} label`}
+                              />
+                              <div className="flex items-center gap-2">
+                                <Link size={12} className="text-neutral-600" />
+                                <select
+                                  value={heroData[linkKey] || ''}
+                                  onChange={(e) => updateHeroData({ [linkKey]: e.target.value })}
+                                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-purple-500 outline-none"
+                                >
+                                  <option value="">No link</option>
+                                  {localPages.map(page => (
+                                    <option key={page.id} value={page.slug || '/'}>
+                                      {page.title || page.slug}
+                                    </option>
+                                  ))}
+                                  <option value="external">Custom URL...</option>
+                                </select>
+                              </div>
+                              {heroData[linkKey] === 'external' && (
+                                <div className="flex items-center gap-2">
+                                  <ExternalLink size={12} className="text-neutral-600" />
+                                  <input
+                                    type="text"
+                                    value={heroData[externalKey] || ''}
+                                    onChange={(e) => updateHeroData({ [externalKey]: e.target.value })}
+                                    className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-purple-500 outline-none"
+                                    placeholder="https://..."
+                                  />
+                                </div>
+                              )}
+                            </div>
                           ))}
                         </div>
                       </div>
