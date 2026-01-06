@@ -16,10 +16,138 @@ import { CONTACT_COMPONENTS } from './ContactLibrary';
 import { LAYOUT_COMPONENTS } from './LayoutLibrary';
 import { COLLECTION_COMPONENTS } from './CollectionLibrary';
 import { SectionWrapper } from './SectionWrapper';
-import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
+import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2, Search, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
 import { CartDrawer } from './CartDrawer';
+
+// Search Modal Component
+const SearchModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  products: Product[];
+  onNavigate?: (href: string) => void;
+  primaryColor?: string;
+}> = ({ isOpen, onClose, products, onNavigate, primaryColor = '#6366F1' }) => {
+  const [query, setQuery] = useState('');
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
+
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, onClose]);
+
+  const filteredProducts = query.length >= 2 
+    ? products.filter(p => 
+        p.name.toLowerCase().includes(query.toLowerCase()) ||
+        p.description?.toLowerCase().includes(query.toLowerCase()) ||
+        p.category?.toLowerCase().includes(query.toLowerCase())
+      ).slice(0, 8)
+    : [];
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-start justify-center pt-20 px-4">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+        {/* Search Input */}
+        <div className="flex items-center gap-3 p-4 border-b border-neutral-200">
+          <Search size={20} className="text-neutral-400" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search products..."
+            className="flex-1 text-lg outline-none placeholder:text-neutral-400"
+          />
+          <button 
+            onClick={onClose}
+            className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+          >
+            <X size={20} className="text-neutral-500" />
+          </button>
+        </div>
+
+        {/* Results */}
+        <div className="max-h-[60vh] overflow-y-auto">
+          {query.length < 2 ? (
+            <div className="p-8 text-center text-neutral-500">
+              <Search size={40} className="mx-auto mb-3 opacity-30" />
+              <p>Start typing to search products...</p>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="p-8 text-center text-neutral-500">
+              <p>No products found for "{query}"</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-neutral-100">
+              {filteredProducts.map((product) => (
+                <button
+                  key={product.id}
+                  onClick={() => {
+                    onNavigate?.(`/product/${product.id}`);
+                    onClose();
+                    setQuery('');
+                  }}
+                  className="w-full flex items-center gap-4 p-4 hover:bg-neutral-50 transition-colors text-left"
+                >
+                  {product.images?.[0] ? (
+                    <img 
+                      src={product.images[0]} 
+                      alt={product.name}
+                      className="w-16 h-16 object-cover rounded-lg bg-neutral-100"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 bg-neutral-100 rounded-lg flex items-center justify-center">
+                      <Search size={20} className="text-neutral-300" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-neutral-900 truncate">{product.name}</h4>
+                    {product.category && (
+                      <p className="text-sm text-neutral-500">{product.category}</p>
+                    )}
+                    <p className="text-sm font-medium" style={{ color: primaryColor }}>
+                      ${product.price.toFixed(2)}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer hint */}
+        <div className="p-3 bg-neutral-50 border-t border-neutral-200 text-center text-xs text-neutral-500">
+          Press <kbd className="px-1.5 py-0.5 bg-white border border-neutral-300 rounded text-xs">ESC</kbd> to close
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Style classes generator for block.data.style
 const getBlockStyleClasses = (style?: { padding?: string; paddingX?: string; maxWidth?: string; height?: string; background?: string; alignment?: string; imageFit?: string }) => {
@@ -131,6 +259,9 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   // Get collections from context (avoids prop drilling TDZ issues)
   const { collections } = useData();
 
+  // Search modal state
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
   // Extract design settings from config
   const primaryColor = config.primaryColor || '#6366F1';
   const secondaryColor = config.secondaryColor || '#8B5CF6';
@@ -238,9 +369,17 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                       onOpenCart={() => setIsCartOpen(true)}
                       onLogoClick={() => onNavigate?.('/')}
                       onLinkClick={(href) => onNavigate?.(href)}
+                      onSearchClick={() => setIsSearchOpen(true)}
                       primaryColor={primaryColor}
                       secondaryColor={secondaryColor}
                       data={config.headerData}
+                  />
+                  <SearchModal
+                      isOpen={isSearchOpen}
+                      onClose={() => setIsSearchOpen(false)}
+                      products={products}
+                      onNavigate={onNavigate}
+                      primaryColor={primaryColor}
                   />
                   <main className="flex-1 pt-20">
                       {/* Back to shop button */}
@@ -623,10 +762,19 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         links={navLinks}
         cartCount={cartCount}
         onOpenCart={() => setIsCartOpen(true)}
+        onLogoClick={() => onNavigate?.('/')}
         onLinkClick={(href) => onNavigate?.(href)}
+        onSearchClick={() => setIsSearchOpen(true)}
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
         data={config.headerData}
+      />
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        products={products}
+        onNavigate={onNavigate}
+        primaryColor={primaryColor}
       />
 
       <main className="flex-1 pt-20">

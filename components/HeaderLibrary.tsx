@@ -31,6 +31,7 @@ interface HeaderProps {
   onOpenCart?: () => void;
   onLogoClick?: () => void;
   onLinkClick?: (href: string) => void;
+  onSearchClick?: () => void;
   primaryColor?: string;
   secondaryColor?: string;
   data?: HeaderData; // Per-header customization
@@ -118,6 +119,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
   onOpenCart,
   onLogoClick,
   onLinkClick,
+  onSearchClick,
   data = {},
 }) => {
   // Merge defaults with customization
@@ -170,6 +172,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-2">
           {settings.showSearch && (
             <button
+              onClick={onSearchClick}
               className="p-2 rounded-full transition-colors"
               style={{ color: settings.textColor }}
               onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
@@ -244,6 +247,7 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
   onOpenCart,
   onLogoClick,
   onLinkClick,
+  onSearchClick,
   data = {},
 }) => {
   // Merge defaults with customization
@@ -295,6 +299,7 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-4" style={{ color: settings.textColor }}>
           {settings.showSearch && (
             <button
+              onClick={onSearchClick}
               className="cursor-pointer transition-colors"
               style={{ color: settings.textColor }}
               onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
@@ -355,6 +360,7 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
   onOpenCart,
   onLogoClick,
   onLinkClick,
+  onSearchClick,
   data = {},
 }) => {
   // Merge defaults with customization
@@ -387,6 +393,7 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
             )}
             {settings.showSearch && (
               <button
+                onClick={onSearchClick}
                 className="transition-colors cursor-pointer"
                 style={{ color: settings.textColor }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
@@ -495,6 +502,7 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
   onOpenCart,
   onLogoClick,
   onLinkClick,
+  onSearchClick,
   data = {},
 }) => {
   const settings = { ...PILOT_DEFAULTS, ...data };
@@ -599,7 +607,7 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
 };
 
 // 5. HeaderBunker - "Bold Contrast" (Brutalist, High Contrast)
-export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="w-full bg-yellow-400 border-b-4 border-black sticky top-0 z-50 font-mono">
     <div className="w-full bg-black text-yellow-400 text-xs py-1 px-2 overflow-hidden whitespace-nowrap">
        <div className="animate-marquee inline-block">
@@ -619,7 +627,7 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
         </div>
       </nav>
       <div className="px-6 py-2 flex items-center justify-center gap-6 bg-white">
-        <button className="hover:text-yellow-600 transition-colors"><Search size={24} className="stroke-[3]" /></button>
+        <button onClick={onSearchClick} className="hover:text-yellow-600 transition-colors"><Search size={24} className="stroke-[3]" /></button>
         <button className="hover:text-yellow-600 transition-colors"><User size={24} className="stroke-[3]" /></button>
         <div onClick={onOpenCart} className="relative cursor-pointer hover:text-yellow-600 transition-colors">
            <ShoppingBag size={24} className="stroke-[3]" />
@@ -631,7 +639,7 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 7. HeaderProtocol - "Tech/Gaming" (Cyberpunk/Brutalist)
-export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="sticky top-0 z-50 bg-yellow-400 border-b-4 border-black font-mono">
     <div className="max-w-7xl mx-auto px-4 min-h-[5.5rem] py-2 flex items-center justify-between">
       <div className="flex items-center gap-8">
@@ -643,7 +651,7 @@ export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
         </nav>
       </div>
       <div className="flex items-center gap-4">
-        <button className="p-1 hover:bg-black hover:text-yellow-400 transition-colors border-2 border-black">
+        <button onClick={onSearchClick} className="p-1 hover:bg-black hover:text-yellow-400 transition-colors border-2 border-black">
           <Search size={20} />
         </button>
         <button className="p-1 hover:bg-black hover:text-yellow-400 transition-colors border-2 border-black">
@@ -663,7 +671,7 @@ export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
 );
 
 // 8. HeaderHorizon - "Double Row" (Double Decker, Editorial)
-export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="w-full sticky top-0 z-50">
     <div className="bg-neutral-900 text-white py-2 px-6 flex justify-between items-center text-xs font-medium tracking-wide">
       <div className="flex gap-4">
@@ -695,7 +703,7 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
        </nav>
        
        <div className="flex items-center gap-4">
-         <Search size={20} className="cursor-pointer hover:text-neutral-600 transition-colors" />
+         <Search size={20} onClick={onSearchClick} className="cursor-pointer hover:text-neutral-600 transition-colors" />
          <User size={20} className="cursor-pointer hover:text-neutral-600 transition-colors" />
          <div onClick={onOpenCart} className="flex items-center gap-1 font-bold text-sm cursor-pointer hover:text-neutral-600 transition-colors">
            <ShoppingBag size={20} />
@@ -707,7 +715,7 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 );
 
 // 10. HeaderTerminal - "Developer" (Code editor style)
-export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="w-full bg-[#1e1e1e] text-[#d4d4d4] font-mono sticky top-0 z-50 border-b border-[#3c3c3c]">
     <div className="flex items-center h-10 px-4 bg-[#252526] text-xs border-b border-[#1e1e1e]">
        <div className="flex gap-2 mr-4">
@@ -736,7 +744,7 @@ export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
        </nav>
 
        <div className="flex items-center gap-4 text-sm">
-          <button className="hover:text-white transition-colors flex items-center gap-1">
+          <button onClick={onSearchClick} className="hover:text-white transition-colors flex items-center gap-1">
             <span className="text-[#569cd6]">fn</span>
             <Search size={16} />
           </button>
@@ -754,7 +762,7 @@ export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
 );
 
 // 11. HeaderPortfolio - "Split Screen" (Big Typography)
-export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="w-full bg-white sticky top-0 z-50 mix-blend-difference text-white">
      <div className="grid grid-cols-3 md:grid-cols-5 min-h-[5.5rem] border-b border-white/20">
         <div className="flex items-center px-6 py-2 border-r border-white/20">
@@ -766,7 +774,7 @@ export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, log
            ))}
         </div>
         <div className="hidden md:flex items-center px-6 border-r border-white/20 justify-center gap-4">
-           <button className="hover:bg-white hover:text-black p-2 transition-colors"><Search size={18} /></button>
+           <button onClick={onSearchClick} className="hover:bg-white hover:text-black p-2 transition-colors"><Search size={18} /></button>
            <button className="hover:bg-white hover:text-black p-2 transition-colors"><User size={18} /></button>
         </div>
         <div onClick={onOpenCart} className="col-span-2 md:col-span-1 flex items-center justify-between px-6 py-2 cursor-pointer hover:bg-white hover:text-black transition-colors">
@@ -778,7 +786,7 @@ export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, log
 );
 
 // 12. HeaderVenture - "Search-First" (Utility First, Search Dominant)
-export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="w-full bg-neutral-100 border-b border-neutral-200 sticky top-0 z-50">
     <div className="max-w-[1600px] mx-auto p-2">
        <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-2 flex items-center justify-between gap-4 min-h-[5.5rem]">
@@ -816,7 +824,7 @@ export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 );
 
 // 13. HeaderMetro - "Tile Style" (Windows Phone Vibe)
-export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="w-full sticky top-0 z-50 bg-white shadow-sm">
     <div className="grid grid-cols-8 md:grid-cols-12 min-h-[5.5rem] divide-x divide-neutral-100 border-b border-neutral-100">
       <div className="col-span-2 md:col-span-3 flex items-center justify-center bg-blue-600 text-white font-bold text-xl tracking-tighter overflow-hidden py-2 px-4">
@@ -825,7 +833,7 @@ export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
       {(links || []).map(l => (
         <NavItem key={l.href} link={l} onClick={onLinkClick} className="hidden md:flex col-span-2 items-center justify-center text-sm font-bold uppercase text-neutral-500 hover:bg-neutral-50 hover:text-black transition-colors py-2" />
       ))}
-      <div className="col-span-2 md:col-span-1 flex items-center justify-center hover:bg-neutral-50 cursor-pointer py-2">
+      <div onClick={onSearchClick} className="col-span-2 md:col-span-1 flex items-center justify-center hover:bg-neutral-50 cursor-pointer py-2">
          <Search size={20} className="text-neutral-600" />
       </div>
       <div className="col-span-2 md:col-span-1 flex items-center justify-center hover:bg-neutral-50 cursor-pointer py-2">
@@ -840,7 +848,7 @@ export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 14. HeaderModul - "Grid Layout" (Swiss Style, Grid)
-export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="w-full border-b border-black sticky top-0 z-50 bg-white font-sans">
     <div className="flex min-h-[5.5rem]">
       <div className="w-48 border-r border-black flex items-center px-4 py-2 font-bold text-lg shrink-0">
@@ -851,7 +859,7 @@ export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
            <NavItem key={l.href} link={l} onClick={onLinkClick} className="flex-1 border-r border-black flex items-center justify-center text-xs font-bold uppercase tracking-widest hover:bg-neutral-100 transition-colors px-2 py-2" />
          ))}
       </nav>
-      <div className="w-14 border-r border-black flex items-center justify-center hover:bg-neutral-100 cursor-pointer py-2">
+      <div onClick={onSearchClick} className="w-14 border-r border-black flex items-center justify-center hover:bg-neutral-100 cursor-pointer py-2">
          <Search size={18} />
       </div>
       <div className="w-14 border-r border-black flex items-center justify-center hover:bg-neutral-100 cursor-pointer py-2">
@@ -866,7 +874,7 @@ export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 15. HeaderGullwing - "Centered Logo" (Symmetrical Split)
-export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="w-full bg-white sticky top-0 z-50 shadow-sm">
     <div className="max-w-7xl mx-auto min-h-[5rem] py-4 px-8 flex items-center justify-between">
        <nav className="flex-1 flex justify-end gap-8 pr-12">
@@ -886,7 +894,7 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
              ))}
           </nav>
           <div className="flex items-center gap-4">
-             <button className="hover:text-neutral-600 transition-colors"><Search size={20} /></button>
+             <button onClick={onSearchClick} className="hover:text-neutral-600 transition-colors"><Search size={20} /></button>
              <button className="hover:text-neutral-600 transition-colors"><User size={20} /></button>
              <div onClick={onOpenCart} className="flex items-center gap-2 cursor-pointer hover:text-neutral-600 transition-colors">
                 <ShoppingBag size={20} />
@@ -899,7 +907,7 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
 );
 
 // 16. HeaderPop - "Playful Modern" (Neo-Brutalist, Soft)
-export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="w-full bg-[#F3F4F6] sticky top-0 z-50 p-4">
      <div className="bg-white border-2 border-black rounded-xl min-h-[5.5rem] py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center px-4 justify-between">
         <div className="bg-[#FF90E8] border-2 border-black px-4 py-1 rounded-full font-black text-sm uppercase transform -rotate-2">
@@ -913,7 +921,7 @@ export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeigh
         </nav>
 
         <div className="flex items-center gap-2">
-           <button className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center hover:bg-neutral-100">
+           <button onClick={onSearchClick} className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center hover:bg-neutral-100">
               <Search size={18} />
            </button>
            <button className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center hover:bg-neutral-100">
@@ -928,7 +936,7 @@ export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeigh
 );
 
 // 17. HeaderStark - "Minimalist" (High Contrast, Black & White)
-export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="w-full bg-black text-white sticky top-0 z-50">
      <div className="flex flex-col md:flex-row items-center justify-between p-6">
         <div className="mb-4 md:mb-0">
@@ -941,7 +949,7 @@ export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
               ))}
            </nav>
            <div className="flex items-center gap-2 text-xs text-neutral-400">
-              <span>SEARCH</span>
+              <span onClick={onSearchClick} className="cursor-pointer hover:text-white transition-colors">SEARCH</span>
               <span>/</span>
               <span>LOGIN</span>
               <span>/</span>
@@ -953,12 +961,12 @@ export const HeaderStark: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // 18. HeaderOffset - "Asymmetric" (Asymmetrical)
-export const HeaderOffset: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderOffset: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="w-full bg-white sticky top-0 z-50 pt-4 px-4 pb-0">
      <div className="flex justify-between items-start mb-4">
         <Logo storeName={`${storeName}.`} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-bold" />
         <div className="flex gap-4">
-           <button className="hover:text-neutral-600 transition-colors"><Search size={20} /></button>
+           <button onClick={onSearchClick} className="hover:text-neutral-600 transition-colors"><Search size={20} /></button>
            <button className="hover:text-neutral-600 transition-colors"><User size={20} /></button>
            <div onClick={onOpenCart} className="relative cursor-pointer hover:text-neutral-600 transition-colors">
               <ShoppingBag size={20} />
@@ -978,7 +986,7 @@ export const HeaderOffset: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 19. HeaderTicker - "News Ticker" (Stock Market Vibe)
-export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="w-full sticky top-0 z-50 bg-white">
      <div className="bg-blue-600 text-white text-xs font-mono py-1 overflow-hidden whitespace-nowrap">
         <div className="animate-marquee inline-block">
@@ -995,7 +1003,7 @@ export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
            ))}
         </nav>
         <div className="flex items-center gap-2">
-           <button className="p-2 hover:bg-blue-100 rounded transition-colors text-blue-700"><Search size={18} /></button>
+           <button onClick={onSearchClick} className="p-2 hover:bg-blue-100 rounded transition-colors text-blue-700"><Search size={18} /></button>
            <button className="p-2 hover:bg-blue-100 rounded transition-colors text-blue-700"><User size={18} /></button>
            <button onClick={onOpenCart} className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-xs font-bold flex items-center gap-1 hover:bg-blue-200 transition-colors">
               <ShoppingBag size={16} /> CART: {cartCount}
@@ -1006,7 +1014,7 @@ export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 );
 
 // 20. HeaderNoir - "Dark Mode" (Dark Mode, Glow)
-export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="w-full bg-[#050505] text-neutral-400 sticky top-0 z-50 border-b border-white/5 shadow-[0_0_15px_rgba(0,0,0,1)]">
      <div className="max-w-7xl mx-auto min-h-[5rem] py-4 px-6 flex items-center justify-between">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-white text-2xl font-light tracking-[0.2em] shadow-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" />
@@ -1016,7 +1024,7 @@ export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
            ))}
         </nav>
         <div className="flex items-center gap-6">
-           <button className="hover:text-white transition-colors cursor-pointer"><Search size={18} /></button>
+           <button onClick={onSearchClick} className="hover:text-white transition-colors cursor-pointer"><Search size={18} /></button>
            <button className="hover:text-white transition-colors cursor-pointer"><User size={18} /></button>
            <div onClick={onOpenCart} className="relative cursor-pointer">
               <ShoppingBag size={18} className="hover:text-white transition-colors" />
@@ -1028,7 +1036,7 @@ export const HeaderNoir: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
 );
 
 // 21. HeaderGhost - "Hidden Menu" (Interaction based)
-export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
+export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick, onSearchClick }) => (
   <header className="sticky top-0 left-0 right-0 z-[100] group hover:bg-white/90 hover:backdrop-blur-md transition-all duration-500 py-6 hover:py-4 px-8 flex justify-between items-center">
      <div className="mix-blend-difference text-white group-hover:text-black transition-colors duration-500">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-xl font-bold" />
@@ -1041,7 +1049,7 @@ export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
      </nav>
 
      <div className="flex items-center gap-4 mix-blend-difference text-white group-hover:text-black transition-colors duration-500">
-        <button className="opacity-0 group-hover:opacity-100 transition-opacity duration-500"><Search size={20} /></button>
+        <button onClick={onSearchClick} className="opacity-0 group-hover:opacity-100 transition-opacity duration-500"><Search size={20} /></button>
         <button className="opacity-0 group-hover:opacity-100 transition-opacity duration-500"><User size={20} /></button>
         <div onClick={onOpenCart} className="relative cursor-pointer">
            <Menu size={24} className="group-hover:hidden" />
@@ -1053,7 +1061,7 @@ export const HeaderGhost: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 );
 
 // Header: Pathfinder - SVG path draw animation on scroll
-export const HeaderPathfinder: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
+export const HeaderPathfinder: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, onSearchClick, data }) => {
   const headerRef = React.useRef<HTMLElement>(null);
   const svgPathRef = React.useRef<SVGPathElement>(null);
 
@@ -1122,7 +1130,7 @@ export const HeaderPathfinder: React.FC<HeaderProps> = ({ storeName, logoUrl, lo
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <button className="p-2 transition-colors hover:opacity-70" style={{ color: data?.textColor || '#4b5563' }}>
+            <button onClick={onSearchClick} className="p-2 transition-colors hover:opacity-70" style={{ color: data?.textColor || '#4b5563' }}>
               <Search size={20} />
             </button>
             <button className="p-2 transition-colors hover:opacity-70" style={{ color: data?.textColor || '#4b5563' }}>
@@ -1145,7 +1153,7 @@ export const HeaderPathfinder: React.FC<HeaderProps> = ({ storeName, logoUrl, lo
 };
 
 // Header: Cypher - Glitch text effect on hover
-export const HeaderCypher: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
+export const HeaderCypher: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, onSearchClick, data }) => {
   const [isScrolled, setIsScrolled] = React.useState(false);
   const glitchId = React.useId().replace(/:/g, '');
 
@@ -1219,7 +1227,7 @@ export const HeaderCypher: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
               ))}
             </nav>
             <div className="flex items-center gap-2">
-              <button className="p-2 hover:opacity-70 transition-opacity" style={{ color: data?.textColor || '#fff' }}>
+              <button onClick={onSearchClick} className="p-2 hover:opacity-70 transition-opacity" style={{ color: data?.textColor || '#fff' }}>
                 <Search size={20} />
               </button>
               <button className="p-2 hover:opacity-70 transition-opacity" style={{ color: data?.textColor || '#fff' }}>
@@ -1243,7 +1251,7 @@ export const HeaderCypher: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 };
 
 // Header: Particle - Interactive particle canvas background
-export const HeaderParticle: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
+export const HeaderParticle: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, onSearchClick, data }) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const mousePos = React.useRef({ x: -9999, y: -9999 });
   const [isScrolled, setIsScrolled] = React.useState(false);
@@ -1364,7 +1372,7 @@ export const HeaderParticle: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
               ))}
             </nav>
             <div className="flex items-center gap-2">
-              <button className="p-2 hover:opacity-70 transition-opacity" style={{ color: data?.textColor || '#fff' }}>
+              <button onClick={onSearchClick} className="p-2 hover:opacity-70 transition-opacity" style={{ color: data?.textColor || '#fff' }}>
                 <Search size={20} />
               </button>
               <button className="p-2 hover:opacity-70 transition-opacity" style={{ color: data?.textColor || '#fff' }}>
@@ -1388,7 +1396,7 @@ export const HeaderParticle: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
 };
 
 // Header: Lumina - Mouse-following spotlight effect
-export const HeaderLumina: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
+export const HeaderLumina: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, onSearchClick, data }) => {
   const headerRef = React.useRef<HTMLElement>(null);
   const [isScrolled, setIsScrolled] = React.useState(false);
 
@@ -1464,7 +1472,7 @@ export const HeaderLumina: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
               ))}
             </nav>
             <div className="flex items-center gap-2">
-              <button className="p-2 hover:text-white transition-colors" style={{ color: data?.textColor || '#9ca3af' }}>
+              <button onClick={onSearchClick} className="p-2 hover:text-white transition-colors" style={{ color: data?.textColor || '#9ca3af' }}>
                 <Search size={20} />
               </button>
               <button className="p-2 hover:text-white transition-colors" style={{ color: data?.textColor || '#9ca3af' }}>
@@ -1488,7 +1496,7 @@ export const HeaderLumina: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 };
 
 // Header: Aqua - Liquid glass effect with blur
-export const HeaderAqua: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
+export const HeaderAqua: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, onSearchClick, data }) => {
   return (
     <header 
       className="sticky top-0 z-[100] min-h-20 py-2"
@@ -1519,7 +1527,7 @@ export const HeaderAqua: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <button className="p-2 hover:opacity-70 transition-opacity" style={{ color: data?.textColor || '#fff' }}>
+            <button onClick={onSearchClick} className="p-2 hover:opacity-70 transition-opacity" style={{ color: data?.textColor || '#fff' }}>
               <Search size={20} />
             </button>
             <button className="p-2 hover:opacity-70 transition-opacity" style={{ color: data?.textColor || '#fff' }}>
@@ -1542,7 +1550,7 @@ export const HeaderAqua: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
 };
 
 // Header: Refined - Clean with animated dropdown menu
-export const HeaderRefined: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
+export const HeaderRefined: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, onSearchClick, data }) => {
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [activeDropdown, setActiveDropdown] = React.useState<string | null>(null);
 
@@ -1588,7 +1596,7 @@ export const HeaderRefined: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
               ))}
             </nav>
             <div className="flex items-center gap-2">
-              <button className="p-2 hover:opacity-70 transition-opacity" style={{ color: data?.textColor || '#4b5563' }}>
+              <button onClick={onSearchClick} className="p-2 hover:opacity-70 transition-opacity" style={{ color: data?.textColor || '#4b5563' }}>
                 <Search size={20} />
               </button>
               <button className="p-2 hover:opacity-70 transition-opacity" style={{ color: data?.textColor || '#4b5563' }}>
