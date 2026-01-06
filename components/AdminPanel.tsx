@@ -4678,14 +4678,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 {/* Current Header Selection */}
                 <div className="bg-neutral-800/30 p-4 rounded-xl border border-neutral-700/50 mb-6">
                   <label className="text-sm font-bold text-white mb-3 block">Header Design</label>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-4 gap-2 max-h-64 overflow-y-auto custom-scrollbar">
                     {/* Available headers */}
-                    {[
-                      { id: 'canvas', name: 'Classic' },
-                      { id: 'nebula', name: 'Glass' },
-                      { id: 'luxe', name: 'Luxury' },
-                      { id: 'pilot', name: 'Pro' },
-                    ].map((header) => (
+                    {HEADER_OPTIONS.map((header) => (
                       <button
                         key={header.id}
                         onClick={() => onConfigChange({ ...config, headerStyle: header.id as any, headerData: {} })}
@@ -4698,10 +4693,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <span className={`text-xs font-bold ${config.headerStyle === header.id ? 'text-blue-400' : 'text-white'}`}>
                           {header.name}
                         </span>
+                        <span className="text-[10px] text-neutral-500 block mt-0.5">{header.description}</span>
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-neutral-500 mt-2">More styles coming soon...</p>
                 </div>
 
                 {/* Header Customization */}
