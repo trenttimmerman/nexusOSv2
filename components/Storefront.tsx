@@ -452,6 +452,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
               storeName={config.name}
               primaryColor={config.primaryColor}
               data={block.data}
+              products={products}
               isEditable={isEditable}
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
               onSelectField={onSelectField}

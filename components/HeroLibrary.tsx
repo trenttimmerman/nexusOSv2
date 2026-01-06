@@ -14,9 +14,18 @@ interface TextStyles {
   lineHeight?: string;
 }
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  images?: string[];
+  image_url?: string;
+}
+
 interface HeroProps {
   storeName: string;
   primaryColor: string;
+  products?: Product[];
   data?: {
     heading?: string;
     heading_style?: TextStyles;
@@ -25,6 +34,10 @@ interface HeroProps {
     image?: string;
     buttonText?: string;
     button_style?: TextStyles;
+    showFeaturedProduct?: boolean;
+    featuredProductId?: string;
+    featuredProductPosition?: 'left' | 'center' | 'right';
+    showProductPrice?: boolean;
     style?: {
       backgroundColor?: string;
       textColor?: string;
@@ -303,10 +316,57 @@ export const EditableImage: React.FC<{
   );
 }
 
+// Featured Product Overlay Component
+const FeaturedProductOverlay: React.FC<{
+  products?: Product[];
+  productId?: string;
+  position?: 'left' | 'center' | 'right';
+  showPrice?: boolean;
+  primaryColor?: string;
+}> = ({ products, productId, position = 'right', showPrice = true, primaryColor = '#3B82F6' }) => {
+  if (!productId || !products || products.length === 0) return null;
+  
+  const product = products.find(p => p.id === productId);
+  if (!product) return null;
+  
+  const productImage = product.images?.[0] || product.image_url || '';
+  
+  const positionClasses = {
+    left: 'left-6 md:left-12',
+    center: 'left-1/2 -translate-x-1/2',
+    right: 'right-6 md:right-12'
+  };
+  
+  return (
+    <a 
+      href={`/product/${product.id}`}
+      className={`absolute bottom-6 md:bottom-12 ${positionClasses[position]} z-20 group cursor-pointer`}
+    >
+      <div className="bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-white/20 hover:scale-105 transition-all duration-300 flex items-center gap-3 max-w-[280px]">
+        {productImage && (
+          <div className="w-16 h-16 rounded-xl overflow-hidden bg-neutral-100 shrink-0">
+            <img src={productImage} alt={product.name} className="w-full h-full object-cover" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-neutral-500 uppercase tracking-wider mb-0.5">Featured</p>
+          <p className="text-sm font-bold text-neutral-900 truncate">{product.name}</p>
+          {showPrice && (
+            <p className="text-sm font-bold" style={{ color: primaryColor }}>
+              ${product.price?.toFixed(2)}
+            </p>
+          )}
+        </div>
+        <ArrowRight size={16} className="text-neutral-400 group-hover:text-neutral-900 group-hover:translate-x-1 transition-all shrink-0" />
+      </div>
+    </a>
+  );
+};
+
 // ------------------------
 
 // 1. Impact (Classic, Full Screen, Centered)
-export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId, onSelectField, onEditBlock }) => {
+export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEditable, onUpdate, blockId, onSelectField, onEditBlock, products }) => {
   const heading = data?.heading || "REDEFINE REALITY";
   const image = data?.image || "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2940&auto=format&fit=crop";
   const buttonText = data?.buttonText || "Shop The Drop";
@@ -409,10 +469,21 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
           </button>
         </div>
       </div>
+      
+      {/* Featured Product Overlay */}
+      {data?.showFeaturedProduct && (
+        <FeaturedProductOverlay
+          products={products}
+          productId={data.featuredProductId}
+          position={data.featuredProductPosition}
+          showPrice={data.showProductPrice !== false}
+          primaryColor={primaryColor}
+        />
+      )}
     </section>
   );
 };// 2. Split (Modern 50/50)
-export const HeroSplit: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId, onSelectField }) => {
+export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEditable, onUpdate, blockId, onSelectField, products }) => {
   const heading = data?.heading || storeName;
   const subheading = data?.subheading || "Elevating the standard of modern living through curated design.";
   const image = data?.image || "https://images.unsplash.com/photo-1529139574466-a302c27e3844?q=80&w=2070&auto=format&fit=crop";
@@ -479,6 +550,17 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, data, isEditable, on
              onSelect={() => onSelectField?.('image')}
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none"></div>
+          
+          {/* Featured Product Overlay */}
+          {data?.showFeaturedProduct && (
+            <FeaturedProductOverlay
+              products={products}
+              productId={data.featuredProductId}
+              position={data.featuredProductPosition}
+              showPrice={data.showProductPrice !== false}
+              primaryColor={primaryColor}
+            />
+          )}
        </div>
     </section>
   );

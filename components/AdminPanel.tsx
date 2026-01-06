@@ -5014,6 +5014,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     storeName={config.name || 'Your Store'}
                     primaryColor={config.primaryColor}
                     data={heroData}
+                    products={products}
                     isEditable={false}
                   />
                 </div>
