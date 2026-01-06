@@ -4296,19 +4296,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             )}
 
             <div className="max-w-3xl mx-auto">
-              {/* Live Preview - Sticky */}
+              {/* Live Preview - Sticky with constrained height */}
               <div className="sticky top-0 z-10 bg-neutral-900 pb-4 -mx-6 px-6 pt-2 -mt-2">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs text-neutral-400 uppercase tracking-wide">Live Preview</p>
-                  <span className="text-xs text-neutral-500">Changes update instantly</span>
+                  <span className="text-xs text-neutral-500">Scroll down for editing options</span>
                 </div>
-                <div className="rounded-xl overflow-hidden border border-neutral-700 bg-white shadow-lg">
-                  <HeroComponent
-                    storeName={config.name || 'Your Store'}
-                    primaryColor={config.primaryColor}
-                    data={heroData}
-                    isEditable={false}
-                  />
+                <div className="rounded-xl overflow-hidden border border-neutral-700 bg-white shadow-lg max-h-[280px] overflow-y-auto">
+                  <div className="transform scale-[0.6] origin-top">
+                    <HeroComponent
+                      storeName={config.name || 'Your Store'}
+                      primaryColor={config.primaryColor}
+                      data={heroData}
+                      isEditable={false}
+                    />
+                  </div>
                 </div>
               </div>
 
