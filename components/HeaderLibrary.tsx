@@ -652,6 +652,517 @@ export const HeaderTicker = PlaceholderHeader;
 export const HeaderNoir = PlaceholderHeader;
 export const HeaderGhost = PlaceholderHeader;
 
+// Header: Pathfinder - SVG path draw animation on scroll
+export const HeaderPathfinder: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
+  const headerRef = React.useRef<HTMLElement>(null);
+  const svgPathRef = React.useRef<SVGPathElement>(null);
+
+  React.useEffect(() => {
+    // @ts-ignore
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined' || !svgPathRef.current) return;
+
+    // @ts-ignore
+    gsap.registerPlugin(ScrollTrigger);
+    const path = svgPathRef.current;
+    const pathLength = path.getTotalLength();
+    
+    // @ts-ignore
+    gsap.set(path, { strokeDasharray: pathLength, strokeDashoffset: pathLength });
+    
+    // @ts-ignore
+    const ctx = gsap.context(() => {
+      // @ts-ignore
+      gsap.to(path, {
+        strokeDashoffset: 0,
+        ease: 'power1.inOut',
+        scrollTrigger: {
+          trigger: document.body,
+          start: 'top top',
+          end: '+=400',
+          scrub: 1,
+        }
+      });
+    }, headerRef);
+    
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <header ref={headerRef} className="sticky top-0 z-[100] h-20">
+      <div className="absolute inset-0">
+        <svg width="100%" height="100%" viewBox="0 0 1440 80" preserveAspectRatio="none">
+          <path
+            ref={svgPathRef}
+            d="M 0 79.5 L 1440 79.5 L 1440 0.5 L 0 0.5 Z"
+            stroke={data?.borderColor || 'black'}
+            strokeWidth="1"
+            fill={data?.backgroundColor || 'rgba(255, 255, 255, 0.8)'}
+            style={{ backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)'}}
+          />
+        </svg>
+      </div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+        <div className="flex justify-between items-center h-full">
+          {logoUrl ? (
+            <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px` }} className="object-contain" />
+          ) : (
+            <span className="text-xl font-bold" style={{ color: data?.textColor || '#000' }}>{storeName}</span>
+          )}
+          <nav className="hidden md:flex items-center space-x-6">
+            {links.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={(e) => { e.preventDefault(); onLinkClick?.(link.href); }}
+                className="transition-colors"
+                style={{ color: data?.textColor || '#4b5563' }}
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
+          <button onClick={onOpenCart} className="relative p-2" style={{ color: data?.textColor || '#4b5563' }}>
+            <ShoppingBag size={20} />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full flex items-center justify-center"
+                style={{ backgroundColor: data?.cartBadgeColor || '#000', color: data?.cartBadgeTextColor || '#fff' }}>
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// Header: Cypher - Glitch text effect on hover
+export const HeaderCypher: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
+  const [isScrolled, setIsScrolled] = React.useState(false);
+  const glitchId = React.useId().replace(/:/g, '');
+
+  React.useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const bgColor = data?.backgroundColor || '#000000';
+
+  return (
+    <>
+      {isScrolled && <div className="h-24" />}
+      <style>
+        {`
+        .glitch-text-${glitchId} { position: relative; }
+        .glitch-text-${glitchId}::before, .glitch-text-${glitchId}::after {
+          content: attr(data-text);
+          position: absolute;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
+          background: ${bgColor};
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          transition: all 0.2s ease-in-out;
+        }
+        .glitch-text-${glitchId}:hover::before {
+          left: 2px;
+          text-shadow: -1px 0 red;
+          animation: glitch-anim-1-${glitchId} 0.5s infinite linear alternate-reverse;
+        }
+        .glitch-text-${glitchId}:hover::after {
+          left: -2px;
+          text-shadow: -1px 0 blue;
+          animation: glitch-anim-2-${glitchId} 0.5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim-1-${glitchId} {
+          0% { clip: rect(42px, 9999px, 44px, 0); } 100% { clip: rect(2px, 9999px, 95px, 0); }
+        }
+        @keyframes glitch-anim-2-${glitchId} {
+          0% { clip: rect(7px, 9999px, 98px, 0); } 100% { clip: rect(80px, 9999px, 45px, 0); }
+        }
+        `}
+      </style>
+      <header className={`text-white transition-all duration-300 ease-in-out ${
+        isScrolled 
+          ? 'fixed top-0 left-0 right-0 z-[100] h-20 backdrop-blur-sm border-b border-fuchsia-500/30 shadow-lg' 
+          : 'relative h-24 border-b border-transparent'
+      }`} style={{ backgroundColor: isScrolled ? `${bgColor}cc` : bgColor }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+          <div className="flex justify-between items-center h-full">
+            {logoUrl ? (
+              <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px` }} className="object-contain" />
+            ) : (
+              <div className={`text-3xl font-black tracking-tighter glitch-text-${glitchId}`} data-text={storeName}
+                style={{ color: data?.textColor || '#fff' }}>{storeName}</div>
+            )}
+            <nav className="hidden md:flex items-center space-x-10">
+              {links.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={(e) => { e.preventDefault(); onLinkClick?.(link.href); }}
+                  className={`text-lg font-semibold uppercase tracking-widest glitch-text-${glitchId}`}
+                  data-text={link.label}
+                  style={{ color: data?.textColor || '#fff' }}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+            <button onClick={onOpenCart} className="relative p-2" style={{ color: data?.textColor || '#fff' }}>
+              <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: data?.cartBadgeColor || '#d946ef', color: data?.cartBadgeTextColor || '#fff' }}>
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+    </>
+  );
+};
+
+// Header: Particle - Interactive particle canvas background
+export const HeaderParticle: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const mousePos = React.useRef({ x: -9999, y: -9999 });
+  const [isScrolled, setIsScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = canvas.offsetWidth;
+    let height = canvas.offsetHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    let particles: any[] = [];
+    const particleCount = 70;
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        size: Math.random() * 1.5 + 1,
+      });
+    }
+    
+    let animationFrameId: number;
+
+    const animate = () => {
+      ctx.clearRect(0, 0, width, height);
+      
+      particles.forEach(p => {
+        const dx = mousePos.current.x - p.x;
+        const dy = mousePos.current.y - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < 100) {
+          p.vx -= dx / 500;
+          p.vy -= dy / 500;
+        }
+        
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vx *= 0.98;
+        p.vy *= 0.98;
+        
+        if (p.x < 0 || p.x > width) p.vx *= -1;
+        if (p.y < 0 || p.y > height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.fill();
+      });
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    
+    animate();
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mousePos.current.x = e.clientX - rect.left;
+      mousePos.current.y = e.clientY - rect.top;
+    };
+    
+    const handleMouseOut = () => {
+      mousePos.current = { x: -9999, y: -9999 };
+    };
+
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseout', handleMouseOut);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('mouseout', handleMouseOut);
+    };
+  }, [isScrolled]);
+
+  const bgColor = data?.backgroundColor || '#111827';
+
+  return (
+    <>
+      {isScrolled && <div className="h-28" />}
+      <header className={`text-white overflow-hidden transition-all duration-500 ease-in-out ${
+        isScrolled 
+          ? 'fixed top-0 left-0 right-0 z-[100] h-20 shadow-lg' 
+          : 'relative h-28'
+      }`} style={{ backgroundColor: bgColor }}>
+        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+          <div className="flex justify-between items-center h-full">
+            {logoUrl ? (
+              <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px` }} className="object-contain" />
+            ) : (
+              <span className="text-3xl font-bold" style={{ color: data?.textColor || '#fff' }}>{storeName}</span>
+            )}
+            <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold">
+              {links.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={(e) => { e.preventDefault(); onLinkClick?.(link.href); }}
+                  className="hover:opacity-80 transition-opacity"
+                  style={{ color: data?.textColor || '#fff' }}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+            <button onClick={onOpenCart} className="relative p-2" style={{ color: data?.textColor || '#fff' }}>
+              <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: data?.cartBadgeColor || '#fff', color: data?.cartBadgeTextColor || '#111827' }}>
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+    </>
+  );
+};
+
+// Header: Lumina - Mouse-following spotlight effect
+export const HeaderLumina: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
+  const headerRef = React.useRef<HTMLElement>(null);
+  const [isScrolled, setIsScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = header.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      header.style.setProperty('--mouse-x', `${x}px`);
+      header.style.setProperty('--mouse-y', `${y}px`);
+    };
+
+    header.addEventListener('mousemove', handleMouseMove);
+    return () => header.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  React.useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const bgColor = data?.backgroundColor || '#000000';
+
+  return (
+    <>
+      {isScrolled && <div className="h-24" />}
+      <header
+        ref={headerRef}
+        className={`text-white overflow-hidden transition-all duration-300 ease-in-out ${
+          isScrolled 
+            ? 'fixed top-0 left-0 right-0 z-[100] h-20 backdrop-blur-sm border-b border-gray-800 shadow-lg' 
+            : 'relative h-24 border-b border-gray-900'
+        }`}
+        style={{
+          backgroundColor: isScrolled ? `${bgColor}cc` : bgColor,
+          // @ts-ignore
+          '--mouse-x': '50%',
+          '--mouse-y': '50%',
+        }}
+      >
+        <div 
+          className="pointer-events-none absolute inset-0 z-10"
+          style={{
+            background: `radial-gradient(
+              ellipse 400px 50px at var(--mouse-x) var(--mouse-y),
+              rgba(100, 116, 139, 0.2), 
+              transparent 80%
+            )`
+          }}
+        />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+          <div className="flex justify-between items-center h-full relative z-20">
+            {logoUrl ? (
+              <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px` }} className="object-contain" />
+            ) : (
+              <span className="text-2xl font-bold tracking-widest" style={{ color: data?.textColor || '#fff' }}>{storeName}</span>
+            )}
+            <nav className="hidden md:flex items-center space-x-10 text-sm uppercase tracking-wider">
+              {links.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={(e) => { e.preventDefault(); onLinkClick?.(link.href); }}
+                  className="hover:text-white transition-colors"
+                  style={{ color: data?.textColor || '#9ca3af' }}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+            <button onClick={onOpenCart} className="relative p-2" style={{ color: data?.textColor || '#9ca3af' }}>
+              <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: data?.cartBadgeColor || '#fff', color: data?.cartBadgeTextColor || '#000' }}>
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+    </>
+  );
+};
+
+// Header: Aqua - Liquid glass effect with blur
+export const HeaderAqua: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
+  return (
+    <header 
+      className="sticky top-0 z-[100] h-20"
+      style={{
+        backgroundColor: data?.backgroundColor || 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: `1px solid ${data?.borderColor || 'rgba(255, 255, 255, 0.2)'}`,
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+        <div className="flex justify-between items-center h-full">
+          {logoUrl ? (
+            <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px` }} className="object-contain" />
+          ) : (
+            <span className="text-2xl font-bold" style={{ color: data?.textColor || '#fff', textShadow: '1px 1px 4px rgba(0,0,0,0.3)' }}>{storeName}</span>
+          )}
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-semibold">
+            {links.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={(e) => { e.preventDefault(); onLinkClick?.(link.href); }}
+                style={{ color: data?.textColor || '#fff', textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
+          <button onClick={onOpenCart} className="relative p-2" style={{ color: data?.textColor || '#fff' }}>
+            <ShoppingBag size={20} />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full flex items-center justify-center"
+                style={{ backgroundColor: data?.cartBadgeColor || '#fff', color: data?.cartBadgeTextColor || '#000' }}>
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// Header: Refined - Clean with animated dropdown menu
+export const HeaderRefined: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
+  const [isScrolled, setIsScrolled] = React.useState(false);
+  const [activeDropdown, setActiveDropdown] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <>
+      {isScrolled && <div className="h-16" />}
+      <header className={`transition-all duration-300 ease-in-out w-full ${
+        isScrolled 
+          ? 'fixed top-0 left-0 z-[100] backdrop-blur-md shadow-lg' 
+          : 'relative border-b'
+      }`} style={{ 
+        backgroundColor: isScrolled ? `${data?.backgroundColor || '#ffffff'}e6` : (data?.backgroundColor || '#ffffff'),
+        borderColor: data?.borderColor || '#e5e7eb'
+      }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {logoUrl ? (
+              <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px` }} className="object-contain" />
+            ) : (
+              <span className="text-xl font-bold" style={{ color: data?.textColor || '#000' }}>{storeName}</span>
+            )}
+            <nav className="hidden md:flex items-center space-x-8">
+              {links.map((link) => (
+                <div key={link.href} className="relative group"
+                  onMouseEnter={() => setActiveDropdown(link.href)}
+                  onMouseLeave={() => setActiveDropdown(null)}
+                >
+                  <a
+                    href={link.href}
+                    onClick={(e) => { e.preventDefault(); onLinkClick?.(link.href); }}
+                    className="transition-colors flex items-center"
+                    style={{ color: data?.textColor || '#4b5563' }}
+                  >
+                    {link.label}
+                  </a>
+                </div>
+              ))}
+            </nav>
+            <button onClick={onOpenCart} className="relative p-2" style={{ color: data?.textColor || '#4b5563' }}>
+              <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: data?.cartBadgeColor || '#000', color: data?.cartBadgeTextColor || '#fff' }}>
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+    </>
+  );
+};
+
 export const HEADER_COMPONENTS: Record<string, React.FC<HeaderProps>> = {
   canvas: HeaderCanvas,
   nebula: HeaderNebula,
@@ -674,6 +1185,12 @@ export const HEADER_COMPONENTS: Record<string, React.FC<HeaderProps>> = {
   noir: HeaderNoir,
   ghost: HeaderGhost,
   pilot: HeaderPilot,
+  pathfinder: HeaderPathfinder,
+  cypher: HeaderCypher,
+  particle: HeaderParticle,
+  lumina: HeaderLumina,
+  aqua: HeaderAqua,
+  refined: HeaderRefined,
 };
 
 export const HEADER_OPTIONS = [
@@ -698,6 +1215,12 @@ export const HEADER_OPTIONS = [
   { id: 'offset', name: 'Asymmetric', description: 'Off-center', date: '2024-03-01', popularity: 58 },
   { id: 'terminal', name: 'Developer', description: 'Code-inspired', date: '2024-04-01', popularity: 55 },
   { id: 'ticker', name: 'News Ticker', description: 'Scrolling bar', date: '2024-06-01', popularity: 50 },
+  { id: 'pathfinder', name: 'Pathfinder', description: 'SVG path animation', date: '2025-01-05', popularity: 73 },
+  { id: 'cypher', name: 'Cypher', description: 'Glitch text effect', date: '2025-01-05', popularity: 71 },
+  { id: 'particle', name: 'Particle', description: 'Interactive particles', date: '2025-01-05', popularity: 75 },
+  { id: 'lumina', name: 'Lumina', description: 'Mouse spotlight', date: '2025-01-05', popularity: 69 },
+  { id: 'aqua', name: 'Aqua', description: 'Liquid glass blur', date: '2025-01-05', popularity: 79 },
+  { id: 'refined', name: 'Refined', description: 'Clean professional', date: '2025-01-05', popularity: 81 },
 ];
 
 export const HEADER_FIELDS: Record<string, string[]> = {
@@ -730,4 +1253,10 @@ export const HEADER_FIELDS: Record<string, string[]> = {
   studio: [], terminal: [], portfolio: [], venture: [], metro: [], modul: [],
   luxe: [], gullwing: [], pop: [], stark: [], offset: [], ticker: [],
   noir: [], ghost: [], pilot: [],
+  pathfinder: ['backgroundColor', 'borderColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
+  cypher: ['backgroundColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
+  particle: ['backgroundColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
+  lumina: ['backgroundColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
+  aqua: ['backgroundColor', 'borderColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
+  refined: ['backgroundColor', 'borderColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
 };
