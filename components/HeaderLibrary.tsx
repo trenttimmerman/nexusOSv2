@@ -629,56 +629,6 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
   </header>
 );
 
-// 6. HeaderOrbit - "Interactive" (Dynamic Island style)
-export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => {
-  const [expanded, setExpanded] = React.useState(false);
-
-  return (
-    <header className="sticky top-0 z-[100] flex justify-center pointer-events-none pt-6">
-      <div 
-        className={`pointer-events-auto bg-neutral-900 text-white shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] overflow-hidden ${expanded ? 'w-[600px] h-auto rounded-3xl' : 'w-[400px] min-h-[3.5rem] py-2 rounded-full'}`}
-        onMouseEnter={() => setExpanded(true)}
-        onMouseLeave={() => setExpanded(false)}
-      >
-        <div className="w-full flex items-center justify-between px-6">
-           <div className="flex items-center gap-2 py-1">
-             {!logoUrl && <div className="w-2 h-2 bg-green-500 rounded-full"></div>}
-             <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="font-bold" />
-           </div>
-           
-           {!expanded && (
-             <div className="flex items-center gap-4 text-sm text-neutral-400">
-                <span>Menu</span>
-                <div className="w-px h-4 bg-neutral-700"></div>
-                <span onClick={onOpenCart} className="flex items-center gap-1 text-white cursor-pointer"><ShoppingBag size={14}/> {cartCount}</span>
-             </div>
-           )}
-        </div>
-
-        {expanded && (
-          <div className="px-6 pb-6 pt-2 grid grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-4 duration-300">
-             <div className="flex flex-col gap-3">
-                <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Navigation</span>
-                {(links || []).map(l => (
-                  <NavItem key={l.href} link={l} onClick={onLinkClick} className="text-lg font-medium hover:text-green-400 transition-colors" />
-                ))}
-             </div>
-             <div className="flex flex-col gap-3">
-                <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Account</span>
-                <a href="#" className="text-sm text-neutral-300 hover:text-white">Orders</a>
-                <a href="#" className="text-sm text-neutral-300 hover:text-white">Wishlist</a>
-                <div className="mt-auto pt-4 border-t border-neutral-800 flex justify-between items-center">
-                  <span className="text-sm text-neutral-400">Cart ({cartCount})</span>
-                  <button onClick={onOpenCart} className="bg-white text-black px-4 py-1.5 rounded-full text-xs font-bold">Checkout</button>
-                </div>
-             </div>
-          </div>
-        )}
-      </div>
-    </header>
-  );
-};
-
 // 7. HeaderProtocol - "Tech/Gaming" (Cyberpunk/Brutalist)
 export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="sticky top-0 z-50 bg-yellow-400 border-b-4 border-black font-mono">
@@ -746,38 +696,6 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
            <ShoppingBag size={20} />
            <span>({cartCount})</span>
          </div>
-       </div>
-    </div>
-  </header>
-);
-
-// 9. HeaderStudio - "Sidebar Nav" (Sidebar Navigation)
-export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
-  <header className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 bg-neutral-50 border-r border-neutral-200 flex-col p-8 z-50">
-    <div className="mb-12">
-      <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight || 48} className="text-2xl font-black tracking-tighter uppercase leading-none" />
-    </div>
-    
-    <nav className="flex flex-col gap-6 flex-1">
-       {(links || []).map(l => (
-         <NavItem key={l.href} link={l} onClick={onLinkClick} className="text-lg font-medium text-neutral-500 hover:text-black hover:pl-2 transition-all duration-300" />
-       ))}
-    </nav>
-
-    <div className="mt-auto space-y-6">
-       <div className="relative w-full">
-         <input type="text" placeholder="Search..." className="w-full bg-white border border-neutral-200 px-3 py-2 text-sm rounded-md focus:outline-none focus:border-black" />
-         <Search size={14} className="absolute right-3 top-3 text-neutral-400" />
-       </div>
-       
-       <div className="flex justify-between items-center border-t border-neutral-200 pt-6">
-          <div className="flex flex-col">
-             <span className="text-xs text-neutral-500">Your Bag</span>
-             <span className="font-bold text-lg">${(cartCount * 45).toFixed(2)}</span>
-          </div>
-          <div onClick={onOpenCart} className="w-10 h-10 bg-black text-white flex items-center justify-center rounded-full cursor-pointer hover:bg-neutral-800 transition-colors">
-             {cartCount}
-          </div>
        </div>
     </div>
   </header>
@@ -1613,10 +1531,8 @@ export const HEADER_COMPONENTS: Record<string, React.FC<HeaderProps>> = {
   canvas: HeaderCanvas,
   nebula: HeaderNebula,
   bunker: HeaderBunker,
-  orbit: HeaderOrbit,
   protocol: HeaderProtocol,
   horizon: HeaderHorizon,
-  studio: HeaderStudio,
   terminal: HeaderTerminal,
   portfolio: HeaderPortfolio,
   venture: HeaderVenture,
@@ -1647,7 +1563,6 @@ export const HEADER_OPTIONS = [
   { id: 'bunker', name: 'Bold Contrast', description: 'Black and white', date: '2024-06-20', popularity: 85 },
   { id: 'pop', name: 'Playful Modern', description: 'Fun and friendly', date: '2024-09-01', popularity: 82 },
   { id: 'venture', name: 'Search-First', description: 'Large catalogs', date: '2024-02-01', popularity: 80 },
-  { id: 'orbit', name: 'Interactive', description: 'Hover effects', date: '2024-08-01', popularity: 78 },
   { id: 'gullwing', name: 'Centered Logo', description: 'Logo in middle', date: '2024-07-15', popularity: 77 },
   { id: 'noir', name: 'Dark Mode', description: 'Dark theme', date: '2024-10-15', popularity: 76 },
   { id: 'modul', name: 'Grid Layout', description: 'Swiss-style', date: '2024-10-05', popularity: 74 },
@@ -1657,7 +1572,6 @@ export const HEADER_OPTIONS = [
   { id: 'stark', name: 'Minimalist', description: 'Ultra-clean', date: '2024-08-20', popularity: 66 },
   { id: 'protocol', name: 'Tech/Gaming', description: 'Cyberpunk style', date: '2024-09-10', popularity: 65 },
   { id: 'ghost', name: 'Hidden Menu', description: 'Hover menu', date: '2024-11-01', popularity: 62 },
-  { id: 'studio', name: 'Sidebar Nav', description: 'Left navigation', date: '2024-01-20', popularity: 60 },
   { id: 'offset', name: 'Asymmetric', description: 'Off-center', date: '2024-03-01', popularity: 58 },
   { id: 'terminal', name: 'Developer', description: 'Code-inspired', date: '2024-04-01', popularity: 55 },
   { id: 'ticker', name: 'News Ticker', description: 'Scrolling bar', date: '2024-06-01', popularity: 50 },
@@ -1695,8 +1609,8 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth'
   ],
-  bunker: [], orbit: [], protocol: [], horizon: [],
-  studio: [], terminal: [], portfolio: [], venture: [], metro: [], modul: [],
+  bunker: [], protocol: [], horizon: [],
+  terminal: [], portfolio: [], venture: [], metro: [], modul: [],
   gullwing: [], pop: [], stark: [], offset: [], ticker: [],
   noir: [], ghost: [],
   pathfinder: ['backgroundColor', 'borderColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
