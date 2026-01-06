@@ -9312,8 +9312,8 @@ Return ONLY the JSON object, no markdown.`;
               </div>
             </div>
 
-            {/* UNIVERSAL EDITOR SIDEBAR */}
-            {selectedBlockId && activeBlock && activeBlock.type.startsWith('system-') && (
+            {/* UNIVERSAL EDITOR SIDEBAR - Exclude hero blocks since they use the Hero Studio modal */}
+            {selectedBlockId && activeBlock && activeBlock.type.startsWith('system-') && activeBlock.type !== 'system-hero' && (
                <div className="w-80 border-r border-neutral-800 bg-neutral-900 h-full overflow-hidden flex flex-col z-20">
                  <UniversalEditor
                     blockId={activeBlock.id}
