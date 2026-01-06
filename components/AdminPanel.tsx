@@ -4661,6 +4661,331 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     )}
                   </div>
                 </div>
+
+                {/* Divider */}
+                <div className="border-t border-neutral-800 my-4"></div>
+
+                {/* Style & Layout Section */}
+                <div>
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Palette size={14} /> Style & Layout
+                  </h4>
+
+                  <div className="space-y-4">
+                    {/* Background & Text Colors (Impact, Typographic) */}
+                    {availableFields.includes('backgroundColor') && (
+                      <div className="space-y-3">
+                        <p className="text-xs text-neutral-400">Colors</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={heroData.style?.backgroundColor || '#000000'}
+                              onChange={(e) => updateHeroData({ style: { ...heroData.style, backgroundColor: e.target.value } })}
+                              className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-xs text-neutral-400">Background</span>
+                          </div>
+                          <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={heroData.style?.textColor || '#ffffff'}
+                              onChange={(e) => updateHeroData({ style: { ...heroData.style, textColor: e.target.value } })}
+                              className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-xs text-neutral-400">Text</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Accent Color (Kinetik) */}
+                    {availableFields.includes('accentColor') && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-neutral-400">Accent Color</p>
+                        <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                          <input
+                            type="color"
+                            value={heroData.accentColor || '#ccff00'}
+                            onChange={(e) => updateHeroData({ accentColor: e.target.value })}
+                            className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                          />
+                          <span className="text-xs text-neutral-400">Primary Accent</span>
+                        </div>
+                        <div className="grid grid-cols-6 gap-1">
+                          {['#ccff00', '#ff5f56', '#3B82F6', '#10B981', '#F59E0B', '#EC4899'].map(color => (
+                            <button
+                              key={color}
+                              onClick={() => updateHeroData({ accentColor: color })}
+                              className={`w-full aspect-square rounded-lg border-2 transition-all ${heroData.accentColor === color ? 'border-white scale-110' : 'border-transparent'}`}
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Feature Card Color (Grid) */}
+                    {availableFields.includes('featureCardColor') && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-neutral-400">Feature Card Color</p>
+                        <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                          <input
+                            type="color"
+                            value={heroData.featureCardColor || '#FF5F56'}
+                            onChange={(e) => updateHeroData({ featureCardColor: e.target.value })}
+                            className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                          />
+                          <span className="text-xs text-neutral-400">Card Background</span>
+                        </div>
+                        <div className="grid grid-cols-6 gap-1">
+                          {['#FF5F56', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#000000'].map(color => (
+                            <button
+                              key={color}
+                              onClick={() => updateHeroData({ featureCardColor: color })}
+                              className={`w-full aspect-square rounded-lg border-2 transition-all ${heroData.featureCardColor === color ? 'border-white scale-110' : 'border-transparent'}`}
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Text Alignment (Impact) */}
+                    {availableFields.includes('alignment') && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-neutral-400">Content Alignment</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            { value: 'left', icon: AlignLeft, label: 'Left' },
+                            { value: 'center', icon: AlignCenter, label: 'Center' },
+                            { value: 'right', icon: AlignRight, label: 'Right' }
+                          ].map(({ value, icon: Icon, label }) => (
+                            <button
+                              key={value}
+                              onClick={() => updateHeroData({ style: { ...heroData.style, alignment: value } })}
+                              className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-colors ${
+                                (heroData.style?.alignment || 'center') === value
+                                  ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                                  : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
+                              }`}
+                            >
+                              <Icon size={16} />
+                              <span className="text-[10px]">{label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Content Position (Split) */}
+                    {availableFields.includes('contentPosition') && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-neutral-400">Content Position</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { value: 'left', label: 'Text Left / Image Right' },
+                            { value: 'right', label: 'Image Left / Text Right' }
+                          ].map(({ value, label }) => (
+                            <button
+                              key={value}
+                              onClick={() => updateHeroData({ contentPosition: value })}
+                              className={`p-2 rounded-lg border text-xs font-medium transition-colors ${
+                                (heroData.contentPosition || 'left') === value
+                                  ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                                  : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Padding (Impact) */}
+                    {availableFields.includes('padding') && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-neutral-400">Vertical Padding</p>
+                        <div className="grid grid-cols-5 gap-1">
+                          {[
+                            { value: 'none', label: 'None' },
+                            { value: 's', label: 'S' },
+                            { value: 'm', label: 'M' },
+                            { value: 'l', label: 'L' },
+                            { value: 'xl', label: 'XL' }
+                          ].map(({ value, label }) => (
+                            <button
+                              key={value}
+                              onClick={() => updateHeroData({ style: { ...heroData.style, padding: value } })}
+                              className={`p-2 rounded-lg border text-xs font-medium transition-colors ${
+                                (heroData.style?.padding || 'm') === value
+                                  ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                                  : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Animation */}
+                    {availableFields.includes('animation') && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-neutral-400">Entry Animation</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { value: 'none', label: 'None', icon: '—' },
+                            { value: 'fade', label: 'Fade In', icon: '✨' },
+                            { value: 'slide', label: 'Slide Up', icon: '↑' },
+                            { value: 'zoom', label: 'Zoom In', icon: '⊕' }
+                          ].map(({ value, label, icon }) => (
+                            <button
+                              key={value}
+                              onClick={() => updateHeroData({ animation: value })}
+                              className={`flex items-center gap-2 p-2 rounded-lg border text-xs font-medium transition-colors ${
+                                (heroData.animation || 'none') === value
+                                  ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                                  : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
+                              }`}
+                            >
+                              <span>{icon}</span>
+                              <span>{label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-neutral-800 my-4"></div>
+
+                {/* Product Link Section */}
+                <div>
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <ShoppingBag size={14} /> Featured Product
+                  </h4>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="showFeaturedProduct"
+                        checked={heroData.showFeaturedProduct || false}
+                        onChange={(e) => updateHeroData({ showFeaturedProduct: e.target.checked })}
+                        className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-purple-500 focus:ring-purple-500"
+                      />
+                      <label htmlFor="showFeaturedProduct" className="text-xs text-neutral-400">Display featured product overlay</label>
+                    </div>
+
+                    {heroData.showFeaturedProduct && (
+                      <div className="space-y-3 p-3 bg-neutral-900/50 rounded-lg border border-neutral-700">
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-neutral-400">Select Product</label>
+                          <select
+                            value={heroData.featuredProductId || ''}
+                            onChange={(e) => updateHeroData({ featuredProductId: e.target.value })}
+                            className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                          >
+                            <option value="">Choose a product...</option>
+                            {products.map(product => (
+                              <option key={product.id} value={product.id}>{product.name}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-neutral-400">Product Position</label>
+                          <div className="grid grid-cols-3 gap-2">
+                            {['left', 'center', 'right'].map(pos => (
+                              <button
+                                key={pos}
+                                onClick={() => updateHeroData({ featuredProductPosition: pos })}
+                                className={`p-2 rounded-lg border text-xs font-medium capitalize transition-colors ${
+                                  (heroData.featuredProductPosition || 'right') === pos
+                                    ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                                    : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                                }`}
+                              >
+                                {pos}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="showProductPrice"
+                            checked={heroData.showProductPrice !== false}
+                            onChange={(e) => updateHeroData({ showProductPrice: e.target.checked })}
+                            className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-purple-500 focus:ring-purple-500"
+                          />
+                          <label htmlFor="showProductPrice" className="text-xs text-neutral-400">Show price tag</label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-neutral-800 my-4"></div>
+
+                {/* Typographic Link Images */}
+                {availableFields.includes('link1Image') && (
+                  <div>
+                    <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <ImageIcon size={14} /> Navigation Images
+                    </h4>
+
+                    <div className="space-y-3">
+                      {[
+                        { key: 'link1Image', label: 'Link 1 Image' },
+                        { key: 'link2Image', label: 'Link 2 Image' },
+                        { key: 'link3Image', label: 'Link 3 Image' }
+                      ].map(({ key, label }) => (
+                        <div key={key} className="space-y-1.5">
+                          <label className="text-xs text-neutral-400">{label}</label>
+                          <div className="flex gap-2">
+                            <label className="flex-1 flex items-center justify-center gap-2 bg-neutral-800 border border-neutral-700 py-2 rounded-lg text-xs font-bold cursor-pointer hover:bg-neutral-700 transition-colors text-neutral-300">
+                              <Upload size={14} /> Upload
+                              <input
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => updateHeroData({ [key]: reader.result as string });
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                              />
+                            </label>
+                            {heroData[key] && (
+                              <button
+                                onClick={() => updateHeroData({ [key]: undefined })}
+                                className="px-3 py-2 bg-red-900/30 text-red-400 rounded-lg text-xs font-bold hover:bg-red-900/50 transition-colors"
+                              >
+                                <X size={14} />
+                              </button>
+                            )}
+                          </div>
+                          {heroData[key] && (
+                            <div className="w-full h-16 rounded-lg overflow-hidden bg-neutral-800">
+                              <img src={heroData[key]} alt={label} className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Footer with Done button */}

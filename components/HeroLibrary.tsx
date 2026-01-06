@@ -42,11 +42,11 @@ interface HeroProps {
 }
 
 export const HERO_FIELDS: Record<string, string[]> = {
-  impact: ['heading', 'badge', 'buttonText', 'secondaryButtonText', 'image', 'overlayOpacity'],
-  split: ['heading', 'subheading', 'buttonText', 'image', 'overlayOpacity'],
-  kinetik: ['heading', 'buttonText', 'marqueeText', 'image', 'overlayOpacity'],
-  grid: ['heading', 'subheading', 'buttonText', 'secondaryButtonText', 'imageBadge', 'featureCardTitle', 'featureCardSubtitle', 'image', 'sideImage', 'overlayOpacity'],
-  typographic: ['heading', 'subheading', 'topBadge', 'link1Label', 'link2Label', 'link3Label', 'link1Image', 'link2Image', 'link3Image']
+  impact: ['heading', 'badge', 'buttonText', 'secondaryButtonText', 'image', 'overlayOpacity', 'backgroundColor', 'textColor', 'alignment', 'padding', 'animation'],
+  split: ['heading', 'subheading', 'buttonText', 'image', 'overlayOpacity', 'contentPosition', 'animation'],
+  kinetik: ['heading', 'buttonText', 'marqueeText', 'image', 'overlayOpacity', 'accentColor', 'animation'],
+  grid: ['heading', 'subheading', 'buttonText', 'secondaryButtonText', 'imageBadge', 'featureCardTitle', 'featureCardSubtitle', 'featureCardColor', 'image', 'sideImage', 'overlayOpacity', 'animation'],
+  typographic: ['heading', 'subheading', 'topBadge', 'link1Label', 'link2Label', 'link3Label', 'link1Image', 'link2Image', 'link3Image', 'backgroundColor', 'animation']
 };
 
 // --- EDITABLE HELPERS ---
@@ -317,8 +317,12 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
   const bgColor = style.backgroundColor || 'black';
   const textColor = style.textColor || 'white';
   const alignment = style.alignment || 'center';
-  const padding = style.padding === 'none' ? 'py-0' : style.padding === 's' ? 'py-12' : style.padding === 'l' ? 'py-32' : 'py-24';
+  const padding = style.padding === 'none' ? 'py-0' : style.padding === 's' ? 'py-12' : style.padding === 'l' ? 'py-32' : style.padding === 'xl' ? 'py-40' : 'py-24';
   const overlayOpacity = data?.overlayOpacity !== undefined ? data.overlayOpacity : 0.3;
+  const animation = data?.animation || 'fade';
+  const animClass = animation === 'fade' ? 'animate-in fade-in duration-1000' :
+    animation === 'slide' ? 'animate-in slide-in-from-bottom-8 duration-1000' :
+    animation === 'zoom' ? 'animate-in zoom-in-95 duration-1000' : '';
 
   const handleSelect = (field: string) => {
     if (isEditable) {
@@ -346,8 +350,8 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, data, isEditable, o
         {/* Removed hardcoded gradient to allow user controlled overlay */}
       </div>
       
-      <div className={`relative z-10 px-6 max-w-4xl mx-auto flex flex-col ${alignment === 'left' ? 'items-start text-left' : alignment === 'right' ? 'items-end text-right' : 'items-center text-center'}`}>
-        <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      <div className={`relative z-10 px-6 max-w-4xl mx-auto flex flex-col ${alignment === 'left' ? 'items-start text-left' : alignment === 'right' ? 'items-end text-right' : 'items-center text-center'} ${animClass}`}>
+        <div className="mb-6">
            <span className="inline-block px-4 py-1.5 text-xs font-bold tracking-[0.2em] uppercase border border-white/30 backdrop-blur-md rounded-full" style={{ color: textColor, borderColor: textColor }}>
             <EditableText 
                elementId={`editable-${blockId}-badge`}
@@ -414,10 +418,15 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, data, isEditable, on
   const image = data?.image || "https://images.unsplash.com/photo-1529139574466-a302c27e3844?q=80&w=2070&auto=format&fit=crop";
   const buttonText = data?.buttonText || "Explore Collection";
   const overlayOpacity = data?.overlayOpacity !== undefined ? data.overlayOpacity : 0;
+  const contentPosition = data?.contentPosition || 'left';
+  const animation = data?.animation || 'fade';
+  const animClass = animation === 'fade' ? 'animate-in fade-in duration-1000' :
+    animation === 'slide' ? 'animate-in slide-in-from-bottom-8 duration-1000' :
+    animation === 'zoom' ? 'animate-in zoom-in-95 duration-1000' : '';
 
   return (
-    <section className="w-full min-h-[80vh] flex flex-col md:flex-row bg-white">
-       <div className="w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center items-start border-b md:border-b-0 md:border-r border-neutral-200">
+    <section className={`w-full min-h-[80vh] flex flex-col ${contentPosition === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'} bg-white`}>
+       <div className={`w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center items-start border-b md:border-b-0 ${contentPosition === 'right' ? 'md:border-l' : 'md:border-r'} border-neutral-200 ${animClass}`}>
           <div className="mb-8">
              <div className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-6 text-neutral-900">
                 <EditableText 
@@ -482,9 +491,14 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
   const buttonText = data?.buttonText || "Shop Collection 01";
   const marqueeText = data?.marqueeText || "LIMITED DROP • DO NOT SLEEP • WORLDWIDE SHIPPING • SECURE CHECKOUT • NEXUS OS • LIMITED DROP • DO NOT SLEEP •";
   const overlayOpacity = data?.overlayOpacity !== undefined ? data.overlayOpacity : 0;
+  const accentColor = data?.accentColor || '#ccff00';
+  const animation = data?.animation || 'none';
+  const animClass = animation === 'fade' ? 'animate-in fade-in duration-1000' :
+    animation === 'slide' ? 'animate-in slide-in-from-bottom-8 duration-1000' :
+    animation === 'zoom' ? 'animate-in zoom-in-95 duration-1000' : '';
 
   return (
-    <section className="relative w-full h-[85vh] bg-[#ccff00] overflow-hidden flex flex-col border-b-4 border-black">
+    <section className={`relative w-full h-[85vh] overflow-hidden flex flex-col border-b-4 border-black ${animClass}`} style={{ backgroundColor: accentColor }}>
       <div className="absolute inset-0 opacity-10 pointer-events-none">
          <div className="grid grid-cols-12 h-full w-full">
             {[...Array(12)].map((_, i) => <div key={i} className="border-r border-black h-full"></div>)}
@@ -536,7 +550,7 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
       </div>
 
       <div className="absolute bottom-12 left-0 w-full flex justify-center z-30">
-         <button className="bg-black text-[#ccff00] text-xl font-black uppercase italic px-12 py-4 shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:translate-y-1 hover:shadow-none transition-all border-2 border-white">
+         <button className="bg-black text-xl font-black uppercase italic px-12 py-4 shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:translate-y-1 hover:shadow-none transition-all border-2 border-white" style={{ color: accentColor }}>
             <EditableText 
                  tagName="span"
                  value={buttonText}
@@ -564,9 +578,14 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
   const featureCardTitle = data?.featureCardTitle || "-20%";
   const featureCardSubtitle = data?.featureCardSubtitle || "On all Accessories";
   const overlayOpacity = data?.overlayOpacity !== undefined ? data.overlayOpacity : 0;
+  const featureCardColor = data?.featureCardColor || '#FF5F56';
+  const animation = data?.animation || 'fade';
+  const animClass = animation === 'fade' ? 'animate-in fade-in duration-1000' :
+    animation === 'slide' ? 'animate-in slide-in-from-bottom-8 duration-1000' :
+    animation === 'zoom' ? 'animate-in zoom-in-95 duration-1000' : '';
 
   return (
-    <section className="w-full min-h-screen bg-neutral-50 p-4 pt-8">
+    <section className={`w-full min-h-screen bg-neutral-50 p-4 pt-8 ${animClass}`}>
        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 h-auto md:h-[85vh]">
           {/* Main Text Block */}
           <div className="md:col-span-4 bg-white rounded-3xl p-8 flex flex-col justify-between shadow-sm">
@@ -665,7 +684,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors pointer-events-none"></div>
              </div>
-             <div className="h-48 bg-[#FF5F56] rounded-3xl p-6 text-white flex flex-col justify-center relative overflow-hidden group cursor-pointer">
+             <div className="h-48 rounded-3xl p-6 text-white flex flex-col justify-center relative overflow-hidden group cursor-pointer" style={{ backgroundColor: featureCardColor }}>
                 <div className="relative z-10 text-4xl font-black mb-1">
                     <EditableText 
                      tagName="span"
@@ -705,13 +724,19 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
   const link1Label = data?.link1Label || "Shop Apparel";
   const link2Label = data?.link2Label || "Shop Tech";
   const link3Label = data?.link3Label || "Shop Footwear";
+  const bgColor = data?.style?.backgroundColor || '#ffffff';
+  const textColor = data?.style?.textColor || '#000000';
+  const animation = data?.animation || 'fade';
+  const animClass = animation === 'fade' ? 'animate-in fade-in duration-1000' :
+    animation === 'slide' ? 'animate-in slide-in-from-bottom-8 duration-1000' :
+    animation === 'zoom' ? 'animate-in zoom-in-95 duration-1000' : '';
   
   return (
-    <section className="w-full min-h-[80vh] bg-white flex flex-col items-center justify-center py-20">
+    <section className={`w-full min-h-[80vh] flex flex-col items-center justify-center py-20 ${animClass}`} style={{ backgroundColor: bgColor, color: textColor }}>
        <div className="max-w-5xl mx-auto px-6 text-center">
           <div className="flex items-center justify-center gap-4 mb-8">
-             <Star size={12} className="text-neutral-400" />
-             <span className="text-xs font-medium text-neutral-400 uppercase tracking-[0.3em]">
+             <Star size={12} style={{ color: textColor, opacity: 0.4 }} />
+             <span className="text-xs font-medium uppercase tracking-[0.3em]" style={{ color: textColor, opacity: 0.4 }}>
                  <EditableText 
                      tagName="span"
                      value={topBadge}
@@ -723,7 +748,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      onSelect={() => onSelectField?.('topBadge')}
                    />
              </span>
-             <Star size={12} className="text-neutral-400" />
+             <Star size={12} style={{ color: textColor, opacity: 0.4 }} />
           </div>
           
           <div className="text-5xl md:text-8xl font-black tracking-tighter mb-8 leading-[0.9] uppercase">
@@ -739,7 +764,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
              />
           </div>
 
-          <div className="max-w-xl mx-auto text-neutral-500 text-lg mb-12">
+          <div className="max-w-xl mx-auto text-lg mb-12" style={{ color: textColor, opacity: 0.5 }}>
              <EditableText 
                  tagName="p" 
                  value={subheading} 
@@ -754,7 +779,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
 
           <div className="flex justify-center gap-6">
              <a href="#" className="group flex flex-col items-center gap-2">
-                <div className="w-48 h-64 bg-neutral-100 rounded-lg overflow-hidden mb-2 relative">
+                <div className="w-48 h-64 rounded-lg overflow-hidden mb-2 relative" style={{ backgroundColor: textColor === '#ffffff' ? '#333' : '#f5f5f5' }}>
                    <EditableImage 
                       src={data?.link1Image || "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=1000&auto=format&fit=crop"}
                       onChange={(val) => onUpdate && onUpdate({ link1Image: val })}
@@ -765,7 +790,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                    />
                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
                 </div>
-                <div className="text-sm font-bold border-b border-black pb-0.5">
+                <div className="text-sm font-bold pb-0.5" style={{ borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: textColor }}>
                     <EditableText 
                      tagName="span"
                      value={link1Label}
@@ -779,7 +804,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                 </div>
              </a>
              <a href="#" className="group flex flex-col items-center gap-2 mt-12 md:mt-24">
-                <div className="w-48 h-64 bg-neutral-100 rounded-lg overflow-hidden mb-2 relative">
+                <div className="w-48 h-64 rounded-lg overflow-hidden mb-2 relative" style={{ backgroundColor: textColor === '#ffffff' ? '#333' : '#f5f5f5' }}>
                    <EditableImage 
                       src={data?.link2Image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop"}
                       onChange={(val) => onUpdate && onUpdate({ link2Image: val })}
@@ -789,7 +814,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                       onSelect={() => onSelectField?.('link2Image')}
                    />
                 </div>
-                <div className="text-sm font-bold border-b border-black pb-0.5">
+                <div className="text-sm font-bold pb-0.5" style={{ borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: textColor }}>
                     <EditableText 
                      tagName="span"
                      value={link2Label}
@@ -803,7 +828,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                 </div>
              </a>
              <a href="#" className="group flex flex-col items-center gap-2">
-                <div className="w-48 h-64 bg-neutral-100 rounded-lg overflow-hidden mb-2 relative">
+                <div className="w-48 h-64 rounded-lg overflow-hidden mb-2 relative" style={{ backgroundColor: textColor === '#ffffff' ? '#333' : '#f5f5f5' }}>
                    <EditableImage 
                       src={data?.link3Image || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop"}
                       onChange={(val) => onUpdate && onUpdate({ link3Image: val })}
@@ -813,7 +838,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                       onSelect={() => onSelectField?.('link3Image')}
                    />
                 </div>
-                <div className="text-sm font-bold border-b border-black pb-0.5">
+                <div className="text-sm font-bold pb-0.5" style={{ borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: textColor }}>
                     <EditableText 
                      tagName="span"
                      value={link3Label}
