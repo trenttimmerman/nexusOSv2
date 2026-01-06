@@ -5862,9 +5862,12 @@ Return ONLY the JSON object, no markdown.`;
               <HeaderComponent
                 storeName={config.name || 'My Store'}
                 logoUrl={config.logoUrl}
+                logoHeight={config.logoHeight || 32}
                 links={mockLinks}
                 cartCount={3}
                 onOpenCart={() => {}}
+                onLinkClick={() => {}}
+                data={config.headerData}
                 primaryColor={config.primaryColor}
                 secondaryColor={config.secondaryColor}
                 headerBgColor={config.headerBgColor}
