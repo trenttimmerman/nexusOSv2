@@ -506,7 +506,7 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
       style={{ backgroundColor: settings.backgroundColor }}
     >
       <div className={`${maxWidthClass} mx-auto px-4 sm:px-6 lg:px-8`}>
-        <div className="flex justify-between items-center min-h-[4rem] py-3">
+        <div className="flex justify-between items-center min-h-[5.5rem] py-3">
           {/* Left: Logo with optional badge */}
           <button onClick={onLogoClick} className="flex-shrink-0 flex items-center gap-2 cursor-pointer">
             {settings.showLogoBadge && !logoUrl && (
@@ -607,7 +607,7 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
          FREE SHIPPING WORLDWIDE — 0% TRANSACTION FEES — NEXUS COMMERCE OS — BUILD THE FUTURE —
        </div>
     </div>
-    <div className="grid grid-cols-[auto_1fr_auto] min-h-[4rem] divide-x-4 divide-black">
+    <div className="grid grid-cols-[auto_1fr_auto] min-h-[5.5rem] divide-x-4 divide-black">
       <div className="px-6 py-2 flex items-center bg-white">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-black uppercase italic transform -skew-x-12" />
       </div>
@@ -632,7 +632,7 @@ export const HeaderBunker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 // 7. HeaderProtocol - "Tech/Gaming" (Cyberpunk/Brutalist)
 export const HeaderProtocol: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="sticky top-0 z-50 bg-yellow-400 border-b-4 border-black font-mono">
-    <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <div className="max-w-7xl mx-auto px-4 min-h-[5.5rem] py-2 flex items-center justify-between">
       <div className="flex items-center gap-8">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-black uppercase tracking-tighter" />
         <nav className="hidden md:flex gap-6">
@@ -741,7 +741,7 @@ export const HeaderTerminal: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
 // 11. HeaderPortfolio - "Split Screen" (Big Typography)
 export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-white sticky top-0 z-50 mix-blend-difference text-white">
-     <div className="grid grid-cols-2 md:grid-cols-4 min-h-[5rem] border-b border-white/20">
+     <div className="grid grid-cols-2 md:grid-cols-4 min-h-[5.5rem] border-b border-white/20">
         <div className="flex items-center px-6 py-2 border-r border-white/20">
            <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-xl font-bold tracking-tight uppercase" />
         </div>
@@ -765,7 +765,7 @@ export const HeaderPortfolio: React.FC<HeaderProps> = ({ storeName, logoUrl, log
 export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-neutral-100 border-b border-neutral-200 sticky top-0 z-50">
     <div className="max-w-[1600px] mx-auto p-2">
-       <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-2 flex items-center justify-between gap-4 min-h-[4rem]">
+       <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-2 flex items-center justify-between gap-4 min-h-[5.5rem]">
           <div className="px-4 flex items-center gap-2">
              {!logoUrl && (
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
@@ -802,7 +802,7 @@ export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 // 13. HeaderMetro - "Tile Style" (Windows Phone Vibe)
 export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full sticky top-0 z-50 bg-white shadow-sm">
-    <div className="grid grid-cols-6 md:grid-cols-12 min-h-[4rem] divide-x divide-neutral-100 border-b border-neutral-100">
+    <div className="grid grid-cols-6 md:grid-cols-12 min-h-[5.5rem] divide-x divide-neutral-100 border-b border-neutral-100">
       <div className="col-span-2 md:col-span-3 flex items-center justify-center bg-blue-600 text-white font-bold text-xl tracking-tighter overflow-hidden py-2 px-4">
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} />
       </div>
@@ -823,7 +823,7 @@ export const HeaderMetro: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
 // 14. HeaderModul - "Grid Layout" (Swiss Style, Grid)
 export const HeaderModul: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full border-b border-black sticky top-0 z-50 bg-white font-sans">
-    <div className="flex min-h-[3.5rem]">
+    <div className="flex min-h-[5.5rem]">
       <div className="w-48 border-r border-black flex items-center px-4 py-2 font-bold text-lg shrink-0">
          <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} />
       </div>
@@ -875,7 +875,7 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
 // 16. HeaderPop - "Playful Modern" (Neo-Brutalist, Soft)
 export const HeaderPop: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight, links, cartCount, onOpenCart, onLinkClick }) => (
   <header className="w-full bg-[#F3F4F6] sticky top-0 z-50 p-4">
-     <div className="bg-white border-2 border-black rounded-xl min-h-[4rem] py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center px-4 justify-between">
+     <div className="bg-white border-2 border-black rounded-xl min-h-[5.5rem] py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center px-4 justify-between">
         <div className="bg-[#FF90E8] border-2 border-black px-4 py-1 rounded-full font-black text-sm uppercase transform -rotate-2">
            <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} />
         </div>
@@ -955,7 +955,7 @@ export const HeaderTicker: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
            BTC +2.4% • ETH -1.2% • NEXUS +150% • NEW DROPS LIVE • WORLDWIDE SHIPPING • BTC +2.4% • ETH -1.2% • NEXUS +150% •
         </div>
      </div>
-     <div className="border-b border-blue-600 min-h-[3.5rem] py-2 flex items-center justify-between px-4">
+     <div className="border-b border-blue-600 min-h-[5.5rem] py-2 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
            <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="font-bold text-lg tracking-tight" />
         </div>
@@ -1052,7 +1052,7 @@ export const HeaderPathfinder: React.FC<HeaderProps> = ({ storeName, logoUrl, lo
   }, []);
 
   return (
-    <header ref={headerRef} className="sticky top-0 z-[100] h-20">
+    <header ref={headerRef} className="sticky top-0 z-[100] min-h-20 py-2">
       <div className="absolute inset-0">
         <svg width="100%" height="100%" viewBox="0 0 1440 80" preserveAspectRatio="none">
           <path
@@ -1423,7 +1423,7 @@ export const HeaderLumina: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 export const HeaderAqua: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
   return (
     <header 
-      className="sticky top-0 z-[100] h-20"
+      className="sticky top-0 z-[100] min-h-20 py-2"
       style={{
         backgroundColor: data?.backgroundColor || 'rgba(255, 255, 255, 0.1)',
         backdropFilter: 'blur(12px)',
@@ -1478,7 +1478,7 @@ export const HeaderRefined: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 
   return (
     <>
-      {isScrolled && <div className="h-16" />}
+      {isScrolled && <div className="h-20" />}
       <header className={`transition-all duration-300 ease-in-out w-full ${
         isScrolled 
           ? 'fixed top-0 left-0 z-[100] backdrop-blur-md shadow-lg' 
@@ -1488,7 +1488,7 @@ export const HeaderRefined: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
         borderColor: data?.borderColor || '#e5e7eb'
       }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center min-h-20 py-2">
             {logoUrl ? (
               <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px` }} className="object-contain" />
             ) : (
