@@ -819,6 +819,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
   const [systemModalType, setSystemModalType] = useState<'hero' | 'grid' | 'footer' | null>(null);
   const [isFooterModalOpen, setIsFooterModalOpen] = useState(false);
+  const [isHeroModalOpen, setIsHeroModalOpen] = useState(false);
   const [isInterfaceModalOpen, setIsInterfaceModalOpen] = useState(false);
   const [previewingHeaderId, setPreviewingHeaderId] = useState<HeaderStyleId | null>(null);
   const [settingsTab, setSettingsTab] = useState<'identity' | 'typography' | 'colors' | 'seo' | 'header' | 'scrollbar'>('identity');
@@ -4175,9 +4176,446 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     );
   };
 
-  // --- SYSTEM BLOCK MODAL (Hero, Grid) ---
+  // --- HERO MODAL (Footer-style layout with sticky preview) ---
   const [warningFields, setWarningFields] = useState<string[]>([]);
   const [pendingVariant, setPendingVariant] = useState<string | null>(null);
+
+  const renderHeroModal = () => {
+    if (!isHeroModalOpen) return null;
+
+    // Get the current hero variant - from selected block or global config
+    const currentHeroVariant = selectedBlockId && activeBlock?.type === 'system-hero' 
+      ? activeBlock?.variant || config.heroStyle 
+      : config.heroStyle;
+    
+    // Get the hero data from the active block or use defaults
+    const heroData = selectedBlockId && activeBlock?.type === 'system-hero'
+      ? activeBlock?.data || {}
+      : { heading: 'Hero Headline', subheading: 'Your amazing subheading goes here' };
+
+    const HeroComponent = HERO_COMPONENTS[currentHeroVariant as HeroStyleId] || HERO_COMPONENTS['impact'];
+
+    // Get available fields for the current hero variant
+    const availableFields = HERO_FIELDS[currentHeroVariant] || [];
+
+    // Handle hero variant change with field warning
+    const handleHeroChange = (newVariant: string) => {
+      const currentFields = Object.keys(heroData).filter(k => heroData[k] && !k.includes('_style'));
+      const targetFields = HERO_FIELDS[newVariant] || [];
+      const lostFields = currentFields.filter(field => !targetFields.includes(field));
+
+      if (lostFields.length > 0 && selectedBlockId) {
+        setWarningFields(lostFields);
+        setPendingVariant(newVariant);
+      } else {
+        applyHeroVariant(newVariant);
+      }
+    };
+
+    const applyHeroVariant = (newVariant: string) => {
+      if (selectedBlockId) {
+        setLocalPages(prev => prev.map(p => {
+          if (p.id !== activePage.id) return p;
+          return {
+            ...p,
+            blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: newVariant } : b)
+          };
+        }));
+      } else {
+        onConfigChange({ ...config, heroStyle: newVariant as HeroStyleId });
+      }
+      setHasUnsavedChanges(true);
+      setWarningFields([]);
+      setPendingVariant(null);
+    };
+
+    const confirmVariantChange = () => {
+      if (pendingVariant) {
+        applyHeroVariant(pendingVariant);
+      }
+    };
+
+    // Update hero data field
+    const updateHeroData = (updates: any) => {
+      if (selectedBlockId) {
+        setLocalPages(prev => prev.map(p => {
+          if (p.id !== activePage.id) return p;
+          return {
+            ...p,
+            blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, data: { ...b.data, ...updates } } : b)
+          };
+        }));
+        setHasUnsavedChanges(true);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+          {/* Modal Header */}
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-600/20 rounded-lg">
+                <Sparkles size={20} className="text-purple-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold">Hero Studio</h3>
+                <p className="text-xs text-neutral-500">Design your hero section</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => { setIsHeroModalOpen(false); setWarningFields([]); setPendingVariant(null); }} 
+              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Modal Content - Scrollable */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 relative">
+            {/* Warning Overlay for Field Loss */}
+            {warningFields.length > 0 && (
+              <div className="absolute inset-0 z-50 bg-neutral-900/98 p-6 flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
+                <div className="w-12 h-12 bg-red-900/30 rounded-full flex items-center justify-center text-red-500 mb-4">
+                  <AlertTriangle size={24} />
+                </div>
+                <h4 className="text-white font-bold text-lg mb-2">Content Warning</h4>
+                <p className="text-neutral-400 text-sm mb-4">
+                  Switching to <span className="text-white font-bold">{HERO_OPTIONS.find(o => o.id === pendingVariant)?.name}</span> will hide these fields:
+                </p>
+                <div className="bg-neutral-800 rounded-lg p-3 w-full max-w-xs mb-4 border border-neutral-700 max-h-32 overflow-y-auto">
+                  {warningFields.map(field => (
+                    <div key={field} className="text-xs text-red-400 font-mono py-1 border-b border-neutral-700 last:border-0">{field}</div>
+                  ))}
+                </div>
+                <div className="flex gap-2 w-full max-w-xs">
+                  <button onClick={() => { setWarningFields([]); setPendingVariant(null); }} className="flex-1 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg font-bold text-sm transition-colors">Cancel</button>
+                  <button onClick={confirmVariantChange} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-sm transition-colors">Confirm</button>
+                </div>
+              </div>
+            )}
+
+            <div className="max-w-3xl mx-auto">
+              {/* Live Preview - Sticky */}
+              <div className="sticky top-0 z-10 bg-neutral-900 pb-4 -mx-6 px-6 pt-2 -mt-2">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-neutral-400 uppercase tracking-wide">Live Preview</p>
+                  <span className="text-xs text-neutral-500">Changes update instantly</span>
+                </div>
+                <div className="rounded-xl overflow-hidden border border-neutral-700 bg-white shadow-lg">
+                  <HeroComponent
+                    storeName={config.name || 'Your Store'}
+                    primaryColor={config.primaryColor}
+                    data={heroData}
+                    isEditable={false}
+                  />
+                </div>
+              </div>
+
+              {/* Hero Design Selection */}
+              <div className="bg-neutral-800/30 p-4 rounded-xl border border-neutral-700/50 mb-6">
+                <label className="text-sm font-bold text-white mb-3 block">Hero Design</label>
+                <div className="grid grid-cols-5 gap-2">
+                  {HERO_OPTIONS.map((hero) => (
+                    <button
+                      key={hero.id}
+                      onClick={() => handleHeroChange(hero.id)}
+                      className={`p-3 rounded-lg border-2 text-center transition-all relative ${currentHeroVariant === hero.id
+                        ? 'border-purple-500 bg-purple-500/10'
+                        : 'border-neutral-700 hover:border-neutral-600'
+                      }`}
+                    >
+                      {hero.recommended && (
+                        <span className="absolute -top-2 -right-2 text-[8px] bg-emerald-500 text-white px-1 py-0.5 rounded-full font-bold">★</span>
+                      )}
+                      <span className={`text-xs font-bold block ${currentHeroVariant === hero.id ? 'text-purple-400' : 'text-white'}`}>
+                        {hero.name}
+                      </span>
+                      <span className="text-[9px] text-neutral-500 block mt-0.5 leading-tight">{hero.description?.split(' - ')[0]}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Hero Customization */}
+              <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50">
+                <div className="flex items-center justify-between mb-4">
+                  <label className="text-sm font-bold text-white">Customize Content</label>
+                  <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-400 rounded-lg">
+                    {HERO_OPTIONS.find(h => h.id === currentHeroVariant)?.name || 'Impact'}
+                  </span>
+                </div>
+
+                {/* Dynamic Fields based on Hero Variant */}
+                <div className="space-y-4">
+                  {availableFields.includes('heading') && (
+                    <div className="space-y-2">
+                      <label className="text-xs text-neutral-400 uppercase tracking-wide">Heading</label>
+                      <input
+                        type="text"
+                        value={heroData.heading || ''}
+                        onChange={(e) => updateHeroData({ heading: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                        placeholder="Enter your headline..."
+                      />
+                    </div>
+                  )}
+
+                  {availableFields.includes('subheading') && (
+                    <div className="space-y-2">
+                      <label className="text-xs text-neutral-400 uppercase tracking-wide">Subheading</label>
+                      <textarea
+                        value={heroData.subheading || ''}
+                        onChange={(e) => updateHeroData({ subheading: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none resize-none"
+                        rows={2}
+                        placeholder="Enter your subheading..."
+                      />
+                    </div>
+                  )}
+
+                  {availableFields.includes('badge') && (
+                    <div className="space-y-2">
+                      <label className="text-xs text-neutral-400 uppercase tracking-wide">Badge Text</label>
+                      <input
+                        type="text"
+                        value={heroData.badge || ''}
+                        onChange={(e) => updateHeroData({ badge: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                        placeholder="e.g., NEW COLLECTION"
+                      />
+                    </div>
+                  )}
+
+                  {availableFields.includes('topBadge') && (
+                    <div className="space-y-2">
+                      <label className="text-xs text-neutral-400 uppercase tracking-wide">Top Badge</label>
+                      <input
+                        type="text"
+                        value={heroData.topBadge || ''}
+                        onChange={(e) => updateHeroData({ topBadge: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                        placeholder="e.g., FEATURED"
+                      />
+                    </div>
+                  )}
+
+                  {availableFields.includes('buttonText') && (
+                    <div className="space-y-2">
+                      <label className="text-xs text-neutral-400 uppercase tracking-wide">Button Text</label>
+                      <input
+                        type="text"
+                        value={heroData.buttonText || ''}
+                        onChange={(e) => updateHeroData({ buttonText: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                        placeholder="e.g., Shop Now"
+                      />
+                    </div>
+                  )}
+
+                  {availableFields.includes('secondaryButtonText') && (
+                    <div className="space-y-2">
+                      <label className="text-xs text-neutral-400 uppercase tracking-wide">Secondary Button</label>
+                      <input
+                        type="text"
+                        value={heroData.secondaryButtonText || ''}
+                        onChange={(e) => updateHeroData({ secondaryButtonText: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                        placeholder="e.g., Learn More"
+                      />
+                    </div>
+                  )}
+
+                  {availableFields.includes('marqueeText') && (
+                    <div className="space-y-2">
+                      <label className="text-xs text-neutral-400 uppercase tracking-wide">Marquee Text</label>
+                      <input
+                        type="text"
+                        value={heroData.marqueeText || ''}
+                        onChange={(e) => updateHeroData({ marqueeText: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                        placeholder="Scrolling text..."
+                      />
+                    </div>
+                  )}
+
+                  {/* Link Labels for Typographic Hero */}
+                  {availableFields.includes('link1Label') && (
+                    <div className="space-y-3">
+                      <label className="text-xs text-neutral-400 uppercase tracking-wide">Navigation Links</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {['link1Label', 'link2Label', 'link3Label'].map((key, idx) => (
+                          <input
+                            key={key}
+                            type="text"
+                            value={heroData[key] || ''}
+                            onChange={(e) => updateHeroData({ [key]: e.target.value })}
+                            className="bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                            placeholder={`Link ${idx + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Feature Card for Grid Hero */}
+                  {availableFields.includes('featureCardTitle') && (
+                    <div className="space-y-3 p-3 bg-neutral-900/50 rounded-lg border border-neutral-700">
+                      <label className="text-xs text-neutral-400 uppercase tracking-wide">Feature Card</label>
+                      <input
+                        type="text"
+                        value={heroData.featureCardTitle || ''}
+                        onChange={(e) => updateHeroData({ featureCardTitle: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                        placeholder="Feature title..."
+                      />
+                      <input
+                        type="text"
+                        value={heroData.featureCardSubtitle || ''}
+                        onChange={(e) => updateHeroData({ featureCardSubtitle: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                        placeholder="Feature subtitle..."
+                      />
+                    </div>
+                  )}
+
+                  {availableFields.includes('imageBadge') && (
+                    <div className="space-y-2">
+                      <label className="text-xs text-neutral-400 uppercase tracking-wide">Image Badge</label>
+                      <input
+                        type="text"
+                        value={heroData.imageBadge || ''}
+                        onChange={(e) => updateHeroData({ imageBadge: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                        placeholder="e.g., BESTSELLER"
+                      />
+                    </div>
+                  )}
+
+                  {/* Image Upload */}
+                  {availableFields.includes('image') && (
+                    <div className="space-y-2">
+                      <label className="text-xs text-neutral-400 uppercase tracking-wide">Hero Image</label>
+                      <div className="bg-neutral-900 rounded-lg border border-neutral-700 p-3">
+                        {heroData.image ? (
+                          <div className="relative aspect-video rounded-lg overflow-hidden mb-2">
+                            <img src={heroData.image} alt="Hero" className="w-full h-full object-cover" />
+                            <button
+                              onClick={() => updateHeroData({ image: undefined })}
+                              className="absolute top-2 right-2 p-1 bg-red-600 rounded-full text-white hover:bg-red-700"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="aspect-video bg-neutral-800 rounded-lg flex items-center justify-center mb-2">
+                            <ImageIcon size={32} className="text-neutral-600" />
+                          </div>
+                        )}
+                        <div className="flex gap-2">
+                          <label className="flex-1 flex items-center justify-center gap-2 bg-neutral-800 border border-neutral-700 py-2 rounded-lg text-xs font-bold cursor-pointer hover:bg-neutral-700 transition-colors text-neutral-300">
+                            <Upload size={14} /> Upload Image
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => updateHeroData({ image: reader.result as string });
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                          </label>
+                          <input
+                            type="text"
+                            value={heroData.image || ''}
+                            onChange={(e) => updateHeroData({ image: e.target.value })}
+                            className="flex-1 bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-300 focus:border-purple-500 outline-none"
+                            placeholder="Or paste URL..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Side Image for Grid Hero */}
+                  {availableFields.includes('sideImage') && (
+                    <div className="space-y-2">
+                      <label className="text-xs text-neutral-400 uppercase tracking-wide">Side Image</label>
+                      <div className="bg-neutral-900 rounded-lg border border-neutral-700 p-3">
+                        <div className="flex gap-2">
+                          <label className="flex-1 flex items-center justify-center gap-2 bg-neutral-800 border border-neutral-700 py-2 rounded-lg text-xs font-bold cursor-pointer hover:bg-neutral-700 transition-colors text-neutral-300">
+                            <Upload size={14} /> Upload
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => updateHeroData({ sideImage: reader.result as string });
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                          </label>
+                          <input
+                            type="text"
+                            value={heroData.sideImage || ''}
+                            onChange={(e) => updateHeroData({ sideImage: e.target.value })}
+                            className="flex-1 bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-300 focus:border-purple-500 outline-none"
+                            placeholder="Or paste URL..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Overlay Opacity */}
+                  {availableFields.includes('overlayOpacity') && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs text-neutral-400 uppercase tracking-wide">Image Overlay</label>
+                        <span className="text-xs text-neutral-500">{Math.round((heroData.overlayOpacity || 0) * 100)}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="0.9"
+                        step="0.1"
+                        value={heroData.overlayOpacity || 0}
+                        onChange={(e) => updateHeroData({ overlayOpacity: parseFloat(e.target.value) })}
+                        className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Footer */}
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex justify-between items-center shrink-0">
+            <p className="text-xs text-neutral-500">
+              Current: <span className="text-white font-medium">{HERO_OPTIONS.find(h => h.id === currentHeroVariant)?.name || 'Impact'}</span>
+            </p>
+            <button 
+              onClick={() => { setIsHeroModalOpen(false); setWarningFields([]); setPendingVariant(null); }}
+              className="px-6 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg font-bold text-sm transition-colors text-white"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // --- SYSTEM BLOCK MODAL (Grid only now) ---
 
   const renderSystemBlockModal = () => {
     if (!isSystemModalOpen || !systemModalType) return null;
@@ -8064,7 +8502,7 @@ Return ONLY the JSON object, no markdown.`;
         return <ShippingManager storeId={storeId || null} />;
 
       case AdminTab.DESIGN:
-        const isAnyModalOpen = isHeaderModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
+        const isAnyModalOpen = isHeaderModalOpen || isHeroModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
         return (
           <div className="flex h-full w-full bg-neutral-950 overflow-hidden">
             {/* LEFT COLUMN: EDITOR */}
@@ -8384,7 +8822,7 @@ Return ONLY the JSON object, no markdown.`;
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      if (block.type === 'system-hero') { setSelectedBlockId(block.id); setSystemModalType('hero'); setIsSystemModalOpen(true); }
+                                      if (block.type === 'system-hero') { setSelectedBlockId(block.id); setIsHeroModalOpen(true); }
                                       else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setSystemModalType('grid'); setIsSystemModalOpen(true); }
                                       else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
                                       else if (block.type.startsWith('system-')) { 
@@ -8695,7 +9133,7 @@ Return ONLY the JSON object, no markdown.`;
                         const block = activePage.blocks.find(b => b.id === blockId);
                         if (!block) return;
                         setSelectedBlockId(blockId);
-                        if (block.type === 'system-hero') { setSystemModalType('hero'); setIsSystemModalOpen(true); }
+                        if (block.type === 'system-hero') { setIsHeroModalOpen(true); }
                         else if (block.type === 'system-grid') { setSystemModalType('grid'); setIsSystemModalOpen(true); }
                         else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
                         else if (block.type.startsWith('system-')) {
@@ -9923,6 +10361,7 @@ Return ONLY the JSON object, no markdown.`;
       {renderHeaderPreview()}
       {renderBlockArchitect()}
       {renderHeaderModal()}
+      {renderHeroModal()}
       {renderSystemBlockModal()}
       {renderFooterModal()}
       {renderAddSectionLibrary()}
