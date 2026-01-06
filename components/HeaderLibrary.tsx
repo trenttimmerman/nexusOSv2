@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Search, User, Menu, Hexagon } from 'lucide-react';
+import { ShoppingBag, Search, User, Menu, Hexagon, X } from 'lucide-react';
 import { NavLink } from '../types';
 
 // Header customization data structure
@@ -32,10 +32,69 @@ interface HeaderProps {
   onLogoClick?: () => void;
   onLinkClick?: (href: string) => void;
   onSearchClick?: () => void;
+  isSearchOpen?: boolean;
+  onSearchClose?: () => void;
+  onSearchSubmit?: (query: string) => void;
   primaryColor?: string;
   secondaryColor?: string;
   data?: HeaderData; // Per-header customization
 }
+
+// Inline Search Input Component
+const InlineSearch: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit?: (query: string) => void;
+  className?: string;
+  inputClassName?: string;
+  iconColor?: string;
+}> = ({ isOpen, onClose, onSubmit, className = '', inputClassName = '', iconColor }) => {
+  const [query, setQuery] = React.useState('');
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (isOpen && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+    if (!isOpen) setQuery('');
+  }, [isOpen]);
+
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      onSubmit?.(query.trim());
+      onClose();
+    }
+  };
+
+  return (
+    <div className={`flex items-center overflow-hidden transition-all duration-300 ease-out ${className}`}
+      style={{ width: isOpen ? '200px' : '0px', opacity: isOpen ? 1 : 0 }}
+    >
+      <form onSubmit={handleSubmit} className="flex items-center w-full">
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search..."
+          className={`w-full text-sm outline-none bg-transparent ${inputClassName}`}
+        />
+        <button type="button" onClick={onClose} className="p-1 hover:opacity-70 transition-opacity flex-shrink-0">
+          <X size={14} style={{ color: iconColor }} />
+        </button>
+      </form>
+    </div>
+  );
+};
 
 // Default values for HeaderCanvas
 const CANVAS_DEFAULTS: HeaderData = {
@@ -120,6 +179,9 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
   onLogoClick,
   onLinkClick,
   onSearchClick,
+  isSearchOpen,
+  onSearchClose,
+  onSearchSubmit,
   data = {},
 }) => {
   // Merge defaults with customization
@@ -171,15 +233,26 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
         {/* Right: Icons */}
         <div className="flex items-center gap-2">
           {settings.showSearch && (
-            <button
-              onClick={onSearchClick}
-              className="p-2 rounded-full transition-colors"
-              style={{ color: settings.textColor }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
-            >
-              <Search size={20} />
-            </button>
+            <div className="flex items-center">
+              <InlineSearch
+                isOpen={isSearchOpen || false}
+                onClose={onSearchClose || (() => {})}
+                onSubmit={onSearchSubmit}
+                inputClassName="border-b border-neutral-300 px-2 py-1"
+                iconColor={settings.textColor}
+              />
+              {!isSearchOpen && (
+                <button
+                  onClick={onSearchClick}
+                  className="p-2 rounded-full transition-colors"
+                  style={{ color: settings.textColor }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+                >
+                  <Search size={20} />
+                </button>
+              )}
+            </div>
           )}
           {settings.showAccount && (
             <button

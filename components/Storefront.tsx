@@ -16,137 +16,10 @@ import { CONTACT_COMPONENTS } from './ContactLibrary';
 import { LAYOUT_COMPONENTS } from './LayoutLibrary';
 import { COLLECTION_COMPONENTS } from './CollectionLibrary';
 import { SectionWrapper } from './SectionWrapper';
-import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2, Search, X } from 'lucide-react';
+import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
 import { CartDrawer } from './CartDrawer';
-
-// Slideout Search Bar Component
-const SearchSlideout: React.FC<{
-  isOpen: boolean;
-  onClose: () => void;
-  products: Product[];
-  onNavigate?: (href: string) => void;
-  primaryColor?: string;
-}> = ({ isOpen, onClose, products, onNavigate, primaryColor = '#6366F1' }) => {
-  const [query, setQuery] = useState('');
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  React.useEffect(() => {
-    if (isOpen && inputRef.current) {
-      setTimeout(() => inputRef.current?.focus(), 150);
-    }
-    if (!isOpen) setQuery('');
-  }, [isOpen]);
-
-  React.useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-    }
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onClose]);
-
-  const filteredProducts = query.length >= 2 
-    ? products.filter(p => 
-        p.name.toLowerCase().includes(query.toLowerCase()) ||
-        p.description?.toLowerCase().includes(query.toLowerCase()) ||
-        p.category?.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 6)
-    : [];
-
-  return (
-    <>
-      {/* Backdrop - only show when results are visible */}
-      {isOpen && query.length >= 2 && filteredProducts.length > 0 && (
-        <div 
-          className="fixed inset-0 z-[150] bg-black/20 transition-opacity duration-300"
-          onClick={onClose}
-        />
-      )}
-      
-      {/* Slideout Search Bar */}
-      <div 
-        className={`fixed top-0 left-0 right-0 z-[200] transition-all duration-300 ease-out ${
-          isOpen 
-            ? 'translate-y-0 opacity-100' 
-            : '-translate-y-full opacity-0 pointer-events-none'
-        }`}
-      >
-        <div className="bg-white/95 backdrop-blur-md shadow-lg border-b border-neutral-200">
-          <div className="max-w-3xl mx-auto px-4 py-3">
-            <div className="flex items-center gap-3 bg-neutral-100 rounded-full px-4 py-2.5">
-              <Search size={18} className="text-neutral-400 flex-shrink-0" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search products..."
-                className="flex-1 bg-transparent text-base outline-none placeholder:text-neutral-400"
-              />
-              <button 
-                onClick={onClose}
-                className="p-1.5 hover:bg-neutral-200 rounded-full transition-colors flex-shrink-0"
-              >
-                <X size={16} className="text-neutral-500" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Results Dropdown */}
-        {query.length >= 2 && filteredProducts.length > 0 && (
-          <div className="bg-white shadow-xl border-b border-neutral-200 max-h-[50vh] overflow-y-auto">
-            <div className="max-w-3xl mx-auto divide-y divide-neutral-100">
-              {filteredProducts.map((product) => (
-                <button
-                  key={product.id}
-                  onClick={() => {
-                    onNavigate?.(`/product/${product.id}`);
-                    onClose();
-                  }}
-                  className="w-full flex items-center gap-4 px-4 py-3 hover:bg-neutral-50 transition-colors text-left"
-                >
-                  {product.images?.[0] ? (
-                    <img 
-                      src={product.images[0]} 
-                      alt={product.name}
-                      className="w-12 h-12 object-cover rounded-lg bg-neutral-100"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 bg-neutral-100 rounded-lg flex items-center justify-center">
-                      <Search size={16} className="text-neutral-300" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-neutral-900 truncate text-sm">{product.name}</h4>
-                    <p className="text-sm font-medium" style={{ color: primaryColor }}>
-                      ${product.price.toFixed(2)}
-                    </p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* No results message */}
-        {query.length >= 2 && filteredProducts.length === 0 && (
-          <div className="bg-white shadow-xl border-b border-neutral-200">
-            <div className="max-w-3xl mx-auto px-4 py-6 text-center text-neutral-500 text-sm">
-              No products found for "{query}"
-            </div>
-          </div>
-        )}
-      </div>
-    </>
-  );
-};
 
 // Style classes generator for block.data.style
 const getBlockStyleClasses = (style?: { padding?: string; paddingX?: string; maxWidth?: string; height?: string; background?: string; alignment?: string; imageFit?: string }) => {
@@ -369,16 +242,15 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                       onLogoClick={() => onNavigate?.('/')}
                       onLinkClick={(href) => onNavigate?.(href)}
                       onSearchClick={() => setIsSearchOpen(true)}
+                      isSearchOpen={isSearchOpen}
+                      onSearchClose={() => setIsSearchOpen(false)}
+                      onSearchSubmit={(query) => {
+                        onNavigate?.(`/?search=${encodeURIComponent(query)}`);
+                        setIsSearchOpen(false);
+                      }}
                       primaryColor={primaryColor}
                       secondaryColor={secondaryColor}
                       data={config.headerData}
-                  />
-                  <SearchSlideout
-                      isOpen={isSearchOpen}
-                      onClose={() => setIsSearchOpen(false)}
-                      products={products}
-                      onNavigate={onNavigate}
-                      primaryColor={primaryColor}
                   />
                   <main className="flex-1 pt-20">
                       {/* Back to shop button */}
@@ -764,16 +636,15 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         onLogoClick={() => onNavigate?.('/')}
         onLinkClick={(href) => onNavigate?.(href)}
         onSearchClick={() => setIsSearchOpen(true)}
+        isSearchOpen={isSearchOpen}
+        onSearchClose={() => setIsSearchOpen(false)}
+        onSearchSubmit={(query) => {
+          onNavigate?.(`/?search=${encodeURIComponent(query)}`);
+          setIsSearchOpen(false);
+        }}
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
         data={config.headerData}
-      />
-      <SearchSlideout
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        products={products}
-        onNavigate={onNavigate}
-        primaryColor={primaryColor}
       />
 
       <main className="flex-1 pt-20">
