@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowRight, Play, Star, Upload, Image as ImageIcon, Wand2, Loader2, Sparkles, Type, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Palette, Minus, Plus, Check } from 'lucide-react';
+import { ArrowRight, Play, Star, Upload, Image as ImageIcon, Wand2, Loader2, Sparkles, Type, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Palette, Minus, Plus, Check, Package } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
 interface TextStyles {
@@ -329,7 +329,15 @@ const FeaturedProductOverlay: React.FC<{
   const product = products.find(p => p.id === productId);
   if (!product) return null;
   
-  const productImage = product.images?.[0] || product.image_url || '';
+  // Get the primary image - handle both array and JSONB formats from database
+  const imagesArray = Array.isArray(product.images) ? product.images : [];
+  const productImage = imagesArray.find(img => img?.isPrimary)?.url 
+    || imagesArray[0]?.url 
+    || product.image 
+    || '';
+  
+  // Debug: log to see what we're getting
+  console.log('[FeaturedProduct] Product:', product.name, 'image:', product.image, 'images:', product.images, 'resolved:', productImage);
   
   const positionClasses = {
     left: 'left-6 md:left-12',
@@ -343,11 +351,13 @@ const FeaturedProductOverlay: React.FC<{
       className={`absolute bottom-6 md:bottom-12 ${positionClasses[position]} z-20 group cursor-pointer`}
     >
       <div className="bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-white/20 hover:scale-105 transition-all duration-300 flex items-center gap-3 max-w-[280px]">
-        {productImage && (
-          <div className="w-16 h-16 rounded-xl overflow-hidden bg-neutral-100 shrink-0">
+        <div className="w-16 h-16 rounded-xl overflow-hidden bg-neutral-100 shrink-0 flex items-center justify-center">
+          {productImage ? (
             <img src={productImage} alt={product.name} className="w-full h-full object-cover" />
-          </div>
-        )}
+          ) : (
+            <Package size={24} className="text-neutral-400" />
+          )}
+        </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs text-neutral-500 uppercase tracking-wider mb-0.5">Featured</p>
           <p className="text-sm font-bold text-neutral-900 truncate">{product.name}</p>
