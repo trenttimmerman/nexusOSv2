@@ -21,8 +21,8 @@ import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
 import { CartDrawer } from './CartDrawer';
 
-// Search Modal Component
-const SearchModal: React.FC<{
+// Slideout Search Bar Component
+const SearchSlideout: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   products: Product[];
@@ -34,8 +34,9 @@ const SearchModal: React.FC<{
 
   React.useEffect(() => {
     if (isOpen && inputRef.current) {
-      inputRef.current.focus();
+      setTimeout(() => inputRef.current?.focus(), 150);
     }
+    if (!isOpen) setQuery('');
   }, [isOpen]);
 
   React.useEffect(() => {
@@ -44,11 +45,9 @@ const SearchModal: React.FC<{
     };
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
     }
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
     };
   }, [isOpen, onClose]);
 
@@ -57,79 +56,75 @@ const SearchModal: React.FC<{
         p.name.toLowerCase().includes(query.toLowerCase()) ||
         p.description?.toLowerCase().includes(query.toLowerCase()) ||
         p.category?.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 8)
+      ).slice(0, 6)
     : [];
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[200] flex items-start justify-center pt-20 px-4">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
-        onClick={onClose}
-      />
+    <>
+      {/* Backdrop - only show when results are visible */}
+      {isOpen && query.length >= 2 && filteredProducts.length > 0 && (
+        <div 
+          className="fixed inset-0 z-[150] bg-black/20 transition-opacity duration-300"
+          onClick={onClose}
+        />
+      )}
       
-      {/* Modal */}
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden">
-        {/* Search Input */}
-        <div className="flex items-center gap-3 p-4 border-b border-neutral-200">
-          <Search size={20} className="text-neutral-400" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search products..."
-            className="flex-1 text-lg outline-none placeholder:text-neutral-400"
-          />
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-          >
-            <X size={20} className="text-neutral-500" />
-          </button>
+      {/* Slideout Search Bar */}
+      <div 
+        className={`fixed top-0 left-0 right-0 z-[200] transition-all duration-300 ease-out ${
+          isOpen 
+            ? 'translate-y-0 opacity-100' 
+            : '-translate-y-full opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="bg-white/95 backdrop-blur-md shadow-lg border-b border-neutral-200">
+          <div className="max-w-3xl mx-auto px-4 py-3">
+            <div className="flex items-center gap-3 bg-neutral-100 rounded-full px-4 py-2.5">
+              <Search size={18} className="text-neutral-400 flex-shrink-0" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search products..."
+                className="flex-1 bg-transparent text-base outline-none placeholder:text-neutral-400"
+              />
+              <button 
+                onClick={onClose}
+                className="p-1.5 hover:bg-neutral-200 rounded-full transition-colors flex-shrink-0"
+              >
+                <X size={16} className="text-neutral-500" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Results */}
-        <div className="max-h-[60vh] overflow-y-auto">
-          {query.length < 2 ? (
-            <div className="p-8 text-center text-neutral-500">
-              <Search size={40} className="mx-auto mb-3 opacity-30" />
-              <p>Start typing to search products...</p>
-            </div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="p-8 text-center text-neutral-500">
-              <p>No products found for "{query}"</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-neutral-100">
+        {/* Results Dropdown */}
+        {query.length >= 2 && filteredProducts.length > 0 && (
+          <div className="bg-white shadow-xl border-b border-neutral-200 max-h-[50vh] overflow-y-auto">
+            <div className="max-w-3xl mx-auto divide-y divide-neutral-100">
               {filteredProducts.map((product) => (
                 <button
                   key={product.id}
                   onClick={() => {
                     onNavigate?.(`/product/${product.id}`);
                     onClose();
-                    setQuery('');
                   }}
-                  className="w-full flex items-center gap-4 p-4 hover:bg-neutral-50 transition-colors text-left"
+                  className="w-full flex items-center gap-4 px-4 py-3 hover:bg-neutral-50 transition-colors text-left"
                 >
                   {product.images?.[0] ? (
                     <img 
                       src={product.images[0]} 
                       alt={product.name}
-                      className="w-16 h-16 object-cover rounded-lg bg-neutral-100"
+                      className="w-12 h-12 object-cover rounded-lg bg-neutral-100"
                     />
                   ) : (
-                    <div className="w-16 h-16 bg-neutral-100 rounded-lg flex items-center justify-center">
-                      <Search size={20} className="text-neutral-300" />
+                    <div className="w-12 h-12 bg-neutral-100 rounded-lg flex items-center justify-center">
+                      <Search size={16} className="text-neutral-300" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-neutral-900 truncate">{product.name}</h4>
-                    {product.category && (
-                      <p className="text-sm text-neutral-500">{product.category}</p>
-                    )}
+                    <h4 className="font-medium text-neutral-900 truncate text-sm">{product.name}</h4>
                     <p className="text-sm font-medium" style={{ color: primaryColor }}>
                       ${product.price.toFixed(2)}
                     </p>
@@ -137,15 +132,19 @@ const SearchModal: React.FC<{
                 </button>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Footer hint */}
-        <div className="p-3 bg-neutral-50 border-t border-neutral-200 text-center text-xs text-neutral-500">
-          Press <kbd className="px-1.5 py-0.5 bg-white border border-neutral-300 rounded text-xs">ESC</kbd> to close
-        </div>
+        {/* No results message */}
+        {query.length >= 2 && filteredProducts.length === 0 && (
+          <div className="bg-white shadow-xl border-b border-neutral-200">
+            <div className="max-w-3xl mx-auto px-4 py-6 text-center text-neutral-500 text-sm">
+              No products found for "{query}"
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 };
 
@@ -374,7 +373,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                       secondaryColor={secondaryColor}
                       data={config.headerData}
                   />
-                  <SearchModal
+                  <SearchSlideout
                       isOpen={isSearchOpen}
                       onClose={() => setIsSearchOpen(false)}
                       products={products}
@@ -769,7 +768,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         secondaryColor={secondaryColor}
         data={config.headerData}
       />
-      <SearchModal
+      <SearchSlideout
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         products={products}
