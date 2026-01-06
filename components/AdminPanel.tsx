@@ -4681,20 +4681,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <div className="grid grid-cols-4 gap-2 max-h-64 overflow-y-auto custom-scrollbar">
                     {/* Available headers */}
                     {HEADER_OPTIONS.map((header) => (
-                      <button
+                      <div
                         key={header.id}
-                        onClick={() => onConfigChange({ ...config, headerStyle: header.id as any, headerData: {} })}
-                        className={`p-2 rounded-lg border-2 text-center transition-all ${
+                        className={`relative p-2 rounded-lg border-2 text-center transition-all cursor-pointer group ${
                           config.headerStyle === header.id
                             ? 'border-blue-500 bg-blue-500/10'
                             : 'border-neutral-700 hover:border-neutral-600'
                         }`}
+                        onClick={() => onConfigChange({ ...config, headerStyle: header.id as any, headerData: {} })}
                       >
                         <span className={`text-xs font-bold ${config.headerStyle === header.id ? 'text-blue-400' : 'text-white'}`}>
                           {header.name}
                         </span>
                         <span className="text-[10px] text-neutral-500 block mt-0.5">{header.description}</span>
-                      </button>
+                        {/* Preview button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPreviewingHeaderId(header.id as any);
+                          }}
+                          className="absolute top-1 right-1 p-1 bg-neutral-800/80 hover:bg-purple-600 rounded opacity-0 group-hover:opacity-100 transition-all"
+                          title="Preview header"
+                        >
+                          <Eye size={12} className="text-white" />
+                        </button>
+                      </div>
                     ))}
                   </div>
                 </div>
