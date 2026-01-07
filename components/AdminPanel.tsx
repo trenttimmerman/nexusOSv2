@@ -60,6 +60,39 @@ const SCROLLBAR_OPTIONS = [
   { id: 'glass-mirror', name: 'Liquid Mirror', description: 'High gloss reflective feel' },
   { id: 'glass-glacier', name: 'Glacier Ice', description: 'Cool blue frozen tint' },
 ];
+
+const HEADER_FIELD_METADATA: Record<string, { label: string; icon?: any; type: 'toggle' | 'color' | 'text' }> = {
+  showSearch: { label: 'Search', type: 'toggle' },
+  showAccount: { label: 'Account', type: 'toggle' },
+  showCart: { label: 'Cart', type: 'toggle' },
+  showCTA: { label: 'CTA Button', type: 'toggle' },
+  showTagline: { label: 'Tagline', type: 'toggle' },
+  showSocial: { label: 'Social Icons', type: 'toggle' },
+  showLogoBadge: { label: 'Logo Badge', type: 'toggle' },
+  showMenu: { label: 'Menu List', type: 'toggle' },
+  showIndicatorDot: { label: 'Active Dot', type: 'toggle' },
+  sticky: { label: 'Sticky Header', type: 'toggle' },
+  backgroundColor: { label: 'Background', type: 'color' },
+  borderColor: { label: 'Border', type: 'color' },
+  textColor: { label: 'Text', type: 'color' },
+  textHoverColor: { label: 'Text Hover', type: 'color' },
+  accentColor: { label: 'Accent Color', type: 'color' },
+  cartBadgeColor: { label: 'Badge BG', type: 'color' },
+  cartBadgeTextColor: { label: 'Badge Text', type: 'color' },
+  ctaBackgroundColor: { label: 'Button BG', type: 'color' },
+  ctaHoverColor: { label: 'Button Hover', type: 'color' },
+  ctaTextColor: { label: 'Button Text', type: 'color' },
+  taglineColor: { label: 'Tagline Text', type: 'color' },
+  utilityBarBackgroundColor: { label: 'Utility Bar', type: 'color' },
+  tickerBackgroundColor: { label: 'Ticker BG', type: 'color' },
+  tickerTextColor: { label: 'Ticker Text', type: 'color' },
+  terminalPromptColor: { label: 'Prompt Color', type: 'color' },
+  scanlineColor: { label: 'Scanline Color', type: 'color' },
+  ctaText: { label: 'CTA Text', type: 'text' },
+  taglineText: { label: 'Tagline Text', type: 'text' },
+  tickerText: { label: 'Ticker Text', type: 'text' },
+  searchPlaceholder: { label: 'Search Prompt', type: 'text' },
+};
 import {
   LayoutDashboard,
   PanelLeftClose,
@@ -821,7 +854,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isFooterModalOpen, setIsFooterModalOpen] = useState(false);
   const [isHeroModalOpen, setIsHeroModalOpen] = useState(false);
   const [isInterfaceModalOpen, setIsInterfaceModalOpen] = useState(false);
-  const [previewingHeaderId, setPreviewingHeaderId] = useState<HeaderStyleId | null>(null);
   const [settingsTab, setSettingsTab] = useState<'identity' | 'typography' | 'colors' | 'seo' | 'header' | 'scrollbar'>('identity');
   const [previewingScrollbar, setPreviewingScrollbar] = useState<string | null>(null);
 
@@ -1605,27 +1637,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   );
 
   // --- HEADER CONFIG MODAL (Disabled - Coming Soon) ---
-  const renderHeaderModal = () => {
-    if (!isHeaderModalOpen) return null;
-    
-    return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
-          <div className="p-3 bg-blue-600/20 rounded-xl w-fit mx-auto mb-4">
-            <PanelTop size={32} className="text-blue-400" />
-          </div>
-          <h3 className="text-white font-bold text-xl mb-2">Header Studio</h3>
-          <p className="text-neutral-400 text-sm mb-6">Header customization coming soon</p>
-          <button 
-            onClick={() => setIsHeaderModalOpen(false)}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-sm transition-colors"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    );
-  };
+
 
   // --- FOOTER MODAL (Header-style layout) ---
   const renderFooterModal = () => {
@@ -5490,7 +5502,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     {HEADER_OPTIONS.map((header) => (
                       <button
                         key={header.id}
-                        onClick={() => onConfigChange({ ...config, headerStyle: header.id as any, headerData: {} })}
+                        onClick={() => {
+                          onConfigChange({ ...config, headerStyle: header.id as any, headerData: {} });
+                        }}
                         className={`p-2 rounded-lg border-2 text-center transition-all ${
                           config.headerStyle === header.id
                             ? 'border-blue-500 bg-blue-500/10'
@@ -5515,243 +5529,132 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </span>
                   </div>
                   
-                  {/* Show/Hide Controls */}
-                  <div className="space-y-3 mb-6">
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Show/Hide Elements</p>
-                    <div className="grid grid-cols-3 gap-3">
-                      {[
-                        { key: 'showSearch', label: 'Search', icon: Search },
-                        { key: 'showAccount', label: 'Account', icon: User },
-                        { key: 'showCart', label: 'Cart', icon: ShoppingBag },
-                      ].map(({ key, label, icon: Icon }) => (
-                        <button
-                          key={key}
-                          onClick={() => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, [key]: !(config.headerData?.[key] ?? true) }
-                          })}
-                          className={`flex items-center gap-2 p-3 rounded-lg border transition-colors ${
-                            (config.headerData?.[key] ?? true)
-                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                              : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                          }`}
-                        >
-                          <Icon size={16} />
-                          <span className="text-sm">{label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  {/* Dynamic Field Controls - based on HEADER_FIELDS registry */}
+                  {(() => {
+                    const fields = HEADER_FIELDS[config.headerStyle || 'canvas'] || [];
+                    const toggleFields = fields.filter(f => f.startsWith('show') || f === 'sticky');
+                    const colorFields = fields.filter(f => f.toLowerCase().includes('color') || f.toLowerCase().includes('bg'));
+                    const textFields = fields.filter(f => !toggleFields.includes(f) && !colorFields.includes(f));
 
-                  {/* Color Controls */}
-                  <div className="space-y-3 mb-6">
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Colors</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        { key: 'backgroundColor', label: 'Background', defaultValue: '#ffffff' },
-                        { key: 'borderColor', label: 'Border', defaultValue: '#f3f4f6' },
-                        { key: 'textColor', label: 'Text', defaultValue: '#6b7280' },
-                        { key: 'textHoverColor', label: 'Text Hover', defaultValue: '#000000' },
-                      ].map(({ key, label, defaultValue }) => (
-                        <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                          <input
-                            type="color"
-                            value={config.headerData?.[key] ?? defaultValue}
-                            onChange={(e) => onConfigChange({
-                              ...config,
-                              headerData: { ...config.headerData, [key]: e.target.value }
-                            })}
-                            className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                          />
-                          <span className="text-sm text-neutral-300">{label}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                    return (
+                      <div className="space-y-6">
+                        {/* Toggles */}
+                        {toggleFields.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Visibility</p>
+                            <div className="grid grid-cols-2 gap-3">
+                              {toggleFields.map(key => {
+                                const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                                return (
+                                  <button
+                                    key={key}
+                                    onClick={() => onConfigChange({
+                                      ...config,
+                                      headerData: { ...config.headerData, [key]: !(config.headerData?.[key] ?? true) }
+                                    })}
+                                    className={`flex items-center gap-2 p-3 rounded-lg border transition-colors ${
+                                      (config.headerData?.[key] ?? true)
+                                        ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                                        : 'bg-neutral-900 border-neutral-700 text-neutral-500'
+                                    }`}
+                                  >
+                                    <div className="w-1.5 h-1.5 rounded-full bg-current" />
+                                    <span className="text-xs font-bold">{Meta.label}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
 
-                  {/* Button/CTA Controls - only show for headers with CTA */}
-                  {(config.headerStyle === 'pilot') && (
-                    <div className="space-y-3 mb-6">
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Button / CTA</p>
-                      
-                      {/* Button Text */}
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-sm text-neutral-300 mb-2 block">Button Text</label>
-                        <input
-                          type="text"
-                          value={config.headerData?.ctaText ?? 'Sign In'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, ctaText: e.target.value }
-                          })}
-                          className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
-                          placeholder="Sign In"
-                        />
-                      </div>
-                      
-                      {/* Button Colors */}
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: 'ctaBackgroundColor', label: 'Button Color', defaultValue: '#4f46e5' },
-                          { key: 'ctaHoverColor', label: 'Button Hover', defaultValue: '#4338ca' },
-                          { key: 'ctaTextColor', label: 'Button Text', defaultValue: '#ffffff' },
-                          { key: 'cartBadgeColor', label: 'Badge Color', defaultValue: '#4f46e5' },
-                        ].map(({ key, label, defaultValue }) => (
-                          <div key={key} className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                            <input
-                              type="color"
-                              value={config.headerData?.[key] ?? defaultValue}
+                        {/* Text Inputs */}
+                        {textFields.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Content</p>
+                            <div className="space-y-3">
+                              {textFields.map(key => {
+                                const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                                return (
+                                  <div key={key} className="bg-neutral-900/50 p-3 rounded-lg border border-neutral-700">
+                                    <label className="text-[10px] uppercase font-bold text-neutral-500 mb-2 block">{Meta.label}</label>
+                                    <input
+                                      type="text"
+                                      value={config.headerData?.[key] ?? ''}
+                                      onChange={(e) => onConfigChange({
+                                        ...config,
+                                        headerData: { ...config.headerData, [key]: e.target.value }
+                                      })}
+                                      className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 outline-none"
+                                      placeholder={`Enter ${Meta.label.toLowerCase()}...`}
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Colors */}
+                        {colorFields.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Colors & Style</p>
+                            <div className="grid grid-cols-2 gap-3">
+                              {colorFields.map(key => {
+                                const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                                return (
+                                  <div key={key} className="flex flex-col gap-1.5 bg-neutral-900/50 p-2.5 rounded-lg border border-neutral-700">
+                                    <span className="text-[10px] text-neutral-500 font-bold uppercase truncate">{Meta.label}</span>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="color"
+                                        value={config.headerData?.[key] ?? '#000000'}
+                                        onChange={(e) => onConfigChange({
+                                          ...config,
+                                          headerData: { ...config.headerData, [key]: e.target.value }
+                                        })}
+                                        className="w-6 h-6 rounded-full cursor-pointer border-0 bg-transparent shrink-0"
+                                      />
+                                      <input 
+                                        type="text"
+                                        value={config.headerData?.[key] ?? ''}
+                                        onChange={(e) => onConfigChange({
+                                          ...config,
+                                          headerData: { ...config.headerData, [key]: e.target.value }
+                                        })}
+                                        className="bg-transparent text-[10px] text-white font-mono w-full outline-none"
+                                        placeholder="#000000"
+                                      />
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Layout Controls (Always present if not in registry) */}
+                        <div className="space-y-3 pt-4 border-t border-neutral-700/50">
+                          <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Layout</p>
+                          <div className="bg-neutral-900/50 p-3 rounded-lg border border-neutral-700">
+                            <label className="text-[10px] uppercase font-bold text-neutral-500 mb-2 block">Content Width</label>
+                            <select
+                              value={config.headerData?.maxWidth ?? '7xl'}
                               onChange={(e) => onConfigChange({
                                 ...config,
-                                headerData: { ...config.headerData, [key]: e.target.value }
+                                headerData: { ...config.headerData, maxWidth: e.target.value }
                               })}
-                              className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                            />
-                            <span className="text-sm text-neutral-300">{label}</span>
+                              className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 outline-none"
+                            >
+                              <option value="5xl">Narrow</option>
+                              <option value="6xl">Medium</option>
+                              <option value="7xl">Wide</option>
+                              <option value="full">Full Width</option>
+                            </select>
                           </div>
-                        ))}
+                        </div>
                       </div>
-                      
-                      {/* Show/Hide CTA */}
-                      <button
-                        onClick={() => onConfigChange({
-                          ...config,
-                          headerData: { ...config.headerData, showCTA: !(config.headerData?.showCTA ?? true) }
-                        })}
-                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
-                          (config.headerData?.showCTA ?? true)
-                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        <span className="text-sm">{(config.headerData?.showCTA ?? true) ? 'Button Visible' : 'Button Hidden'}</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Luxe-specific Controls */}
-                  {(config.headerStyle === 'luxe') && (
-                    <div className="space-y-3 mb-6">
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Tagline</p>
-                      
-                      {/* Tagline Text */}
-                      <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <label className="text-sm text-neutral-300 mb-2 block">Tagline Text</label>
-                        <input
-                          type="text"
-                          value={config.headerData?.taglineText ?? 'Est. 2024 • Paris'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, taglineText: e.target.value }
-                          })}
-                          className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
-                          placeholder="Est. 2024 • Paris"
-                        />
-                      </div>
-                      
-                      {/* Accent Color */}
-                      <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <input
-                          type="color"
-                          value={config.headerData?.accentColor ?? '#d4af37'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, accentColor: e.target.value }
-                          })}
-                          className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                        />
-                        <span className="text-sm text-neutral-300">Accent Color (Gold)</span>
-                      </div>
-                      
-                      {/* Show/Hide Tagline */}
-                      <button
-                        onClick={() => onConfigChange({
-                          ...config,
-                          headerData: { ...config.headerData, showTagline: !(config.headerData?.showTagline ?? true) }
-                        })}
-                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
-                          (config.headerData?.showTagline ?? true)
-                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        <span className="text-sm">{(config.headerData?.showTagline ?? true) ? 'Tagline Visible' : 'Tagline Hidden'}</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Nebula-specific Controls */}
-                  {(config.headerStyle === 'nebula') && (
-                    <div className="space-y-3 mb-6">
-                      <p className="text-xs text-neutral-400 uppercase tracking-wide">Glass Effect</p>
-                      
-                      {/* Accent Color */}
-                      <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                        <input
-                          type="color"
-                          value={config.headerData?.accentColor ?? '#3b82f6'}
-                          onChange={(e) => onConfigChange({
-                            ...config,
-                            headerData: { ...config.headerData, accentColor: e.target.value }
-                          })}
-                          className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                        />
-                        <span className="text-sm text-neutral-300">Accent Color (Blue)</span>
-                      </div>
-                      
-                      {/* Show/Hide Indicator Dot */}
-                      <button
-                        onClick={() => onConfigChange({
-                          ...config,
-                          headerData: { ...config.headerData, showIndicatorDot: !(config.headerData?.showIndicatorDot ?? true) }
-                        })}
-                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors ${
-                          (config.headerData?.showIndicatorDot ?? true)
-                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                            : 'bg-neutral-900 border-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        <span className="text-sm">{(config.headerData?.showIndicatorDot ?? true) ? 'Indicator Dot Visible' : 'Indicator Dot Hidden'}</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Layout Controls */}
-                  <div className="space-y-3">
-                    <p className="text-xs text-neutral-400 uppercase tracking-wide">Layout</p>
-                    <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                      <button
-                        onClick={() => onConfigChange({
-                          ...config,
-                          headerData: { ...config.headerData, sticky: !(config.headerData?.sticky ?? true) }
-                        })}
-                        className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                          (config.headerData?.sticky ?? true)
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-neutral-700 text-neutral-400'
-                        }`}
-                      >
-                        {(config.headerData?.sticky ?? true) ? 'Sticky' : 'Static'}
-                      </button>
-                      <span className="text-sm text-neutral-400">Header position on scroll</span>
-                    </div>
-                    <div className="bg-neutral-900 p-3 rounded-lg border border-neutral-700">
-                      <label className="text-sm text-neutral-300 mb-2 block">Content Width</label>
-                      <select
-                        value={config.headerData?.maxWidth ?? '7xl'}
-                        onChange={(e) => onConfigChange({
-                          ...config,
-                          headerData: { ...config.headerData, maxWidth: e.target.value }
-                        })}
-                        className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
-                      >
-                        <option value="5xl">Narrow</option>
-                        <option value="6xl">Medium</option>
-                        <option value="7xl">Wide</option>
-                        <option value="full">Full Width</option>
-                      </select>
-                    </div>
-                  </div>
+                    );
+                  })()}
                 </div>
               </div>
             )}
@@ -6633,202 +6536,6 @@ Return ONLY the JSON object, no markdown.`;
   };
 
   // Header Preview Popup (renders actual header component)
-  const renderHeaderPreview = () => {
-    if (!previewingHeaderId) return null;
-
-    const HeaderComponent = HEADER_COMPONENTS[previewingHeaderId];
-    if (!HeaderComponent) return null;
-
-    // Mock data for preview
-    const mockLinks = [
-      { label: 'Shop', href: '#' },
-      { label: 'Collections', href: '#' },
-      { label: 'About', href: '#' },
-      { label: 'Contact', href: '#' }
-    ];
-
-    return (
-      <div 
-        className="fixed inset-0 z-[250] pointer-events-none"
-      >
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-full max-w-6xl pointer-events-auto">
-          <div className="bg-neutral-900/95 backdrop-blur-xl border-2 border-purple-500/50 rounded-xl shadow-2xl overflow-hidden animate-in slide-in-from-top-4 duration-200">
-            {/* Preview Label */}
-            <div className="bg-purple-600 px-4 py-2 text-white text-xs font-bold flex items-center justify-between">
-              <span>HEADER PREVIEW: {HEADER_OPTIONS.find(h => h.id === previewingHeaderId)?.name}</span>
-              <button 
-                onClick={() => setPreviewingHeaderId(null)}
-                className="p-1 hover:bg-white/20 rounded transition-colors"
-              >
-                <X size={14} />
-              </button>
-            </div>
-            
-            {/* Actual Header Component */}
-            <div className="bg-white">
-              <HeaderComponent
-                storeName={config.name || 'My Store'}
-                logoUrl={config.logoUrl}
-                logoHeight={config.logoHeight || 32}
-                links={mockLinks}
-                cartCount={3}
-                onOpenCart={() => {}}
-                onLinkClick={() => {}}
-                data={config.headerData}
-                primaryColor={config.primaryColor}
-                secondaryColor={config.secondaryColor}
-                headerBgColor={config.headerBgColor}
-                headerTextColor={config.headerTextColor}
-                headerOutlineColor={config.headerOutlineColor}
-                headerGlowEffect={config.headerGlowEffect}
-                headerButtonBgColor={config.headerButtonBgColor}
-                headerButtonTextColor={config.headerButtonTextColor}
-              />
-            </div>
-
-            {/* Color Customization Tools */}
-            <div className="bg-neutral-900 border-t border-neutral-700 p-4">
-              <h5 className="text-xs font-bold text-white mb-3 flex items-center gap-2">
-                <Palette size={14} className="text-purple-400" />
-                Customize Colors
-              </h5>
-              
-              <div className="grid grid-cols-3 gap-3">
-                {/* Background Color */}
-                <div>
-                  <label className="text-[10px] text-neutral-400 mb-1.5 block">Background</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="color" 
-                      value={config.headerBgColor || '#ffffff'}
-                      onChange={(e) => onConfigChange({ ...config, headerBgColor: e.target.value })}
-                      className="w-10 h-8 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
-                    />
-                    <input 
-                      type="text" 
-                      value={config.headerBgColor || '#ffffff'}
-                      onChange={(e) => onConfigChange({ ...config, headerBgColor: e.target.value })}
-                      className="flex-1 px-2 py-1 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
-                      placeholder="#ffffff"
-                    />
-                  </div>
-                </div>
-
-                {/* Text Color */}
-                <div>
-                  <label className="text-[10px] text-neutral-400 mb-1.5 block">Text</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="color" 
-                      value={config.headerTextColor || '#000000'}
-                      onChange={(e) => onConfigChange({ ...config, headerTextColor: e.target.value })}
-                      className="w-10 h-8 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
-                    />
-                    <input 
-                      type="text" 
-                      value={config.headerTextColor || '#000000'}
-                      onChange={(e) => onConfigChange({ ...config, headerTextColor: e.target.value })}
-                      className="flex-1 px-2 py-1 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
-                      placeholder="#000000"
-                    />
-                  </div>
-                </div>
-
-                {/* Outline Color */}
-                <div>
-                  <label className="text-[10px] text-neutral-400 mb-1.5 block">Outline</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="color" 
-                      value={config.headerOutlineColor || '#e5e5e5'}
-                      onChange={(e) => onConfigChange({ ...config, headerOutlineColor: e.target.value })}
-                      className="w-10 h-8 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
-                    />
-                    <input 
-                      type="text" 
-                      value={config.headerOutlineColor || '#e5e5e5'}
-                      onChange={(e) => onConfigChange({ ...config, headerOutlineColor: e.target.value })}
-                      className="flex-1 px-2 py-1 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
-                      placeholder="#e5e5e5"
-                    />
-                  </div>
-                </div>
-
-                {/* Button Background */}
-                <div>
-                  <label className="text-[10px] text-neutral-400 mb-1.5 block">Button BG</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="color" 
-                      value={config.headerButtonBgColor || config.primaryColor}
-                      onChange={(e) => onConfigChange({ ...config, headerButtonBgColor: e.target.value })}
-                      className="w-10 h-8 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
-                    />
-                    <input 
-                      type="text" 
-                      value={config.headerButtonBgColor || config.primaryColor}
-                      onChange={(e) => onConfigChange({ ...config, headerButtonBgColor: e.target.value })}
-                      className="flex-1 px-2 py-1 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
-                      placeholder={config.primaryColor}
-                    />
-                  </div>
-                </div>
-
-                {/* Button Text */}
-                <div>
-                  <label className="text-[10px] text-neutral-400 mb-1.5 block">Button Text</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="color" 
-                      value={config.headerButtonTextColor || '#ffffff'}
-                      onChange={(e) => onConfigChange({ ...config, headerButtonTextColor: e.target.value })}
-                      className="w-10 h-8 rounded border border-neutral-600 bg-neutral-800 cursor-pointer"
-                    />
-                    <input 
-                      type="text" 
-                      value={config.headerButtonTextColor || '#ffffff'}
-                      onChange={(e) => onConfigChange({ ...config, headerButtonTextColor: e.target.value })}
-                      className="flex-1 px-2 py-1 bg-neutral-800 border border-neutral-600 rounded text-xs text-white font-mono"
-                      placeholder="#ffffff"
-                    />
-                  </div>
-                </div>
-
-                {/* Glow Effect Toggle */}
-                <div>
-                  <label className="text-[10px] text-neutral-400 mb-1.5 block">Glow Effect</label>
-                  <button
-                    onClick={() => onConfigChange({ ...config, headerGlowEffect: !config.headerGlowEffect })}
-                    className={`w-full h-8 rounded border transition-all text-xs font-medium ${
-                      config.headerGlowEffect 
-                        ? 'bg-purple-600/20 border-purple-500 text-purple-400' 
-                        : 'bg-neutral-800 border-neutral-600 text-neutral-400'
-                    }`}
-                  >
-                    {config.headerGlowEffect ? 'Enabled' : 'Disabled'}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Apply Button */}
-            <div className="bg-neutral-950 px-4 py-3 flex justify-center border-t border-neutral-800">
-              <button
-                onClick={() => {
-                  onConfigChange({ ...config, headerStyle: previewingHeaderId as HeaderStyleId });
-                  setPreviewingHeaderId(null);
-                }}
-                className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold text-sm transition-colors flex items-center gap-2"
-              >
-                <Check size={16} />
-                Apply This Header
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const renderBlockArchitect = () => {
     if (!isArchitectOpen) return null;
@@ -10769,9 +10476,7 @@ Return ONLY the JSON object, no markdown.`;
     <div className="flex h-screen bg-nexus-black text-white font-sans overflow-hidden">
       {renderSidebar()}
       {renderInterfaceModal()}
-      {renderHeaderPreview()}
       {renderBlockArchitect()}
-      {renderHeaderModal()}
       {renderHeroModal()}
       {renderSystemBlockModal()}
       {renderFooterModal()}

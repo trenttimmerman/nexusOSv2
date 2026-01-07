@@ -41,7 +41,14 @@ export type HeaderStyleId =
   | 'ticker'
   | 'noir'
   | 'ghost'
-  | 'pilot';
+  | 'pilot'
+  | 'pathfinder'
+  | 'cypher'
+  | 'particle'
+  | 'lumina'
+  | 'aqua'
+  | 'refined'
+  | 'flow';
 
 export type HeroStyleId =
   | 'impact'
