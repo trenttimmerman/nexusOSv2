@@ -83,15 +83,25 @@ const HEADER_FIELD_METADATA: Record<string, { label: string; icon?: any; type: '
   ctaHoverColor: { label: 'Button Hover', type: 'color' },
   ctaTextColor: { label: 'Button Text', type: 'color' },
   taglineColor: { label: 'Tagline Text', type: 'color' },
-  utilityBarBackgroundColor: { label: 'Utility Bar', type: 'color' },
+  utilityBarBackgroundColor: { label: 'Utility Bar BG', type: 'color' },
+  utilityBarTextColor: { label: 'Utility Bar Text', type: 'color' },
   tickerBackgroundColor: { label: 'Ticker BG', type: 'color' },
   tickerTextColor: { label: 'Ticker Text', type: 'color' },
+  tickerBorderColor: { label: 'Ticker Border', type: 'color' },
   terminalPromptColor: { label: 'Prompt Color', type: 'color' },
   scanlineColor: { label: 'Scanline Color', type: 'color' },
+  showKeyboardShortcut: { label: 'Search Shortcut', type: 'toggle' },
   ctaText: { label: 'CTA Text', type: 'text' },
   taglineText: { label: 'Tagline Text', type: 'text' },
   tickerText: { label: 'Ticker Text', type: 'text' },
   searchPlaceholder: { label: 'Search Prompt', type: 'text' },
+  maxWidth: { label: 'Max Width', type: 'text' },
+  paddingX: { label: 'Horiz. Padding', type: 'text' },
+  paddingY: { label: 'Vert. Padding', type: 'text' },
+  blurIntensity: { label: 'Blur Strength', type: 'text' },
+  particleCount: { label: 'Particle Count', type: 'text' },
+  particleColor: { label: 'Particle Color', type: 'color' },
+  accentColorSecondary: { label: 'Secondary Accent', type: 'color' },
 };
 import {
   LayoutDashboard,
@@ -4678,6 +4688,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="border-t border-neutral-800 my-4"></div>
 
                 {/* Style & Layout Section */}
+                {(availableFields.includes('backgroundColor') || 
+                  availableFields.includes('accentColor') || 
+                  availableFields.includes('featureCardColor') || 
+                  availableFields.includes('alignment') || 
+                  availableFields.includes('padding') || 
+                  availableFields.includes('contentPosition') ||
+                  availableFields.includes('animation')) && (
                 <div>
                   <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                     <Palette size={14} /> Style & Layout
@@ -4872,11 +4889,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     )}
                   </div>
                 </div>
+                )}
 
                 {/* Divider */}
                 <div className="border-t border-neutral-800 my-4"></div>
 
                 {/* Product Link Section */}
+                {availableFields.includes('showFeaturedProduct') && (
                 <div>
                   <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                     <ShoppingBag size={14} /> Featured Product
@@ -4943,6 +4962,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     )}
                   </div>
                 </div>
+                )}
 
                 {/* Divider */}
                 <div className="border-t border-neutral-800 my-4"></div>

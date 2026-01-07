@@ -55,11 +55,32 @@ interface HeroProps {
 }
 
 export const HERO_FIELDS: Record<string, string[]> = {
-  impact: ['heading', 'badge', 'buttonText', 'secondaryButtonText', 'image', 'overlayOpacity', 'backgroundColor', 'textColor', 'alignment', 'padding', 'animation'],
-  split: ['heading', 'subheading', 'buttonText', 'image', 'overlayOpacity', 'contentPosition', 'animation'],
-  kinetik: ['heading', 'buttonText', 'marqueeText', 'image', 'overlayOpacity', 'accentColor', 'animation'],
-  grid: ['heading', 'subheading', 'buttonText', 'secondaryButtonText', 'imageBadge', 'featureCardTitle', 'featureCardSubtitle', 'featureCardColor', 'image', 'sideImage', 'overlayOpacity', 'animation'],
-  typographic: ['heading', 'subheading', 'topBadge', 'link1Label', 'link2Label', 'link3Label', 'link1Image', 'link2Image', 'link3Image', 'backgroundColor', 'animation']
+  impact: [
+    'heading', 'badge', 'buttonText', 'buttonLink', 'secondaryButtonText', 'secondaryButtonLink', 
+    'image', 'overlayOpacity', 'backgroundColor', 'textColor', 'alignment', 'padding', 'animation',
+    'showFeaturedProduct', 'featuredProductId', 'featuredProductPosition', 'showProductPrice'
+  ],
+  split: [
+    'heading', 'subheading', 'buttonText', 'buttonLink', 'image', 'overlayOpacity', 'contentPosition', 'animation',
+    'showFeaturedProduct', 'featuredProductId', 'featuredProductPosition', 'showProductPrice'
+  ],
+  kinetik: [
+    'heading', 'buttonText', 'buttonLink', 'marqueeText', 'image', 'overlayOpacity', 'accentColor', 'animation',
+    'showFeaturedProduct', 'featuredProductId', 'featuredProductPosition', 'showProductPrice'
+  ],
+  grid: [
+    'heading', 'subheading', 'buttonText', 'buttonLink', 'secondaryButtonText', 'secondaryButtonLink', 
+    'imageBadge', 'featureCardTitle', 'featureCardSubtitle', 'featureCardColor', 'image', 'sideImage', 'overlayOpacity', 'animation',
+    'showFeaturedProduct', 'featuredProductId', 'featuredProductPosition', 'showProductPrice'
+  ],
+  typographic: [
+    'heading', 'subheading', 'topBadge', 
+    'link1Label', 'link1Href', 'link1Image',
+    'link2Label', 'link2Href', 'link2Image',
+    'link3Label', 'link3Href', 'link3Image',
+    'backgroundColor', 'textColor', 'animation',
+    'showFeaturedProduct', 'featuredProductId', 'featuredProductPosition', 'showProductPrice'
+  ]
 };
 
 // --- EDITABLE HELPERS ---
@@ -450,7 +471,14 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data,
           />
         </div>
         <div className={`flex flex-col md:flex-row gap-4 ${alignment === 'left' ? 'justify-start' : alignment === 'right' ? 'justify-end' : 'justify-center'} items-center animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300`}>
-          <button className="px-8 py-4 bg-white text-black font-bold tracking-wide rounded-full hover:scale-105 transition-transform flex items-center gap-2">
+          <button 
+            onClick={() => {
+              if (isEditable) return;
+              const link = data?.buttonLink === 'external' ? data?.buttonExternalUrl : data?.buttonLink;
+              if (link) window.location.href = link;
+            }}
+            className="px-8 py-4 bg-white text-black font-bold tracking-wide rounded-full hover:scale-105 transition-transform flex items-center gap-2"
+          >
              <EditableText 
                  elementId={`editable-${blockId}-buttonText`}
                  tagName="span"
@@ -464,19 +492,29 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data,
              />
              <ArrowRight size={18} />
           </button>
-          <button className="px-8 py-4 bg-transparent border border-white/30 hover:bg-white/10 font-bold tracking-wide rounded-full transition-colors backdrop-blur-sm" style={{ color: textColor, borderColor: textColor }}>
-             <EditableText 
-                 elementId={`editable-${blockId}-secondaryButtonText`}
-                 tagName="span"
-                 value={secondaryButtonText}
-                 onChange={(val) => onUpdate && onUpdate({ secondaryButtonText: val })}
-                 onStyleChange={(style) => onUpdate && onUpdate({ secondary_button_style: style })}
-                 style={data?.secondary_button_style}
-                 isEditable={isEditable}
-                 placeholder="Secondary Button"
-                 onSelect={() => handleSelect('secondaryButtonText')}
-             />
-          </button>
+          {secondaryButtonText && (
+            <button 
+              onClick={() => {
+                if (isEditable) return;
+                const link = data?.secondaryButtonLink === 'external' ? data?.secondaryButtonExternalUrl : data?.secondaryButtonLink;
+                if (link) window.location.href = link;
+              }}
+              className="px-8 py-4 bg-transparent border border-white/30 hover:bg-white/10 font-bold tracking-wide rounded-full transition-colors backdrop-blur-sm" 
+              style={{ color: textColor, borderColor: textColor }}
+            >
+               <EditableText 
+                   elementId={`editable-${blockId}-secondaryButtonText`}
+                   tagName="span"
+                   value={secondaryButtonText}
+                   onChange={(val) => onUpdate && onUpdate({ secondaryButtonText: val })}
+                   onStyleChange={(style) => onUpdate && onUpdate({ secondary_button_style: style })}
+                   style={data?.secondary_button_style}
+                   isEditable={isEditable}
+                   placeholder="Secondary Button"
+                   onSelect={() => handleSelect('secondaryButtonText')}
+               />
+            </button>
+          )}
         </div>
       </div>
       
@@ -493,7 +531,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data,
     </section>
   );
 };// 2. Split (Modern 50/50)
-export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEditable, onUpdate, blockId, onSelectField, products }) => {
+export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEditable, onUpdate, blockId, onSelectField, onEditBlock, products }) => {
   const heading = data?.heading || storeName;
   const subheading = data?.subheading || "Elevating the standard of modern living through curated design.";
   const image = data?.image || "https://images.unsplash.com/photo-1529139574466-a302c27e3844?q=80&w=2070&auto=format&fit=crop";
@@ -504,6 +542,13 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
   const animClass = animation === 'fade' ? 'animate-in fade-in duration-1000' :
     animation === 'slide' ? 'animate-in slide-in-from-bottom-8 duration-1000' :
     animation === 'zoom' ? 'animate-in zoom-in-95 duration-1000' : '';
+
+  const handleSelect = (field: string) => {
+    if (isEditable) {
+      onEditBlock?.(blockId || '');
+      onSelectField?.(field);
+    }
+  };
 
   return (
     <section className={`w-full min-h-[80vh] flex flex-col ${contentPosition === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'} bg-white`}>
@@ -518,7 +563,7 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
                  style={data?.heading_style}
                  isEditable={isEditable} 
                  elementId={blockId ? `editable-${blockId}-heading` : undefined}
-                 onSelect={() => onSelectField?.('heading')}
+                 onSelect={() => handleSelect('heading')}
                />
              </div>
              <div className="text-xl text-neutral-500 max-w-md leading-relaxed">
@@ -530,11 +575,18 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
                  style={data?.subheading_style}
                  isEditable={isEditable} 
                  elementId={blockId ? `editable-${blockId}-subheading` : undefined}
-                 onSelect={() => onSelectField?.('subheading')}
+                 onSelect={() => handleSelect('subheading')}
                />
              </div>
           </div>
-          <button className="group flex items-center gap-3 text-lg font-medium text-black border-b-2 border-black pb-1 hover:gap-5 transition-all">
+          <button 
+            onClick={() => {
+              if (isEditable) return;
+              const link = data?.buttonLink === 'external' ? data?.buttonExternalUrl : data?.buttonLink;
+              if (link) window.location.href = link;
+            }}
+            className="group flex items-center gap-3 text-lg font-medium text-black border-b-2 border-black pb-1 hover:gap-5 transition-all"
+          >
              <EditableText 
                  tagName="span"
                  value={buttonText}
@@ -543,7 +595,7 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
                  style={data?.button_style}
                  isEditable={isEditable}
                  elementId={blockId ? `editable-${blockId}-buttonText` : undefined}
-                 onSelect={() => onSelectField?.('buttonText')}
+                 onSelect={() => handleSelect('buttonText')}
              />
              <ArrowRight size={20} />
           </button>
@@ -557,7 +609,7 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
              overlayOpacity={overlayOpacity}
              onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
              elementId={blockId ? `editable-${blockId}-image` : undefined}
-             onSelect={() => onSelectField?.('image')}
+             onSelect={() => handleSelect('image')}
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none"></div>
           
@@ -577,7 +629,7 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
 };
 
 // 3. Kinetik (High Energy, Streetwear)
-export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId, onSelectField }) => {
+export const HeroKinetik: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEditable, onUpdate, blockId, onSelectField, onEditBlock, products }) => {
   const heading = data?.heading || "NEXUS";
   const image = data?.image || "https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=2000&auto=format&fit=crop";
   const buttonText = data?.buttonText || "Shop Collection 01";
@@ -588,6 +640,13 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
   const animClass = animation === 'fade' ? 'animate-in fade-in duration-1000' :
     animation === 'slide' ? 'animate-in slide-in-from-bottom-8 duration-1000' :
     animation === 'zoom' ? 'animate-in zoom-in-95 duration-1000' : '';
+
+  const handleSelect = (field: string) => {
+    if (isEditable) {
+      onEditBlock?.(blockId || '');
+      onSelectField?.(field);
+    }
+  };
 
   return (
     <section className={`relative w-full h-[85vh] overflow-hidden flex flex-col border-b-4 border-black ${animClass}`} style={{ backgroundColor: accentColor }}>
@@ -608,7 +667,7 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
                  style={data?.marqueeText_style}
                  isEditable={isEditable}
                  elementId={blockId ? `editable-${blockId}-marqueeText` : undefined}
-                 onSelect={() => onSelectField?.('marqueeText')}
+                 onSelect={() => handleSelect('marqueeText')}
              />
          </div>
       </div>
@@ -624,7 +683,7 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
              isEditable={isEditable} 
              className="block"
              elementId={blockId ? `editable-${blockId}-heading` : undefined}
-             onSelect={() => onSelectField?.('heading')}
+             onSelect={() => handleSelect('heading')}
            />
          </div>
          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[500px] h-[450px] md:h-[600px] border-4 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] rotate-[-4deg] hover:rotate-0 transition-transform duration-500 z-10">
@@ -636,13 +695,20 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
                 overlayOpacity={overlayOpacity}
                 onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
                 elementId={blockId ? `editable-${blockId}-image` : undefined}
-                onSelect={() => onSelectField?.('image')}
+                onSelect={() => handleSelect('image')}
             />
          </div>
       </div>
 
       <div className="absolute bottom-12 left-0 w-full flex justify-center z-30">
-         <button className="bg-black text-xl font-black uppercase italic px-12 py-4 shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:translate-y-1 hover:shadow-none transition-all border-2 border-white" style={{ color: accentColor }}>
+         <button 
+            onClick={() => {
+              if (isEditable) return;
+              const link = data?.buttonLink === 'external' ? data?.buttonExternalUrl : data?.buttonLink;
+              if (link) window.location.href = link;
+            }}
+            className="bg-black text-xl font-black uppercase italic px-12 py-4 shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:translate-y-1 hover:shadow-none transition-all border-2 border-white" style={{ color: accentColor }}
+         >
             <EditableText 
                  tagName="span"
                  value={buttonText}
@@ -651,16 +717,27 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, data, isEditable, 
                  style={data?.button_style}
                  isEditable={isEditable}
                  elementId={blockId ? `editable-${blockId}-buttonText` : undefined}
-                 onSelect={() => onSelectField?.('buttonText')}
+                 onSelect={() => handleSelect('buttonText')}
              />
          </button>
       </div>
+
+      {/* Featured Product Overlay */}
+      {data?.showFeaturedProduct && (
+        <FeaturedProductOverlay
+          products={products}
+          productId={data.featuredProductId}
+          position={data.featuredProductPosition}
+          showPrice={data.showProductPrice !== false}
+          primaryColor={primaryColor}
+        />
+      )}
     </section>
   );
 };
 
 // 4. Grid (Masonry, Lifestyle, Collage)
-export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId, onSelectField }) => {
+export const HeroGrid: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEditable, onUpdate, blockId, onSelectField, onEditBlock, products }) => {
   const heading = data?.heading || storeName;
   const subheading = data?.subheading || "Curating the finest digital and physical goods for the forward-thinking creator.";
   const image = data?.image || "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop";
@@ -676,8 +753,15 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
     animation === 'slide' ? 'animate-in slide-in-from-bottom-8 duration-1000' :
     animation === 'zoom' ? 'animate-in zoom-in-95 duration-1000' : '';
 
+  const handleSelect = (field: string) => {
+    if (isEditable) {
+      onEditBlock?.(blockId || '');
+      onSelectField?.(field);
+    }
+  };
+
   return (
-    <section className={`w-full min-h-screen bg-neutral-50 p-4 pt-8 ${animClass}`}>
+    <section className={`w-full min-h-screen bg-neutral-50 p-4 pt-8 relative ${animClass}`}>
        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 h-auto md:h-[85vh]">
           {/* Main Text Block */}
           <div className="md:col-span-4 bg-white rounded-3xl p-8 flex flex-col justify-between shadow-sm">
@@ -694,7 +778,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      style={data?.heading_style}
                      isEditable={isEditable} 
                      elementId={blockId ? `editable-${blockId}-heading` : undefined}
-                     onSelect={() => onSelectField?.('heading')}
+                     onSelect={() => handleSelect('heading')}
                    />
                 </div>
                 <div className="text-neutral-500 font-medium">
@@ -706,12 +790,19 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      style={data?.subheading_style}
                      isEditable={isEditable} 
                      elementId={blockId ? `editable-${blockId}-subheading` : undefined}
-                     onSelect={() => onSelectField?.('subheading')}
+                     onSelect={() => handleSelect('subheading')}
                    />
                 </div>
              </div>
              <div className="space-y-2">
-                <button className="w-full py-4 bg-black text-white rounded-xl font-bold hover:bg-neutral-800 transition-colors">
+                <button 
+                  onClick={() => {
+                    if (isEditable) return;
+                    const link = data?.buttonLink === 'external' ? data?.buttonExternalUrl : data?.buttonLink;
+                    if (link) window.location.href = link;
+                  }}
+                  className="w-full py-4 bg-black text-white rounded-xl font-bold hover:bg-neutral-800 transition-colors"
+                >
                    <EditableText 
                      tagName="span"
                      value={buttonText}
@@ -720,10 +811,17 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      style={data?.button_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-buttonText` : undefined}
-                     onSelect={() => onSelectField?.('buttonText')}
+                     onSelect={() => handleSelect('buttonText')}
                    />
                 </button>
-                <button className="w-full py-4 bg-neutral-100 text-black rounded-xl font-bold hover:bg-neutral-200 transition-colors">
+                <button 
+                  onClick={() => {
+                    if (isEditable) return;
+                    const link = data?.secondaryButtonLink === 'external' ? data?.secondaryButtonExternalUrl : data?.secondaryButtonLink;
+                    if (link) window.location.href = link;
+                  }}
+                  className="w-full py-4 bg-neutral-100 text-black rounded-xl font-bold hover:bg-neutral-200 transition-colors"
+                >
                    <EditableText 
                      tagName="span"
                      value={secondaryButtonText}
@@ -732,7 +830,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      style={data?.secondary_button_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-secondaryButtonText` : undefined}
-                     onSelect={() => onSelectField?.('secondaryButtonText')}
+                     onSelect={() => handleSelect('secondaryButtonText')}
                    />
                 </button>
              </div>
@@ -748,7 +846,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                 overlayOpacity={overlayOpacity}
                 onOverlayOpacityChange={(val) => onUpdate && onUpdate({ overlayOpacity: val })}
                 elementId={blockId ? `editable-${blockId}-image` : undefined}
-                onSelect={() => onSelectField?.('image')}
+                onSelect={() => handleSelect('image')}
             />
              <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur px-4 py-2 rounded-lg text-xs font-bold pointer-events-none md:pointer-events-auto">
                 <EditableText 
@@ -759,6 +857,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      style={data?.imageBadge_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-imageBadge` : undefined}
+                     onSelect={() => handleSelect('imageBadge')}
                    />
              </div>
           </div>
@@ -772,7 +871,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                    isEditable={isEditable}
                    className="w-full h-full"
                    elementId={blockId ? `editable-${blockId}-sideImage` : undefined}
-                   onSelect={() => onSelectField?.('sideImage')}
+                   onSelect={() => handleSelect('sideImage')}
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors pointer-events-none"></div>
              </div>
@@ -786,6 +885,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      style={data?.featureCardTitle_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-featureCardTitle` : undefined}
+                     onSelect={() => handleSelect('featureCardTitle')}
                    />
                 </div>
                 <div className="relative z-10 font-medium opacity-80">
@@ -797,6 +897,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
                      style={data?.featureCardSubtitle_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-featureCardSubtitle` : undefined}
+                     onSelect={() => handleSelect('featureCardSubtitle')}
                    />
                 </div>
                 <ArrowRight className="absolute bottom-6 right-6 z-10 group-hover:translate-x-2 transition-transform" />
@@ -804,12 +905,33 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, data, isEditable, onU
              </div>
           </div>
        </div>
+
+      {/* Featured Product Overlay */}
+      {data?.showFeaturedProduct && (
+        <FeaturedProductOverlay
+          products={products}
+          productId={data.featuredProductId}
+          position={data.featuredProductPosition}
+          showPrice={data.showProductPrice !== false}
+          primaryColor={primaryColor}
+        />
+      )}
     </section>
   );
 };
 
 // 5. Typographic (Text First, Minimal)
-export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditable, onUpdate, blockId, onSelectField }) => {
+export const HeroTypographic: React.FC<HeroProps> = ({ 
+  storeName, 
+  primaryColor, 
+  data, 
+  isEditable, 
+  onUpdate, 
+  blockId, 
+  onSelectField, 
+  onEditBlock,
+  products 
+}) => {
   const heading = data?.heading || "We Build The Future Of Commerce";
   const subheading = data?.subheading || "Discover a collection inspired by the intersection of technology, fashion, and utility. Designed in Tokyo, worn worldwide.";
   const topBadge = data?.topBadge || "New Arrivals";
@@ -819,12 +941,20 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
   const bgColor = data?.style?.backgroundColor || '#ffffff';
   const textColor = data?.style?.textColor || '#000000';
   const animation = data?.animation || 'fade';
+
+  const handleSelect = (field: string) => {
+    if (isEditable) {
+      onEditBlock?.(blockId || '');
+      onSelectField?.(field);
+    }
+  };
+
   const animClass = animation === 'fade' ? 'animate-in fade-in duration-1000' :
     animation === 'slide' ? 'animate-in slide-in-from-bottom-8 duration-1000' :
     animation === 'zoom' ? 'animate-in zoom-in-95 duration-1000' : '';
   
   return (
-    <section className={`w-full min-h-[80vh] flex flex-col items-center justify-center py-20 ${animClass}`} style={{ backgroundColor: bgColor, color: textColor }}>
+    <section className={`relative w-full min-h-[80vh] flex flex-col items-center justify-center py-20 ${animClass}`} style={{ backgroundColor: bgColor, color: textColor }}>
        <div className="max-w-5xl mx-auto px-6 text-center">
           <div className="flex items-center justify-center gap-4 mb-8">
              <Star size={12} style={{ color: textColor, opacity: 0.4 }} />
@@ -837,7 +967,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      style={data?.topBadge_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-topBadge` : undefined}
-                     onSelect={() => onSelectField?.('topBadge')}
+                     onSelect={() => handleSelect('topBadge')}
                    />
              </span>
              <Star size={12} style={{ color: textColor, opacity: 0.4 }} />
@@ -852,7 +982,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                  style={data?.heading_style}
                  isEditable={isEditable} 
                  elementId={blockId ? `editable-${blockId}-heading` : undefined}
-                 onSelect={() => onSelectField?.('heading')}
+                 onSelect={() => handleSelect('heading')}
              />
           </div>
 
@@ -865,12 +995,22 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                  style={data?.subheading_style}
                  isEditable={isEditable} 
                  elementId={blockId ? `editable-${blockId}-subheading` : undefined}
-                 onSelect={() => onSelectField?.('subheading')}
+                 onSelect={() => handleSelect('subheading')}
              />
           </div>
 
           <div className="flex justify-center gap-6">
-             <a href="#" className="group flex flex-col items-center gap-2">
+             <div 
+                onClick={() => {
+                  if (isEditable) {
+                    handleSelect('link1Label');
+                    return;
+                  }
+                  const link = data?.link1Href === 'external' ? data?.link1ExternalUrl : data?.link1Href;
+                  if (link) window.location.href = link;
+                }}
+                className="group flex flex-col items-center gap-2 cursor-pointer"
+             >
                 <div className="w-48 h-64 rounded-lg overflow-hidden mb-2 relative" style={{ backgroundColor: textColor === '#ffffff' ? '#333' : '#f5f5f5' }}>
                    <EditableImage 
                       src={data?.link1Image || "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=1000&auto=format&fit=crop"}
@@ -878,7 +1018,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                       isEditable={isEditable}
                       className="w-full h-full"
                       elementId={blockId ? `editable-${blockId}-link1Image` : undefined}
-                      onSelect={() => onSelectField?.('link1Image')}
+                      onSelect={() => handleSelect('link1Image')}
                    />
                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
                 </div>
@@ -891,11 +1031,21 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      style={data?.link1Label_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-link1Label` : undefined}
-                     onSelect={() => onSelectField?.('link1Label')}
+                     onSelect={() => handleSelect('link1Label')}
                    />
                 </div>
-             </a>
-             <a href="#" className="group flex flex-col items-center gap-2 mt-12 md:mt-24">
+             </div>
+             <div 
+                onClick={() => {
+                  if (isEditable) {
+                    handleSelect('link2Label');
+                    return;
+                  }
+                  const link = data?.link2Href === 'external' ? data?.link2ExternalUrl : data?.link2Href;
+                  if (link) window.location.href = link;
+                }}
+                className="group flex flex-col items-center gap-2 mt-12 md:mt-24 cursor-pointer"
+             >
                 <div className="w-48 h-64 rounded-lg overflow-hidden mb-2 relative" style={{ backgroundColor: textColor === '#ffffff' ? '#333' : '#f5f5f5' }}>
                    <EditableImage 
                       src={data?.link2Image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop"}
@@ -903,7 +1053,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                       isEditable={isEditable}
                       className="w-full h-full"
                       elementId={blockId ? `editable-${blockId}-link2Image` : undefined}
-                      onSelect={() => onSelectField?.('link2Image')}
+                      onSelect={() => handleSelect('link2Image')}
                    />
                 </div>
                 <div className="text-sm font-bold pb-0.5" style={{ borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: textColor }}>
@@ -915,11 +1065,21 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      style={data?.link2Label_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-link2Label` : undefined}
-                     onSelect={() => onSelectField?.('link2Label')}
+                     onSelect={() => handleSelect('link2Label')}
                    />
                 </div>
-             </a>
-             <a href="#" className="group flex flex-col items-center gap-2">
+             </div>
+             <div 
+                onClick={() => {
+                  if (isEditable) {
+                    handleSelect('link3Label');
+                    return;
+                  }
+                  const link = data?.link3Href === 'external' ? data?.link3ExternalUrl : data?.link3Href;
+                  if (link) window.location.href = link;
+                }}
+                className="group flex flex-col items-center gap-2 cursor-pointer"
+             >
                 <div className="w-48 h-64 rounded-lg overflow-hidden mb-2 relative" style={{ backgroundColor: textColor === '#ffffff' ? '#333' : '#f5f5f5' }}>
                    <EditableImage 
                       src={data?.link3Image || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop"}
@@ -927,7 +1087,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                       isEditable={isEditable}
                       className="w-full h-full"
                       elementId={blockId ? `editable-${blockId}-link3Image` : undefined}
-                      onSelect={() => onSelectField?.('link3Image')}
+                      onSelect={() => handleSelect('link3Image')}
                    />
                 </div>
                 <div className="text-sm font-bold pb-0.5" style={{ borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: textColor }}>
@@ -939,11 +1099,22 @@ export const HeroTypographic: React.FC<HeroProps> = ({ storeName, data, isEditab
                      style={data?.link3Label_style}
                      isEditable={isEditable}
                      elementId={blockId ? `editable-${blockId}-link3Label` : undefined}
-                     onSelect={() => onSelectField?.('link3Label')}
+                     onSelect={() => handleSelect('link3Label')}
                    />
                 </div>
-             </a>
+             </div>
           </div>
+
+          {/* Featured Product Overlay */}
+          {data?.showFeaturedProduct && (
+            <FeaturedProductOverlay
+              products={products}
+              productId={data.featuredProductId}
+              position={data.featuredProductPosition}
+              showPrice={data.showProductPrice !== false}
+              primaryColor={primaryColor}
+            />
+          )}
        </div>
     </section>
   );

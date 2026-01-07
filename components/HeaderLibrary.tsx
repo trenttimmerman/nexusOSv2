@@ -50,6 +50,12 @@ export interface HeaderData {
   // Utility bar (for Horizon header)
   utilityBarBackgroundColor?: string;
   utilityBarTextColor?: string;
+  // Interactive effects
+  particleCount?: number;
+  particleColor?: string;
+  accentColorSecondary?: string;
+  terminalPromptColor?: string;
+  scanlineColor?: string;
   // Hover and effect controls
   buttonHoverBackgroundColor?: string;
   glowIntensity?: number; // 0-100 for opacity percentages
@@ -194,7 +200,8 @@ const NavItem: React.FC<{
   style?: React.CSSProperties;
   hoverColor?: string;
   onClick?: (href: string) => void;
-}> = ({ link, className, style, hoverColor, onClick }) => {
+  [key: string]: any;
+}> = ({ link, className, style, hoverColor, onClick, ...rest }) => {
   const [isHovered, setIsHovered] = React.useState(false);
   
   const handleClick = (e: React.MouseEvent) => {
@@ -209,6 +216,7 @@ const NavItem: React.FC<{
       href={link.href}
       onClick={handleClick}
       className={className}
+      {...rest}
       style={{
         ...style,
         color: isHovered && hoverColor ? hoverColor : style?.color,
@@ -2344,15 +2352,14 @@ export const HeaderPathfinder: React.FC<HeaderProps> = ({ storeName, logoUrl, lo
           )}
           <nav className="hidden md:flex items-center space-x-6">
             {links.map((link) => (
-              <a
+              <NavItem
                 key={link.href}
-                href={link.href}
-                onClick={(e) => { e.preventDefault(); onLinkClick?.(link.href); }}
+                link={link}
+                onClick={onLinkClick}
                 className="transition-colors"
                 style={{ color: settings.textColor }}
-              >
-                {link.label}
-              </a>
+                hoverColor={settings.textHoverColor}
+              />
             ))}
           </nav>
           <div className="flex items-center gap-2">
@@ -2454,16 +2461,15 @@ export const HeaderCypher: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
             )}
             <nav className="hidden md:flex items-center space-x-10">
               {links.map((link) => (
-                <a
+                <NavItem
                   key={link.href}
-                  href={link.href}
-                  onClick={(e) => { e.preventDefault(); onLinkClick?.(link.href); }}
+                  link={link}
+                  onClick={onLinkClick}
                   className={`text-lg font-semibold uppercase tracking-widest glitch-text-${glitchId}`}
                   data-text={link.label}
                   style={{ color: settings.textColor }}
-                >
-                  {link.label}
-                </a>
+                  hoverColor={settings.textHoverColor}
+                />
               ))}
             </nav>
             <div className="flex items-center gap-2">
@@ -2610,15 +2616,14 @@ export const HeaderParticle: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
             )}
             <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold">
               {links.map((link) => (
-                <a
+                <NavItem
                   key={link.href}
-                  href={link.href}
-                  onClick={(e) => { e.preventDefault(); onLinkClick?.(link.href); }}
+                  link={link}
+                  onClick={onLinkClick}
                   className="hover:opacity-80 transition-opacity"
                   style={{ color: settings.textColor }}
-                >
-                  {link.label}
-                </a>
+                  hoverColor={settings.textHoverColor}
+                />
               ))}
             </nav>
             <div className="flex items-center gap-2">
@@ -2722,15 +2727,14 @@ export const HeaderLumina: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
             )}
             <nav className="hidden md:flex items-center space-x-10 text-sm uppercase tracking-wider">
               {links.map((link) => (
-                <a
+                <NavItem
                   key={link.href}
-                  href={link.href}
-                  onClick={(e) => { e.preventDefault(); onLinkClick?.(link.href); }}
+                  link={link}
+                  onClick={onLinkClick}
                   className="hover:text-white transition-colors"
                   style={{ color: settings.textColor }}
-                >
-                  {link.label}
-                </a>
+                  hoverColor={settings.textHoverColor}
+                />
               ))}
             </nav>
             <div className="flex items-center gap-2">
@@ -2803,15 +2807,14 @@ export const HeaderAqua: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
             )}
             <nav className="hidden md:flex items-center space-x-10 text-sm font-medium">
               {links.map((link) => (
-                <a
+                <NavItem
                   key={link.href}
-                  href={link.href}
-                  onClick={(e) => { e.preventDefault(); onLinkClick?.(link.href); }}
+                  link={link}
+                  onClick={onLinkClick}
                   className="hover:opacity-70 transition-opacity"
                   style={{ color: settings.textColor }}
-                >
-                  {link.label}
-                </a>
+                  hoverColor={settings.textHoverColor}
+                />
               ))}
             </nav>
             <div className="flex items-center gap-2">
@@ -2883,14 +2886,13 @@ export const HeaderRefined: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
                   onMouseEnter={() => setActiveDropdown(link.href)}
                   onMouseLeave={() => setActiveDropdown(null)}
                 >
-                  <a
-                    href={link.href}
-                    onClick={(e) => { e.preventDefault(); onLinkClick?.(link.href); }}
+                  <NavItem
+                    link={link}
+                    onClick={onLinkClick}
                     className="transition-colors flex items-center h-full"
                     style={{ color: settings.textColor }}
-                  >
-                    {link.label}
-                  </a>
+                    hoverColor={settings.textHoverColor}
+                  />
                 </div>
               ))}
             </nav>
@@ -2931,14 +2933,15 @@ export const HeaderRefined: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
   const [expanded, setExpanded] = React.useState(false);
   const settings = { ...DEFAULTS, ...data };
+  const maxWidthClass = settings.maxWidth === 'full' ? 'max-w-full' : `max-w-${settings.maxWidth}`;
 
   return (
-    <header className="sticky top-0 z-[100] flex justify-center pointer-events-none pt-6">
+    <header className={`${settings.sticky ? 'sticky' : 'relative'} top-0 z-[100] flex justify-center pointer-events-none pt-6`}>
       <div 
-        className={`pointer-events-auto shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] overflow-hidden ${expanded ? 'w-[600px] h-auto rounded-3xl' : 'w-[400px] min-h-[3.5rem] py-2 rounded-full'}`}
+        className={`pointer-events-auto shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] overflow-hidden ${maxWidthClass} ${expanded ? 'h-auto rounded-3xl' : 'min-h-[3.5rem] py-2 rounded-full'}`}
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
-        style={{ backgroundColor: settings.backgroundColor, border: `1px solid ${settings.borderColor}` }}
+        style={{ backgroundColor: settings.backgroundColor, border: `1px solid ${settings.borderColor}`, width: expanded ? '600px' : '400px' }}
       >
         <div className="w-full flex items-center justify-between px-6">
            <div className="flex items-center gap-2 py-1">
@@ -2961,7 +2964,14 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
              <div className="flex flex-col gap-3">
                 <span className="text-xs font-bold uppercase tracking-wider opacity-50" style={{ color: settings.textColor }}>Navigation</span>
                 {(links || []).map(l => (
-                  <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-lg font-medium transition-colors" style={{ color: settings.textColor }} />
+                  <NavItem 
+                    key={l.label} 
+                    link={l} 
+                    onClick={onLinkClick} 
+                    className="text-lg font-medium transition-colors" 
+                    style={{ color: settings.textColor }} 
+                    hoverColor={settings.textHoverColor}
+                  />
                 ))}
              </div>
              <div className="flex flex-col gap-3">
@@ -2995,7 +3005,14 @@ export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
       
       <nav className="flex flex-col gap-6 flex-1">
          {(links || []).map(l => (
-           <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-lg font-medium hover:pl-2 transition-all duration-300" style={{ color: settings.textColor }} />
+           <NavItem 
+            key={l.label} 
+            link={l} 
+            onClick={onLinkClick} 
+            className="text-lg font-medium hover:pl-2 transition-all duration-300" 
+            style={{ color: settings.textColor }} 
+            hoverColor={settings.textHoverColor}
+           />
          ))}
       </nav>
 
@@ -3028,6 +3045,7 @@ export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 export const HeaderFlow: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
   const [scrolled, setScrolled] = React.useState(false);
   const settings = { ...DEFAULTS, ...data };
+  const maxWidthClass = settings.maxWidth === 'full' ? 'max-w-full' : `max-w-${settings.maxWidth}`;
 
   React.useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -3041,12 +3059,19 @@ export const HeaderFlow: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
         backgroundColor: scrolled ? settings.backgroundColor : 'transparent',
         borderBottom: scrolled ? `1px solid ${settings.borderColor}` : '1px solid transparent'
       }}>
-      <div className={`max-w-7xl mx-auto px-6 flex items-center justify-between transition-all duration-500 ${scrolled ? 'scale-95' : 'scale-100'}`}>
+      <div className={`${maxWidthClass} mx-auto px-6 flex items-center justify-between transition-all duration-500 ${scrolled ? 'scale-95' : 'scale-100'}`}>
         <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-2xl font-bold tracking-tighter" style={{ color: settings.textColor }} />
         
         <nav className="hidden md:flex gap-8">
           {(links || []).map(l => (
-            <NavItem key={l.label} link={l} onClick={onLinkClick} className="text-sm font-medium transition-colors" style={{ color: settings.textColor }} />
+            <NavItem 
+              key={l.label} 
+              link={l} 
+              onClick={onLinkClick} 
+              className="text-sm font-medium transition-colors" 
+              style={{ color: settings.textColor }} 
+              hoverColor={settings.textHoverColor}
+            />
           ))}
         </nav>
 
@@ -3161,6 +3186,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'tickerText', 'tickerBackgroundColor', 'tickerTextColor', 'tickerBorderColor',
     'sticky', 'maxWidth'
   ],
   protocol: [
@@ -3173,7 +3199,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart', 'showSocial',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth', 'utilityBarBackgroundColor'
+    'sticky', 'maxWidth', 'utilityBarBackgroundColor', 'utilityBarTextColor'
   ],
   terminal: [
     'showSearch', 'showAccount', 'showCart',
@@ -3188,10 +3214,10 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'sticky', 'maxWidth'
   ],
   venture: [
-    'showSearch', 'showAccount', 'showCart',
+    'showSearch', 'showAccount', 'showCart', 'showKeyboardShortcut',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'searchPlaceholder'
   ],
   metro: [
     'showSearch', 'showAccount', 'showCart',
@@ -3247,14 +3273,59 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth', 'searchPlaceholder'
   ],
-  pathfinder: ['backgroundColor', 'borderColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
-  cypher: ['backgroundColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
-  particle: ['backgroundColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
-  lumina: ['backgroundColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
-  aqua: ['backgroundColor', 'borderColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
-  refined: ['backgroundColor', 'borderColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
-  orbit: ['backgroundColor', 'borderColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor'],
-  studio: ['backgroundColor', 'borderColor', 'textColor', 'showSearch', 'showCart'],
-  flow: ['backgroundColor', 'borderColor', 'textColor', 'cartBadgeColor', 'cartBadgeTextColor', 'sticky'],
+  pathfinder: [
+    'showSearch', 'showAccount', 'showCart',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  cypher: [
+    'showSearch', 'showAccount', 'showCart',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor', 'accentColor', 'accentColorSecondary',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  particle: [
+    'showSearch', 'showAccount', 'showCart',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'particleCount', 'particleColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  lumina: [
+    'showSearch', 'showAccount', 'showCart',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor', 'accentColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  aqua: [
+    'showSearch', 'showAccount', 'showCart',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  refined: [
+    'showSearch', 'showAccount', 'showCart',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  orbit: [
+    'showCart',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
+  studio: [
+    'showSearch', 'showCart',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'sticky', 'maxWidth'
+  ],
+  flow: [
+    'showCart',
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'cartBadgeColor', 'cartBadgeTextColor',
+    'sticky', 'maxWidth'
+  ],
 };
 

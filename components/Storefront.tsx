@@ -456,6 +456,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
               isEditable={isEditable}
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
               onSelectField={onSelectField}
+              onEditBlock={onEditBlock}
               blockId={block.id}
             />
           ) : null;
