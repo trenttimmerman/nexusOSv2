@@ -4551,10 +4551,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     );
   };
 
-  // --- HERO MODAL (Footer-style layout with sticky preview) ---
-  const [warningFields, setWarningFields] = useState<string[]>([]);
-  const [pendingVariant, setPendingVariant] = useState<string | null>(null);
-
   const renderHeroModal = () => {
     if (!isHeroModalOpen) return null;
 
