@@ -71,6 +71,7 @@ const HEADER_FIELD_METADATA: Record<string, { label: string; icon?: any; type: '
   showLogoBadge: { label: 'Logo Badge', type: 'toggle' },
   showMenu: { label: 'Menu List', type: 'toggle' },
   showIndicatorDot: { label: 'Active Dot', type: 'toggle' },
+  navActiveStyle: { label: 'Active Style', type: 'select' as any },
   sticky: { label: 'Sticky Header', type: 'toggle' },
   backgroundColor: { label: 'Background', type: 'color' },
   borderColor: { label: 'Border', type: 'color' },
@@ -197,6 +198,9 @@ import {
   Star,
   GripVertical,
   Lightbulb,
+  Database,
+  Filter,
+  Columns as ColumnsIcon,
   Circle,
   Lock,
   Unlock,
@@ -485,7 +489,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onLogout,
   userRole,
   storeId,
-  onSwitchStore
+  onSwitchStore,
+  categories = [],
+  collections = []
 }) => {
 
   // Helper to update config partially
@@ -497,6 +503,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [tenants, setTenants] = useState<any[]>([]);
   const [isLoadingTenants, setIsLoadingTenants] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [mockActiveNav, setMockActiveNav] = useState('/shop');
   const [isCreateTenantOpen, setIsCreateTenantOpen] = useState(false);
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
@@ -863,6 +870,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [systemModalType, setSystemModalType] = useState<'hero' | 'grid' | 'footer' | null>(null);
   const [isFooterModalOpen, setIsFooterModalOpen] = useState(false);
   const [isHeroModalOpen, setIsHeroModalOpen] = useState(false);
+  const [isGridModalOpen, setIsGridModalOpen] = useState(false);
   
   // Auto-focus field in Hero Studio when activeField changes
   useEffect(() => {
@@ -4220,6 +4228,333 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [warningFields, setWarningFields] = useState<string[]>([]);
   const [pendingVariant, setPendingVariant] = useState<string | null>(null);
 
+  // --- GRID MODAL ---
+  const [gridWarningFields, setGridWarningFields] = useState<string[]>([]);
+  const [gridPendingVariant, setGridPendingVariant] = useState<string | null>(null);
+
+  const renderGridModal = () => {
+    if (!isGridModalOpen) return null;
+
+    // Get current grid block
+    const activeBlock = activePage?.blocks?.find(b => b.id === selectedBlockId);
+    if (!activeBlock || activeBlock.type !== 'system-grid') return null;
+
+    const currentVariant = activeBlock.variant || config.productCardStyle || 'classic';
+    const gridData = activeBlock.data || {};
+    const CardComponent = PRODUCT_CARD_COMPONENTS[currentVariant as ProductCardStyleId] || PRODUCT_CARD_COMPONENTS['classic'];
+
+    // Handle variant change
+    const handleGridStyleChange = (newVariant: string) => {
+      // For grid cards, we usually don't lose data since it's common (heading/subheading)
+      setLocalPages(prev => prev.map(p => {
+        if (p.id !== activePage.id) return p;
+        return {
+          ...p,
+          blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: newVariant } : b)
+        };
+      }));
+      setHasUnsavedChanges(true);
+    };
+
+    // Update grid data
+    const updateGridData = (updates: any) => {
+      setLocalPages(prev => prev.map(p => {
+        if (p.id !== activePage.id) return p;
+        return {
+          ...p,
+          blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, data: { ...b.data, ...updates } } : b)
+        };
+      }));
+      setHasUnsavedChanges(true);
+    };
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+          {/* Modal Header */}
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-600/20 rounded-lg">
+                <Grid size={20} className="text-green-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold">Product Grid Studio</h3>
+                <p className="text-xs text-neutral-500">Configure your product display engine</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => { setIsGridModalOpen(false); setGridWarningFields([]); setGridPendingVariant(null); }} 
+              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Modal Content - Side by Side */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* LEFT PANEL - Editing Tools (30%) */}
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative">
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                {/* 1. Card Style Selection */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Palette size={14} /> Card Styles
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {PRODUCT_CARD_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => handleGridStyleChange(opt.id)}
+                        className={`text-left p-3 rounded-lg border transition-all relative ${currentVariant === opt.id
+                          ? 'border-green-500 bg-green-500/10 ring-2 ring-green-500/50'
+                          : 'border-neutral-800 hover:border-neutral-600 bg-neutral-900'
+                        }`}
+                      >
+                        <span className={`text-sm font-bold block ${currentVariant === opt.id ? 'text-green-400' : 'text-white'}`}>
+                          {opt.name}
+                        </span>
+                        <span className="text-[10px] text-neutral-500 block mt-0.5">{opt.description}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t border-neutral-800 my-4"></div>
+
+                {/* 2. Content & Copy */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Type size={14} /> Header Branding
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Section Title</label>
+                      <input
+                        type="text"
+                        value={gridData.heading || ''}
+                        onChange={(e) => updateGridData({ heading: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        placeholder="e.g., Best Sellers"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Subtitle</label>
+                      <textarea
+                        value={gridData.subheading || ''}
+                        onChange={(e) => updateGridData({ subheading: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none resize-none"
+                        rows={2}
+                        placeholder="Describe this collection..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-neutral-800 my-4"></div>
+
+                {/* 3. Product Sourcing */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Layers size={14} /> Product Source
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Source Type</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { id: 'all', label: 'All Products', icon: Package },
+                          { id: 'category', label: 'By Category', icon: Tag },
+                          { id: 'collection', label: 'Collection', icon: Layers },
+                          { id: 'manual', label: 'Manual Pick', icon: Plus }
+                        ].map(s => (
+                          <button
+                            key={s.id}
+                            onClick={() => updateGridData({ productSource: s.id })}
+                            className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border text-xs font-medium transition-colors ${
+                              (gridData.productSource || 'all') === s.id
+                                ? 'bg-green-500/20 border-green-500/50 text-green-400'
+                                : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
+                            }`}
+                          >
+                            <s.icon size={14} />
+                            <span>{s.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {gridData.productSource === 'category' && (
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Select Category</label>
+                        <select
+                          value={gridData.productCategory || ''}
+                          onChange={(e) => updateGridData({ productCategory: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="">Choose Category...</option>
+                          {[...new Set(products.map(p => p.category))].filter(Boolean).map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {gridData.productSource === 'collection' && (
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Select Collection</label>
+                        <select
+                          value={gridData.productCollection || ''}
+                          onChange={(e) => updateGridData({ productCollection: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="">Choose Collection...</option>
+                          {collections.map(col => (
+                            <option key={col.id} value={col.id}>{col.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="border-t border-neutral-800 my-4"></div>
+
+                {/* 4. Display Settings */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Settings size={14} /> Layout Settings
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs text-neutral-400">Columns (Desktop)</label>
+                        <span className="text-xs text-green-500 font-bold">{gridData.columns || 4}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        {[2, 3, 4, 5, 6].map(num => (
+                          <button
+                            key={num}
+                            onClick={() => updateGridData({ columns: num })}
+                            className={`flex-1 py-1.5 rounded-md border text-xs transition-colors ${
+                              (gridData.columns || 4) === num
+                                ? 'bg-green-500/20 border-green-500 text-green-400'
+                                : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
+                            }`}
+                          >
+                            {num}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 bg-neutral-900/50 rounded-lg border border-neutral-700">
+                      <div className="flex flex-col">
+                        <span className="text-sm text-white font-medium">Show Filters</span>
+                        <span className="text-[10px] text-neutral-500">Allow customers to filter by category</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={gridData.showFilters || false}
+                        onChange={(e) => updateGridData({ showFilters: e.target.checked })}
+                        className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 bg-neutral-900/50 rounded-lg border border-neutral-700">
+                      <div className="flex flex-col">
+                        <span className="text-sm text-white font-medium">Show Sorting</span>
+                        <span className="text-[10px] text-neutral-500">Price, Featured, Newest</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={gridData.showSort !== false}
+                        onChange={(e) => updateGridData({ showSort: e.target.checked })}
+                        className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer with Done button */}
+              <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0">
+                <button 
+                  onClick={() => setIsGridModalOpen(false)}
+                  className="w-full px-6 py-2.5 bg-green-600 hover:bg-green-500 rounded-lg font-bold text-sm transition-colors text-white"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT PANEL - Live Preview (70%) */}
+            <div className="flex-1 bg-neutral-800 flex flex-col">
+              <div className="p-3 border-b border-neutral-700 bg-neutral-900 flex items-center justify-between shrink-0">
+                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Product Grid Preview</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                  <span className="text-[10px] text-neutral-500">Updates instantly</span>
+                </div>
+              </div>
+              <div className="flex-1 overflow-auto bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px] p-8">
+                <div className="bg-white min-h-full rounded-xl shadow-2xl p-8 overflow-hidden">
+                  <div className="mb-8">
+                    <h2 className="text-3xl font-black text-neutral-900 mb-2">{gridData.heading || 'Latest Collection.'}</h2>
+                    <p className="text-neutral-500 max-w-lg">{gridData.subheading || 'Browse our newest arrivals and curated essentials.'}</p>
+                  </div>
+                  
+                  {/* Grid Preview Logic */}
+                  {(() => {
+                    let previewProducts = [...products];
+                    if (gridData.productSource === 'category' && gridData.productCategory) {
+                      previewProducts = previewProducts.filter(p => p.category === gridData.productCategory);
+                    } else if (gridData.productSource === 'collection' && gridData.productCollection) {
+                      const col = collections.find(c => c.id === gridData.productCollection);
+                      if (col) {
+                        if (col.type === 'manual' && col.product_ids) {
+                          previewProducts = col.product_ids.map(id => products.find(p => p.id === id)).filter(Boolean) as Product[];
+                        } else if (col.conditions?.category_id) {
+                          previewProducts = previewProducts.filter(p => p.category_id === col.conditions?.category_id);
+                        }
+                      }
+                    }
+
+                    const cols = gridData.columns || 4;
+                    
+                    return (
+                      <div className={`grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-${cols}`}>
+                        {previewProducts.length > 0 ? (
+                          previewProducts.slice(0, cols * 2).map((product, idx) => (
+                            <CardComponent
+                              key={product.id || idx}
+                              product={product}
+                              onAddToCart={() => {}}
+                              primaryColor={config.primaryColor}
+                            />
+                          ))
+                        ) : (
+                          <div className="col-span-full py-20 text-center bg-neutral-50 rounded-2xl border-2 border-dashed border-neutral-200">
+                            <Package className="mx-auto text-neutral-300 mb-4" size={48} />
+                            <p className="text-neutral-500 font-medium">No products found in this selection</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // --- HERO MODAL (Footer-style layout with sticky preview) ---
+  const [warningFields, setWarningFields] = useState<string[]>([]);
+  const [pendingVariant, setPendingVariant] = useState<string | null>(null);
+
   const renderHeroModal = () => {
     if (!isHeroModalOpen) return null;
 
@@ -5531,13 +5866,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           logoUrl={config.logoUrl}
                           logoHeight={config.logoHeight || 32}
                           links={[
-                            { label: 'Shop', href: '/shop', active: false },
-                            { label: 'About', href: '/about', active: false },
-                            { label: 'Contact', href: '/contact', active: false },
+                            { label: 'Shop', href: '/shop', active: mockActiveNav === '/shop' },
+                            { label: 'About', href: '/about', active: mockActiveNav === '/about' },
+                            { label: 'Contact', href: '/contact', active: mockActiveNav === '/contact' },
                           ]}
                           cartCount={2}
                           onOpenCart={() => {}}
-                          onLinkClick={() => {}}
+                          onLinkClick={(href) => setMockActiveNav(href)}
                           data={config.headerData}
                         />
                       );
@@ -5585,10 +5920,49 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     const fields = HEADER_FIELDS[config.headerStyle || 'canvas'] || [];
                     const toggleFields = fields.filter(f => f.startsWith('show') || f === 'sticky');
                     const colorFields = fields.filter(f => f.toLowerCase().includes('color') || f.toLowerCase().includes('bg'));
-                    const textFields = fields.filter(f => !toggleFields.includes(f) && !colorFields.includes(f));
+                    const textFields = fields.filter(f => !toggleFields.includes(f) && !colorFields.includes(f) && f !== 'navActiveStyle');
 
                     return (
                       <div className="space-y-6">
+                        {/* Navigation Style Selector */}
+                        {fields.includes('navActiveStyle') && (
+                          <div className="space-y-3">
+                            <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Active Indicator Mode</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              {[
+                                { id: 'none', label: 'None' },
+                                { id: 'dot', label: 'Pulsing Dot' },
+                                { id: 'underline', label: 'Smooth Underline' },
+                                { id: 'capsule', label: 'Cloud Capsule' },
+                                { id: 'glow', label: 'Neon Glow' },
+                                { id: 'brutalist', label: 'The Brutalist' },
+                                { id: 'minimal', label: 'The Minimalist' },
+                                { id: 'overline', label: 'Top Line' },
+                                { id: 'double', label: 'Double Line' },
+                                { id: 'bracket', label: 'Box Brackets' },
+                                { id: 'highlight', label: 'Marker' },
+                                { id: 'skewed', label: 'Parallelogram' },
+                              ].map(opt => (
+                                <button
+                                  key={opt.id}
+                                  onClick={() => onConfigChange({
+                                    ...config,
+                                    headerData: { ...config.headerData, navActiveStyle: opt.id as any }
+                                  })}
+                                  className={`px-3 py-2 rounded-lg text-left transition-all border ${
+                                    (config.headerData?.navActiveStyle || 'dot') === opt.id
+                                      ? 'bg-blue-500 border-blue-400 text-white font-bold shadow-lg shadow-blue-500/20'
+                                      : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-500'
+                                  }`}
+                                >
+                                  <div className="text-[10px] opacity-70 mb-0.5">{opt.id === (config.headerData?.navActiveStyle || 'dot') ? 'Active' : 'Style'}</div>
+                                  <div className="text-xs truncate">{opt.label}</div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                         {/* Toggles */}
                         {toggleFields.length > 0 && (
                           <div className="space-y-3">
@@ -8112,7 +8486,7 @@ Return ONLY the JSON object, no markdown.`;
                       </button>
                       <button 
                         onClick={() => {
-                          setActivePageId(page.id);
+                          onSetActivePage(page.id);
                           setShowNavBuilder(false);
                         }}
                         className="p-1.5 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded"
@@ -8671,7 +9045,7 @@ Return ONLY the JSON object, no markdown.`;
         return <ShippingManager storeId={storeId || null} />;
 
       case AdminTab.DESIGN:
-        const isAnyModalOpen = isHeaderModalOpen || isHeroModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
+        const isAnyModalOpen = isHeaderModalOpen || isHeroModalOpen || isGridModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
         return (
           <div className="flex h-full w-full bg-neutral-950 overflow-hidden">
             {/* LEFT COLUMN: EDITOR */}
@@ -8992,7 +9366,7 @@ Return ONLY the JSON object, no markdown.`;
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       if (block.type === 'system-hero') { setSelectedBlockId(block.id); setIsHeroModalOpen(true); }
-                                      else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setSystemModalType('grid'); setIsSystemModalOpen(true); }
+                                      else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setIsGridModalOpen(true); }
                                       else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
                                       else if (block.type.startsWith('system-')) { 
                                         // All other system blocks: just select them to open UniversalEditor
@@ -9276,11 +9650,49 @@ Return ONLY the JSON object, no markdown.`;
                       products={products}
                       pages={localPages}
                       activePageId={activePageId}
+                      onNavigate={(idOrPath) => {
+                        console.log('[DesignerPreview] Navigating to:', idOrPath);
+                        if (typeof idOrPath === 'string') {
+                          // Handle explicit page paths
+                          if (idOrPath.startsWith('/pages/')) {
+                            const slug = idOrPath.replace('/pages/', '');
+                            const page = localPages.find(p => p.slug.replace(/^\//, '') === slug.replace(/^\//, ''));
+                            if (page) { onSetActivePage(page.id); return; }
+                          }
+                          
+                          // Handle home path
+                          if (idOrPath === '/' || idOrPath === '/store' || idOrPath === '') {
+                            const home = localPages.find(p => p.type === 'home');
+                            if (home) { onSetActivePage(home.id); return; }
+                          }
+
+                          // Handle product paths (even if not fully supported in preview, let's try to match)
+                          if (idOrPath.startsWith('/products/')) {
+                             // Stay on current page but log it, or we could add product view state later
+                             console.log('[DesignerPreview] Product links not yet fully supported in preview');
+                             return;
+                          }
+
+                          // Fallback: try to match any slug in the path
+                          if (idOrPath.includes('/')) {
+                            const slug = idOrPath.split('/').pop() || '';
+                            const page = localPages.find(p => p.slug.replace(/^\//, '') === slug.replace(/^\//, ''));
+                            if (page) { onSetActivePage(page.id); return; }
+                          }
+                        }
+                        
+                        // Otherwise it's likely already a page ID
+                        onSetActivePage(idOrPath);
+                      }}
                       previewBlock={previewBlock}
                       activeBlockId={selectedBlockId}
                       onUpdateBlock={updateActiveBlockData}
                       onEditBlock={(blockId) => {
                         setSelectedBlockId(blockId);
+                        const block = activePage.blocks.find(b => b.id === blockId);
+                        if (block?.type === 'system-hero') setIsHeroModalOpen(true);
+                        else if (block?.type === 'system-grid') setIsGridModalOpen(true);
+                        
                         // Show first-edit hint if this is user's first time clicking a section
                         if (!hasSeenFirstEditHint) {
                           setShowFirstEditHint(true);
@@ -9303,7 +9715,7 @@ Return ONLY the JSON object, no markdown.`;
                         if (!block) return;
                         setSelectedBlockId(blockId);
                         if (block.type === 'system-hero') { setIsHeroModalOpen(true); }
-                        else if (block.type === 'system-grid') { setSystemModalType('grid'); setIsSystemModalOpen(true); }
+                        else if (block.type === 'system-grid') { setIsGridModalOpen(true); }
                         else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
                         else if (block.type.startsWith('system-')) {
                           // Other system blocks - UniversalEditor already opens via setSelectedBlockId
@@ -10529,6 +10941,7 @@ Return ONLY the JSON object, no markdown.`;
       {renderInterfaceModal()}
       {renderBlockArchitect()}
       {renderHeroModal()}
+      {renderGridModal()}
       {renderSystemBlockModal()}
       {renderFooterModal()}
       {renderAddSectionLibrary()}

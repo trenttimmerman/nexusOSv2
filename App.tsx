@@ -26,7 +26,9 @@ const StorefrontWrapper = () => {
   if (loading) return <LoadingScreen />;
 
   // Resolve Active Page ID from URL Slug
-  let activePageId = 'home';
+  const homePage = pages.find(p => p.type === 'home' || p.slug === '/' || p.slug === '');
+  let activePageId = homePage?.id || 'home';
+  
   if (slug) {
     // Try to find page by slug (handling both with and without leading slash)
     const foundPage = pages.find(p => 
