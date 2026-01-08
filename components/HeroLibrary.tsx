@@ -551,7 +551,7 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
   };
 
   return (
-    <section className={`w-full min-h-[80vh] flex flex-col ${contentPosition === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'} bg-white`}>
+    <section className={`w-full min-h-[80vh] flex flex-col ${contentPosition === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'} bg-white relative group/hero`}>
        <div className={`w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center items-start border-b md:border-b-0 ${contentPosition === 'right' ? 'md:border-l' : 'md:border-r'} border-neutral-200 ${animClass}`}>
           <div className="mb-8">
              <div className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-6 text-neutral-900">
@@ -612,18 +612,18 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
              onSelect={() => handleSelect('image')}
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none"></div>
-          
-          {/* Featured Product Overlay */}
-          {data?.showFeaturedProduct && (
-            <FeaturedProductOverlay
-              products={products}
-              productId={data.featuredProductId}
-              position={data.featuredProductPosition}
-              showPrice={data.showProductPrice !== false}
-              primaryColor={primaryColor}
-            />
-          )}
        </div>
+
+       {/* Featured Product Overlay */}
+       {data?.showFeaturedProduct && (
+         <FeaturedProductOverlay
+           products={products}
+           productId={data.featuredProductId}
+           position={data.featuredProductPosition}
+           showPrice={data.showProductPrice !== false}
+           primaryColor={primaryColor}
+         />
+       )}
     </section>
   );
 };
@@ -1104,18 +1104,18 @@ export const HeroTypographic: React.FC<HeroProps> = ({
                 </div>
              </div>
           </div>
-
-          {/* Featured Product Overlay */}
-          {data?.showFeaturedProduct && (
-            <FeaturedProductOverlay
-              products={products}
-              productId={data.featuredProductId}
-              position={data.featuredProductPosition}
-              showPrice={data.showProductPrice !== false}
-              primaryColor={primaryColor}
-            />
-          )}
        </div>
+
+       {/* Featured Product Overlay */}
+       {data?.showFeaturedProduct && (
+         <FeaturedProductOverlay
+           products={products}
+           productId={data.featuredProductId}
+           position={data.featuredProductPosition}
+           showPrice={data.showProductPrice !== false}
+           primaryColor={primaryColor}
+         />
+       )}
     </section>
   );
 };
@@ -1133,5 +1133,5 @@ export const HERO_OPTIONS = [
   { id: 'split', name: 'Side by Side', description: 'Image on one side, text on other - balanced and professional', date: '2024-03-20', popularity: 85, recommended: true },
   { id: 'kinetik', name: 'Animated Banner', description: 'Eye-catching scrolling text effect', date: '2024-08-15', popularity: 90 },
   { id: 'grid', name: 'Image Collage', description: 'Multiple images in a grid layout', date: '2024-05-10', popularity: 75 },
-  { id: 'typographic', name: 'Text Only', description: 'Bold text without images - minimal and clean', date: '2024-11-20', popularity: 60 }
+  { id: 'typographic', name: 'Luxury Typographic', description: 'Bold text with elegant image teasers', date: '2024-11-20', popularity: 60 }
 ];

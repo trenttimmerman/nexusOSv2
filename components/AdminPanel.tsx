@@ -863,6 +863,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [systemModalType, setSystemModalType] = useState<'hero' | 'grid' | 'footer' | null>(null);
   const [isFooterModalOpen, setIsFooterModalOpen] = useState(false);
   const [isHeroModalOpen, setIsHeroModalOpen] = useState(false);
+  
+  // Auto-focus field in Hero Studio when activeField changes
+  useEffect(() => {
+    if (isHeroModalOpen && activeField) {
+      setTimeout(() => {
+        const element = document.getElementById(`editor-field-${activeField}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.focus();
+          // Add highlight
+          element.classList.add('ring-2', 'ring-purple-500', 'ring-offset-2', 'ring-offset-neutral-950');
+          setTimeout(() => {
+            element.classList.remove('ring-2', 'ring-purple-500', 'ring-offset-2', 'ring-offset-neutral-950');
+          }, 2000);
+        }
+      }, 150);
+    }
+  }, [isHeroModalOpen, activeField]);
   const [isInterfaceModalOpen, setIsInterfaceModalOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<'identity' | 'typography' | 'colors' | 'seo' | 'header' | 'scrollbar'>('identity');
   const [previewingScrollbar, setPreviewingScrollbar] = useState<string | null>(null);
@@ -4362,6 +4380,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-1.5">
                         <label className="text-xs text-neutral-400">Heading</label>
                         <input
+                          id="editor-field-heading"
                           type="text"
                           value={heroData.heading || ''}
                           onChange={(e) => updateHeroData({ heading: e.target.value })}
@@ -4375,6 +4394,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-1.5">
                         <label className="text-xs text-neutral-400">Subheading</label>
                         <textarea
+                          id="editor-field-subheading"
                           value={heroData.subheading || ''}
                           onChange={(e) => updateHeroData({ subheading: e.target.value })}
                           className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none resize-none"
@@ -4388,6 +4408,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-1.5">
                         <label className="text-xs text-neutral-400">Badge Text</label>
                         <input
+                          id="editor-field-badge"
                           type="text"
                           value={heroData.badge || ''}
                           onChange={(e) => updateHeroData({ badge: e.target.value })}
@@ -4401,6 +4422,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-1.5">
                         <label className="text-xs text-neutral-400">Top Badge</label>
                         <input
+                          id="editor-field-topBadge"
                           type="text"
                           value={heroData.topBadge || ''}
                           onChange={(e) => updateHeroData({ topBadge: e.target.value })}
@@ -4414,6 +4436,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-1.5">
                         <label className="text-xs text-neutral-400">Primary Button</label>
                         <input
+                          id="editor-field-buttonText"
                           type="text"
                           value={heroData.buttonText || ''}
                           onChange={(e) => updateHeroData({ buttonText: e.target.value })}
@@ -4455,6 +4478,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-1.5">
                         <label className="text-xs text-neutral-400">Secondary Button</label>
                         <input
+                          id="editor-field-secondaryButtonText"
                           type="text"
                           value={heroData.secondaryButtonText || ''}
                           onChange={(e) => updateHeroData({ secondaryButtonText: e.target.value })}
@@ -4496,6 +4520,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-1.5">
                         <label className="text-xs text-neutral-400">Marquee Text</label>
                         <input
+                          id="editor-field-marqueeText"
                           type="text"
                           value={heroData.marqueeText || ''}
                           onChange={(e) => updateHeroData({ marqueeText: e.target.value })}
@@ -4517,6 +4542,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           ].map(({ labelKey, linkKey, externalKey }, idx) => (
                             <div key={labelKey} className="space-y-1 p-2 bg-neutral-900/50 rounded-lg border border-neutral-700">
                               <input
+                                id={`editor-field-${labelKey}`}
                                 type="text"
                                 value={heroData[labelKey] || ''}
                                 onChange={(e) => updateHeroData({ [labelKey]: e.target.value })}
@@ -4562,6 +4588,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-1.5 p-3 bg-neutral-900/50 rounded-lg border border-neutral-700">
                         <label className="text-xs text-neutral-400">Feature Card</label>
                         <input
+                          id="editor-field-featureCardTitle"
                           type="text"
                           value={heroData.featureCardTitle || ''}
                           onChange={(e) => updateHeroData({ featureCardTitle: e.target.value })}
@@ -4569,6 +4596,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           placeholder="Title..."
                         />
                         <input
+                          id="editor-field-featureCardSubtitle"
                           type="text"
                           value={heroData.featureCardSubtitle || ''}
                           onChange={(e) => updateHeroData({ featureCardSubtitle: e.target.value })}
@@ -4582,6 +4610,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-1.5">
                         <label className="text-xs text-neutral-400">Image Badge</label>
                         <input
+                          id="editor-field-imageBadge"
                           type="text"
                           value={heroData.imageBadge || ''}
                           onChange={(e) => updateHeroData({ imageBadge: e.target.value })}
@@ -4622,6 +4651,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           )}
                         </div>
                         <input
+                          id="editor-field-image"
                           type="text"
                           value={heroData.image || ''}
                           onChange={(e) => updateHeroData({ image: e.target.value })}
@@ -4654,6 +4684,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           </label>
                         </div>
                         <input
+                          id="editor-field-sideImage"
                           type="text"
                           value={heroData.sideImage || ''}
                           onChange={(e) => updateHeroData({ sideImage: e.target.value })}
@@ -4782,7 +4813,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                     {/* Text Alignment (Impact) */}
                     {availableFields.includes('alignment') && (
-                      <div className="space-y-2">
+                      <div className="space-y-2" id="editor-field-alignment">
                         <p className="text-xs text-neutral-400">Content Alignment</p>
                         <div className="grid grid-cols-3 gap-2">
                           {[
@@ -4809,7 +4840,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                     {/* Content Position (Split) */}
                     {availableFields.includes('contentPosition') && (
-                      <div className="space-y-2">
+                      <div className="space-y-2" id="editor-field-contentPosition">
                         <p className="text-xs text-neutral-400">Content Position</p>
                         <div className="grid grid-cols-2 gap-2">
                           {[
@@ -4834,7 +4865,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                     {/* Padding (Impact) */}
                     {availableFields.includes('padding') && (
-                      <div className="space-y-2">
+                      <div className="space-y-2" id="editor-field-padding">
                         <p className="text-xs text-neutral-400">Vertical Padding</p>
                         <div className="grid grid-cols-5 gap-1">
                           {[
@@ -4862,7 +4893,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                     {/* Animation */}
                     {availableFields.includes('animation') && (
-                      <div className="space-y-2">
+                      <div className="space-y-2" id="editor-field-animation">
                         <p className="text-xs text-neutral-400">Entry Animation</p>
                         <div className="grid grid-cols-2 gap-2">
                           {[
