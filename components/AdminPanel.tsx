@@ -1290,6 +1290,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
     setSelectedBlockId(newBlock.id);
     setIsAddSectionOpen(false);
+    
+    // Auto-open specialized editor modals
+    if (blockType === 'system-hero') setIsHeroModalOpen(true);
+    if (blockType === 'system-grid') setIsGridModalOpen(true);
+    if (blockType === 'system-collection') setIsCollectionModalOpen(true);
+
     setPreviewBlock(null);
     setAddSectionStep('categories');
     setSelectedCategory(null);
@@ -4275,6 +4281,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       setHasUnsavedChanges(true);
     };
 
+    const generateGridCopy = async (field: string) => {
+      if (!genAI) return;
+      try {
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        const variant = PRODUCT_CARD_OPTIONS.find(o => o.id === currentVariant)?.name || "product grid";
+        const industry = config.theme_primary || "modern retail";
+        
+        const prompt = `Generate a high-converting ${field} for a ${variant} on a ${industry} store.
+          Keep it short (under ${field === 'heading' ? '8' : '20'} words).
+          Return ONLY the text.`;
+
+        const result = await model.generateContent(prompt);
+        const text = result.response.text().trim().replace(/\"/g, '');
+        updateGridData({ [field]: text });
+      } catch (error) {
+        console.error("Grid AI generation failed:", error);
+      }
+    };
+
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
         <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
@@ -4336,7 +4361,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </h4>
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs text-neutral-400">Section Title</label>
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs text-neutral-400">Section Title</label>
+                        <button 
+                          onClick={() => generateGridCopy('heading')}
+                          className="p-1 text-green-400 hover:text-green-300 transition-colors"
+                          title="Generate with AI"
+                        >
+                          <Wand2 size={12} />
+                        </button>
+                      </div>
                       <input
                         type="text"
                         value={gridData.heading || ''}
@@ -4346,7 +4380,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs text-neutral-400">Subtitle</label>
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs text-neutral-400">Subtitle</label>
+                        <button 
+                          onClick={() => generateGridCopy('subheading')}
+                          className="p-1 text-green-400 hover:text-green-300 transition-colors"
+                          title="Generate with AI"
+                        >
+                          <Wand2 size={12} />
+                        </button>
+                      </div>
                       <textarea
                         value={gridData.subheading || ''}
                         onChange={(e) => updateGridData({ subheading: e.target.value })}
@@ -5041,6 +5084,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       }
     };
 
+    const generateHeroCopy = async (field: string) => {
+      if (!genAI) return;
+      try {
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        const variant = HERO_OPTIONS.find(o => o.id === currentHeroVariant)?.name || "hero section";
+        const industry = config.theme_primary || "modern e-commerce";
+        
+        const prompt = `Generate a high-converting ${field} for a ${variant} on a ${industry} website.
+          Keep it short (under ${field === 'heading' ? '8' : '20'} words).
+          Return ONLY the text.`;
+
+        const result = await model.generateContent(prompt);
+        const text = result.response.text().trim().replace(/\"/g, '');
+        updateHeroData({ [field]: text });
+      } catch (error) {
+        console.error("Hero AI generation failed:", error);
+      }
+    };
+
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
         <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
@@ -5130,7 +5192,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <div className="space-y-4">
                     {availableFields.includes('heading') && (
                       <div className="space-y-1.5">
-                        <label className="text-xs text-neutral-400">Heading</label>
+                        <div className="flex justify-between items-center">
+                          <label className="text-xs text-neutral-400">Heading</label>
+                          <button 
+                            onClick={() => generateHeroCopy('heading')}
+                            className="p-1 text-purple-400 hover:text-purple-300 transition-colors"
+                            title="Generate with AI"
+                          >
+                            <Wand2 size={12} />
+                          </button>
+                        </div>
                         <input
                           id="editor-field-heading"
                           type="text"
@@ -5144,7 +5215,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                     {availableFields.includes('subheading') && (
                       <div className="space-y-1.5">
-                        <label className="text-xs text-neutral-400">Subheading</label>
+                        <div className="flex justify-between items-center">
+                          <label className="text-xs text-neutral-400">Subheading</label>
+                          <button 
+                            onClick={() => generateHeroCopy('subheading')}
+                            className="p-1 text-purple-400 hover:text-purple-300 transition-colors"
+                            title="Generate with AI"
+                          >
+                            <Wand2 size={12} />
+                          </button>
+                        </div>
                         <textarea
                           id="editor-field-subheading"
                           value={heroData.subheading || ''}
