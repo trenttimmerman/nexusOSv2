@@ -218,7 +218,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
     return {
       label: p.title,
       href,
-      active: p.id === activePageId,
+      active: String(p.id) === String(activePageId) || (p.type === 'home' && activePageId === 'home'),
     };
   });
 
@@ -250,7 +250,10 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                       }}
                       primaryColor={primaryColor}
                       secondaryColor={secondaryColor}
-                      data={config.headerData}
+                      data={{
+                        accentColor: config.primaryColor,
+                        ...config.headerData
+                      }}
                   />
                   <main className="flex-1 pt-20">
                       {/* Back to shop button */}
@@ -646,7 +649,10 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         }}
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
-        data={config.headerData}
+        data={{
+          accentColor: config.primaryColor,
+          ...config.headerData
+        }}
       />
 
       <main className="flex-1 pt-20">

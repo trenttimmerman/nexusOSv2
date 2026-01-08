@@ -13,6 +13,7 @@ export interface HeaderData {
   showTagline?: boolean;
   showLogoBadge?: boolean;
   showIndicatorDot?: boolean;
+  navActiveStyle?: 'none' | 'dot' | 'underline' | 'capsule' | 'glow' | 'brutalist' | 'minimal' | 'overline' | 'double' | 'bracket' | 'highlight' | 'skewed';
   // Colors
   backgroundColor?: string;
   borderColor?: string;
@@ -156,6 +157,7 @@ const CANVAS_DEFAULTS: HeaderData = {
   maxWidth: '7xl',
   paddingX: '24px',
   paddingY: '16px',
+  navActiveStyle: 'dot',
 };
 
 // Global base defaults for all headers
@@ -171,6 +173,7 @@ export const DEFAULTS: HeaderData = {
   cartBadgeTextColor: '#ffffff',
   sticky: true,
   maxWidth: '7xl',
+  navActiveStyle: 'dot',
 };
 
 // Reusable Logo component
@@ -193,15 +196,17 @@ const Logo: React.FC<{
   return <>{content}</>;
 };
 
-// Reusable NavItem component
 const NavItem: React.FC<{
   link: NavLink;
   className?: string;
   style?: React.CSSProperties;
   hoverColor?: string;
+  activeColor?: string;
+  activeStyle?: 'none' | 'dot' | 'underline' | 'capsule' | 'glow' | 'brutalist' | 'minimal' | 'overline' | 'double' | 'bracket' | 'highlight' | 'skewed';
+  children?: React.ReactNode;
   onClick?: (href: string) => void;
   [key: string]: any;
-}> = ({ link, className, style, hoverColor, onClick, ...rest }) => {
+}> = ({ link, className, style, hoverColor, activeColor, activeStyle = 'dot', children, onClick, ...rest }) => {
   const [isHovered, setIsHovered] = React.useState(false);
   
   const handleClick = (e: React.MouseEvent) => {
@@ -211,21 +216,130 @@ const NavItem: React.FC<{
     }
   };
 
+  const isActive = link.active;
+  const currentColor = isActive && activeColor ? activeColor : (isHovered && hoverColor ? hoverColor : style?.color);
+
+  // Helper to render Different Styles
+  const renderIndicator = () => {
+    if (!isActive) return null;
+
+    switch (activeStyle) {
+      case 'dot':
+        return (
+          <span 
+            className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full animate-pulse"
+            style={{ backgroundColor: activeColor || hoverColor || style?.color }}
+          />
+        );
+      case 'underline':
+        return (
+          <span 
+            className="absolute -bottom-1 left-0 right-0 h-0.5 transform scale-x-100 transition-transform duration-300 origin-left"
+            style={{ backgroundColor: activeColor || hoverColor || style?.color }}
+          />
+        );
+      case 'overline':
+        return (
+          <span 
+            className="absolute -top-1 left-0 right-0 h-0.5 transform scale-x-100 transition-transform duration-300 origin-left"
+            style={{ backgroundColor: activeColor || hoverColor || style?.color }}
+          />
+        );
+      case 'double':
+        return (
+          <>
+            <span 
+              className="absolute -top-1 left-0 right-0 h-0.5 transform scale-x-100 transition-transform duration-300"
+              style={{ backgroundColor: activeColor || hoverColor || style?.color }}
+            />
+            <span 
+              className="absolute -bottom-1 left-0 right-0 h-0.5 transform scale-x-100 transition-transform duration-300"
+              style={{ backgroundColor: activeColor || hoverColor || style?.color }}
+            />
+          </>
+        );
+      case 'bracket':
+        return (
+          <>
+            <span 
+              className="absolute top-0 -left-3 bottom-0 w-1.5 border-l-2 border-t-2 border-b-2"
+              style={{ borderColor: activeColor || hoverColor || style?.color }}
+            />
+            <span 
+              className="absolute top-0 -right-3 bottom-0 w-1.5 border-r-2 border-t-2 border-b-2"
+              style={{ borderColor: activeColor || hoverColor || style?.color }}
+            />
+          </>
+        );
+      case 'brutalist':
+        return (
+          <span 
+            className="absolute -inset-x-2 -inset-y-1 border-2 z-[-1]"
+            style={{ borderColor: activeColor || hoverColor || style?.color, backgroundColor: `${activeColor || hoverColor || style?.color}10` }}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getActiveClasses = () => {
+    if (!isActive) return '';
+    
+    switch (activeStyle) {
+      case 'capsule':
+        return 'px-4 py-1.5 rounded-full bg-opacity-10';
+      case 'highlight':
+        return 'px-1 py-0.5 rounded-sm';
+      case 'skewed':
+        return 'px-5 py-1.5 -skew-x-12';
+      case 'glow':
+        return '';
+      case 'minimal':
+        return 'font-bold scale-105';
+      default:
+        return '';
+    }
+  };
+
+  const activeStyles: React.CSSProperties = {};
+  if (isActive) {
+    if (activeStyle === 'capsule') {
+      activeStyles.backgroundColor = `${activeColor || hoverColor || style?.color}15`;
+    }
+    if (activeStyle === 'highlight') {
+      activeStyles.backgroundColor = `${activeColor || hoverColor || style?.color}40`;
+      activeStyles.transform = 'rotate(-1deg)';
+      activeStyles.borderRadius = '2px';
+    }
+    if (activeStyle === 'skewed') {
+      activeStyles.backgroundColor = `${activeColor || hoverColor || style?.color}20`;
+      activeStyles.borderRight = `2px solid ${activeColor || hoverColor || style?.color}`;
+    }
+    if (activeStyle === 'glow') {
+      activeStyles.textShadow = `0 0 15px ${activeColor || hoverColor || style?.color}80`;
+      activeStyles.filter = `drop-shadow(0 0 8px ${activeColor || hoverColor || style?.color}40)`;
+    }
+  }
+
   return (
     <a
       href={link.href}
       onClick={handleClick}
-      className={className}
+      className={`relative group flex items-center justify-center transition-all duration-300 ${className || ''} ${getActiveClasses()}`}
       {...rest}
       style={{
         ...style,
-        color: isHovered && hoverColor ? hoverColor : style?.color,
-        transition: 'color 0.15s ease',
+        ...activeStyles,
+        color: currentColor,
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {link.label}
+      <span className="relative">
+        {children || link.label}
+        {renderIndicator()}
+      </span>
     </a>
   );
 };
@@ -287,6 +401,8 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
                 className="text-sm font-medium"
                 style={{ color: settings.textColor }}
                 hoverColor={settings.textHoverColor}
+                activeColor={settings.textHoverColor}
+                activeStyle={settings.navActiveStyle}
               />
             ))}
           </nav>
@@ -370,6 +486,7 @@ const NEBULA_DEFAULTS: HeaderData = {
   maxWidth: '4xl',
   blurIntensity: 'xl', // backdrop-blur intensity
   showIndicatorDot: true, // animated dot next to logo
+  navActiveStyle: 'glow',
 };
 
 // 2. HeaderNebula - "Modern Glass" (Floating pill, frosted glass)
@@ -405,7 +522,7 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
       >
         {/* Left: Logo with optional indicator dot */}
         <button onClick={onLogoClick} className="flex items-center gap-2 cursor-pointer">
-          {settings.showIndicatorDot && !logoUrl && (
+          {settings.showIndicatorDot && (
             <div 
               className="w-3 h-3 rounded-full animate-pulse"
               style={{ backgroundColor: settings.accentColor }}
@@ -429,6 +546,8 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
               className="text-xs font-semibold tracking-widest uppercase transition-colors"
               style={{ color: settings.textColor }}
               hoverColor={settings.textHoverColor}
+              activeColor={settings.accentColor}
+              activeStyle={settings.navActiveStyle}
             />
           ))}
         </nav>
@@ -497,6 +616,7 @@ const LUXE_DEFAULTS: HeaderData = {
   cartBadgeColor: '#d4af37',
   sticky: true,
   maxWidth: '7xl',
+  navActiveStyle: 'underline',
 };
 
 // 3. HeaderLuxe - "Luxury Elegant" (High-end, centered logo, gold accents)
@@ -628,6 +748,8 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
               className="text-xs font-medium uppercase tracking-widest transition-colors"
               style={{ color: settings.textColor }}
               hoverColor={settings.accentColor}
+              activeColor={settings.accentColor}
+              activeStyle={settings.navActiveStyle}
             />
           ))}
         </nav>
@@ -653,6 +775,7 @@ const PILOT_DEFAULTS: HeaderData = {
   cartBadgeTextColor: '#ffffff',
   sticky: true,
   maxWidth: '7xl',
+  navActiveStyle: 'capsule',
 };
 
 const BUNKER_DEFAULTS: HeaderData = {
@@ -1028,6 +1151,8 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
                 className="font-medium text-sm transition-colors"
                 style={{ color: settings.textColor }}
                 hoverColor={settings.textHoverColor}
+                activeColor={settings.accentColor}
+                activeStyle={settings.navActiveStyle}
               />
             ))}
           </nav>
@@ -1146,6 +1271,8 @@ export const HeaderBunker: React.FC<HeaderProps> = ({
                 className="flex-1 flex items-center justify-center text-sm font-bold uppercase transition-colors px-4 py-2"
                 style={{ color: settings.textColor }}
                 hoverColor={settings.textHoverColor}
+                activeColor={settings.textHoverColor}
+                activeStyle={settings.navActiveStyle}
               />
             ))}
           </div>
@@ -1235,6 +1362,8 @@ export const HeaderProtocol: React.FC<HeaderProps> = ({
                 className="text-sm font-bold uppercase hover:underline decoration-2 underline-offset-4 transition-colors"
                 style={{ color: settings.textColor }}
                 hoverColor={settings.textHoverColor}
+                activeColor={settings.accentColor}
+                activeStyle={settings.navActiveStyle}
               />
             ))}
           </nav>
@@ -1340,6 +1469,8 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({
                 className="text-sm font-bold uppercase tracking-wider hover:underline underline-offset-4 transition-colors"
                 style={{ color: settings.textColor }}
                 hoverColor={settings.textHoverColor}
+                activeColor={settings.accentColor || settings.textHoverColor}
+                activeStyle={settings.navActiveStyle}
               />
             ))}
          </nav>
@@ -1363,6 +1494,8 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({
                 className="text-sm font-bold uppercase tracking-wider hover:underline underline-offset-4 transition-colors"
                 style={{ color: settings.textColor }}
                 hoverColor={settings.textHoverColor}
+                activeColor={settings.accentColor || settings.textHoverColor}
+                activeStyle={settings.navActiveStyle}
               />
             ))}
          </nav>
@@ -1467,6 +1600,8 @@ export const HeaderTerminal: React.FC<HeaderProps> = ({
                 className="hover:text-white transition-colors flex gap-1"
                 style={{ color: settings.textColor }}
                 hoverColor={settings.textHoverColor}
+                activeColor={settings.accentColor}
+                activeStyle={settings.navActiveStyle}
                >
                  {/* Custom label with import syntax would be nice but NavItem is standard */}
                  <span className="text-[#c586c0]">import</span>
@@ -1545,6 +1680,8 @@ export const HeaderPortfolio: React.FC<HeaderProps> = ({
                   className="flex-1 h-full flex items-center justify-center transition-colors text-xs uppercase font-bold border-r last:border-none"
                   style={{ color: settings.textColor, borderColor: settings.borderColor }}
                   hoverColor={settings.textHoverColor}
+                  activeColor={settings.textHoverColor}
+                  activeStyle={settings.navActiveStyle}
                 />
              ))}
           </div>
@@ -1628,6 +1765,8 @@ export const HeaderVenture: React.FC<HeaderProps> = ({
                       className="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
                       style={{ color: settings.textColor }}
                       hoverColor={settings.textHoverColor}
+                      activeColor={settings.accentColor || settings.textHoverColor}
+                      activeStyle={settings.navActiveStyle}
                     />
                   ))}
                </nav>
@@ -1684,6 +1823,8 @@ export const HeaderMetro: React.FC<HeaderProps> = ({
             className="hidden md:flex col-span-2 items-center justify-center text-sm font-bold uppercase transition-colors py-2" 
             style={{ color: settings.textColor }}
             hoverColor={settings.textHoverColor}
+            activeStyle={settings.navActiveStyle}
+            activeColor={settings.accentColor}
           />
         ))}
         <div className="col-span-2 md:col-span-1 flex items-center justify-center hover:bg-neutral-50 cursor-pointer py-2">
@@ -1746,6 +1887,8 @@ export const HeaderModul: React.FC<HeaderProps> = ({
               className="flex-1 border-r flex items-center justify-center text-xs font-bold uppercase tracking-widest transition-colors px-2 py-2" 
               style={{ color: settings.textColor, borderColor: settings.borderColor }}
               hoverColor={settings.textHoverColor}
+              activeStyle={settings.navActiveStyle}
+              activeColor={settings.accentColor}
              />
            ))}
         </nav>
@@ -1806,6 +1949,8 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({
                 className="text-sm font-bold transition-colors"
                 style={{ color: settings.textColor }}
                 hoverColor={settings.textHoverColor}
+                activeStyle={settings.navActiveStyle}
+                activeColor={settings.accentColor}
                />
             ))}
          </nav>
@@ -1833,6 +1978,8 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({
                     className="text-sm font-bold transition-colors"
                     style={{ color: settings.textColor }}
                     hoverColor={settings.textHoverColor}
+                    activeStyle={settings.navActiveStyle}
+                    activeColor={settings.accentColor}
                   />
                ))}
             </nav>
@@ -1904,6 +2051,8 @@ export const HeaderPop: React.FC<HeaderProps> = ({
                   className="px-4 py-1.5 rounded-lg border-2 border-transparent hover:bg-black font-bold text-sm transition-all"
                   style={{ color: settings.textColor }}
                   hoverColor={settings.textHoverColor}
+                  activeStyle={settings.navActiveStyle}
+                  activeColor={settings.accentColor}
                 />
              ))}
           </nav>
@@ -1979,6 +2128,8 @@ export const HeaderStark: React.FC<HeaderProps> = ({
                     className="text-sm font-medium hover:underline decoration-2 underline-offset-4 transition-colors"
                     style={{ color: settings.textColor }}
                     hoverColor={settings.textHoverColor || settings.accentColor}
+                    activeStyle={settings.navActiveStyle}
+                    activeColor={settings.accentColor}
                    />
                 ))}
              </nav>
@@ -2074,6 +2225,8 @@ export const HeaderOffset: React.FC<HeaderProps> = ({
                   className="text-sm font-medium transition-colors"
                   style={{ color: settings.textColor }}
                   hoverColor={settings.textHoverColor || settings.accentColor}
+                  activeStyle={settings.navActiveStyle}
+                  activeColor={settings.accentColor}
                 />
              ))}
           </nav>
@@ -2124,6 +2277,8 @@ export const HeaderTicker: React.FC<HeaderProps> = ({
                   className="h-full flex items-center border-b-2 border-transparent text-sm font-medium transition-colors px-2"
                   style={{ color: settings.textColor }}
                   hoverColor={settings.accentColor}
+                  activeStyle={settings.navActiveStyle}
+                  activeColor={settings.accentColor}
                 />
              ))}
           </nav>
@@ -2185,6 +2340,8 @@ export const HeaderNoir: React.FC<HeaderProps> = ({
                     className="text-xs uppercase tracking-[0.3em] transition-colors"
                     style={{ color: settings.textColor }}
                     hoverColor={settings.accentColor}
+                    activeStyle={settings.navActiveStyle}
+                    activeColor={settings.accentColor}
                    />
                 ))}
              </nav>
@@ -2892,6 +3049,8 @@ export const HeaderRefined: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
                     className="transition-colors flex items-center h-full"
                     style={{ color: settings.textColor }}
                     hoverColor={settings.textHoverColor}
+                    activeStyle={settings.navActiveStyle}
+                    activeColor={settings.accentColor}
                   />
                 </div>
               ))}
@@ -2971,6 +3130,8 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
                     className="text-lg font-medium transition-colors" 
                     style={{ color: settings.textColor }} 
                     hoverColor={settings.textHoverColor}
+                    activeStyle={settings.navActiveStyle}
+                    activeColor={settings.accentColor}
                   />
                 ))}
              </div>
@@ -3012,6 +3173,8 @@ export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
             className="text-lg font-medium hover:pl-2 transition-all duration-300" 
             style={{ color: settings.textColor }} 
             hoverColor={settings.textHoverColor}
+            activeColor={settings.accentColor || settings.textHoverColor}
+            activeStyle={settings.navActiveStyle}
            />
          ))}
       </nav>
@@ -3071,6 +3234,8 @@ export const HeaderFlow: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
               className="text-sm font-medium transition-colors" 
               style={{ color: settings.textColor }} 
               hoverColor={settings.textHoverColor}
+              activeColor={settings.accentColor || settings.textHoverColor}
+              activeStyle={settings.navActiveStyle}
             />
           ))}
         </nav>
@@ -3161,171 +3326,171 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth', 'paddingX', 'paddingY'
+    'sticky', 'maxWidth', 'paddingX', 'paddingY', 'navActiveStyle'
   ],
   nebula: [
     'showSearch', 'showCart', 'showIndicatorDot',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor',
-    'sticky', 'maxWidth', 'blurIntensity'
+    'sticky', 'maxWidth', 'blurIntensity', 'navActiveStyle'
   ],
   luxe: [
     'showMenu', 'showSearch', 'showAccount', 'showCart', 'showTagline',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'taglineColor', 'taglineText', 'cartBadgeColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   pilot: [
     'showCart', 'showCTA', 'showLogoBadge',
     'backgroundColor', 'textColor', 'textHoverColor', 'accentColor',
     'ctaBackgroundColor', 'ctaHoverColor', 'ctaTextColor', 'ctaText',
     'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   bunker: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
     'tickerText', 'tickerBackgroundColor', 'tickerTextColor', 'tickerBorderColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   protocol: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth', 'scanlineColor'
+    'sticky', 'maxWidth', 'scanlineColor', 'navActiveStyle'
   ],
   horizon: [
     'showSearch', 'showAccount', 'showCart', 'showSocial',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth', 'utilityBarBackgroundColor', 'utilityBarTextColor'
+    'sticky', 'maxWidth', 'utilityBarBackgroundColor', 'utilityBarTextColor', 'navActiveStyle'
   ],
   terminal: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth', 'terminalPromptColor'
+    'sticky', 'maxWidth', 'terminalPromptColor', 'navActiveStyle'
   ],
   portfolio: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   venture: [
     'showSearch', 'showAccount', 'showCart', 'showKeyboardShortcut',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth', 'searchPlaceholder'
+    'sticky', 'maxWidth', 'searchPlaceholder', 'navActiveStyle'
   ],
   metro: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   modul: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   gullwing: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   pop: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth', 'searchPlaceholder'
+    'sticky', 'maxWidth', 'searchPlaceholder', 'navActiveStyle'
   ],
   stark: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth', 'searchPlaceholder'
+    'sticky', 'maxWidth', 'searchPlaceholder', 'navActiveStyle'
   ],
   offset: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   ticker: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth', 'tickerText', 'tickerBackgroundColor', 'tickerTextColor'
+    'sticky', 'maxWidth', 'tickerText', 'tickerBackgroundColor', 'tickerTextColor', 'navActiveStyle'
   ],
   noir: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth', 'searchPlaceholder'
+    'sticky', 'maxWidth', 'searchPlaceholder', 'navActiveStyle'
   ],
   ghost: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth', 'searchPlaceholder'
+    'sticky', 'maxWidth', 'searchPlaceholder', 'navActiveStyle'
   ],
   pathfinder: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   cypher: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor', 'accentColor', 'accentColorSecondary',
     'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   particle: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'particleCount', 'particleColor',
-    'cartBadgeColor', 'cartBadgeTextColor',
+    'cartBadgeColor', 'cartBadgeTextColor', 'navActiveStyle',
     'sticky', 'maxWidth'
   ],
   lumina: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor', 'accentColor',
     'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   aqua: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   refined: [
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   orbit: [
     'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   studio: [
     'showSearch', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   flow: [
     'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth'
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
 };
 

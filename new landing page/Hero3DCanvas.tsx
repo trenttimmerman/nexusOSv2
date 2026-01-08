@@ -14,8 +14,9 @@ const Hero3DCanvas: React.FC = () => {
         const container = containerRef.current;
         let isDragging = false;
         let previousMousePosition = { x: 0, y: 0 };
-        let currentRotation = { x: 0.1, y: 0.1 };
-        const rotationLerpFactor = 0.05;
+        let velocity = { x: 0.003, y: 0.003 };
+        const damping = 0.98;
+        const sensitivity = 0.005;
 
         const init = () => {
             scene = new THREE.Scene();
@@ -51,17 +52,24 @@ const Hero3DCanvas: React.FC = () => {
         };
 
         const animate = () => {
-            if (!renderer) return; // Stop animation if cleaned up
+            if (!renderer) return;
             requestAnimationFrame(animate);
 
             if (!isDragging) {
-                // Apply a gentle constant rotation
-                crystal.rotation.x += 0.001;
-                crystal.rotation.y += 0.001;
-            } else {
-                crystal.rotation.x = currentRotation.x;
-                crystal.rotation.y = currentRotation.y;
+                // Apply friction/inertia when not dragging
+                velocity.x *= damping;
+                velocity.y *= damping;
+
+                // Ensure it keeps moving at a minimum speed
+                if (Math.abs(velocity.x) < 0.003 && Math.abs(velocity.y) < 0.003) {
+                    velocity.x += (0.003 - velocity.x) * 0.05;
+                    velocity.y += (0.003 - velocity.y) * 0.05;
+                }
             }
+
+            // Continuous rotation based on velocity
+            crystal.rotation.x += velocity.x;
+            crystal.rotation.y += velocity.y;
 
             renderer.render(scene, camera);
         };
@@ -87,12 +95,18 @@ const Hero3DCanvas: React.FC = () => {
 
         const onMouseMove = (event: MouseEvent) => {
             if (!isDragging) return;
-            const deltaMove = {
-                x: event.clientX - previousMousePosition.x,
-                y: event.clientY - previousMousePosition.y
-            };
-            currentRotation.y += deltaMove.x * 0.005;
-            currentRotation.x += deltaMove.y * 0.005;
+            
+            const deltaX = event.clientX - previousMousePosition.x;
+            const deltaY = event.clientY - previousMousePosition.y;
+
+            // Direct rotation while dragging
+            crystal.rotation.y += deltaX * sensitivity;
+            crystal.rotation.x += deltaY * sensitivity;
+
+            // Store current movement as velocity for release
+            velocity.y = deltaX * sensitivity;
+            velocity.x = deltaY * sensitivity;
+
             previousMousePosition = { x: event.clientX, y: event.clientY };
         };
 
@@ -110,12 +124,18 @@ const Hero3DCanvas: React.FC = () => {
         const onTouchMove = (event: TouchEvent) => {
             if (!isDragging || event.touches.length !== 1) return;
             event.preventDefault();
-            const deltaMove = {
-                x: event.touches[0].clientX - previousMousePosition.x,
-                y: event.touches[0].clientY - previousMousePosition.y
-            };
-            currentRotation.y += deltaMove.x * 0.005;
-            currentRotation.x += deltaMove.y * 0.005;
+
+            const deltaX = event.touches[0].clientX - previousMousePosition.x;
+            const deltaY = event.touches[0].clientY - previousMousePosition.y;
+
+            // Direct rotation while dragging
+            crystal.rotation.y += deltaX * sensitivity;
+            crystal.rotation.x += deltaY * sensitivity;
+
+            // Store current movement as velocity for release
+            velocity.y = deltaX * sensitivity;
+            velocity.x = deltaY * sensitivity;
+
             previousMousePosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
         };
 
