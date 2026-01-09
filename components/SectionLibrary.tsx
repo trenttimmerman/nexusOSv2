@@ -107,8 +107,14 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
           className="text-neutral-400 mb-8"
         />
         <div className="flex gap-2">
-          <input type="email" placeholder="Enter your email" className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-neutral-500 focus:outline-none focus:border-white" />
-          <button className="bg-white text-black px-6 py-3 rounded-lg font-bold hover:bg-neutral-200 transition-colors">Subscribe</button>
+          <input 
+            type="email" 
+            placeholder={data?.placeholderText || 'Enter your email'} 
+            className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-neutral-500 focus:outline-none focus:border-white" 
+          />
+          <button className="bg-white text-black px-6 py-3 rounded-lg font-bold hover:bg-neutral-200 transition-colors">
+            {data?.buttonText || 'Subscribe'}
+          </button>
         </div>
       </div>
     </div>
@@ -133,8 +139,14 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
             className="text-neutral-500 mb-8"
           />
           <div className="space-y-4">
-            <input type="email" placeholder="Email address" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 focus:outline-none focus:border-black transition-colors" />
-            <button className="w-full bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2">Sign Up <ArrowRight size={16} /></button>
+            <input 
+              type="email" 
+              placeholder={data?.placeholderText || 'Email address'} 
+              className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 focus:outline-none focus:border-black transition-colors" 
+            />
+            <button className="w-full bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2">
+              {data?.buttonText || 'Sign Up'} <ArrowRight size={16} />
+            </button>
           </div>
         </div>
       </div>
@@ -157,10 +169,18 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
           className="text-neutral-500 mb-8"
         />
         <div className="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
-          <input type="email" placeholder="Your email" className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 focus:outline-none focus:border-black" />
-          <button className="bg-black text-white px-8 py-3 rounded-lg font-bold hover:bg-neutral-800 transition-colors">Get Code</button>
+          <input 
+            type="email" 
+            placeholder={data?.placeholderText || 'Your email'} 
+            className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 focus:outline-none focus:border-black" 
+          />
+          <button className="bg-black text-white px-8 py-3 rounded-lg font-bold hover:bg-neutral-800 transition-colors">
+            {data?.buttonText || 'Get Code'}
+          </button>
         </div>
-        <p className="text-xs text-neutral-400 mt-4">No spam, unsubscribe anytime.</p>
+        <p className="text-xs text-neutral-400 mt-4">
+          {data?.disclaimer || 'No spam, unsubscribe anytime.'}
+        </p>
       </div>
     </div>
   ),

@@ -5161,6 +5161,39 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const currentVariant = activeBlock?.variant || 'email-minimal';
     const EmailComponent = EMAIL_SIGNUP_COMPONENTS[currentVariant];
 
+    // Field mapping for email variants
+    const EMAIL_FIELDS: Record<string, string[]> = {
+      'email-minimal': ['heading', 'subheading', 'buttonText', 'placeholderText'],
+      'email-split': ['heading', 'subheading', 'buttonText', 'placeholderText', 'image'],
+      'email-card': ['heading', 'subheading', 'buttonText', 'placeholderText', 'disclaimer'],
+    };
+
+    const availableFields = EMAIL_FIELDS[currentVariant] || [];
+
+    const updateEmailData = (updates: Partial<typeof emailData>) => {
+      updateActiveBlockData(selectedBlockId, { ...emailData, ...updates });
+    };
+
+    const generateEmailCopy = async (field: string) => {
+      try {
+        const genAI = new GoogleGenerativeAI(apiKeys.gemini || '');
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        
+        const prompts: Record<string, string> = {
+          heading: `Generate a catchy, short email signup heading for an ecommerce newsletter (5-8 words max). Return ONLY the text, no quotes or extra formatting.`,
+          subheading: `Generate a compelling email signup subheading that explains the benefits of joining (15-25 words). Return ONLY the text, no quotes or extra formatting.`,
+          buttonText: `Generate short CTA button text for newsletter signup (1-3 words). Return ONLY the text, no quotes or extra formatting.`,
+          disclaimer: `Generate a short privacy/spam disclaimer for email signup form (8-12 words). Return ONLY the text, no quotes or extra formatting.`,
+        };
+
+        const result = await model.generateContent(prompts[field]);
+        const text = result.response.text().trim();
+        updateEmailData({ [field]: text });
+      } catch (error) {
+        console.error('AI generation failed:', error);
+      }
+    };
+
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
         <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
@@ -5184,6 +5217,142 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div className="text-xs opacity-60">{opt.description}</div>
                   </button>
                 ))}
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-neutral-800 my-4"></div>
+
+              {/* Email Customization Fields */}
+              <div>
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <Settings size={14} /> Customize Content
+                </h4>
+
+                <div className="space-y-4">
+                  {availableFields.includes('heading') && (
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs text-neutral-400">Heading</label>
+                        <button 
+                          onClick={() => generateEmailCopy('heading')}
+                          className="p-1 text-purple-400 hover:text-purple-300 transition-colors"
+                          title="Generate with AI"
+                        >
+                          <Wand2 size={12} />
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={emailData.heading || ''}
+                        onChange={(e) => updateEmailData({ heading: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                        placeholder="Join the Newsletter"
+                      />
+                    </div>
+                  )}
+
+                  {availableFields.includes('subheading') && (
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs text-neutral-400">Subheading</label>
+                        <button 
+                          onClick={() => generateEmailCopy('subheading')}
+                          className="p-1 text-purple-400 hover:text-purple-300 transition-colors"
+                          title="Generate with AI"
+                        >
+                          <Wand2 size={12} />
+                        </button>
+                      </div>
+                      <textarea
+                        value={emailData.subheading || ''}
+                        onChange={(e) => updateEmailData({ subheading: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none resize-none"
+                        rows={3}
+                        placeholder="Subscribe to get special offers..."
+                      />
+                    </div>
+                  )}
+
+                  {availableFields.includes('buttonText') && (
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs text-neutral-400">Button Text</label>
+                        <button 
+                          onClick={() => generateEmailCopy('buttonText')}
+                          className="p-1 text-purple-400 hover:text-purple-300 transition-colors"
+                          title="Generate with AI"
+                        >
+                          <Wand2 size={12} />
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={emailData.buttonText || ''}
+                        onChange={(e) => updateEmailData({ buttonText: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                        placeholder="Subscribe"
+                      />
+                    </div>
+                  )}
+
+                  {availableFields.includes('placeholderText') && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Email Placeholder</label>
+                      <input
+                        type="text"
+                        value={emailData.placeholderText || ''}
+                        onChange={(e) => updateEmailData({ placeholderText: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                        placeholder="Enter your email"
+                      />
+                    </div>
+                  )}
+
+                  {availableFields.includes('disclaimer') && (
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs text-neutral-400">Disclaimer Text</label>
+                        <button 
+                          onClick={() => generateEmailCopy('disclaimer')}
+                          className="p-1 text-purple-400 hover:text-purple-300 transition-colors"
+                          title="Generate with AI"
+                        >
+                          <Wand2 size={12} />
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={emailData.disclaimer || ''}
+                        onChange={(e) => updateEmailData({ disclaimer: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                        placeholder="No spam, unsubscribe anytime."
+                      />
+                    </div>
+                  )}
+
+                  {availableFields.includes('image') && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Background Image</label>
+                      <input
+                        type="text"
+                        value={emailData.image || ''}
+                        onChange={(e) => updateEmailData({ image: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                        placeholder="https://..."
+                      />
+                      <button
+                        onClick={() => {
+                          // Open media library in future
+                          console.log('Media library integration coming soon');
+                        }}
+                        className="w-full bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-400 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <ImageIcon size={14} />
+                        Choose from Library
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
