@@ -5228,6 +5228,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const currentVariant = activeBlock?.variant || 'logo-marquee';
     const ScrollComponent = SCROLL_COMPONENTS[currentVariant];
 
+    const updateScrollData = (updates: any) => {
+      updateActiveBlockData(selectedBlockId, { ...scrollData, ...updates });
+    };
+
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
         <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
@@ -5242,17 +5246,136 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsScrollModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
-              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Scroll Styles</h4>
-              <div className="grid grid-cols-1 gap-2">
-                {SCROLL_OPTIONS.map(opt => (
-                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...scrollData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-cyan-600/20 border-cyan-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                    <div className="font-bold text-sm">{opt.name}</div>
-                    <div className="text-xs opacity-60">{opt.description}</div>
-                  </button>
-                ))}
+            {/* Left Panel - Controls */}
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar">
+              {/* Scroll Styles */}
+              <div className="p-4 border-b border-neutral-800">
+                <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
+                  <Layout size={14} /> Scroll Styles
+                </h4>
+                <div className="grid grid-cols-1 gap-2">
+                  {SCROLL_OPTIONS.map(opt => (
+                    <button 
+                      key={opt.id} 
+                      onClick={() => updateActiveBlockData(selectedBlockId, { ...scrollData, variant: opt.id })} 
+                      className={`p-3 rounded-lg border text-left transition-all ${currentVariant === opt.id ? 'bg-cyan-600/20 border-cyan-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}
+                    >
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-xs opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {/* Content Fields */}
+              <div className="p-4 space-y-4">
+                <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
+                  <Type size={14} /> Content
+                </h4>
+
+                {/* Logo Marquee - Logo URLs */}
+                {currentVariant === 'logo-marquee' && (
+                  <div className="space-y-3">
+                    <label className="text-xs text-neutral-400">Logo URLs (one per line)</label>
+                    <textarea
+                      value={(scrollData.logos || [
+                        'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/2560px-Google_2015_logo.svg.png',
+                        'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/IBM_logo.svg/2560px-IBM_logo.svg.png',
+                        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/2560px-Amazon_logo.svg.png',
+                        'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/2560px-Netflix_2015_logo.svg.png',
+                        'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1667px-Apple_logo_black.svg.png'
+                      ]).join('\n')}
+                      onChange={(e) => {
+                        const logos = e.target.value.split('\n').filter(l => l.trim());
+                        updateScrollData({ logos });
+                      }}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-cyan-500 outline-none resize-none font-mono"
+                      rows={8}
+                      placeholder="https://example.com/logo1.png&#10;https://example.com/logo2.png"
+                    />
+                    <p className="text-xs text-neutral-500">Enter logo image URLs, one per line</p>
+                  </div>
+                )}
+
+                {/* Text Ticker - Ticker Text */}
+                {currentVariant === 'text-ticker' && (
+                  <div className="space-y-3">
+                    <label className="text-xs text-neutral-400">Ticker Text</label>
+                    <textarea
+                      value={scrollData.text || "LIMITED TIME OFFER • FREE SHIPPING WORLDWIDE • NEW COLLECTION DROPPING SOON •"}
+                      onChange={(e) => updateScrollData({ text: e.target.value })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-cyan-500 outline-none resize-none"
+                      rows={3}
+                      placeholder="Enter scrolling text..."
+                    />
+                    <p className="text-xs text-neutral-500">Use • or | to separate phrases</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Style Controls */}
+              {currentVariant === 'text-ticker' && (
+                <div className="p-4 border-t border-neutral-800 space-y-4">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
+                    <Palette size={14} /> Style
+                  </h4>
+                  
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Background Color</label>
+                      <input
+                        type="color"
+                        value={scrollData.backgroundColor || '#171717'}
+                        onChange={(e) => updateScrollData({ backgroundColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Text Color</label>
+                      <input
+                        type="color"
+                        value={scrollData.textColor || '#ffffff'}
+                        onChange={(e) => updateScrollData({ textColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {currentVariant === 'logo-marquee' && (
+                <div className="p-4 border-t border-neutral-800 space-y-4">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
+                    <Palette size={14} /> Style
+                  </h4>
+                  
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Background Color</label>
+                      <input
+                        type="color"
+                        value={scrollData.backgroundColor || '#ffffff'}
+                        onChange={(e) => updateScrollData({ backgroundColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Border Color</label>
+                      <input
+                        type="color"
+                        value={scrollData.borderColor || '#f5f5f5'}
+                        onChange={(e) => updateScrollData({ borderColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Right Panel - Preview */}
             <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
               <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
                 {ScrollComponent && <ScrollComponent data={scrollData} isEditable={false} onUpdate={() => {}} />}

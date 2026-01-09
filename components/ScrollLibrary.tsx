@@ -26,9 +26,17 @@ const LogoMarquee: React.FC<ScrollSectionProps> = ({ data }) => {
     ];
     
     const logos = rawLogos.filter((l: string) => l && l.trim() !== '');
+    const backgroundColor = data?.backgroundColor || '#ffffff';
+    const borderColor = data?.borderColor || '#f5f5f5';
 
     return (
-        <div className="py-12 bg-white border-y border-neutral-100 overflow-hidden">
+        <div 
+            className="py-12 border-y overflow-hidden" 
+            style={{ 
+                backgroundColor,
+                borderColor
+            }}
+        >
             <div className="relative w-full flex overflow-x-hidden">
                 <div className="animate-marquee whitespace-nowrap flex items-center gap-16 px-8">
                     {logos.map((logo: string, i: number) => (
@@ -41,11 +49,6 @@ const LogoMarquee: React.FC<ScrollSectionProps> = ({ data }) => {
                         <img key={`dup2-${i}`} src={logo} className="h-8 w-auto object-contain opacity-40 grayscale hover:grayscale-0 transition-all duration-500" alt="Logo" />
                     ))}
                 </div>
-                <div className="absolute top-0 animate-marquee2 whitespace-nowrap flex items-center gap-16 px-8">
-                    {/* Duplicate for seamless loop if needed, but CSS animation usually handles one long strip. 
-               For simplicity in this 'marquee' tailwind config, we usually just need a long enough strip. 
-               Let's stick to the simple flex container above. */}
-                </div>
             </div>
         </div>
     );
@@ -53,11 +56,13 @@ const LogoMarquee: React.FC<ScrollSectionProps> = ({ data }) => {
 
 const TextTicker: React.FC<ScrollSectionProps> = ({ data, isEditable, onUpdate }) => {
     const text = data?.text || "LIMITED TIME OFFER • FREE SHIPPING WORLDWIDE • NEW COLLECTION DROPPING SOON •";
+    const backgroundColor = data?.backgroundColor || '#171717';
+    const textColor = data?.textColor || '#ffffff';
 
     return (
-        <div className="bg-neutral-900 text-white py-4 overflow-hidden">
+        <div className="py-4 overflow-hidden" style={{ backgroundColor }}>
             <div className="animate-marquee whitespace-nowrap flex gap-8">
-                <span className="text-sm font-bold tracking-widest uppercase">
+                <span className="text-sm font-bold tracking-widest uppercase" style={{ color: textColor }}>
                     <EditableText 
                         tagName="span" 
                         value={text} 
@@ -67,13 +72,13 @@ const TextTicker: React.FC<ScrollSectionProps> = ({ data, isEditable, onUpdate }
                         isEditable={isEditable} 
                     />
                 </span>
-                <span className="text-sm font-bold tracking-widest uppercase">{text}</span>
-                <span className="text-sm font-bold tracking-widest uppercase">{text}</span>
-                <span className="text-sm font-bold tracking-widest uppercase">{text}</span>
-                <span className="text-sm font-bold tracking-widest uppercase">{text}</span>
-                <span className="text-sm font-bold tracking-widest uppercase">{text}</span>
-                <span className="text-sm font-bold tracking-widest uppercase">{text}</span>
-                <span className="text-sm font-bold tracking-widest uppercase">{text}</span>
+                <span className="text-sm font-bold tracking-widest uppercase" style={{ color: textColor }}>{text}</span>
+                <span className="text-sm font-bold tracking-widest uppercase" style={{ color: textColor }}>{text}</span>
+                <span className="text-sm font-bold tracking-widest uppercase" style={{ color: textColor }}>{text}</span>
+                <span className="text-sm font-bold tracking-widest uppercase" style={{ color: textColor }}>{text}</span>
+                <span className="text-sm font-bold tracking-widest uppercase" style={{ color: textColor }}>{text}</span>
+                <span className="text-sm font-bold tracking-widest uppercase" style={{ color: textColor }}>{text}</span>
+                <span className="text-sm font-bold tracking-widest uppercase" style={{ color: textColor }}>{text}</span>
             </div>
         </div>
     );
