@@ -5170,6 +5170,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
     const availableFields = EMAIL_FIELDS[currentVariant] || [];
 
+    // Color fields available for all variants
+    const colorFields = [
+      { key: 'backgroundColor', label: 'Background', defaultValue: currentVariant === 'email-minimal' ? '#171717' : '#ffffff' },
+      { key: 'textColor', label: 'Text', defaultValue: currentVariant === 'email-minimal' ? '#ffffff' : '#000000' },
+      { key: 'buttonBgColor', label: 'Button BG', defaultValue: currentVariant === 'email-minimal' ? '#ffffff' : '#000000' },
+      { key: 'buttonTextColor', label: 'Button Text', defaultValue: currentVariant === 'email-minimal' ? '#000000' : '#ffffff' },
+    ];
+
     const updateEmailData = (updates: Partial<typeof emailData>) => {
       updateActiveBlockData(selectedBlockId, { ...emailData, ...updates });
     };
@@ -5352,6 +5360,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </button>
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-neutral-800 my-4"></div>
+
+              {/* Color Controls */}
+              <div>
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <Palette size={14} /> Colors
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {colorFields.map(({ key, label, defaultValue }) => (
+                    <div key={key} className="flex items-center gap-2 bg-neutral-900 p-2.5 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={emailData[key] || defaultValue}
+                        onChange={(e) => updateEmailData({ [key]: e.target.value })}
+                        className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-xs text-neutral-300">{label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

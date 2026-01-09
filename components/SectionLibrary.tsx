@@ -91,7 +91,13 @@ export const EMAIL_SIGNUP_OPTIONS = [
 
 export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
   'email-minimal': ({ data, isEditable, onUpdate }) => (
-    <div className="py-24 px-6 text-center bg-neutral-900 text-white">
+    <div 
+      className="py-24 px-6 text-center text-white"
+      style={{ 
+        backgroundColor: data?.backgroundColor || '#171717',
+        color: data?.textColor || '#ffffff'
+      }}
+    >
       <div className="max-w-xl mx-auto">
         <div className="mb-8 flex justify-center"><Mail size={32} /></div>
         <EditableText
@@ -112,7 +118,13 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
             placeholder={data?.placeholderText || 'Enter your email'} 
             className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-neutral-500 focus:outline-none focus:border-white" 
           />
-          <button className="bg-white text-black px-6 py-3 rounded-lg font-bold hover:bg-neutral-200 transition-colors">
+          <button 
+            className="px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
+            style={{
+              backgroundColor: data?.buttonBgColor || '#ffffff',
+              color: data?.buttonTextColor || '#000000'
+            }}
+          >
             {data?.buttonText || 'Subscribe'}
           </button>
         </div>
@@ -124,7 +136,13 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
       <div className="bg-neutral-100 relative">
         <img src={data?.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80'} className="absolute inset-0 w-full h-full object-cover" />
       </div>
-      <div className="flex items-center justify-center p-12 md:p-24 bg-white">
+      <div 
+        className="flex items-center justify-center p-12 md:p-24"
+        style={{ 
+          backgroundColor: data?.backgroundColor || '#ffffff',
+          color: data?.textColor || '#000000'
+        }}
+      >
         <div className="w-full max-w-md">
           <EditableText
             value={data?.heading || 'Stay in the loop'}
@@ -144,7 +162,13 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
               placeholder={data?.placeholderText || 'Email address'} 
               className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 focus:outline-none focus:border-black transition-colors" 
             />
-            <button className="w-full bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2">
+            <button 
+              className="w-full px-6 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              style={{
+                backgroundColor: data?.buttonBgColor || '#000000',
+                color: data?.buttonTextColor || '#ffffff'
+              }}
+            >
               {data?.buttonText || 'Sign Up'} <ArrowRight size={16} />
             </button>
           </div>
@@ -154,7 +178,13 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
   ),
   'email-card': ({ data, isEditable, onUpdate }) => (
     <div className="py-24 px-6 bg-neutral-50">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-12 md:p-16 text-center relative overflow-hidden">
+      <div 
+        className="max-w-4xl mx-auto rounded-2xl shadow-xl p-12 md:p-16 text-center relative overflow-hidden"
+        style={{ 
+          backgroundColor: data?.backgroundColor || '#ffffff',
+          color: data?.textColor || '#000000'
+        }}
+      >
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
         <EditableText
           value={data?.heading || 'Unlock 10% Off'}
@@ -174,7 +204,13 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
             placeholder={data?.placeholderText || 'Your email'} 
             className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 focus:outline-none focus:border-black" 
           />
-          <button className="bg-black text-white px-8 py-3 rounded-lg font-bold hover:bg-neutral-800 transition-colors">
+          <button 
+            className="px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity"
+            style={{
+              backgroundColor: data?.buttonBgColor || '#000000',
+              color: data?.buttonTextColor || '#ffffff'
+            }}
+          >
             {data?.buttonText || 'Get Code'}
           </button>
         </div>
