@@ -405,8 +405,15 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data,
   const secondaryButtonText = data?.secondaryButtonText || "View Lookbook";
   
   const style = data?.style || {};
-  const bgColor = style.backgroundColor || 'black';
-  const textColor = style.textColor || 'white';
+  const bgColor = style.backgroundColor || '#000000';
+  const headingColor = style.headingColor || style.textColor || '#ffffff';
+  const badgeColor = style.badgeColor || '#ffffff';
+  const badgeBorderColor = style.badgeBorderColor || '#ffffff';
+  const buttonBgColor = style.buttonBgColor || '#ffffff';
+  const buttonTextColor = style.buttonTextColor || '#000000';
+  const secondaryButtonBgColor = style.secondaryButtonBgColor || 'transparent';
+  const secondaryButtonTextColor = style.secondaryButtonTextColor || '#ffffff';
+  const secondaryButtonBorderColor = style.secondaryButtonBorderColor || '#ffffff';
   const alignment = style.alignment || 'center';
   const padding = style.padding === 'none' ? 'py-0' : style.padding === 's' ? 'py-12' : style.padding === 'l' ? 'py-32' : style.padding === 'xl' ? 'py-40' : 'py-24';
   const overlayOpacity = data?.overlayOpacity !== undefined ? data.overlayOpacity : 0.3;
@@ -425,7 +432,7 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data,
   return (
     <section 
       className={`relative w-full min-h-[90vh] overflow-hidden flex items-center justify-center group/hero ${padding}`}
-      style={{ backgroundColor: bgColor, color: textColor }}
+      style={{ backgroundColor: bgColor }}
     >
       <div className="absolute inset-0">
         <EditableImage 
@@ -443,7 +450,15 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data,
       
       <div className={`relative z-10 px-6 max-w-4xl mx-auto flex flex-col ${alignment === 'left' ? 'items-start text-left' : alignment === 'right' ? 'items-end text-right' : 'items-center text-center'} ${animClass}`}>
         <div className="mb-6">
-           <span className="inline-block px-4 py-1.5 text-xs font-bold tracking-[0.2em] uppercase border border-white/30 backdrop-blur-md rounded-full" style={{ color: textColor, borderColor: textColor }}>
+           <span 
+             className="inline-block px-4 py-1.5 text-xs font-bold tracking-[0.2em] uppercase backdrop-blur-md rounded-full" 
+             style={{ 
+               color: badgeColor, 
+               borderWidth: '1px',
+               borderStyle: 'solid',
+               borderColor: badgeBorderColor
+             }}
+           >
             <EditableText 
                elementId={`editable-${blockId}-badge`}
                tagName="span" 
@@ -457,7 +472,10 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data,
             />
           </span>
         </div>
-        <div className="text-6xl md:text-9xl font-black mb-8 leading-none tracking-tighter animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150 uppercase" style={{ color: textColor }}>
+        <div 
+          className="text-6xl md:text-9xl font-black mb-8 leading-none tracking-tighter animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150 uppercase" 
+          style={{ color: headingColor }}
+        >
           <EditableText 
              elementId={`editable-${blockId}-heading`}
              tagName="h1" 
@@ -477,7 +495,11 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data,
               const link = data?.buttonLink === 'external' ? data?.buttonExternalUrl : data?.buttonLink;
               if (link) window.location.href = link;
             }}
-            className="px-8 py-4 bg-white text-black font-bold tracking-wide rounded-full hover:scale-105 transition-transform flex items-center gap-2"
+            className="px-8 py-4 font-bold tracking-wide rounded-full hover:scale-105 transition-transform flex items-center gap-2"
+            style={{
+              backgroundColor: buttonBgColor,
+              color: buttonTextColor
+            }}
           >
              <EditableText 
                  elementId={`editable-${blockId}-buttonText`}
@@ -499,8 +521,14 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data,
                 const link = data?.secondaryButtonLink === 'external' ? data?.secondaryButtonExternalUrl : data?.secondaryButtonLink;
                 if (link) window.location.href = link;
               }}
-              className="px-8 py-4 bg-transparent border border-white/30 hover:bg-white/10 font-bold tracking-wide rounded-full transition-colors backdrop-blur-sm" 
-              style={{ color: textColor, borderColor: textColor }}
+              className="px-8 py-4 hover:opacity-90 font-bold tracking-wide rounded-full transition-opacity backdrop-blur-sm" 
+              style={{ 
+                backgroundColor: secondaryButtonBgColor,
+                color: secondaryButtonTextColor,
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderColor: secondaryButtonBorderColor
+              }}
             >
                <EditableText 
                    elementId={`editable-${blockId}-secondaryButtonText`}

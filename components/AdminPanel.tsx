@@ -4482,6 +4482,98 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                 <div className="border-t border-neutral-800 my-4"></div>
 
+                {/* Color Controls */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Palette size={14} /> Colors
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={gridData.backgroundColor || '#ffffff'}
+                        onChange={(e) => updateGridData({ backgroundColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Background</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={gridData.headingColor || '#000000'}
+                        onChange={(e) => updateGridData({ headingColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Heading</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={gridData.subheadingColor || '#6b7280'}
+                        onChange={(e) => updateGridData({ subheadingColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Subheading</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={gridData.cardBgColor || '#ffffff'}
+                        onChange={(e) => updateGridData({ cardBgColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Card BG</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={gridData.productNameColor || '#000000'}
+                        onChange={(e) => updateGridData({ productNameColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Product Name</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={gridData.priceColor || '#000000'}
+                        onChange={(e) => updateGridData({ priceColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Price</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={gridData.buttonBgColor || '#000000'}
+                        onChange={(e) => updateGridData({ buttonBgColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Button BG</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={gridData.buttonTextColor || '#ffffff'}
+                        onChange={(e) => updateGridData({ buttonTextColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Button Text</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={gridData.borderColor || '#e5e7eb'}
+                        onChange={(e) => updateGridData({ borderColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Borders</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-neutral-800 my-4"></div>
+
                 {/* 4. Display Settings */}
                 <div className="mb-6">
                   <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -4867,6 +4959,96 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div className="border-t border-neutral-800 my-4"></div>
                   </div>
                 )}
+
+                {/* Color Controls */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Palette size={14} /> Colors
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collectionData.backgroundColor || '#ffffff'}
+                        onChange={(e) => updateCollectionData({ backgroundColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Background</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collectionData.headingColor || '#000000'}
+                        onChange={(e) => updateCollectionData({ headingColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Heading</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collectionData.subheadingColor || '#6b7280'}
+                        onChange={(e) => updateCollectionData({ subheadingColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Subheading</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collectionData.cardBgColor || '#ffffff'}
+                        onChange={(e) => updateCollectionData({ cardBgColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Card BG</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collectionData.productNameColor || '#000000'}
+                        onChange={(e) => updateCollectionData({ productNameColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Product Name</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collectionData.priceColor || '#000000'}
+                        onChange={(e) => updateCollectionData({ priceColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Price</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collectionData.buttonBgColor || '#000000'}
+                        onChange={(e) => updateCollectionData({ buttonBgColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Button BG</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collectionData.buttonTextColor || '#ffffff'}
+                        onChange={(e) => updateCollectionData({ buttonTextColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Button Text</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collectionData.accentColor || '#3b82f6'}
+                        onChange={(e) => updateCollectionData({ accentColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Accent</span>
+                    </div>
+                  </div>
+                </div>
 
                 {/* 4. Appearance Settings */}
                 <div className="mb-6">
@@ -6287,34 +6469,172 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </h4>
 
                   <div className="space-y-4">
-                    {/* Background & Text Colors (Impact, Typographic) */}
-                    {availableFields.includes('backgroundColor') && (
-                      <div className="space-y-3">
-                        <p className="text-xs text-neutral-400">Colors</p>
-                        <div className="grid grid-cols-2 gap-2">
+                    {/* Comprehensive Color Controls */}
+                    <div className="space-y-3">
+                      <p className="text-xs text-neutral-400 font-bold">All Colors</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Background */}
+                        {availableFields.includes('backgroundColor') && (
                           <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
                             <input
                               type="color"
                               value={heroData.style?.backgroundColor || '#000000'}
                               onChange={(e) => updateHeroData({ style: { ...heroData.style, backgroundColor: e.target.value } })}
-                              className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                              className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
-                            <span className="text-xs text-neutral-400">Background</span>
+                            <span className="text-[10px] text-neutral-300 leading-tight">Background</span>
                           </div>
+                        )}
+                        
+                        {/* Heading Color */}
+                        {availableFields.includes('heading') && (
                           <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
                             <input
                               type="color"
-                              value={heroData.style?.textColor || '#ffffff'}
-                              onChange={(e) => updateHeroData({ style: { ...heroData.style, textColor: e.target.value } })}
-                              className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                              value={heroData.style?.headingColor || heroData.style?.textColor || '#ffffff'}
+                              onChange={(e) => updateHeroData({ style: { ...heroData.style, headingColor: e.target.value } })}
+                              className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
-                            <span className="text-xs text-neutral-400">Text</span>
+                            <span className="text-[10px] text-neutral-300 leading-tight">Heading</span>
                           </div>
-                        </div>
+                        )}
+                        
+                        {/* Subheading Color */}
+                        {availableFields.includes('subheading') && (
+                          <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={heroData.style?.subheadingColor || '#9ca3af'}
+                              onChange={(e) => updateHeroData({ style: { ...heroData.style, subheadingColor: e.target.value } })}
+                              className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-[10px] text-neutral-300 leading-tight">Subheading</span>
+                          </div>
+                        )}
+                        
+                        {/* Badge Color */}
+                        {availableFields.includes('badge') && (
+                          <>
+                            <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                              <input
+                                type="color"
+                                value={heroData.style?.badgeColor || '#ffffff'}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, badgeColor: e.target.value } })}
+                                className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                              />
+                              <span className="text-[10px] text-neutral-300 leading-tight">Badge Text</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                              <input
+                                type="color"
+                                value={heroData.style?.badgeBorderColor || '#ffffff'}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, badgeBorderColor: e.target.value } })}
+                                className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                              />
+                              <span className="text-[10px] text-neutral-300 leading-tight">Badge Border</span>
+                            </div>
+                          </>
+                        )}
+                        
+                        {/* Top Badge Color */}
+                        {availableFields.includes('topBadge') && (
+                          <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={heroData.style?.topBadgeColor || '#ffffff'}
+                              onChange={(e) => updateHeroData({ style: { ...heroData.style, topBadgeColor: e.target.value } })}
+                              className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-[10px] text-neutral-300 leading-tight">Top Badge</span>
+                          </div>
+                        )}
+                        
+                        {/* Primary Button */}
+                        {availableFields.includes('buttonText') && (
+                          <>
+                            <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                              <input
+                                type="color"
+                                value={heroData.style?.buttonBgColor || '#ffffff'}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, buttonBgColor: e.target.value } })}
+                                className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                              />
+                              <span className="text-[10px] text-neutral-300 leading-tight">Button BG</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                              <input
+                                type="color"
+                                value={heroData.style?.buttonTextColor || '#000000'}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, buttonTextColor: e.target.value } })}
+                                className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                              />
+                              <span className="text-[10px] text-neutral-300 leading-tight">Button Text</span>
+                            </div>
+                          </>
+                        )}
+                        
+                        {/* Secondary Button */}
+                        {availableFields.includes('secondaryButtonText') && (
+                          <>
+                            <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                              <input
+                                type="color"
+                                value={heroData.style?.secondaryButtonBgColor || 'transparent'}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, secondaryButtonBgColor: e.target.value } })}
+                                className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                              />
+                              <span className="text-[10px] text-neutral-300 leading-tight">2nd Btn BG</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                              <input
+                                type="color"
+                                value={heroData.style?.secondaryButtonTextColor || '#ffffff'}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, secondaryButtonTextColor: e.target.value } })}
+                                className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                              />
+                              <span className="text-[10px] text-neutral-300 leading-tight">2nd Btn Text</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                              <input
+                                type="color"
+                                value={heroData.style?.secondaryButtonBorderColor || '#ffffff'}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, secondaryButtonBorderColor: e.target.value } })}
+                                className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                              />
+                              <span className="text-[10px] text-neutral-300 leading-tight">2nd Btn Border</span>
+                            </div>
+                          </>
+                        )}
+                        
+                        {/* Marquee Text */}
+                        {availableFields.includes('marqueeText') && (
+                          <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={heroData.style?.marqueeColor || '#ccff00'}
+                              onChange={(e) => updateHeroData({ style: { ...heroData.style, marqueeColor: e.target.value } })}
+                              className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-[10px] text-neutral-300 leading-tight">Marquee</span>
+                          </div>
+                        )}
+                        
+                        {/* Link Colors (Typographic) */}
+                        {availableFields.includes('link1Label') && (
+                          <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={heroData.style?.linkColor || '#ffffff'}
+                              onChange={(e) => updateHeroData({ style: { ...heroData.style, linkColor: e.target.value } })}
+                              className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-[10px] text-neutral-300 leading-tight">Nav Links</span>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
 
-                    {/* Accent Color (Kinetik) */}
+                    {/* Accent Color (Kinetik) with presets */}
                     {availableFields.includes('accentColor') && (
                       <div className="space-y-2">
                         <p className="text-xs text-neutral-400">Accent Color</p>
@@ -6340,7 +6660,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </div>
                     )}
 
-                    {/* Feature Card Color (Grid) */}
+                    {/* Feature Card Color (Grid) with presets */}
                     {availableFields.includes('featureCardColor') && (
                       <div className="space-y-2">
                         <p className="text-xs text-neutral-400">Feature Card Color</p>
