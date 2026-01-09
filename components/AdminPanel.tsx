@@ -5474,6 +5474,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const currentVariant = activeBlock?.variant || 'grid-classic';
     const SocialComponent = SOCIAL_COMPONENTS[currentVariant];
 
+    const handlePostImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, postIndex: number) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = 'social_post_' + Math.random().toString(36).substring(2) + '_' + Date.now() + '.' + fileExt;
+        const filePath = 'public/' + fileName;
+
+        const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file);
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage.from('media').getPublicUrl(filePath);
+        const posts = socialData.posts || [];
+        const updatedPosts = [...posts];
+        updatedPosts[postIndex] = { ...updatedPosts[postIndex], image: urlData.publicUrl };
+        updateActiveBlockData(selectedBlockId, { ...socialData, posts: updatedPosts });
+      } catch (error) {
+        alert('Error uploading image');
+      }
+    };
+
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
         <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
@@ -5488,15 +5510,150 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsSocialModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
-              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Social Layouts</h4>
-              <div className="grid grid-cols-1 gap-2">
-                {SOCIAL_OPTIONS.map(opt => (
-                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...socialData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-pink-600/20 border-pink-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                    <div className="font-bold text-sm">{opt.name}</div>
-                    <div className="text-xs opacity-60">{opt.description}</div>
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4 space-y-6">
+              <div>
+                <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Social Layouts</h4>
+                <div className="grid grid-cols-1 gap-2">
+                  {SOCIAL_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...socialData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-pink-600/20 border-pink-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-xs opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4 border-t border-neutral-800 pt-4">
+                <div className="flex items-center gap-2">
+                  <Type size={16} className="text-pink-400" />
+                  <h4 className="text-xs font-bold text-neutral-400 uppercase">Content</h4>
+                </div>
+
+                {(currentVariant === 'grid-classic' || currentVariant === 'masonry-wall' || currentVariant === 'minimal-feed' || currentVariant === 'dark-mode-glitch' || currentVariant === 'ticker-tape') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Heading</label>
+                    <input
+                      type="text"
+                      value={socialData.heading || ''}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, heading: e.target.value })}
+                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                      placeholder="Enter heading text"
+                    />
+                  </div>
+                )}
+
+                {currentVariant === 'grid-classic' && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Subheading</label>
+                    <input
+                      type="text"
+                      value={socialData.subheading || ''}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, subheading: e.target.value })}
+                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                      placeholder="Enter subheading text"
+                    />
+                  </div>
+                )}
+
+                {(currentVariant === 'carousel-reel' || currentVariant === 'ticker-tape') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Username</label>
+                    <input
+                      type="text"
+                      value={socialData.username || ''}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, username: e.target.value })}
+                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                      placeholder="@username"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-2 block">Posts ({(socialData.posts || []).length || 6} images)</label>
+                  <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+                    {(socialData.posts || []).map((post: any, index: number) => (
+                      <div key={index} className="bg-neutral-900 border border-neutral-700 rounded-lg p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-neutral-400">Post {index + 1}</span>
+                          <button
+                            onClick={() => {
+                              const posts = [...(socialData.posts || [])];
+                              posts.splice(index, 1);
+                              updateActiveBlockData(selectedBlockId, { ...socialData, posts });
+                            }}
+                            className="text-red-400 hover:text-red-300 text-xs"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        {post.image && (
+                          <img src={post.image} className="w-full h-24 object-cover rounded" />
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handlePostImageUpload(e, index)}
+                          className="hidden"
+                          id={`post-upload-${index}`}
+                        />
+                        <label htmlFor={`post-upload-${index}`} className="block w-full text-center px-3 py-2 bg-pink-600/20 hover:bg-pink-600/30 border border-pink-500/50 rounded-lg text-pink-400 text-xs cursor-pointer">
+                          Change Image
+                        </label>
+                        <input
+                          type="text"
+                          value={post.caption || ''}
+                          onChange={(e) => {
+                            const posts = [...(socialData.posts || [])];
+                            posts[index] = { ...posts[index], caption: e.target.value };
+                            updateActiveBlockData(selectedBlockId, { ...socialData, posts });
+                          }}
+                          className="w-full px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-white text-xs"
+                          placeholder="Caption"
+                        />
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={post.likes || ''}
+                            onChange={(e) => {
+                              const posts = [...(socialData.posts || [])];
+                              posts[index] = { ...posts[index], likes: e.target.value };
+                              updateActiveBlockData(selectedBlockId, { ...socialData, posts });
+                            }}
+                            className="w-1/2 px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-white text-xs"
+                            placeholder="Likes"
+                          />
+                          <input
+                            type="text"
+                            value={post.comments || ''}
+                            onChange={(e) => {
+                              const posts = [...(socialData.posts || [])];
+                              posts[index] = { ...posts[index], comments: e.target.value };
+                              updateActiveBlockData(selectedBlockId, { ...socialData, posts });
+                            }}
+                            className="w-1/2 px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-white text-xs"
+                            placeholder="Comments"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      const posts = socialData.posts || [];
+                      const newPost = {
+                        id: String(posts.length + 1),
+                        image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80',
+                        likes: '0',
+                        comments: '0',
+                        caption: 'New post'
+                      };
+                      updateActiveBlockData(selectedBlockId, { ...socialData, posts: [...posts, newPost] });
+                    }}
+                    className="w-full mt-3 px-3 py-2 bg-pink-600 hover:bg-pink-700 text-white text-xs rounded-lg font-medium"
+                  >
+                    Add Post
                   </button>
-                ))}
+                </div>
               </div>
             </div>
             <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
