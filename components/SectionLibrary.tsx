@@ -213,162 +213,295 @@ export const EMAIL_SIGNUP_OPTIONS = [
 ];
 
 export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
-  'email-minimal': ({ data, isEditable, onUpdate }) => (
-    <div 
-      className="py-24 px-6 text-center"
-      style={{ 
-        backgroundColor: data?.backgroundColor || '#171717',
-      }}
-    >
-      <div className="max-w-xl mx-auto">
-        <div className="mb-8 flex justify-center" style={{ color: data?.headingColor || '#ffffff' }}>
-          <Mail size={32} />
-        </div>
-        <EditableText
-          value={data?.heading || 'Join the Newsletter'}
-          onChange={(val) => onUpdate?.({ ...data, heading: val })}
-          isEditable={isEditable}
-          className="text-3xl font-bold mb-4"
-          style={{ color: data?.headingColor || '#ffffff' }}
-        />
-        <EditableText
-          value={data?.subheading || 'Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.'}
-          onChange={(val) => onUpdate?.({ ...data, subheading: val })}
-          isEditable={isEditable}
-          className="mb-8"
-          style={{ color: data?.subheadingColor || '#737373' }}
-        />
-        <div className="flex gap-2">
-          <input 
-            type="email" 
-            placeholder={data?.placeholderText || 'Enter your email'} 
-            className="flex-1 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-offset-2"
-            style={{
-              backgroundColor: data?.inputBgColor || 'rgba(255,255,255,0.1)',
-              borderWidth: '1px',
-              borderColor: data?.inputBorderColor || 'rgba(255,255,255,0.2)',
-              color: data?.inputTextColor || '#ffffff'
-            }}
-          />
-          <button 
-            className="px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
-            style={{
-              backgroundColor: data?.buttonBgColor || '#ffffff',
-              color: data?.buttonTextColor || '#000000'
-            }}
-          >
-            {data?.buttonText || 'Subscribe'}
-          </button>
-        </div>
-      </div>
-    </div>
-  ),
-  'email-split': ({ data, isEditable, onUpdate }) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 min-h-[500px]">
-      <div className="bg-neutral-100 relative">
-        <img src={data?.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80'} className="absolute inset-0 w-full h-full object-cover" />
-      </div>
+  'email-minimal': ({ data, isEditable, onUpdate }) => {
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!email) return;
+
+      try {
+        if (data?.formAction) {
+          await fetch(data.formAction, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          });
+        }
+        setStatus('success');
+        setEmail('');
+        
+        // Redirect if link is set
+        if (data?.buttonLink) {
+          const url = data.buttonLink === 'external' ? data.buttonExternalUrl : data.buttonLink;
+          if (url) {
+            setTimeout(() => window.location.href = url, 1500);
+          }
+        }
+      } catch (error) {
+        setStatus('error');
+      }
+    };
+
+    return (
       <div 
-        className="flex items-center justify-center p-12 md:p-24"
+        className="py-24 px-6 text-center"
         style={{ 
-          backgroundColor: data?.backgroundColor || '#ffffff',
+          backgroundColor: data?.backgroundColor || '#171717',
         }}
       >
-        <div className="w-full max-w-md">
+        <div className="max-w-xl mx-auto">
+          <div className="mb-8 flex justify-center" style={{ color: data?.headingColor || '#ffffff' }}>
+            <Mail size={32} />
+          </div>
           <EditableText
-            value={data?.heading || 'Stay in the loop'}
+            value={data?.heading || 'Join the Newsletter'}
+            onChange={(val) => onUpdate?.({ ...data, heading: val })}
+            isEditable={isEditable}
+            className="text-3xl font-bold mb-4"
+            style={{ color: data?.headingColor || '#ffffff' }}
+          />
+          <EditableText
+            value={data?.subheading || 'Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.'}
+            onChange={(val) => onUpdate?.({ ...data, subheading: val })}
+            isEditable={isEditable}
+            className="mb-8"
+            style={{ color: data?.subheadingColor || '#737373' }}
+          />
+          {status === 'success' ? (
+            <div className="text-emerald-400 font-medium">
+              {data?.successMessage || 'Thanks for subscribing!'}
+            </div>
+          ) : status === 'error' ? (
+            <div className="text-red-400 font-medium mb-4">
+              {data?.errorMessage || 'Please enter a valid email address'}
+            </div>
+          ) : null}
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={data?.placeholderText || 'Enter your email'} 
+              className="flex-1 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-offset-2"
+              style={{
+                backgroundColor: data?.inputBgColor || 'rgba(255,255,255,0.1)',
+                borderWidth: '1px',
+                borderColor: data?.inputBorderColor || 'rgba(255,255,255,0.2)',
+                color: data?.inputTextColor || '#ffffff'
+              }}
+              required
+            />
+            <button 
+              type="submit"
+              className="px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
+              style={{
+                backgroundColor: data?.buttonBgColor || '#ffffff',
+                color: data?.buttonTextColor || '#000000'
+              }}
+            >
+              {data?.buttonText || 'Subscribe'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  },
+  'email-split': ({ data, isEditable, onUpdate }) => {
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!email) return;
+
+      try {
+        if (data?.formAction) {
+          await fetch(data.formAction, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          });
+        }
+        setStatus('success');
+        setEmail('');
+        
+        if (data?.buttonLink) {
+          const url = data.buttonLink === 'external' ? data.buttonExternalUrl : data.buttonLink;
+          if (url) {
+            setTimeout(() => window.location.href = url, 1500);
+          }
+        }
+      } catch (error) {
+        setStatus('error');
+      }
+    };
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 min-h-[500px]">
+        <div className="bg-neutral-100 relative">
+          <img src={data?.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80'} className="absolute inset-0 w-full h-full object-cover" />
+        </div>
+        <div 
+          className="flex items-center justify-center p-12 md:p-24"
+          style={{ 
+            backgroundColor: data?.backgroundColor || '#ffffff',
+          }}
+        >
+          <div className="w-full max-w-md">
+            <EditableText
+              value={data?.heading || 'Stay in the loop'}
+              onChange={(val) => onUpdate?.({ ...data, heading: val })}
+              isEditable={isEditable}
+              className="text-4xl font-bold mb-4"
+              style={{ color: data?.headingColor || '#000000' }}
+            />
+            <EditableText
+              value={data?.subheading || 'Be the first to know about new collections and exclusive offers.'}
+              onChange={(val) => onUpdate?.({ ...data, subheading: val })}
+              isEditable={isEditable}
+              className="mb-8"
+              style={{ color: data?.subheadingColor || '#737373' }}
+            />
+            {status === 'success' ? (
+              <div className="text-emerald-600 font-medium">
+                {data?.successMessage || 'Thanks for subscribing!'}
+              </div>
+            ) : status === 'error' ? (
+              <div className="text-red-600 font-medium mb-4">
+                {data?.errorMessage || 'Please enter a valid email address'}
+              </div>
+            ) : null}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input 
+                type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={data?.placeholderText || 'Email address'} 
+                className="w-full rounded-lg px-4 py-3 focus:outline-none focus:ring-2"
+                style={{
+                  backgroundColor: data?.inputBgColor || '#fafafa',
+                  borderWidth: '1px',
+                  borderColor: data?.inputBorderColor || '#e5e5e5',
+                  color: data?.inputTextColor || '#000000'
+                }}
+                required
+              />
+              <button 
+                type="submit"
+                className="w-full px-6 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: data?.buttonBgColor || '#000000',
+                  color: data?.buttonTextColor || '#ffffff'
+                }}
+              >
+                {data?.buttonText || 'Sign Up'} <ArrowRight size={16} />
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  },
+  'email-card': ({ data, isEditable, onUpdate }) => {
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!email) return;
+
+      try {
+        if (data?.formAction) {
+          await fetch(data.formAction, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          });
+        }
+        setStatus('success');
+        setEmail('');
+        
+        if (data?.buttonLink) {
+          const url = data.buttonLink === 'external' ? data.buttonExternalUrl : data.buttonLink;
+          if (url) {
+            setTimeout(() => window.location.href = url, 1500);
+          }
+        }
+      } catch (error) {
+        setStatus('error');
+      }
+    };
+
+    return (
+      <div className="py-24 px-6 bg-neutral-50">
+        <div 
+          className="max-w-4xl mx-auto rounded-2xl shadow-xl p-12 md:p-16 text-center relative overflow-hidden"
+          style={{ 
+            backgroundColor: data?.backgroundColor || '#ffffff',
+          }}
+        >
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+          <EditableText
+            value={data?.heading || 'Unlock 10% Off'}
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
             className="text-4xl font-bold mb-4"
             style={{ color: data?.headingColor || '#000000' }}
           />
           <EditableText
-            value={data?.subheading || 'Be the first to know about new collections and exclusive offers.'}
+            value={data?.subheading || 'Join our mailing list and get 10% off your first order.'}
             onChange={(val) => onUpdate?.({ ...data, subheading: val })}
             isEditable={isEditable}
             className="mb-8"
             style={{ color: data?.subheadingColor || '#737373' }}
           />
-          <div className="space-y-4">
+          {status === 'success' ? (
+            <div className="text-emerald-600 font-medium mb-4">
+              {data?.successMessage || 'Thanks for subscribing!'}
+            </div>
+          ) : status === 'error' ? (
+            <div className="text-red-600 font-medium mb-4">
+              {data?.errorMessage || 'Please enter a valid email address'}
+            </div>
+          ) : null}
+          <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
             <input 
               type="email" 
-              placeholder={data?.placeholderText || 'Email address'} 
-              className="w-full rounded-lg px-4 py-3 focus:outline-none focus:ring-2"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={data?.placeholderText || 'Your email'} 
+              className="flex-1 rounded-lg px-4 py-3 focus:outline-none focus:ring-2"
               style={{
                 backgroundColor: data?.inputBgColor || '#fafafa',
                 borderWidth: '1px',
                 borderColor: data?.inputBorderColor || '#e5e5e5',
                 color: data?.inputTextColor || '#000000'
               }}
+              required
             />
             <button 
-              className="w-full px-6 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              type="submit"
+              className="px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity"
               style={{
                 backgroundColor: data?.buttonBgColor || '#000000',
                 color: data?.buttonTextColor || '#ffffff'
               }}
             >
-              {data?.buttonText || 'Sign Up'} <ArrowRight size={16} />
+              {data?.buttonText || 'Get Code'}
             </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  ),
-  'email-card': ({ data, isEditable, onUpdate }) => (
-    <div className="py-24 px-6 bg-neutral-50">
-      <div 
-        className="max-w-4xl mx-auto rounded-2xl shadow-xl p-12 md:p-16 text-center relative overflow-hidden"
-        style={{ 
-          backgroundColor: data?.backgroundColor || '#ffffff',
-        }}
-      >
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
-        <EditableText
-          value={data?.heading || 'Unlock 10% Off'}
-          onChange={(val) => onUpdate?.({ ...data, heading: val })}
-          isEditable={isEditable}
-          className="text-4xl font-bold mb-4"
-          style={{ color: data?.headingColor || '#000000' }}
-        />
-        <EditableText
-          value={data?.subheading || 'Join our mailing list and get 10% off your first order.'}
-          onChange={(val) => onUpdate?.({ ...data, subheading: val })}
-          isEditable={isEditable}
-          className="mb-8"
-          style={{ color: data?.subheadingColor || '#737373' }}
-        />
-        <div className="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
-          <input 
-            type="email" 
-            placeholder={data?.placeholderText || 'Your email'} 
-            className="flex-1 rounded-lg px-4 py-3 focus:outline-none focus:ring-2"
-            style={{
-              backgroundColor: data?.inputBgColor || '#fafafa',
-              borderWidth: '1px',
-              borderColor: data?.inputBorderColor || '#e5e5e5',
-              color: data?.inputTextColor || '#000000'
-            }}
-          />
-          <button 
-            className="px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity"
-            style={{
-              backgroundColor: data?.buttonBgColor || '#000000',
-              color: data?.buttonTextColor || '#ffffff'
-            }}
+          </form>
+          <p 
+            className="text-xs mt-4"
+            style={{ color: data?.disclaimerColor || '#a3a3a3' }}
           >
-            {data?.buttonText || 'Get Code'}
-          </button>
+            {data?.disclaimer || 'No spam, unsubscribe anytime.'}
+          </p>
         </div>
-        <p 
-          className="text-xs mt-4"
-          style={{ color: data?.disclaimerColor || '#a3a3a3' }}
-        >
-          {data?.disclaimer || 'No spam, unsubscribe anytime.'}
-        </p>
       </div>
-    </div>
-  ),
+    );
+  },
 };
 
 // --- COLLAPSIBLE CONTENT ---

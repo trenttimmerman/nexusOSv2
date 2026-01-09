@@ -6220,6 +6220,34 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
                         placeholder="Subscribe"
                       />
+                      <div className="flex items-center gap-2 mt-1">
+                        <Link size={12} className="text-neutral-600" />
+                        <select
+                          value={emailData.buttonLink || ''}
+                          onChange={(e) => updateEmailData({ buttonLink: e.target.value })}
+                          className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-emerald-500 outline-none"
+                        >
+                          <option value="">Submit email only</option>
+                          {localPages.map(page => (
+                            <option key={page.id} value={page.slug || '/'}>
+                              Redirect to: {page.title || page.slug}
+                            </option>
+                          ))}
+                          <option value="external">Custom URL...</option>
+                        </select>
+                      </div>
+                      {emailData.buttonLink === 'external' && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <ExternalLink size={12} className="text-neutral-600" />
+                          <input
+                            type="text"
+                            value={emailData.buttonExternalUrl || ''}
+                            onChange={(e) => updateEmailData({ buttonExternalUrl: e.target.value })}
+                            className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-emerald-500 outline-none"
+                            placeholder="https://..."
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -6280,6 +6308,52 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </button>
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-neutral-800 my-4"></div>
+
+              {/* Email Integration */}
+              <div>
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <Mail size={14} /> Email Service
+                </h4>
+
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-neutral-400">Form Action URL</label>
+                    <input
+                      type="text"
+                      value={emailData.formAction || ''}
+                      onChange={(e) => updateEmailData({ formAction: e.target.value })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                      placeholder="https://your-email-service.com/submit"
+                    />
+                    <p className="text-[10px] text-neutral-500">Mailchimp, ConvertKit, Klaviyo, etc.</p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-neutral-400">Success Message</label>
+                    <input
+                      type="text"
+                      value={emailData.successMessage || ''}
+                      onChange={(e) => updateEmailData({ successMessage: e.target.value })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                      placeholder="Thanks for subscribing!"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-neutral-400">Error Message</label>
+                    <input
+                      type="text"
+                      value={emailData.errorMessage || ''}
+                      onChange={(e) => updateEmailData({ errorMessage: e.target.value })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                      placeholder="Please enter a valid email address"
+                    />
+                  </div>
                 </div>
               </div>
 
