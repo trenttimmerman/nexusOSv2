@@ -647,10 +647,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
   // Toast notification state
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; x?: number; y?: number } | null>(null);
   
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    setToast({ message, type });
+  const showToast = (message: string, type: 'success' | 'error' = 'success', position?: { x: number; y: number }) => {
+    setToast({ message, type, ...position });
     setTimeout(() => setToast(null), 3000);
   };
   
@@ -1446,8 +1446,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     showToast('Section duplicated', 'success');
   };
 
-  const deleteBlock = async (id: string) => {
+  const deleteBlock = async (id: string, event?: React.MouseEvent) => {
     if (!window.confirm('Are you sure you want to delete this section? This action can be undone with Ctrl+Z.')) return;
+    
+    // Get button position for toast placement
+    let toastPosition: { x: number; y: number } | undefined;
+    if (event) {
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      toastPosition = {
+        x: rect.left + rect.width / 2,
+        y: rect.top
+      };
+    }
     
     // Find the block to ensure it exists
     const blockToDelete = activePage.blocks.find(b => b.id === id);
@@ -1471,10 +1481,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     try {
       await onUpdatePage(activePageId, { blocks: updatedBlocks });
       console.log('[deleteBlock] Successfully saved to database');
-      showToast('Section deleted', 'success');
+      showToast('Section deleted', 'success', toastPosition);
     } catch (error) {
       console.error('Failed to delete section:', error);
-      showToast('Failed to delete section', 'error');
+      showToast('Failed to delete section', 'error', toastPosition);
       // Revert local state on error
       setLocalPages(pages);
     }
@@ -11084,7 +11094,7 @@ Return ONLY the JSON object, no markdown.`;
                                     <button onClick={(e) => { e.stopPropagation(); moveBlock(idx, -1); }} className="text-neutral-600 hover:text-white disabled:opacity-30" disabled={idx === 0}><MoveUp size={10} /></button>
                                     <button onClick={(e) => { e.stopPropagation(); moveBlock(idx, 1); }} className="text-neutral-600 hover:text-white disabled:opacity-30" disabled={idx === (activePage.blocks?.length || 0) - 1}><MoveDown size={10} /></button>
                                   </div>
-                                  <button onClick={(e) => { e.stopPropagation(); deleteBlock(block.id); }} className="p-1.5 text-neutral-600 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors ml-1"><Trash2 size={14} /></button>
+                                  <button onClick={(e) => { e.stopPropagation(); deleteBlock(block.id, e); }} className="p-1.5 text-neutral-600 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors ml-1"><Trash2 size={14} /></button>
                                 </div>
                               </div>
                             </div>
@@ -12674,21 +12684,39 @@ Return ONLY the JSON object, no markdown.`;
       
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-[200] px-6 py-4 rounded-xl shadow-2xl animate-in slide-in-from-bottom-5 duration-300 flex items-center gap-3 ${
-          toast.type === 'success' 
-            ? 'bg-emerald-900/90 border border-emerald-500/30 text-emerald-100' 
-            : 'bg-red-900/90 border border-red-500/30 text-red-100'
-        }`}>
+        <div 
+          className={`fixed z-[300] px-4 py-3 rounded-lg shadow-2xl backdrop-blur-sm animate-in fade-in zoom-in-95 duration-200 flex items-center gap-2.5 border ${
+            toast.type === 'success' 
+              ? 'bg-neutral-900/95 border-emerald-500/50 text-emerald-100 shadow-emerald-500/20' 
+              : 'bg-neutral-900/95 border-red-500/50 text-red-100 shadow-red-500/20'
+          }`}
+          style={
+            toast.x !== undefined && toast.y !== undefined
+              ? {
+                  left: `${toast.x}px`,
+                  top: `${toast.y - 60}px`,
+                  transform: 'translateX(-50%)',
+                }
+              : {
+                  bottom: '24px',
+                  right: '24px',
+                }
+          }
+        >
           {toast.type === 'success' ? (
-            <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+            <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
+              <svg className="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
           ) : (
-            <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <div className="w-4 h-4 rounded-full bg-red-500/20 flex items-center justify-center">
+              <svg className="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
           )}
-          <span className="font-medium">{toast.message}</span>
+          <span className="text-sm font-medium">{toast.message}</span>
         </div>
       )}
     </div>
