@@ -47,19 +47,21 @@ export const SOCIAL_OPTIONS = [
 
 export const SOCIAL_COMPONENTS: Record<string, React.FC<SocialProps>> = {
   'grid-classic': ({ data, isEditable, onUpdate }) => (
-    <div className="py-20 px-4 max-w-7xl mx-auto">
+    <div className="py-20 px-4 max-w-7xl mx-auto" style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}>
       <div className="text-center mb-12">
         <EditableText
           value={data?.heading || 'Follow Us @Evolv'}
           onChange={(val) => onUpdate?.({ ...data, heading: val })}
           isEditable={isEditable}
           className="text-3xl font-bold mb-2"
+          style={{ color: data?.headingColor || '#000000' }}
         />
         <EditableText
           value={data?.subheading || 'Join our community for daily inspiration'}
           onChange={(val) => onUpdate?.({ ...data, subheading: val })}
           isEditable={isEditable}
-          className="text-neutral-500"
+          className="text-sm"
+          style={{ color: data?.subheadingColor || '#6b7280' }}
         />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -77,7 +79,7 @@ export const SOCIAL_COMPONENTS: Record<string, React.FC<SocialProps>> = {
   ),
 
   'masonry-wall': ({ data, isEditable, onUpdate }) => (
-    <div className="py-20 px-4">
+    <div className="py-20 px-4" style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}>
       <div className="flex justify-between items-end max-w-7xl mx-auto mb-12">
         <div>
           <EditableText
@@ -85,9 +87,10 @@ export const SOCIAL_COMPONENTS: Record<string, React.FC<SocialProps>> = {
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
             className="text-6xl font-black tracking-tighter uppercase"
+            style={{ color: data?.headingColor || '#000000' }}
           />
         </div>
-        <button className="flex items-center gap-2 font-bold border-b-2 border-black pb-1">Follow <ArrowRight size={16} /></button>
+        <button className="flex items-center gap-2 font-bold border-b-2 pb-1" style={{ borderColor: data?.buttonColor || '#000000', color: data?.buttonColor || '#000000' }}>Follow <ArrowRight size={16} /></button>
       </div>
       <div className="columns-1 md:columns-3 lg:columns-4 gap-4 space-y-4 max-w-[1600px] mx-auto">
         {(data?.posts || DEFAULT_POSTS).map((post, i) => (
@@ -103,8 +106,8 @@ export const SOCIAL_COMPONENTS: Record<string, React.FC<SocialProps>> = {
   ),
 
   'carousel-reel': ({ data, isEditable, onUpdate }) => (
-    <div className="py-20 overflow-hidden">
-      <div className="px-8 mb-8 flex items-center gap-4">
+    <div className="py-20 overflow-hidden" style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}>
+      <div className="px-8 mb-8 flex items-center gap-4" style={{ color: data?.cardBackgroundColor || '#000000' }}>
         <Instagram size={24} />
         <EditableText
           value={data?.username || '@evolv_official'}
@@ -133,14 +136,14 @@ export const SOCIAL_COMPONENTS: Record<string, React.FC<SocialProps>> = {
   ),
 
   'polaroid-scatter': ({ data, isEditable, onUpdate }) => (
-    <div className="py-24 bg-neutral-100 overflow-hidden">
+    <div className="py-24 overflow-hidden" style={{ backgroundColor: data?.backgroundColor || '#f5f5f5' }}>
       <div className="max-w-4xl mx-auto text-center mb-16 relative z-10">
         <EditableText
           value={data?.heading || 'Captured Moments'}
           onChange={(val) => onUpdate?.({ ...data, heading: val })}
           isEditable={isEditable}
-          className="font-handwriting text-5xl text-neutral-800 rotate-[-2deg]"
-          style={{ fontFamily: 'cursive' }}
+          className="font-handwriting text-5xl rotate-[-2deg]"
+          style={{ fontFamily: 'cursive', color: data?.headingColor || '#262626' }}
         />
       </div>
       <div className="relative h-[600px] max-w-6xl mx-auto">
@@ -154,11 +157,11 @@ export const SOCIAL_COMPONENTS: Record<string, React.FC<SocialProps>> = {
             'right-1/4 bottom-10'
           ][i];
           return (
-            <div key={i} className={`absolute ${position} ${rotation} w-64 bg-white p-3 pb-12 shadow-xl hover:scale-110 hover:z-50 transition-all duration-300 cursor-pointer`}>
+            <div key={i} className={`absolute ${position} ${rotation} w-64 p-3 pb-12 shadow-xl hover:scale-110 hover:z-50 transition-all duration-300 cursor-pointer`} style={{ backgroundColor: data?.polaroidBackground || '#ffffff' }}>
               <div className="aspect-square bg-neutral-100 overflow-hidden mb-2">
                 <img src={post.image} className="w-full h-full object-cover" />
               </div>
-              <div className="font-handwriting text-center text-neutral-600 text-sm" style={{ fontFamily: 'cursive' }}>
+              <div className="font-handwriting text-center text-sm" style={{ fontFamily: 'cursive', color: data?.captionTextColor || '#525252' }}>
                 {post.caption}
               </div>
             </div>
@@ -169,15 +172,16 @@ export const SOCIAL_COMPONENTS: Record<string, React.FC<SocialProps>> = {
   ),
 
   'minimal-feed': ({ data, isEditable, onUpdate }) => (
-    <div className="py-20 max-w-5xl mx-auto px-8">
-      <div className="flex justify-between items-center mb-16 border-b border-neutral-200 pb-8">
+    <div className="py-20 max-w-5xl mx-auto px-8" style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}>
+      <div className="flex justify-between items-center mb-16 border-b pb-8" style={{ borderColor: data?.buttonColor ? data.buttonColor + '33' : '#e5e5e5' }}>
         <EditableText
           value={data?.heading || 'Journal'}
           onChange={(val) => onUpdate?.({ ...data, heading: val })}
           isEditable={isEditable}
           className="text-sm font-bold uppercase tracking-widest"
+          style={{ color: data?.headingColor || '#000000' }}
         />
-        <a href="#" className="text-xs text-neutral-500 hover:text-black transition-colors">VIEW ALL POSTS</a>
+        <a href="#" className="text-xs transition-colors" style={{ color: data?.buttonColor ? data.buttonColor + '99' : '#6b7280' }}>VIEW ALL POSTS</a>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
         {(data?.posts || DEFAULT_POSTS).slice(0, 3).map((post, i) => (
@@ -185,7 +189,7 @@ export const SOCIAL_COMPONENTS: Record<string, React.FC<SocialProps>> = {
             <div className="aspect-[4/5] bg-neutral-50 mb-6 overflow-hidden">
               <img src={post.image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
             </div>
-            <div className="flex justify-between items-center text-xs text-neutral-500">
+            <div className="flex justify-between items-center text-xs" style={{ color: data?.buttonColor ? data.buttonColor + '99' : '#6b7280' }}>
               <span>OCT {12 + i}, 2024</span>
               <span>{post.likes} LIKES</span>
             </div>
@@ -196,24 +200,25 @@ export const SOCIAL_COMPONENTS: Record<string, React.FC<SocialProps>> = {
   ),
 
   'dark-mode-glitch': ({ data, isEditable, onUpdate }) => (
-    <div className="py-24 bg-black text-white overflow-hidden relative">
+    <div className="py-24 text-white overflow-hidden relative" style={{ backgroundColor: data?.backgroundColor || '#000000' }}>
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23333333\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }}></div>
       <div className="max-w-7xl mx-auto px-4 relative z-10">
         <div className="flex items-center gap-4 mb-12">
-          <div className="w-3 h-3 bg-green-500 animate-pulse rounded-full"></div>
+          <div className="w-3 h-3 animate-pulse rounded-full" style={{ backgroundColor: data?.accentColor || '#22c55e' }}></div>
           <EditableText
             value={data?.heading || 'SYSTEM_FEED'}
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
-            className="font-mono text-2xl tracking-widest text-green-500"
+            className="font-mono text-2xl tracking-widest"
+            style={{ color: data?.accentColor || '#22c55e' }}
           />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-1">
           {(data?.posts || DEFAULT_POSTS).slice(0, 8).map((post, i) => (
-            <div key={i} className="relative group aspect-square overflow-hidden border border-neutral-900">
+            <div key={i} className="relative group aspect-square overflow-hidden border" style={{ borderColor: data?.borderColor || '#262626' }}>
               <img src={post.image} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-100" />
-              <div className="absolute inset-0 bg-green-500/20 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div className="absolute bottom-2 left-2 font-mono text-[10px] text-green-500 opacity-0 group-hover:opacity-100">
+              <div className="absolute inset-0 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: (data?.accentColor || '#22c55e') + '33' }}></div>
+              <div className="absolute bottom-2 left-2 font-mono text-[10px] opacity-0 group-hover:opacity-100" style={{ color: data?.accentColor || '#22c55e' }}>
                 IMG_{1000 + i}.JPG
               </div>
             </div>
@@ -224,16 +229,16 @@ export const SOCIAL_COMPONENTS: Record<string, React.FC<SocialProps>> = {
   ),
 
   'story-circles': ({ data, isEditable, onUpdate }) => (
-    <div className="py-12 border-y border-neutral-100">
+    <div className="py-12 border-y" style={{ backgroundColor: data?.backgroundColor || '#ffffff', borderColor: data?.labelTextColor ? data.labelTextColor + '33' : '#f5f5f5' }}>
       <div className="max-w-7xl mx-auto px-4 flex gap-8 overflow-x-auto scrollbar-hide items-center justify-center">
         {(data?.posts || DEFAULT_POSTS).map((post, i) => (
           <div key={i} className="flex flex-col items-center gap-3 shrink-0 cursor-pointer group">
-            <div className="w-20 h-20 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 group-hover:scale-105 transition-transform">
+            <div className="w-20 h-20 rounded-full p-[2px] bg-gradient-to-tr group-hover:scale-105 transition-transform" style={{ backgroundImage: `linear-gradient(to top right, ${data?.gradientStart || '#fbbf24'}, ${data?.gradientMiddle || '#ef4444'}, ${data?.gradientEnd || '#a855f7'})` }}>
               <div className="w-full h-full rounded-full border-2 border-white overflow-hidden">
                 <img src={post.image} className="w-full h-full object-cover" />
               </div>
             </div>
-            <span className="text-xs font-medium text-neutral-600">Highlight {i + 1}</span>
+            <span className="text-xs font-medium" style={{ color: data?.labelTextColor || '#525252' }}>Highlight {i + 1}</span>
           </div>
         ))}
       </div>
@@ -241,15 +246,15 @@ export const SOCIAL_COMPONENTS: Record<string, React.FC<SocialProps>> = {
   ),
 
   'featured-hero': ({ data, isEditable, onUpdate }) => (
-    <div className="py-20 max-w-7xl mx-auto px-4">
+    <div className="py-20 max-w-7xl mx-auto px-4" style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[600px]">
         <div className="lg:col-span-2 h-full relative group overflow-hidden rounded-2xl">
           <img src={(data?.posts || DEFAULT_POSTS)[0].image} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/30 flex flex-col justify-end p-8 text-white">
+          <div className="absolute inset-0 bg-black/30 flex flex-col justify-end p-8" style={{ color: data?.textColor || '#ffffff' }}>
             <div className="flex items-center gap-2 mb-2 text-sm font-bold uppercase tracking-wider">
-              <span className="w-2 h-2 bg-white rounded-full"></span> Featured Post
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: data?.textColor || '#ffffff' }}></span> Featured Post
             </div>
-            <h3 className="text-3xl font-bold mb-4">{(data?.posts || DEFAULT_POSTS)[0].caption}</h3>
+            <h3 className="text-3xl font-bold mb-4" style={{ color: data?.headingColor || '#ffffff' }}>{(data?.posts || DEFAULT_POSTS)[0].caption}</h3>
             <div className="flex gap-6 text-sm">
               <span>{(data?.posts || DEFAULT_POSTS)[0].likes} Likes</span>
               <span>{(data?.posts || DEFAULT_POSTS)[0].comments} Comments</span>
@@ -269,20 +274,21 @@ export const SOCIAL_COMPONENTS: Record<string, React.FC<SocialProps>> = {
   ),
 
   'ticker-tape': ({ data, isEditable, onUpdate }) => (
-    <div className="py-16 overflow-hidden bg-neutral-900">
+    <div className="py-16 overflow-hidden" style={{ backgroundColor: data?.backgroundColor || '#171717' }}>
       <div className="mb-8 text-center">
         <EditableText
           value={data?.heading || '#EVOLV_STYLE'}
           onChange={(val) => onUpdate?.({ ...data, heading: val })}
           isEditable={isEditable}
-          className="text-white font-bold text-xl tracking-[0.5em]"
+          className="font-bold text-xl tracking-[0.5em]"
+          style={{ color: data?.headingColor || '#ffffff' }}
         />
       </div>
       <div className="flex gap-4 animate-scroll whitespace-nowrap">
         {[...(data?.posts || DEFAULT_POSTS), ...(data?.posts || DEFAULT_POSTS)].map((post, i) => (
           <div key={i} className="w-64 aspect-[4/5] shrink-0 relative grayscale hover:grayscale-0 transition-all duration-500">
             <img src={post.image} className="w-full h-full object-cover" />
-            <div className="absolute bottom-4 left-4 text-white font-bold text-lg drop-shadow-lg">
+            <div className="absolute bottom-4 left-4 font-bold text-lg drop-shadow-lg" style={{ color: data?.headingColor || '#ffffff' }}>
               @{data?.username || 'evolv'}
             </div>
           </div>
@@ -292,12 +298,12 @@ export const SOCIAL_COMPONENTS: Record<string, React.FC<SocialProps>> = {
   ),
 
   'glass-cards': ({ data, isEditable, onUpdate }) => (
-    <div className="py-24 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?w=1600&q=80')] bg-cover bg-center bg-fixed relative">
-      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
+    <div className="py-24 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?w=1600&q=80')] bg-cover bg-center bg-fixed relative" style={{ backgroundColor: data?.backgroundColor || 'transparent' }}>
+      <div className="absolute inset-0 backdrop-blur-sm" style={{ backgroundColor: (data?.backgroundColor || '#000000') + '33' }}></div>
       <div className="max-w-7xl mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {(data?.posts || DEFAULT_POSTS).slice(0, 3).map((post, i) => (
-            <div key={i} className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl text-white hover:-translate-y-2 transition-transform duration-300">
+            <div key={i} className="backdrop-blur-md border p-4 rounded-2xl hover:-translate-y-2 transition-transform duration-300" style={{ backgroundColor: (data?.cardBackgroundColor || '#ffffff') + '1a', borderColor: (data?.textColor || '#ffffff') + '33', color: data?.textColor || '#ffffff' }}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-white/20"></div>
                 <div>

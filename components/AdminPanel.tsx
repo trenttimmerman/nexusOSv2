@@ -5655,6 +5655,170 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </button>
                 </div>
               </div>
+
+              <div className="space-y-4 border-t border-neutral-800 pt-4">
+                <div className="flex items-center gap-2">
+                  <Palette size={16} className="text-pink-400" />
+                  <h4 className="text-xs font-bold text-neutral-400 uppercase">Style</h4>
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Background Color</label>
+                  <input
+                    type="color"
+                    value={socialData.backgroundColor || '#ffffff'}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, backgroundColor: e.target.value })}
+                    className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                {(currentVariant === 'grid-classic' || currentVariant === 'minimal-feed' || currentVariant === 'featured-hero') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Heading Color</label>
+                    <input
+                      type="color"
+                      value={socialData.headingColor || '#000000'}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, headingColor: e.target.value })}
+                      className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                )}
+
+                {currentVariant === 'grid-classic' && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Subheading Color</label>
+                    <input
+                      type="color"
+                      value={socialData.subheadingColor || '#6b7280'}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, subheadingColor: e.target.value })}
+                      className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                )}
+
+                {(currentVariant === 'carousel-reel' || currentVariant === 'glass-cards') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Card Background Color</label>
+                    <input
+                      type="color"
+                      value={socialData.cardBackgroundColor || '#ffffff'}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, cardBackgroundColor: e.target.value })}
+                      className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                )}
+
+                {currentVariant === 'dark-mode-glitch' && (
+                  <>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Accent Color</label>
+                      <input
+                        type="color"
+                        value={socialData.accentColor || '#22c55e'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, accentColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Border Color</label>
+                      <input
+                        type="color"
+                        value={socialData.borderColor || '#262626'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, borderColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {currentVariant === 'story-circles' && (
+                  <>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Gradient Start Color</label>
+                      <input
+                        type="color"
+                        value={socialData.gradientStart || '#fbbf24'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, gradientStart: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Gradient Middle Color</label>
+                      <input
+                        type="color"
+                        value={socialData.gradientMiddle || '#ef4444'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, gradientMiddle: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Gradient End Color</label>
+                      <input
+                        type="color"
+                        value={socialData.gradientEnd || '#a855f7'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, gradientEnd: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Label Text Color</label>
+                      <input
+                        type="color"
+                        value={socialData.labelTextColor || '#525252'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, labelTextColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {(currentVariant === 'masonry-wall' || currentVariant === 'minimal-feed') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Button/Link Color</label>
+                    <input
+                      type="color"
+                      value={socialData.buttonColor || '#000000'}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, buttonColor: e.target.value })}
+                      className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                )}
+
+                {currentVariant === 'polaroid-scatter' && (
+                  <>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Polaroid Background</label>
+                      <input
+                        type="color"
+                        value={socialData.polaroidBackground || '#ffffff'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, polaroidBackground: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Caption Text Color</label>
+                      <input
+                        type="color"
+                        value={socialData.captionTextColor || '#525252'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, captionTextColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {(currentVariant === 'featured-hero' || currentVariant === 'glass-cards') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Text Color</label>
+                    <input
+                      type="color"
+                      value={socialData.textColor || '#ffffff'}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...socialData, textColor: e.target.value })}
+                      className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
               <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
