@@ -15,10 +15,7 @@ import { VIDEO_OPTIONS } from './VideoLibrary';
 import { CONTACT_OPTIONS } from './ContactLibrary';
 import { LAYOUT_OPTIONS } from './LayoutLibrary';
 import { COLLECTION_OPTIONS, COLLECTION_COMPONENTS } from './CollectionLibrary';
-import { UniversalEditor } from './UniversalEditor';
-import { mapDataToLayout } from '../lib/smartMapper';
 import { Storefront } from './Storefront';
-import { EditorPanel } from './EditorPanel';
 import { CartDrawer } from './CartDrawer';
 import { MediaLibrary } from './MediaLibrary';
 import { CampaignManager } from './CampaignManager';
@@ -6093,8 +6090,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           
           {/* Modal Content - Split View */}
           <div className="flex-1 flex overflow-hidden">
-            {/* Left Panel - Style Selection */}
-            <div className="w-80 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative min-h-0">
+            {/* Left Panel - Style Selection (30%) */}
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative min-h-0">
               {/* WARNING OVERLAY */}
               {warningFields.length > 0 && (
                 <div className="absolute inset-0 z-50 bg-neutral-950/98 p-6 flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
@@ -7486,8 +7483,8 @@ Return ONLY the JSON object, no markdown.`;
           
           {/* Modal Content - Split View */}
           <div className="flex-1 flex overflow-hidden">
-            {/* Left Panel - Controls */}
-            <div className="w-80 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 overflow-y-auto custom-scrollbar p-4 space-y-6">
+            {/* Left Panel - Controls (30%) */}
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 overflow-y-auto custom-scrollbar p-4 space-y-6">
               {/* Layout Matrix */}
               <div>
                 <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -9854,7 +9851,13 @@ Return ONLY the JSON object, no markdown.`;
                               onDragOver={(e) => handleDragOver(e, idx)}
                               onDrop={() => handleDrop(idx)}
                               className={`group flex flex-col p-3 rounded-lg border transition-all cursor-grab active:cursor-grabbing ${selectedBlockId === block.id ? 'bg-neutral-800 border-neutral-700' : 'bg-transparent border-transparent hover:bg-white/5'} ${block.hidden ? 'opacity-50' : ''} ${draggedIndex === idx ? 'opacity-20' : ''}`}
-                              onClick={() => !block.locked && setSelectedBlockId(block.id)}
+                              onClick={() => {
+                                if (block.locked) return;
+                                setSelectedBlockId(block.id);
+                                if (block.type === 'system-hero') setIsHeroModalOpen(true);
+                                else if (block.type === 'system-grid') setIsGridModalOpen(true);
+                                else if (block.type === 'system-collection') setIsCollectionModalOpen(true);
+                              }}
                             >
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-3 overflow-hidden">
@@ -9902,7 +9905,7 @@ Return ONLY the JSON object, no markdown.`;
                                       else if (block.type === 'system-collection') { setSelectedBlockId(block.id); setIsCollectionModalOpen(true); }
                                       else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
                                       else if (block.type.startsWith('system-')) { 
-                                        // All other system blocks: just select them to open UniversalEditor
+                                        // All other system blocks: select them
                                         setSelectedBlockId(block.id);
                                       }
                                       else { handleOpenArchitect(block.id); }
@@ -9953,48 +9956,11 @@ Return ONLY the JSON object, no markdown.`;
                     </button>
                   </div>
 
-                  {/* INLINE BLOCK EDITOR (Restored) */}
-                  {selectedBlockId && activeBlock && activeBlock.type === 'section' && (
-                    <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden animate-in slide-in-from-top-2">
-                      <div className="p-2 border-b border-neutral-800 flex items-center gap-2 bg-black/20">
-                        <button className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white"><Bold size={14} /></button>
-                        <button className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white"><Italic size={14} /></button>
-                        <button className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white"><Link size={14} /></button>
-                        <div className="w-px h-4 bg-neutral-800 mx-1"></div>
-                        <button className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white"><AlignLeft size={14} /></button>
-                        <button className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white"><AlignCenter size={14} /></button>
-                        <button className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white"><AlignRight size={14} /></button>
-                      </div>
-                      <textarea
-                        value={activeBlock.content}
-                        onChange={(e) => updateActiveBlock(e.target.value)}
-                        className="w-full h-64 bg-transparent p-4 text-xs font-mono text-neutral-300 focus:outline-none resize-none"
-                        placeholder="Edit HTML content..."
-                      />
-                    </div>
-                  )}
+                  {/* Inline editor removed - all blocks now use modals */}
 
                 </div>
               </div>
             </div>
-
-            {/* UNIVERSAL EDITOR SIDEBAR - Exclude hero blocks since they use the Hero Studio modal */}
-            {selectedBlockId && activeBlock && activeBlock.type.startsWith('system-') && activeBlock.type !== 'system-hero' && (
-               <div className="w-80 border-r border-neutral-800 bg-neutral-900 h-full overflow-hidden flex flex-col z-20">
-                 <UniversalEditor
-                    blockId={activeBlock.id}
-                    blockType={activeBlock.type}
-                    variant={activeBlock.variant || 'default'}
-                    data={activeBlock.data || {}}
-                    activeField={activeField}
-                    onUpdate={(newData) => updateActiveBlockData(activeBlock.id, newData)}
-                    onSwitchLayout={(newVariant) => {
-                      const newData = mapDataToLayout(activeBlock.data || {}, newVariant);
-                      updateActiveBlockData(activeBlock.id, { ...newData, variant: newVariant });
-                    }}
-                 />
-               </div>
-            )}
 
             {/* RIGHT COLUMN: LIVE CANVAS */}
             <div className="flex-1 bg-[#111] flex flex-col relative overflow-hidden">
@@ -10253,7 +10219,8 @@ Return ONLY the JSON object, no markdown.`;
                         else if (block.type === 'system-collection') { setIsCollectionModalOpen(true); }
                         else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
                         else if (block.type.startsWith('system-')) {
-                          // Other system blocks - UniversalEditor already opens via setSelectedBlockId
+                          // Other system blocks
+                          setSelectedBlockId(blockId);
                         }
                         else { handleOpenArchitect(blockId); }
                       }}

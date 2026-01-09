@@ -292,7 +292,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   };
 
   // Render System Product Grid
-  const renderProductGrid = (variant?: string, data?: any, blockId?: string, isEditable?: boolean) => {
+  const renderProductGrid = (variant?: string, data?: any, blockId?: string, isEditable?: boolean, onEditBlock?: (id: string) => void) => {
     const styleId = (variant as ProductCardStyleId) || config.productCardStyle || 'classic';
     const CardComponent = PRODUCT_CARD_COMPONENTS[styleId] || PRODUCT_CARD_COMPONENTS['classic'];
     const heading = data?.heading || "Latest Drops.";
@@ -321,6 +321,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                  onStyleChange={(style) => onUpdateBlock && blockId && onUpdateBlock(blockId, { heading_style: style })}
                  style={data?.heading_style}
                  isEditable={isEditable} 
+                 onSelect={() => onEditBlock && blockId && onEditBlock(blockId)}
                />
             </h2>
             <p className="text-neutral-500">
@@ -331,6 +332,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                  onStyleChange={(style) => onUpdateBlock && blockId && onUpdateBlock(blockId, { subheading_style: style })}
                  style={data?.subheading_style}
                  isEditable={isEditable} 
+                 onSelect={() => onEditBlock && blockId && onEditBlock(blockId)}
                />
             </p>
           </div>
@@ -389,7 +391,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
             />
           ) : null;
         case 'system-grid':
-          return renderProductGrid(block.variant, block.data, block.id, isEditable);
+          return renderProductGrid(block.variant, block.data, block.id, isEditable, onEditBlock);
         case 'system-scroll':
           const ScrollComponent = SCROLL_COMPONENTS[block.variant || 'logo-marquee'];
           return ScrollComponent ? (
@@ -467,7 +469,9 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
               data={block.data} 
               products={getFilteredProducts(block.data)} 
               isEditable={isEditable} 
-              onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} 
+              onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
+              onEditBlock={onEditBlock}
+              blockId={block.id}
             />
           ) : null;
         case 'section':

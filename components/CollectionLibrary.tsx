@@ -26,7 +26,7 @@ const MOCK_PRODUCTS = [
 ];
 
 export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
-  'collection-list': ({ data, isEditable, onUpdate, products }) => (
+  'collection-list': ({ data, isEditable, onUpdate, products, onEditBlock, blockId }) => (
     <div className="py-16 px-6 max-w-7xl mx-auto">
       <div className="text-center mb-12">
         <EditableText
@@ -34,6 +34,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
           onChange={(val) => onUpdate?.({ ...data, heading: val })}
           isEditable={isEditable}
           className="text-3xl font-bold"
+          onSelect={() => onEditBlock?.(blockId || '')}
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -56,7 +57,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
     </div>
   ),
 
-  'featured-collection': ({ data, isEditable, onUpdate, products }) => {
+  'featured-collection': ({ data, isEditable, onUpdate, products, onEditBlock, blockId }) => {
     const displayProducts = (products && products.length > 0) ? products : MOCK_PRODUCTS;
     const isDark = data?.darkMode;
     const isFullWidth = data?.fullWidth;
@@ -71,6 +72,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
               onChange={(val) => onUpdate?.({ ...data, heading: val })}
               isEditable={isEditable}
               className="text-3xl font-bold mb-2"
+              onSelect={() => onEditBlock?.(blockId || '')}
             />
             <p className={`${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>{data?.subheading || 'Curated picks for the season'}</p>
           </div>
@@ -105,7 +107,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
     );
   },
 
-  'featured-product': ({ data, isEditable, onUpdate }) => (
+  'featured-product': ({ data, isEditable, onUpdate, onEditBlock, blockId }) => (
     <div className="py-20 px-6 max-w-7xl mx-auto bg-gray-50 rounded-3xl my-12">
       <div className="grid md:grid-cols-2 gap-12 items-center">
         <div className="aspect-square bg-white rounded-2xl overflow-hidden p-8 flex items-center justify-center">
@@ -122,6 +124,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
             className="text-4xl md:text-5xl font-black mb-6"
+            onSelect={() => onEditBlock?.(blockId || '')}
           />
           <div className="text-3xl font-bold mb-6">$150.00</div>
           <p className="text-gray-600 mb-8 leading-relaxed">
@@ -142,7 +145,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
     </div>
   ),
 
-  'slideshow': ({ data, isEditable, onUpdate }) => (
+  'slideshow': ({ data, isEditable, onUpdate, onEditBlock, blockId }) => (
     <div className="relative h-[600px] overflow-hidden group">
       <div className="absolute inset-0 flex transition-transform duration-500">
         <img 
@@ -158,6 +161,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
           onChange={(val) => onUpdate?.({ ...data, heading: val })}
           isEditable={isEditable}
           className="text-5xl md:text-7xl font-bold mb-6"
+          onSelect={() => onEditBlock?.(blockId || '')}
         />
         <button className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors">
           Explore Now
@@ -172,7 +176,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
     </div>
   ),
 
-  'collection-grid-tight': ({ data, isEditable, onUpdate, products }) => {
+  'collection-grid-tight': ({ data, isEditable, onUpdate, products, onEditBlock, blockId }) => {
     const displayProducts = (products && products.length > 0) ? products : MOCK_PRODUCTS;
     const isDark = data?.darkMode;
     const isFullWidth = data?.fullWidth;
@@ -186,6 +190,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
             className="text-3xl font-bold"
+            onSelect={() => onEditBlock?.(blockId || '')}
           />
           {data?.subheading && <p className="mt-2 text-neutral-500">{data.subheading}</p>}
         </div>
@@ -231,7 +236,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
     </div>
   ),
 
-  'collection-carousel': ({ data, isEditable, onUpdate }) => (
+  'collection-carousel': ({ data, isEditable, onUpdate, onEditBlock, blockId }) => (
     <div className="py-20 overflow-hidden">
       <div className="px-6 max-w-7xl mx-auto mb-8 flex justify-between items-end">
         <EditableText
@@ -239,6 +244,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
           onChange={(val) => onUpdate?.({ ...data, heading: val })}
           isEditable={isEditable}
           className="text-3xl font-bold"
+          onSelect={() => onEditBlock?.(blockId || '')}
         />
         <div className="flex gap-2">
           <button className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-black hover:text-white transition-colors"><ChevronLeft size={20} /></button>
@@ -260,7 +266,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
     </div>
   ),
 
-  'collection-tabs': ({ data, isEditable, onUpdate }) => (
+  'collection-tabs': ({ data, isEditable, onUpdate, onEditBlock, blockId }) => (
     <div className="py-20 px-6 max-w-7xl mx-auto">
       <div className="text-center mb-12">
         <EditableText
@@ -268,6 +274,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
           onChange={(val) => onUpdate?.({ ...data, heading: val })}
           isEditable={isEditable}
           className="text-3xl font-bold mb-8"
+          onSelect={() => onEditBlock?.(blockId || '')}
         />
         <div className="flex justify-center gap-4 flex-wrap">
           {['All', 'Clothing', 'Accessories', 'Shoes', 'Sale'].map((tab, i) => (
@@ -294,7 +301,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
     </div>
   ),
 
-  'collection-lookbook': ({ data, isEditable, onUpdate }) => (
+  'collection-lookbook': ({ data, isEditable, onUpdate, onEditBlock, blockId }) => (
     <div className="py-20 px-6 max-w-7xl mx-auto">
       <div className="grid md:grid-cols-2 gap-12 items-center">
         <div className="relative aspect-[3/4] bg-gray-100 rounded-2xl overflow-hidden">
@@ -310,6 +317,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
             className="text-4xl font-bold mb-8"
+            onSelect={() => onEditBlock?.(blockId || '')}
           />
           <div className="space-y-6">
             {MOCK_PRODUCTS.slice(0, 2).map((product) => (
