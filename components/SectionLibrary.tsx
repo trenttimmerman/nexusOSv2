@@ -92,31 +92,40 @@ export const EMAIL_SIGNUP_OPTIONS = [
 export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
   'email-minimal': ({ data, isEditable, onUpdate }) => (
     <div 
-      className="py-24 px-6 text-center text-white"
+      className="py-24 px-6 text-center"
       style={{ 
         backgroundColor: data?.backgroundColor || '#171717',
-        color: data?.textColor || '#ffffff'
       }}
     >
       <div className="max-w-xl mx-auto">
-        <div className="mb-8 flex justify-center"><Mail size={32} /></div>
+        <div className="mb-8 flex justify-center" style={{ color: data?.headingColor || '#ffffff' }}>
+          <Mail size={32} />
+        </div>
         <EditableText
           value={data?.heading || 'Join the Newsletter'}
           onChange={(val) => onUpdate?.({ ...data, heading: val })}
           isEditable={isEditable}
           className="text-3xl font-bold mb-4"
+          style={{ color: data?.headingColor || '#ffffff' }}
         />
         <EditableText
           value={data?.subheading || 'Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.'}
           onChange={(val) => onUpdate?.({ ...data, subheading: val })}
           isEditable={isEditable}
-          className="text-neutral-400 mb-8"
+          className="mb-8"
+          style={{ color: data?.subheadingColor || '#737373' }}
         />
         <div className="flex gap-2">
           <input 
             type="email" 
             placeholder={data?.placeholderText || 'Enter your email'} 
-            className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-neutral-500 focus:outline-none focus:border-white" 
+            className="flex-1 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-offset-2"
+            style={{
+              backgroundColor: data?.inputBgColor || 'rgba(255,255,255,0.1)',
+              borderWidth: '1px',
+              borderColor: data?.inputBorderColor || 'rgba(255,255,255,0.2)',
+              color: data?.inputTextColor || '#ffffff'
+            }}
           />
           <button 
             className="px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
@@ -140,7 +149,6 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
         className="flex items-center justify-center p-12 md:p-24"
         style={{ 
           backgroundColor: data?.backgroundColor || '#ffffff',
-          color: data?.textColor || '#000000'
         }}
       >
         <div className="w-full max-w-md">
@@ -149,18 +157,26 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
             className="text-4xl font-bold mb-4"
+            style={{ color: data?.headingColor || '#000000' }}
           />
           <EditableText
             value={data?.subheading || 'Be the first to know about new collections and exclusive offers.'}
             onChange={(val) => onUpdate?.({ ...data, subheading: val })}
             isEditable={isEditable}
-            className="text-neutral-500 mb-8"
+            className="mb-8"
+            style={{ color: data?.subheadingColor || '#737373' }}
           />
           <div className="space-y-4">
             <input 
               type="email" 
               placeholder={data?.placeholderText || 'Email address'} 
-              className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 focus:outline-none focus:border-black transition-colors" 
+              className="w-full rounded-lg px-4 py-3 focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: data?.inputBgColor || '#fafafa',
+                borderWidth: '1px',
+                borderColor: data?.inputBorderColor || '#e5e5e5',
+                color: data?.inputTextColor || '#000000'
+              }}
             />
             <button 
               className="w-full px-6 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
@@ -182,7 +198,6 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
         className="max-w-4xl mx-auto rounded-2xl shadow-xl p-12 md:p-16 text-center relative overflow-hidden"
         style={{ 
           backgroundColor: data?.backgroundColor || '#ffffff',
-          color: data?.textColor || '#000000'
         }}
       >
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
@@ -191,18 +206,26 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
           onChange={(val) => onUpdate?.({ ...data, heading: val })}
           isEditable={isEditable}
           className="text-4xl font-bold mb-4"
+          style={{ color: data?.headingColor || '#000000' }}
         />
         <EditableText
           value={data?.subheading || 'Join our mailing list and get 10% off your first order.'}
           onChange={(val) => onUpdate?.({ ...data, subheading: val })}
           isEditable={isEditable}
-          className="text-neutral-500 mb-8"
+          className="mb-8"
+          style={{ color: data?.subheadingColor || '#737373' }}
         />
         <div className="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
           <input 
             type="email" 
             placeholder={data?.placeholderText || 'Your email'} 
-            className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 focus:outline-none focus:border-black" 
+            className="flex-1 rounded-lg px-4 py-3 focus:outline-none focus:ring-2"
+            style={{
+              backgroundColor: data?.inputBgColor || '#fafafa',
+              borderWidth: '1px',
+              borderColor: data?.inputBorderColor || '#e5e5e5',
+              color: data?.inputTextColor || '#000000'
+            }}
           />
           <button 
             className="px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity"
@@ -214,7 +237,10 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
             {data?.buttonText || 'Get Code'}
           </button>
         </div>
-        <p className="text-xs text-neutral-400 mt-4">
+        <p 
+          className="text-xs mt-4"
+          style={{ color: data?.disclaimerColor || '#a3a3a3' }}
+        >
           {data?.disclaimer || 'No spam, unsubscribe anytime.'}
         </p>
       </div>

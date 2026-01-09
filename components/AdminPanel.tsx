@@ -5170,12 +5170,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
     const availableFields = EMAIL_FIELDS[currentVariant] || [];
 
-    // Color fields available for all variants
+    // Comprehensive color fields for all text and UI elements
     const colorFields = [
       { key: 'backgroundColor', label: 'Background', defaultValue: currentVariant === 'email-minimal' ? '#171717' : '#ffffff' },
-      { key: 'textColor', label: 'Text', defaultValue: currentVariant === 'email-minimal' ? '#ffffff' : '#000000' },
+      { key: 'headingColor', label: 'Heading', defaultValue: currentVariant === 'email-minimal' ? '#ffffff' : '#000000' },
+      { key: 'subheadingColor', label: 'Subheading', defaultValue: '#737373' },
       { key: 'buttonBgColor', label: 'Button BG', defaultValue: currentVariant === 'email-minimal' ? '#ffffff' : '#000000' },
       { key: 'buttonTextColor', label: 'Button Text', defaultValue: currentVariant === 'email-minimal' ? '#000000' : '#ffffff' },
+      { key: 'inputBgColor', label: 'Input BG', defaultValue: currentVariant === 'email-minimal' ? '#ffffff10' : '#fafafa' },
+      { key: 'inputBorderColor', label: 'Input Border', defaultValue: currentVariant === 'email-minimal' ? '#ffffff33' : '#e5e5e5' },
+      { key: 'inputTextColor', label: 'Input Text', defaultValue: currentVariant === 'email-minimal' ? '#ffffff' : '#000000' },
+      { key: 'disclaimerColor', label: 'Disclaimer', defaultValue: '#a3a3a3' },
     ];
 
     const updateEmailData = (updates: Partial<typeof emailData>) => {
@@ -5371,16 +5376,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                   <Palette size={14} /> Colors
                 </h4>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   {colorFields.map(({ key, label, defaultValue }) => (
-                    <div key={key} className="flex items-center gap-2 bg-neutral-900 p-2.5 rounded-lg border border-neutral-700">
+                    <div key={key} className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
                       <input
                         type="color"
                         value={emailData[key] || defaultValue}
                         onChange={(e) => updateEmailData({ [key]: e.target.value })}
-                        className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                       />
-                      <span className="text-xs text-neutral-300">{label}</span>
+                      <span className="text-[10px] text-neutral-300 leading-tight">{label}</span>
                     </div>
                   ))}
                 </div>
