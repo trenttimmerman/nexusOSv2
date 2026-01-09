@@ -7,13 +7,13 @@ import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
 import { SOCIAL_OPTIONS, SOCIAL_COMPONENTS } from './SocialLibrary';
-import { SCROLL_OPTIONS, SCROLL_FIELDS } from './ScrollLibrary';
-import { RICH_TEXT_OPTIONS, EMAIL_SIGNUP_OPTIONS, COLLAPSIBLE_OPTIONS, LOGO_LIST_OPTIONS, PROMO_BANNER_OPTIONS } from './SectionLibrary';
-import { GALLERY_OPTIONS } from './GalleryLibrary';
-import { BLOG_OPTIONS } from './BlogLibrary';
-import { VIDEO_OPTIONS } from './VideoLibrary';
-import { CONTACT_OPTIONS } from './ContactLibrary';
-import { LAYOUT_OPTIONS } from './LayoutLibrary';
+import { SCROLL_OPTIONS, SCROLL_FIELDS, SCROLL_COMPONENTS } from './ScrollLibrary';
+import { RICH_TEXT_OPTIONS, RICH_TEXT_COMPONENTS, EMAIL_SIGNUP_OPTIONS, EMAIL_SIGNUP_COMPONENTS, COLLAPSIBLE_OPTIONS, COLLAPSIBLE_COMPONENTS, LOGO_LIST_OPTIONS, LOGO_LIST_COMPONENTS, PROMO_BANNER_OPTIONS, PROMO_BANNER_COMPONENTS } from './SectionLibrary';
+import { GALLERY_OPTIONS, GALLERY_COMPONENTS } from './GalleryLibrary';
+import { BLOG_OPTIONS, BLOG_COMPONENTS } from './BlogLibrary';
+import { VIDEO_OPTIONS, VIDEO_COMPONENTS } from './VideoLibrary';
+import { CONTACT_OPTIONS, CONTACT_COMPONENTS } from './ContactLibrary';
+import { LAYOUT_OPTIONS, LAYOUT_COMPONENTS } from './LayoutLibrary';
 import { COLLECTION_OPTIONS, COLLECTION_COMPONENTS } from './CollectionLibrary';
 import { Storefront } from './Storefront';
 import { CartDrawer } from './CartDrawer';
@@ -204,7 +204,8 @@ import {
   Lock,
   Unlock,
   Instagram,
-  Twitter
+  Twitter,
+  Play
 } from 'lucide-react';
 
 // Page type options for creating new pages
@@ -871,6 +872,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isHeroModalOpen, setIsHeroModalOpen] = useState(false);
   const [isGridModalOpen, setIsGridModalOpen] = useState(false);
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
+  
+  // Additional Section Modals
+  const [isScrollModalOpen, setIsScrollModalOpen] = useState(false);
+  const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
+  const [isRichTextModalOpen, setIsRichTextModalOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isCollapsibleModalOpen, setIsCollapsibleModalOpen] = useState(false);
+  const [isLogoListModalOpen, setIsLogoListModalOpen] = useState(false);
+  const [isPromoModalOpen, setIsPromoModalOpen] = useState(false);
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+  const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
   
   // Auto-focus field in Hero Studio when activeField changes
   useEffect(() => {
@@ -5004,6 +5019,512 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     })()}
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ========== ADDITIONAL SECTION MODALS (30/70 Split Pattern) ==========
+
+  const renderScrollModal = () => {
+    if (!isScrollModalOpen || !selectedBlockId || !activeBlock) return null;
+    const scrollData = activeBlock?.data || {};
+    const currentVariant = activeBlock?.variant || 'logo-marquee';
+    const ScrollComponent = SCROLL_COMPONENTS[currentVariant];
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-cyan-600/20 rounded-lg"><Repeat size={20} className="text-cyan-400" /></div>
+              <div>
+                <h3 className="text-white font-bold">Scroll Section Studio</h3>
+                <p className="text-xs text-neutral-500">Animated scrolling content</p>
+              </div>
+            </div>
+            <button onClick={() => setIsScrollModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
+          </div>
+          <div className="flex-1 flex overflow-hidden">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Scroll Styles</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {SCROLL_OPTIONS.map(opt => (
+                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...scrollData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-cyan-600/20 border-cyan-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <div className="font-bold text-sm">{opt.name}</div>
+                    <div className="text-xs opacity-60">{opt.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
+              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                {ScrollComponent && <ScrollComponent data={scrollData} isEditable={false} onUpdate={() => {}} />}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderSocialModal = () => {
+    if (!isSocialModalOpen || !selectedBlockId || !activeBlock) return null;
+    const socialData = activeBlock?.data || {};
+    const currentVariant = activeBlock?.variant || 'grid-classic';
+    const SocialComponent = SOCIAL_COMPONENTS[currentVariant];
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-pink-600/20 rounded-lg"><Share2 size={20} className="text-pink-400" /></div>
+              <div>
+                <h3 className="text-white font-bold">Social Media Studio</h3>
+                <p className="text-xs text-neutral-500">Instagram & social feeds</p>
+              </div>
+            </div>
+            <button onClick={() => setIsSocialModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
+          </div>
+          <div className="flex-1 flex overflow-hidden">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Social Layouts</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {SOCIAL_OPTIONS.map(opt => (
+                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...socialData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-pink-600/20 border-pink-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <div className="font-bold text-sm">{opt.name}</div>
+                    <div className="text-xs opacity-60">{opt.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
+              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                {SocialComponent && <SocialComponent storeName={config.name} primaryColor={config.primaryColor} data={socialData} isEditable={false} onUpdate={() => {}} />}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderRichTextModal = () => {
+    if (!isRichTextModalOpen || !selectedBlockId || !activeBlock) return null;
+    const richTextData = activeBlock?.data || {};
+    const currentVariant = activeBlock?.variant || 'rt-centered';
+    const RichTextComponent = RICH_TEXT_COMPONENTS[currentVariant];
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-600/20 rounded-lg"><Type size={20} className="text-blue-400" /></div>
+              <div>
+                <h3 className="text-white font-bold">Rich Text Studio</h3>
+                <p className="text-xs text-neutral-500">Formatted text content</p>
+              </div>
+            </div>
+            <button onClick={() => setIsRichTextModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
+          </div>
+          <div className="flex-1 flex overflow-hidden">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Text Styles</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {RICH_TEXT_OPTIONS.map(opt => (
+                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...richTextData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <div className="font-bold text-sm">{opt.name}</div>
+                    <div className="text-xs opacity-60">{opt.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
+              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                {RichTextComponent && <RichTextComponent data={richTextData} isEditable={false} onUpdate={() => {}} />}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderEmailModal = () => {
+    if (!isEmailModalOpen || !selectedBlockId || !activeBlock) return null;
+    const emailData = activeBlock?.data || {};
+    const currentVariant = activeBlock?.variant || 'email-minimal';
+    const EmailComponent = EMAIL_SIGNUP_COMPONENTS[currentVariant];
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-600/20 rounded-lg"><Mail size={20} className="text-emerald-400" /></div>
+              <div>
+                <h3 className="text-white font-bold">Email Signup Studio</h3>
+                <p className="text-xs text-neutral-500">Newsletter & lead capture</p>
+              </div>
+            </div>
+            <button onClick={() => setIsEmailModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
+          </div>
+          <div className="flex-1 flex overflow-hidden">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Email Styles</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {EMAIL_SIGNUP_OPTIONS.map(opt => (
+                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...emailData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-emerald-600/20 border-emerald-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <div className="font-bold text-sm">{opt.name}</div>
+                    <div className="text-xs opacity-60">{opt.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
+              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                {EmailComponent && <EmailComponent data={emailData} isEditable={false} onUpdate={() => {}} />}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderCollapsibleModal = () => {
+    if (!isCollapsibleModalOpen || !selectedBlockId || !activeBlock) return null;
+    const collapsibleData = activeBlock?.data || {};
+    const currentVariant = activeBlock?.variant || 'col-simple';
+    const CollapsibleComponent = COLLAPSIBLE_COMPONENTS[currentVariant];
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-indigo-600/20 rounded-lg"><List size={20} className="text-indigo-400" /></div>
+              <div>
+                <h3 className="text-white font-bold">FAQ / Accordion Studio</h3>
+                <p className="text-xs text-neutral-500">Collapsible content sections</p>
+              </div>
+            </div>
+            <button onClick={() => setIsCollapsibleModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
+          </div>
+          <div className="flex-1 flex overflow-hidden">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Accordion Styles</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {COLLAPSIBLE_OPTIONS.map(opt => (
+                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...collapsibleData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-indigo-600/20 border-indigo-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <div className="font-bold text-sm">{opt.name}</div>
+                    <div className="text-xs opacity-60">{opt.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
+              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                {CollapsibleComponent && <CollapsibleComponent data={collapsibleData} isEditable={false} onUpdate={() => {}} />}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderLogoListModal = () => {
+    if (!isLogoListModalOpen || !selectedBlockId || !activeBlock) return null;
+    const logoData = activeBlock?.data || {};
+    const currentVariant = activeBlock?.variant || 'logo-grid';
+    const LogoComponent = LOGO_LIST_COMPONENTS[currentVariant];
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-violet-600/20 rounded-lg"><Grid size={20} className="text-violet-400" /></div>
+              <div>
+                <h3 className="text-white font-bold">Logo List Studio</h3>
+                <p className="text-xs text-neutral-500">Partner & client logos</p>
+              </div>
+            </div>
+            <button onClick={() => setIsLogoListModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
+          </div>
+          <div className="flex-1 flex overflow-hidden">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Logo Layouts</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {LOGO_LIST_OPTIONS.map(opt => (
+                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...logoData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-violet-600/20 border-violet-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <div className="font-bold text-sm">{opt.name}</div>
+                    <div className="text-xs opacity-60">{opt.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
+              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                {LogoComponent && <LogoComponent data={logoData} isEditable={false} onUpdate={() => {}} />}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderPromoModal = () => {
+    if (!isPromoModalOpen || !selectedBlockId || !activeBlock) return null;
+    const promoData = activeBlock?.data || {};
+    const currentVariant = activeBlock?.variant || 'promo-top';
+    const PromoComponent = PROMO_BANNER_COMPONENTS[currentVariant];
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-600/20 rounded-lg"><Zap size={20} className="text-amber-400" /></div>
+              <div>
+                <h3 className="text-white font-bold">Promo Banner Studio</h3>
+                <p className="text-xs text-neutral-500">Promotional announcements</p>
+              </div>
+            </div>
+            <button onClick={() => setIsPromoModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
+          </div>
+          <div className="flex-1 flex overflow-hidden">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Banner Styles</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {PROMO_BANNER_OPTIONS.map(opt => (
+                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...promoData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-amber-600/20 border-amber-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <div className="font-bold text-sm">{opt.name}</div>
+                    <div className="text-xs opacity-60">{opt.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
+              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                {PromoComponent && <PromoComponent data={promoData} isEditable={false} onUpdate={() => {}} />}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderGalleryModal = () => {
+    if (!isGalleryModalOpen || !selectedBlockId || !activeBlock) return null;
+    const galleryData = activeBlock?.data || {};
+    const currentVariant = activeBlock?.variant || 'gal-grid';
+    const GalleryComponent = GALLERY_COMPONENTS[currentVariant];
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-rose-600/20 rounded-lg"><ImageIcon size={20} className="text-rose-400" /></div>
+              <div>
+                <h3 className="text-white font-bold">Gallery Studio</h3>
+                <p className="text-xs text-neutral-500">Image galleries & portfolios</p>
+              </div>
+            </div>
+            <button onClick={() => setIsGalleryModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
+          </div>
+          <div className="flex-1 flex overflow-hidden">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Gallery Layouts</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {GALLERY_OPTIONS.map(opt => (
+                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...galleryData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-rose-600/20 border-rose-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <div className="font-bold text-sm">{opt.name}</div>
+                    <div className="text-xs opacity-60">{opt.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
+              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                {GalleryComponent && <GalleryComponent data={galleryData} isEditable={false} onUpdate={() => {}} />}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderBlogModal = () => {
+    if (!isBlogModalOpen || !selectedBlockId || !activeBlock) return null;
+    const blogData = activeBlock?.data || {};
+    const currentVariant = activeBlock?.variant || 'blog-grid';
+    const BlogComponent = BLOG_COMPONENTS[currentVariant];
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-teal-600/20 rounded-lg"><BookOpen size={20} className="text-teal-400" /></div>
+              <div>
+                <h3 className="text-white font-bold">Blog Studio</h3>
+                <p className="text-xs text-neutral-500">Blog posts & articles</p>
+              </div>
+            </div>
+            <button onClick={() => setIsBlogModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
+          </div>
+          <div className="flex-1 flex overflow-hidden">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Blog Layouts</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {BLOG_OPTIONS.map(opt => (
+                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...blogData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-teal-600/20 border-teal-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <div className="font-bold text-sm">{opt.name}</div>
+                    <div className="text-xs opacity-60">{opt.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
+              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                {BlogComponent && <BlogComponent data={blogData} isEditable={false} onUpdate={() => {}} />}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderVideoModal = () => {
+    if (!isVideoModalOpen || !selectedBlockId || !activeBlock) return null;
+    const videoData = activeBlock?.data || {};
+    const currentVariant = activeBlock?.variant || 'vid-full';
+    const VideoComponent = VIDEO_COMPONENTS[currentVariant];
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-600/20 rounded-lg"><Play size={20} className="text-red-400" /></div>
+              <div>
+                <h3 className="text-white font-bold">Video Studio</h3>
+                <p className="text-xs text-neutral-500">Video embeds & players</p>
+              </div>
+            </div>
+            <button onClick={() => setIsVideoModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
+          </div>
+          <div className="flex-1 flex overflow-hidden">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Video Layouts</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {VIDEO_OPTIONS.map(opt => (
+                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...videoData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-red-600/20 border-red-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <div className="font-bold text-sm">{opt.name}</div>
+                    <div className="text-xs opacity-60">{opt.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
+              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                {VideoComponent && <VideoComponent data={videoData} isEditable={false} onUpdate={() => {}} />}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderContactModal = () => {
+    if (!isContactModalOpen || !selectedBlockId || !activeBlock) return null;
+    const contactData = activeBlock?.data || {};
+    const currentVariant = activeBlock?.variant || 'contact-simple';
+    const ContactComponent = CONTACT_COMPONENTS[currentVariant];
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-sky-600/20 rounded-lg"><Phone size={20} className="text-sky-400" /></div>
+              <div>
+                <h3 className="text-white font-bold">Contact Form Studio</h3>
+                <p className="text-xs text-neutral-500">Contact & inquiry forms</p>
+              </div>
+            </div>
+            <button onClick={() => setIsContactModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
+          </div>
+          <div className="flex-1 flex overflow-hidden">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Form Styles</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {CONTACT_OPTIONS.map(opt => (
+                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...contactData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-sky-600/20 border-sky-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <div className="font-bold text-sm">{opt.name}</div>
+                    <div className="text-xs opacity-60">{opt.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
+              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                {ContactComponent && <ContactComponent data={contactData} isEditable={false} onUpdate={() => {}} />}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderLayoutModal = () => {
+    if (!isLayoutModalOpen || !selectedBlockId || !activeBlock) return null;
+    const layoutData = activeBlock?.data || {};
+    const currentVariant = activeBlock?.variant || 'layout-split';
+    const LayoutComponent = LAYOUT_COMPONENTS[currentVariant];
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-fuchsia-600/20 rounded-lg"><LayoutTemplate size={20} className="text-fuchsia-400" /></div>
+              <div>
+                <h3 className="text-white font-bold">Layout Studio</h3>
+                <p className="text-xs text-neutral-500">Content layout structures</p>
+              </div>
+            </div>
+            <button onClick={() => setIsLayoutModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
+          </div>
+          <div className="flex-1 flex overflow-hidden">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Layout Templates</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {LAYOUT_OPTIONS.map(opt => (
+                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...layoutData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-fuchsia-600/20 border-fuchsia-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                    <div className="font-bold text-sm">{opt.name}</div>
+                    <div className="text-xs opacity-60">{opt.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
+              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                {LayoutComponent && <LayoutComponent data={layoutData} isEditable={false} onUpdate={() => {}} />}
               </div>
             </div>
           </div>
@@ -9857,6 +10378,18 @@ Return ONLY the JSON object, no markdown.`;
                                 if (block.type === 'system-hero') setIsHeroModalOpen(true);
                                 else if (block.type === 'system-grid') setIsGridModalOpen(true);
                                 else if (block.type === 'system-collection') setIsCollectionModalOpen(true);
+                                else if (block.type === 'system-scroll') setIsScrollModalOpen(true);
+                                else if (block.type === 'system-social') setIsSocialModalOpen(true);
+                                else if (block.type === 'system-rich-text') setIsRichTextModalOpen(true);
+                                else if (block.type === 'system-email') setIsEmailModalOpen(true);
+                                else if (block.type === 'system-collapsible') setIsCollapsibleModalOpen(true);
+                                else if (block.type === 'system-logo-list') setIsLogoListModalOpen(true);
+                                else if (block.type === 'system-promo') setIsPromoModalOpen(true);
+                                else if (block.type === 'system-gallery') setIsGalleryModalOpen(true);
+                                else if (block.type === 'system-blog') setIsBlogModalOpen(true);
+                                else if (block.type === 'system-video') setIsVideoModalOpen(true);
+                                else if (block.type === 'system-contact') setIsContactModalOpen(true);
+                                else if (block.type === 'system-layout') setIsLayoutModalOpen(true);
                               }}
                             >
                               <div className="flex items-center justify-between mb-2">
@@ -9904,6 +10437,18 @@ Return ONLY the JSON object, no markdown.`;
                                       else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setIsGridModalOpen(true); }
                                       else if (block.type === 'system-collection') { setSelectedBlockId(block.id); setIsCollectionModalOpen(true); }
                                       else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
+                                      else if (block.type === 'system-scroll') { setSelectedBlockId(block.id); setIsScrollModalOpen(true); }
+                                      else if (block.type === 'system-social') { setSelectedBlockId(block.id); setIsSocialModalOpen(true); }
+                                      else if (block.type === 'system-rich-text') { setSelectedBlockId(block.id); setIsRichTextModalOpen(true); }
+                                      else if (block.type === 'system-email') { setSelectedBlockId(block.id); setIsEmailModalOpen(true); }
+                                      else if (block.type === 'system-collapsible') { setSelectedBlockId(block.id); setIsCollapsibleModalOpen(true); }
+                                      else if (block.type === 'system-logo-list') { setSelectedBlockId(block.id); setIsLogoListModalOpen(true); }
+                                      else if (block.type === 'system-promo') { setSelectedBlockId(block.id); setIsPromoModalOpen(true); }
+                                      else if (block.type === 'system-gallery') { setSelectedBlockId(block.id); setIsGalleryModalOpen(true); }
+                                      else if (block.type === 'system-blog') { setSelectedBlockId(block.id); setIsBlogModalOpen(true); }
+                                      else if (block.type === 'system-video') { setSelectedBlockId(block.id); setIsVideoModalOpen(true); }
+                                      else if (block.type === 'system-contact') { setSelectedBlockId(block.id); setIsContactModalOpen(true); }
+                                      else if (block.type === 'system-layout') { setSelectedBlockId(block.id); setIsLayoutModalOpen(true); }
                                       else if (block.type.startsWith('system-')) { 
                                         // All other system blocks: select them
                                         setSelectedBlockId(block.id);
@@ -10192,6 +10737,18 @@ Return ONLY the JSON object, no markdown.`;
                         if (block?.type === 'system-hero') setIsHeroModalOpen(true);
                         else if (block?.type === 'system-grid') setIsGridModalOpen(true);
                         else if (block?.type === 'system-collection') setIsCollectionModalOpen(true);
+                        else if (block?.type === 'system-scroll') setIsScrollModalOpen(true);
+                        else if (block?.type === 'system-social') setIsSocialModalOpen(true);
+                        else if (block?.type === 'system-rich-text') setIsRichTextModalOpen(true);
+                        else if (block?.type === 'system-email') setIsEmailModalOpen(true);
+                        else if (block?.type === 'system-collapsible') setIsCollapsibleModalOpen(true);
+                        else if (block?.type === 'system-logo-list') setIsLogoListModalOpen(true);
+                        else if (block?.type === 'system-promo') setIsPromoModalOpen(true);
+                        else if (block?.type === 'system-gallery') setIsGalleryModalOpen(true);
+                        else if (block?.type === 'system-blog') setIsBlogModalOpen(true);
+                        else if (block?.type === 'system-video') setIsVideoModalOpen(true);
+                        else if (block?.type === 'system-contact') setIsContactModalOpen(true);
+                        else if (block?.type === 'system-layout') setIsLayoutModalOpen(true);
                         
                         // Show first-edit hint if this is user's first time clicking a section
                         if (!hasSeenFirstEditHint) {
@@ -10218,6 +10775,18 @@ Return ONLY the JSON object, no markdown.`;
                         else if (block.type === 'system-grid') { setIsGridModalOpen(true); }
                         else if (block.type === 'system-collection') { setIsCollectionModalOpen(true); }
                         else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
+                        else if (block.type === 'system-scroll') { setIsScrollModalOpen(true); }
+                        else if (block.type === 'system-social') { setIsSocialModalOpen(true); }
+                        else if (block.type === 'system-rich-text') { setIsRichTextModalOpen(true); }
+                        else if (block.type === 'system-email') { setIsEmailModalOpen(true); }
+                        else if (block.type === 'system-collapsible') { setIsCollapsibleModalOpen(true); }
+                        else if (block.type === 'system-logo-list') { setIsLogoListModalOpen(true); }
+                        else if (block.type === 'system-promo') { setIsPromoModalOpen(true); }
+                        else if (block.type === 'system-gallery') { setIsGalleryModalOpen(true); }
+                        else if (block.type === 'system-blog') { setIsBlogModalOpen(true); }
+                        else if (block.type === 'system-video') { setIsVideoModalOpen(true); }
+                        else if (block.type === 'system-contact') { setIsContactModalOpen(true); }
+                        else if (block.type === 'system-layout') { setIsLayoutModalOpen(true); }
                         else if (block.type.startsWith('system-')) {
                           // Other system blocks
                           setSelectedBlockId(blockId);
@@ -11447,6 +12016,18 @@ Return ONLY the JSON object, no markdown.`;
       {renderCollectionModal()}
       {renderSystemBlockModal()}
       {renderFooterModal()}
+      {renderScrollModal()}
+      {renderSocialModal()}
+      {renderRichTextModal()}
+      {renderEmailModal()}
+      {renderCollapsibleModal()}
+      {renderLogoListModal()}
+      {renderPromoModal()}
+      {renderGalleryModal()}
+      {renderBlogModal()}
+      {renderVideoModal()}
+      {renderContactModal()}
+      {renderLayoutModal()}
       {renderAddSectionLibrary()}
       {renderWelcomeWizard()}
       {renderAddPageModal()}
