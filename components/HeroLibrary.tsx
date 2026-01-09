@@ -781,6 +781,16 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, primaryColor, data, i
     animation === 'slide' ? 'animate-in slide-in-from-bottom-8 duration-1000' :
     animation === 'zoom' ? 'animate-in zoom-in-95 duration-1000' : '';
 
+  // Extract color values from style object
+  const style = data?.style || {};
+  const backgroundColor = style.backgroundColor || '#fafafa';
+  const headingColor = style.headingColor || style.textColor || '#000000';
+  const subheadingColor = style.subheadingColor || '#737373';
+  const buttonBgColor = style.buttonBgColor || '#000000';
+  const buttonTextColor = style.buttonTextColor || '#ffffff';
+  const secondaryButtonBgColor = style.secondaryButtonBgColor || '#f5f5f5';
+  const secondaryButtonTextColor = style.secondaryButtonTextColor || '#000000';
+
   const handleSelect = (field: string) => {
     if (isEditable) {
       onEditBlock?.(blockId || '');
@@ -789,15 +799,18 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, primaryColor, data, i
   };
 
   return (
-    <section className={`w-full min-h-screen bg-neutral-50 p-4 pt-8 relative ${animClass}`}>
+    <section className={`w-full min-h-screen p-4 pt-8 relative ${animClass}`} style={{ backgroundColor }}>
        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 h-auto md:h-[85vh]">
           {/* Main Text Block */}
-          <div className="md:col-span-4 bg-white rounded-3xl p-8 flex flex-col justify-between shadow-sm">
+          <div className="bg-white rounded-3xl p-8 flex flex-col justify-between shadow-sm md:col-span-4">
              <div>
-                <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center text-white mb-6">
+                <div 
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-white mb-6"
+                  style={{ backgroundColor: buttonBgColor }}
+                >
                    <ArrowRight className="-rotate-45" />
                 </div>
-                <div className="text-5xl font-bold tracking-tight mb-4">
+                <div className="text-5xl font-bold tracking-tight mb-4" style={{ color: headingColor }}>
                      <EditableText 
                      tagName="h1" 
                      value={heading} 
@@ -809,7 +822,7 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, primaryColor, data, i
                      onSelect={() => handleSelect('heading')}
                    />
                 </div>
-                <div className="text-neutral-500 font-medium">
+                <div className="font-medium" style={{ color: subheadingColor }}>
                    <EditableText 
                      tagName="p" 
                      value={subheading} 
@@ -829,7 +842,8 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, primaryColor, data, i
                     const link = data?.buttonLink === 'external' ? data?.buttonExternalUrl : data?.buttonLink;
                     if (link) window.location.href = link;
                   }}
-                  className="w-full py-4 bg-black text-white rounded-xl font-bold hover:bg-neutral-800 transition-colors"
+                  className="w-full py-4 rounded-xl font-bold hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
                 >
                    <EditableText 
                      tagName="span"
@@ -848,7 +862,8 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, primaryColor, data, i
                     const link = data?.secondaryButtonLink === 'external' ? data?.secondaryButtonExternalUrl : data?.secondaryButtonLink;
                     if (link) window.location.href = link;
                   }}
-                  className="w-full py-4 bg-neutral-100 text-black rounded-xl font-bold hover:bg-neutral-200 transition-colors"
+                  className="w-full py-4 rounded-xl font-bold hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: secondaryButtonBgColor, color: secondaryButtonTextColor }}
                 >
                    <EditableText 
                      tagName="span"
