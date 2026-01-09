@@ -44,7 +44,7 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
           />
           {data?.buttonText && (
             <a 
-              href={data?.buttonLink || '#'} 
+              href={data?.buttonLink === 'external' ? (data?.buttonExternalUrl || '#') : (data?.buttonLink || '#')} 
               className="inline-block px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
               style={{
                 backgroundColor: data?.buttonBackground || '#000000',
@@ -90,7 +90,7 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
           />
           {data?.buttonText && (
             <a 
-              href={data?.buttonLink || '#'} 
+              href={data?.buttonLink === 'external' ? (data?.buttonExternalUrl || '#') : (data?.buttonLink || '#')} 
               className="inline-block px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
               style={{
                 backgroundColor: data?.buttonBackground || '#000000',
@@ -143,7 +143,7 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
           />
           {data?.buttonText && (
             <a 
-              href={data?.buttonLink || '#'} 
+              href={data?.buttonLink === 'external' ? (data?.buttonExternalUrl || '#') : (data?.buttonLink || '#')} 
               className="inline-block px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
               style={{
                 backgroundColor: data?.buttonBackground || '#000000',
@@ -189,7 +189,7 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
           />
           {data?.buttonText && (
             <a 
-              href={data?.buttonLink || '#'} 
+              href={data?.buttonLink === 'external' ? (data?.buttonExternalUrl || '#') : (data?.buttonLink || '#')} 
               className="inline-block px-8 py-4 rounded-lg font-bold text-lg hover:opacity-80 transition-opacity"
               style={{
                 backgroundColor: data?.buttonBackground || '#000000',

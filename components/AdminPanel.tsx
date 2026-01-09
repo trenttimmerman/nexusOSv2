@@ -5903,8 +5903,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   />
                 </div>
 
-                <div>
-                  <label className="text-xs text-neutral-400 mb-1 block">Button Text (Optional)</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs text-neutral-400">Button Text (Optional)</label>
                   <input
                     type="text"
                     value={richTextData.buttonText || ''}
@@ -5912,17 +5912,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
                     placeholder="Call to action"
                   />
-                </div>
-
-                <div>
-                  <label className="text-xs text-neutral-400 mb-1 block">Button Link (Optional)</label>
-                  <input
-                    type="text"
-                    value={richTextData.buttonLink || ''}
-                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, buttonLink: e.target.value })}
-                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
-                    placeholder="/page or https://"
-                  />
+                  {richTextData.buttonText && (
+                    <>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Link size={12} className="text-neutral-600" />
+                        <select
+                          value={richTextData.buttonLink || ''}
+                          onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, buttonLink: e.target.value })}
+                          className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-blue-500 outline-none"
+                        >
+                          <option value="">No link</option>
+                          {localPages.map(page => (
+                            <option key={page.id} value={page.slug || '/'}>
+                              {page.title || page.slug}
+                            </option>
+                          ))}
+                          <option value="external">Custom URL...</option>
+                        </select>
+                      </div>
+                      {richTextData.buttonLink === 'external' && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <ExternalLink size={12} className="text-neutral-600" />
+                          <input
+                            type="text"
+                            value={richTextData.buttonExternalUrl || ''}
+                            onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, buttonExternalUrl: e.target.value })}
+                            className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-blue-500 outline-none"
+                            placeholder="https://..."
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
 
                 <div>
