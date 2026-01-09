@@ -6728,6 +6728,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const currentVariant = activeBlock?.variant || 'vid-full';
     const VideoComponent = VIDEO_COMPONENTS[currentVariant];
 
+    const handleVideoThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = 'video_thumbnail_' + Math.random().toString(36).substring(2) + '_' + Date.now() + '.' + fileExt;
+        const filePath = 'public/' + fileName;
+
+        const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file);
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage.from('media').getPublicUrl(filePath);
+        updateActiveBlockData(selectedBlockId, { ...videoData, thumbnailUrl: urlData.publicUrl });
+      } catch (error) {
+        alert('Error uploading thumbnail');
+      }
+    };
+
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
         <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
@@ -6742,15 +6761,246 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsVideoModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
-              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Video Layouts</h4>
-              <div className="grid grid-cols-1 gap-2">
-                {VIDEO_OPTIONS.map(opt => (
-                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...videoData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-red-600/20 border-red-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                    <div className="font-bold text-sm">{opt.name}</div>
-                    <div className="text-xs opacity-60">{opt.description}</div>
-                  </button>
-                ))}
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4 space-y-6">
+              <div>
+                <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Video Layouts</h4>
+                <div className="grid grid-cols-1 gap-2">
+                  {VIDEO_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...videoData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-red-600/20 border-red-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-xs opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4 border-t border-neutral-800 pt-4">
+                <div className="flex items-center gap-2">
+                  <Type size={16} className="text-red-400" />
+                  <h4 className="text-xs font-bold text-neutral-400 uppercase">Content</h4>
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Video URL</label>
+                  <input
+                    type="text"
+                    value={videoData.videoUrl || ''}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, videoUrl: e.target.value })}
+                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                    placeholder="https://video-url.mp4"
+                  />
+                  <p className="text-xs text-neutral-500 mt-1">MP4, WebM, or YouTube/Vimeo URL</p>
+                </div>
+
+                {(currentVariant === 'vid-window' || currentVariant === 'vid-bg' || currentVariant === 'vid-popup' || currentVariant === 'vid-slider' || currentVariant === 'vid-grid' || currentVariant === 'vid-hero' || currentVariant === 'vid-story') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Heading</label>
+                    <input
+                      type="text"
+                      value={videoData.heading || ''}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, heading: e.target.value })}
+                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                      placeholder="Enter heading"
+                    />
+                  </div>
+                )}
+
+                {(currentVariant === 'vid-bg' || currentVariant === 'vid-split') && (
+                  <>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Subheading/Description</label>
+                      <textarea
+                        value={videoData.subheading || ''}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, subheading: e.target.value })}
+                        className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                        placeholder="Enter description"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Button Text</label>
+                      <input
+                        type="text"
+                        value={videoData.buttonText || ''}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, buttonText: e.target.value })}
+                        className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                        placeholder="Call to action"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Button Link</label>
+                      <input
+                        type="text"
+                        value={videoData.buttonLink || ''}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, buttonLink: e.target.value })}
+                        className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                        placeholder="/page or https://"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {(currentVariant === 'vid-popup' || currentVariant === 'vid-interactive') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-2 block">Thumbnail Image</label>
+                    {videoData.thumbnailUrl && (
+                      <img src={videoData.thumbnailUrl} className="w-full h-32 object-cover rounded mb-2" />
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleVideoThumbnailUpload}
+                      className="hidden"
+                      id="video-thumbnail-upload"
+                    />
+                    <label htmlFor="video-thumbnail-upload" className="block w-full text-center px-3 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 rounded-lg text-red-400 text-xs cursor-pointer">
+                      Upload Thumbnail
+                    </label>
+                  </div>
+                )}
+
+                {currentVariant === 'vid-interactive' && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-2 block">Product Hotspots</label>
+                    <div className="bg-neutral-900 border border-neutral-700 rounded-lg p-3 text-xs text-neutral-500">
+                      Click on video preview to add shoppable hotspots
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="autoplay"
+                    checked={videoData.autoplay || false}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, autoplay: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor="autoplay" className="text-xs text-neutral-400">Autoplay video</label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="muted"
+                    checked={videoData.muted !== false}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, muted: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor="muted" className="text-xs text-neutral-400">Start muted</label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="loop"
+                    checked={videoData.loop !== false}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, loop: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor="loop" className="text-xs text-neutral-400">Loop video</label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="controls"
+                    checked={videoData.controls !== false}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, controls: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor="controls" className="text-xs text-neutral-400">Show controls</label>
+                </div>
+              </div>
+
+              <div className="space-y-4 border-t border-neutral-800 pt-4">
+                <div className="flex items-center gap-2">
+                  <Palette size={16} className="text-red-400" />
+                  <h4 className="text-xs font-bold text-neutral-400 uppercase">Style</h4>
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Background Color</label>
+                  <input
+                    type="color"
+                    value={videoData.backgroundColor || '#000000'}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, backgroundColor: e.target.value })}
+                    className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                {(currentVariant === 'vid-bg' || currentVariant === 'vid-hero' || currentVariant === 'vid-popup' || currentVariant === 'vid-story') && (
+                  <>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Heading Color</label>
+                      <input
+                        type="color"
+                        value={videoData.headingColor || '#ffffff'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, headingColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Text Color</label>
+                      <input
+                        type="color"
+                        value={videoData.textColor || '#ffffff'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, textColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {(currentVariant === 'vid-bg' || currentVariant === 'vid-hero') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Overlay Opacity</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={videoData.overlayOpacity || 40}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, overlayOpacity: parseInt(e.target.value) })}
+                      className="w-full"
+                    />
+                    <div className="text-xs text-neutral-500 text-center">{videoData.overlayOpacity || 40}%</div>
+                  </div>
+                )}
+
+                {(currentVariant === 'vid-split' || currentVariant === 'vid-hero') && (
+                  <>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Button Background</label>
+                      <input
+                        type="color"
+                        value={videoData.buttonBackground || '#000000'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, buttonBackground: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Button Text Color</label>
+                      <input
+                        type="color"
+                        value={videoData.buttonTextColor || '#ffffff'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, buttonTextColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {(currentVariant === 'vid-full' || currentVariant === 'vid-window') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Play Button Color</label>
+                    <input
+                      type="color"
+                      value={videoData.playButtonColor || '#ffffff'}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...videoData, playButtonColor: e.target.value })}
+                      className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
