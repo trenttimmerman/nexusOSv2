@@ -6068,6 +6068,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
                 )}
 
+                {/* Subheading for banner */}
+                {currentVariant === 'layout-banner' && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-neutral-400">Subheading</label>
+                    <input
+                      type="text"
+                      value={layoutData.subheading || ''}
+                      onChange={(e) => updateLayoutData({ subheading: e.target.value })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-fuchsia-500 outline-none"
+                      placeholder="e.g., Up to 50% off selected items"
+                    />
+                  </div>
+                )}
+
                 {/* Image field */}
                 {['layout-image-text', 'layout-banner'].includes(currentVariant) && (
                   <div className="space-y-1.5">

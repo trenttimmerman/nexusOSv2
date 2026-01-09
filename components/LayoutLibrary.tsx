@@ -160,7 +160,13 @@ export const LAYOUT_COMPONENTS: Record<string, React.FC<any>> = {
           isEditable={isEditable}
           className="text-5xl font-bold mb-4"
         />
-        <p className="text-xl mb-8">Up to 50% off selected items</p>
+        <EditableText
+          value={data?.subheading || 'Up to 50% off selected items'}
+          onChange={(val) => onUpdate?.({ ...data, subheading: val })}
+          isEditable={isEditable}
+          className="text-xl mb-8"
+          tagName="p"
+        />
         <button 
           onClick={() => {
             if (isEditable) return;
