@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getFilteredProducts as getFilteredProductsUtil } from '../lib/productUtils';
 import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
 import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas, HeaderNebula, HeaderLuxe, HeaderPilot } from './HeaderLibrary';
@@ -13,11 +14,8 @@ import { BLOG_OPTIONS } from './BlogLibrary';
 import { VIDEO_OPTIONS } from './VideoLibrary';
 import { CONTACT_OPTIONS } from './ContactLibrary';
 import { LAYOUT_OPTIONS } from './LayoutLibrary';
-import { COLLECTION_OPTIONS } from './CollectionLibrary';
-import { UniversalEditor } from './UniversalEditor';
-import { mapDataToLayout } from '../lib/smartMapper';
+import { COLLECTION_OPTIONS, COLLECTION_COMPONENTS } from './CollectionLibrary';
 import { Storefront } from './Storefront';
-import { EditorPanel } from './EditorPanel';
 import { CartDrawer } from './CartDrawer';
 import { MediaLibrary } from './MediaLibrary';
 import { CampaignManager } from './CampaignManager';
@@ -25,6 +23,7 @@ import { OrderManager } from './OrderManager';
 import { DomainManager } from './DomainManager';
 import { DiscountManager } from './DiscountManager';
 import { ShippingManager } from './ShippingManager';
+import { CollectionManager } from './CollectionManager';
 import { ClientManagement } from './ClientManagement';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
@@ -871,6 +870,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isFooterModalOpen, setIsFooterModalOpen] = useState(false);
   const [isHeroModalOpen, setIsHeroModalOpen] = useState(false);
   const [isGridModalOpen, setIsGridModalOpen] = useState(false);
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
   
   // Auto-focus field in Hero Studio when activeField changes
   useEffect(() => {
@@ -1287,6 +1287,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
     setSelectedBlockId(newBlock.id);
     setIsAddSectionOpen(false);
+    
+    // Auto-open specialized editor modals
+    if (blockType === 'system-hero') setIsHeroModalOpen(true);
+    if (blockType === 'system-grid') setIsGridModalOpen(true);
+    if (blockType === 'system-collection') setIsCollectionModalOpen(true);
+
     setPreviewBlock(null);
     setAddSectionStep('categories');
     setSelectedCategory(null);
@@ -1615,6 +1621,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.DASHBOARD, icon: LayoutDashboard, label: 'Command Center' },
           { id: AdminTab.ORDERS, icon: ShoppingBag, label: 'Orders' },
           { id: AdminTab.PRODUCTS, icon: Package, label: 'Products' },
+          { id: AdminTab.COLLECTIONS, icon: Layers, label: 'Collections' },
           { id: AdminTab.DISCOUNTS, icon: Tag, label: 'Discounts' },
           { id: AdminTab.SHIPPING, icon: Truck, label: 'Shipping' },
           { id: AdminTab.PAGES, icon: FileText, label: 'Pages' },
@@ -1635,6 +1642,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               setIsAddSectionOpen(false);
               setIsArchitectOpen(false);
               setIsProductEditorOpen(false);
+              setIsHeroModalOpen(false);
+              setIsGridModalOpen(false);
+              setIsCollectionModalOpen(false);
             }}
             className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-4'} py-3 rounded-lg transition-all ${activeTab === item.id
               ? 'bg-blue-600/10 text-blue-500 border border-blue-600/20'
@@ -4268,6 +4278,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       setHasUnsavedChanges(true);
     };
 
+    const generateGridCopy = async (field: string) => {
+      if (!genAI) return;
+      try {
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        const variant = PRODUCT_CARD_OPTIONS.find(o => o.id === currentVariant)?.name || "product grid";
+        const industry = config.theme_primary || "modern retail";
+        
+        const prompt = `Generate a high-converting ${field} for a ${variant} on a ${industry} store.
+          Keep it short (under ${field === 'heading' ? '8' : '20'} words).
+          Return ONLY the text.`;
+
+        const result = await model.generateContent(prompt);
+        const text = result.response.text().trim().replace(/\"/g, '');
+        updateGridData({ [field]: text });
+      } catch (error) {
+        console.error("Grid AI generation failed:", error);
+      }
+    };
+
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
         <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
@@ -4329,7 +4358,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </h4>
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs text-neutral-400">Section Title</label>
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs text-neutral-400">Section Title</label>
+                        <button 
+                          onClick={() => generateGridCopy('heading')}
+                          className="p-1 text-green-400 hover:text-green-300 transition-colors"
+                          title="Generate with AI"
+                        >
+                          <Wand2 size={12} />
+                        </button>
+                      </div>
                       <input
                         type="text"
                         value={gridData.heading || ''}
@@ -4339,7 +4377,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs text-neutral-400">Subtitle</label>
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs text-neutral-400">Subtitle</label>
+                        <button 
+                          onClick={() => generateGridCopy('subheading')}
+                          className="p-1 text-green-400 hover:text-green-300 transition-colors"
+                          title="Generate with AI"
+                        >
+                          <Wand2 size={12} />
+                        </button>
+                      </div>
                       <textarea
                         value={gridData.subheading || ''}
                         onChange={(e) => updateGridData({ subheading: e.target.value })}
@@ -4551,6 +4598,420 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     );
   };
 
+  // --- COLLECTION MODAL ---
+  const renderCollectionModal = () => {
+    if (!isCollectionModalOpen) return null;
+
+    // Get current collection block
+    const activeBlock = activePage?.blocks?.find(b => b.id === selectedBlockId);
+    if (!activeBlock || activeBlock.type !== 'system-collection') return null;
+
+    const currentVariant = activeBlock.variant || 'collection-list';
+    const collectionData = activeBlock.data || {};
+    const CollectionComponent = COLLECTION_COMPONENTS[currentVariant] || COLLECTION_COMPONENTS['collection-list'];
+
+    // Handle variant change
+    const handleCollectionStyleChange = (newVariant: string) => {
+      setLocalPages(prev => prev.map(p => {
+        if (p.id !== activePage.id) return p;
+        return {
+          ...p,
+          blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: newVariant } : b)
+        };
+      }));
+      setHasUnsavedChanges(true);
+    };
+
+    // Update collection data
+    const updateCollectionData = (updates: any) => {
+      setLocalPages(prev => prev.map(p => {
+        if (p.id !== activePage.id) return p;
+        return {
+          ...p,
+          blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, data: { ...b.data, ...updates } } : b)
+        };
+      }));
+      setHasUnsavedChanges(true);
+    };
+
+    const generateCollectionCopy = async (field: 'heading' | 'subheading') => {
+      if (!genAI) return;
+      try {
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        const industry = config.theme_primary || "modern retail";
+        const variant = COLLECTION_OPTIONS.find(o => o.id === currentVariant)?.name || "product collection";
+        
+        const prompt = `Generate a catchy, high-conversion ${field} for a ${variant} on a ${industry} e-commerce site. 
+          Keep it short (under ${field === 'heading' ? '8' : '20'} words). 
+          Return ONLY the text.`;
+
+        const result = await model.generateContent(prompt);
+        const text = result.response.text().trim().replace(/\"/g, '');
+        updateCollectionData({ [field]: text });
+      } catch (error) {
+        console.error("AI Generation failed:", error);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+          {/* Modal Header */}
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-600/20 rounded-lg">
+                <Layers size={20} className="text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold">Collection Studio</h3>
+                <p className="text-xs text-neutral-500">Design your collections and lookbooks</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setIsCollectionModalOpen(false)} 
+              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Modal Content - Side by Side */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* LEFT PANEL - Editing Tools (30%) */}
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative">
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                {/* 1. Layout Selection */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <LayoutTemplate size={14} /> Collection Layouts
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {COLLECTION_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => handleCollectionStyleChange(opt.id)}
+                        className={`text-left p-3 rounded-lg border transition-all relative ${currentVariant === opt.id
+                          ? 'border-blue-500 bg-blue-500/10 ring-2 ring-blue-500/50'
+                          : 'border-neutral-800 hover:border-neutral-600 bg-neutral-900'
+                        }`}
+                      >
+                        <span className={`text-sm font-bold block ${currentVariant === opt.id ? 'text-blue-400' : 'text-white'}`}>
+                          {opt.name}
+                        </span>
+                        <span className="text-[10px] text-neutral-500 block mt-0.5">{opt.description}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t border-neutral-800 my-4"></div>
+
+                {/* 2. Content Branding */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Type size={14} /> Copy & Messaging
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs text-neutral-400">Heading</label>
+                        <button 
+                          onClick={() => generateCollectionCopy('heading')}
+                          className="p-1 text-blue-400 hover:text-blue-300 transition-colors"
+                          title="Generate with AI"
+                        >
+                          <Wand2 size={12} />
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={collectionData.heading || ''}
+                        onChange={(e) => updateCollectionData({ heading: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                        placeholder="e.g., Summer Lookbook"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs text-neutral-400">Subheading</label>
+                        <button 
+                          onClick={() => generateCollectionCopy('subheading')}
+                          className="p-1 text-blue-400 hover:text-blue-300 transition-colors"
+                          title="Generate with AI"
+                        >
+                          <Wand2 size={12} />
+                        </button>
+                      </div>
+                      <textarea
+                        value={collectionData.subheading || ''}
+                        onChange={(e) => updateCollectionData({ subheading: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none resize-none"
+                        rows={2}
+                        placeholder="Optional subtitle..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-neutral-800 my-4"></div>
+
+                {/* 3. Product Sourcing (For valid catalog variants) */}
+                {['featured-collection', 'featured-product', 'collection-grid-tight', 'collection-masonry', 'collection-carousel', 'collection-tabs', 'collection-lookbook', 'collection-split'].includes(currentVariant) && (
+                  <div className="mb-6">
+                    <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <Database size={14} /> Product Catalog Setup
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Source Selection</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { id: 'all', label: 'All Store', icon: Package },
+                            { id: 'category', label: 'By Category', icon: Tag },
+                            { id: 'collection', label: 'Collection', icon: Layers },
+                            { id: 'manual', label: 'Manual Pick', icon: MousePointerClick }
+                          ].map(s => (
+                            <button
+                              key={s.id}
+                              onClick={() => updateCollectionData({ productSource: s.id })}
+                              className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border text-xs font-medium transition-colors ${
+                                (collectionData.productSource || 'all') === s.id
+                                  ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                                  : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
+                              }`}
+                            >
+                              <s.icon size={14} />
+                              <span>{s.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {collectionData.productSource === 'category' && (
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-neutral-400">Select Category</label>
+                          <select
+                            value={collectionData.productCategory || ''}
+                            onChange={(e) => updateCollectionData({ productCategory: e.target.value })}
+                            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                          >
+                            <option value="">Choose Category...</option>
+                            {[...new Set(products.map(p => p.category))].filter(Boolean).map(cat => (
+                              <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {collectionData.productSource === 'collection' && (
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-neutral-400">Select Collection</label>
+                          <select
+                            value={collectionData.productCollection || ''}
+                            onChange={(e) => updateCollectionData({ productCollection: e.target.value })}
+                            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                          >
+                            <option value="">Choose Collection...</option>
+                            {collections.map(col => (
+                              <option key={col.id} value={col.id}>{col.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {collectionData.productSource === 'manual' && (
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-neutral-400">Select Products ({ (collectionData.manualProductIds || []).length })</label>
+                          <div className="max-h-48 overflow-y-auto custom-scrollbar border border-neutral-800 rounded-lg p-2 space-y-1 bg-black/20">
+                            {products.map(p => {
+                              const isSelected = (collectionData.manualProductIds || []).includes(p.id);
+                              return (
+                                <button
+                                  key={p.id}
+                                  onClick={() => {
+                                    const currentIds = collectionData.manualProductIds || [];
+                                    const nextIds = isSelected 
+                                      ? currentIds.filter(id => id !== p.id)
+                                      : [...currentIds, p.id];
+                                    updateCollectionData({ manualProductIds: nextIds });
+                                  }}
+                                  className={`w-full flex items-center justify-between p-2 rounded transition-colors ${isSelected ? 'bg-blue-600/20 text-blue-400' : 'hover:bg-neutral-800 text-neutral-400'}`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <img src={p.image} className="w-6 h-6 rounded object-cover" alt="" />
+                                    <span className="text-[10px] truncate max-w-[120px]">{p.name}</span>
+                                  </div>
+                                  {isSelected && <Check size={10} />}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="border-t border-neutral-800 my-4"></div>
+                  </div>
+                )}
+
+                {/* 4. Appearance Settings */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Sliders size={14} /> Display Settings
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-2 bg-neutral-900/50 rounded-lg border border-neutral-700">
+                      <div className="flex flex-col">
+                        <span className="text-sm text-white font-medium">Full Width</span>
+                        <span className="text-[10px] text-neutral-500">Span across the entire screen</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={collectionData.fullWidth || false}
+                        onChange={(e) => updateCollectionData({ fullWidth: e.target.checked })}
+                        className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-neutral-900/50 rounded-lg border border-neutral-700">
+                      <div className="flex flex-col">
+                        <span className="text-sm text-white font-medium">Dark Mode</span>
+                        <span className="text-[10px] text-neutral-500">Use dark background theme</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={collectionData.darkMode || false}
+                        onChange={(e) => updateCollectionData({ darkMode: e.target.checked })}
+                        className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5 pt-2">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs text-neutral-400">Product Limit</label>
+                        <span className="text-xs text-blue-400 font-bold">{collectionData.productCount || 8}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="24"
+                        value={collectionData.productCount || 8}
+                        onChange={(e) => updateCollectionData({ productCount: parseInt(e.target.value) })}
+                        className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                      />
+                    </div>
+
+                    <div className="space-y-3 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-neutral-400">Default Sorting</span>
+                        <select
+                          value={collectionData.sortBy || 'newest'}
+                          onChange={(e) => updateCollectionData({ sortBy: e.target.value })}
+                          className="bg-neutral-900 border border-neutral-700 rounded-lg px-2 py-1 text-[10px] text-white focus:border-blue-500 outline-none"
+                        >
+                          <option value="newest">Newest First</option>
+                          <option value="oldest">Oldest First</option>
+                          <option value="price-asc">Price: Low to High</option>
+                          <option value="price-desc">Price: High to Low</option>
+                          <option value="name-asc">Name: A-Z</option>
+                          <option value="name-desc">Name: Z-A</option>
+                        </select>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-neutral-400">Section Style</span>
+                        <div className="flex gap-1">
+                          {['clean', 'glass', 'bordered'].map(s => (
+                            <button
+                              key={s}
+                              onClick={() => updateCollectionData({ sectionStyle: s })}
+                              className={`px-2 py-1 rounded text-[10px] capitalize transition-colors ${
+                                (collectionData.sectionStyle || 'clean') === s
+                                  ? 'bg-blue-500 text-white'
+                                  : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                              }`}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Footer */}
+              <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0">
+                <button 
+                  onClick={() => setIsCollectionModalOpen(false)}
+                  className="w-full px-6 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold text-sm transition-colors text-white"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT PANEL - Preview (70%) */}
+            <div className="flex-1 bg-neutral-800 flex flex-col relative overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px]"></div>
+              
+              <div className="relative p-3 border-b border-neutral-700 bg-neutral-900 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-4">
+                  <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Live Preview</span>
+                  <div className="h-4 w-px bg-neutral-700"></div>
+                  <div className="flex items-center gap-2">
+                    <Monitor size={14} className="text-blue-500" />
+                    <span className="text-[10px] text-neutral-500">Desktop View</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                  <span className="text-[10px] text-neutral-500">Live Editor Active</span>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-auto p-12 custom-scrollbar relative z-10 flex items-center justify-center">
+                {/* Floating Layout Selector */}
+                <div className="absolute top-6 right-6 z-20 flex flex-col gap-2">
+                  <div className="bg-neutral-900/90 backdrop-blur-md border border-neutral-700 p-1.5 rounded-xl shadow-2xl flex flex-col gap-1 ring-1 ring-white/10">
+                    <div className="px-2 py-1 mb-1 border-b border-neutral-800">
+                      <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">Quick Layouts</span>
+                    </div>
+                    {COLLECTION_OPTIONS.slice(0, 4).map(opt => (
+                      <button
+                        key={opt.id}
+                        onClick={() => handleCollectionStyleChange(opt.id)}
+                        className={`p-2 rounded-lg transition-all flex items-center gap-3 group ${currentVariant === opt.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-white/5 text-neutral-400'}`}
+                      >
+                        <LayoutTemplate size={14} className={currentVariant === opt.id ? 'text-white' : 'text-neutral-500 group-hover:text-blue-400'} />
+                        <span className="text-[10px] font-bold whitespace-nowrap">{opt.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={`w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-500 ${collectionData.darkMode ? 'bg-neutral-900 text-white' : 'bg-white text-black'}`}>
+                  <div className="relative">
+                    {(() => {
+                        const previewProducts = getFilteredProductsUtil(collectionData, products, collections);
+                        return (
+                          <CollectionComponent 
+                            data={collectionData} 
+                            products={previewProducts}
+                            isEditable={false} 
+                            onUpdate={() => {}} 
+                          />
+                        );
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderHeroModal = () => {
     if (!isHeroModalOpen) return null;
 
@@ -4617,6 +5078,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           };
         }));
         setHasUnsavedChanges(true);
+      }
+    };
+
+    const generateHeroCopy = async (field: string) => {
+      if (!genAI) return;
+      try {
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        const variant = HERO_OPTIONS.find(o => o.id === currentHeroVariant)?.name || "hero section";
+        const industry = config.theme_primary || "modern e-commerce";
+        
+        const prompt = `Generate a high-converting ${field} for a ${variant} on a ${industry} website.
+          Keep it short (under ${field === 'heading' ? '8' : '20'} words).
+          Return ONLY the text.`;
+
+        const result = await model.generateContent(prompt);
+        const text = result.response.text().trim().replace(/\"/g, '');
+        updateHeroData({ [field]: text });
+      } catch (error) {
+        console.error("Hero AI generation failed:", error);
       }
     };
 
@@ -4709,7 +5189,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <div className="space-y-4">
                     {availableFields.includes('heading') && (
                       <div className="space-y-1.5">
-                        <label className="text-xs text-neutral-400">Heading</label>
+                        <div className="flex justify-between items-center">
+                          <label className="text-xs text-neutral-400">Heading</label>
+                          <button 
+                            onClick={() => generateHeroCopy('heading')}
+                            className="p-1 text-purple-400 hover:text-purple-300 transition-colors"
+                            title="Generate with AI"
+                          >
+                            <Wand2 size={12} />
+                          </button>
+                        </div>
                         <input
                           id="editor-field-heading"
                           type="text"
@@ -4723,7 +5212,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                     {availableFields.includes('subheading') && (
                       <div className="space-y-1.5">
-                        <label className="text-xs text-neutral-400">Subheading</label>
+                        <div className="flex justify-between items-center">
+                          <label className="text-xs text-neutral-400">Subheading</label>
+                          <button 
+                            onClick={() => generateHeroCopy('subheading')}
+                            className="p-1 text-purple-400 hover:text-purple-300 transition-colors"
+                            title="Generate with AI"
+                          >
+                            <Wand2 size={12} />
+                          </button>
+                        </div>
                         <textarea
                           id="editor-field-subheading"
                           value={heroData.subheading || ''}
@@ -5592,8 +6090,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           
           {/* Modal Content - Split View */}
           <div className="flex-1 flex overflow-hidden">
-            {/* Left Panel - Style Selection */}
-            <div className="w-80 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative min-h-0">
+            {/* Left Panel - Style Selection (30%) */}
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative min-h-0">
               {/* WARNING OVERLAY */}
               {warningFields.length > 0 && (
                 <div className="absolute inset-0 z-50 bg-neutral-950/98 p-6 flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
@@ -6615,7 +7113,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       }
                       setIsGeneratingSEO(true);
                       try {
-                        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                        const model = (genAI as any).getGenerativeModel({ model: "gemini-1.5-flash" });
                         const prompt = `You are an expert SEO specialist. Generate comprehensive SEO metadata for an online store.
 
 Store Name: ${config.name || 'Online Store'}
@@ -6985,8 +7483,8 @@ Return ONLY the JSON object, no markdown.`;
           
           {/* Modal Content - Split View */}
           <div className="flex-1 flex overflow-hidden">
-            {/* Left Panel - Controls */}
-            <div className="w-80 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 overflow-y-auto custom-scrollbar p-4 space-y-6">
+            {/* Left Panel - Controls (30%) */}
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 overflow-y-auto custom-scrollbar p-4 space-y-6">
               {/* Layout Matrix */}
               <div>
                 <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -7237,7 +7735,7 @@ Return ONLY the JSON object, no markdown.`;
 
     try {
       if (genAI) {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `You are an expert website builder. Generate a JSON array of section configurations for a new website.
         Business Name: ${business_name}
         Business Type: ${business_type}
@@ -7288,6 +7786,8 @@ Return ONLY the JSON object, no markdown.`;
     sectionsToAdd.push({
       id: `hero-${Date.now()}`,
       type: 'system-hero',
+      name: 'Hero',
+      content: '',
       variant: style_preference === 'minimal' ? 'centered-gradient' : style_preference === 'bold' ? 'impact' : 'editorial',
       data: {
         heading: heroContent.heading,
@@ -7302,6 +7802,8 @@ Return ONLY the JSON object, no markdown.`;
       sectionsToAdd.push({
         id: `products-${Date.now()}`,
         type: 'system-collection',
+        name: 'Featured Products',
+        content: '',
         variant: 'minimal-grid',
         data: {
           heading: 'Featured Products',
@@ -7316,6 +7818,8 @@ Return ONLY the JSON object, no markdown.`;
       sectionsToAdd.push({
         id: `gallery-${Date.now()}`,
         type: 'system-gallery',
+        name: 'Gallery',
+        content: '',
         variant: 'masonry',
         data: {
           heading: 'Our Work',
@@ -7328,6 +7832,8 @@ Return ONLY the JSON object, no markdown.`;
     sectionsToAdd.push({
       id: `social-${Date.now()}`,
       type: 'system-social',
+      name: 'Testimonials',
+      content: '',
       variant: 'testimonial-cards',
       data: {
         heading: 'What People Say',
@@ -7340,6 +7846,8 @@ Return ONLY the JSON object, no markdown.`;
       sectionsToAdd.push({
         id: `contact-${Date.now()}`,
         type: 'system-contact',
+        name: 'Contact',
+        content: '',
         variant: 'split',
         data: {
           heading: 'Get in Touch',
@@ -7354,6 +7862,8 @@ Return ONLY the JSON object, no markdown.`;
     sectionsToAdd.push({
       id: `email-${Date.now()}`,
       type: 'system-email',
+      name: 'Newsletter',
+      content: '',
       variant: 'centered',
       data: {
         heading: 'Stay Updated',
@@ -7456,6 +7966,8 @@ Return ONLY the JSON object, no markdown.`;
           sectionsToAdd.push({
             id: sectionId,
             type: 'system-hero',
+            name: 'Hero',
+            content: '',
             variant: 'impact',
             data: { heading: 'Your Headline Here', subheading: 'Your supporting text goes here.', buttonText: 'Get Started' }
           });
@@ -7464,6 +7976,8 @@ Return ONLY the JSON object, no markdown.`;
           sectionsToAdd.push({
             id: sectionId,
             type: 'system-collection',
+            name: 'Collection',
+            content: '',
             variant: 'minimal-grid',
             data: { heading: 'Featured Products', productCount: 8 }
           });
@@ -7472,6 +7986,8 @@ Return ONLY the JSON object, no markdown.`;
           sectionsToAdd.push({
             id: sectionId,
             type: 'system-gallery',
+            name: 'Gallery',
+            content: '',
             variant: 'masonry',
             data: { heading: 'Our Gallery' }
           });
@@ -7480,6 +7996,8 @@ Return ONLY the JSON object, no markdown.`;
           sectionsToAdd.push({
             id: sectionId,
             type: 'system-contact',
+            name: 'Contact',
+            content: '',
             variant: 'split',
             data: { heading: 'Contact Us', submitButtonText: 'Send Message' }
           });
@@ -7488,6 +8006,8 @@ Return ONLY the JSON object, no markdown.`;
           sectionsToAdd.push({
             id: sectionId,
             type: 'system-social',
+            name: 'Social proof',
+            content: '',
             variant: 'testimonial-cards',
             data: { heading: 'What People Say' }
           });
@@ -7496,6 +8016,8 @@ Return ONLY the JSON object, no markdown.`;
           sectionsToAdd.push({
             id: sectionId,
             type: 'system-email',
+            name: 'Email capture',
+            content: '',
             variant: 'centered',
             data: { heading: 'Stay Updated', buttonText: 'Subscribe' }
           });
@@ -7504,6 +8026,8 @@ Return ONLY the JSON object, no markdown.`;
           sectionsToAdd.push({
             id: sectionId,
             type: 'system-blog',
+            name: 'Blog',
+            content: '',
             variant: 'grid',
             data: { heading: 'Latest Articles', postsToShow: 6 }
           });
@@ -7512,6 +8036,8 @@ Return ONLY the JSON object, no markdown.`;
           sectionsToAdd.push({
             id: sectionId,
             type: 'system-layout',
+            name: 'Layout',
+            content: '',
             variant: 'two-column',
             data: { heading: 'Why Choose Us', subheading: 'We deliver excellence in everything we do.' }
           });
@@ -7520,6 +8046,8 @@ Return ONLY the JSON object, no markdown.`;
           sectionsToAdd.push({
             id: sectionId,
             type: 'system-collapsible',
+            name: 'FAQ',
+            content: '',
             variant: 'faq',
             data: { heading: 'Frequently Asked Questions' }
           });
@@ -7971,6 +8499,8 @@ Return ONLY the JSON object, no markdown.`;
                   const newBlock: PageBlock = {
                     id: `${rec.type}-${Date.now()}`,
                     type: rec.type as any,
+                    name: rec.label,
+                    content: '', // Default content
                     variant: 'default',
                     data: {}
                   };
@@ -8018,7 +8548,7 @@ Return ONLY the JSON object, no markdown.`;
         label: 'Hero section added', 
         passed: hasHero, 
         fix: () => {
-          const newBlock: PageBlock = { id: `hero-${Date.now()}`, type: 'system-hero', variant: 'impact', data: { heading: 'Your Headline Here' } };
+          const newBlock: PageBlock = { id: `hero-${Date.now()}`, type: 'system-hero', name: 'Hero', content: '', variant: 'impact', data: { heading: 'Your Headline Here' } };
           onUpdatePage(activePageId, { blocks: [newBlock, ...blocks] });
         }
       },
@@ -8028,7 +8558,7 @@ Return ONLY the JSON object, no markdown.`;
         passed: hasContact || !!config.supportEmail,
         fix: () => {
           if (!hasContact) {
-            const newBlock: PageBlock = { id: `contact-${Date.now()}`, type: 'system-contact', variant: 'split', data: {} };
+            const newBlock: PageBlock = { id: `contact-${Date.now()}`, type: 'system-contact', name: 'Contact', content: '', variant: 'split', data: {} };
             onUpdatePage(activePageId, { blocks: [...blocks, newBlock] });
           }
         }
@@ -8039,7 +8569,7 @@ Return ONLY the JSON object, no markdown.`;
         passed: hasProducts || blocks.length >= 3,
         fix: () => {
           if (!hasProducts) {
-            const newBlock: PageBlock = { id: `collection-${Date.now()}`, type: 'system-collection', variant: 'minimal-grid', data: {} };
+            const newBlock: PageBlock = { id: `collection-${Date.now()}`, type: 'system-collection', name: 'Collection', content: '', variant: 'featured-collection', data: {} };
             onUpdatePage(activePageId, { blocks: [...blocks, newBlock] });
           }
         }
@@ -8048,14 +8578,14 @@ Return ONLY the JSON object, no markdown.`;
         id: 'seo', 
         label: 'Store name configured', 
         passed: !!config.name && config.name !== 'My Store',
-        fix: () => setActiveTab(AdminTab.SETTINGS)
+        fix: () => onTabChange(AdminTab.SETTINGS)
       },
       { 
         id: 'email', 
         label: 'Email capture enabled', 
         passed: hasEmailSignup,
         fix: () => {
-          const newBlock: PageBlock = { id: `email-${Date.now()}`, type: 'system-email', variant: 'centered', data: {} };
+          const newBlock: PageBlock = { id: `email-${Date.now()}`, type: 'system-email', name: 'Email', content: '', variant: 'centered', data: {} };
           onUpdatePage(activePageId, { blocks: [...blocks, newBlock] });
         }
       },
@@ -9040,8 +9570,11 @@ Return ONLY the JSON object, no markdown.`;
       case AdminTab.SHIPPING:
         return <ShippingManager storeId={storeId || null} />;
 
+      case AdminTab.COLLECTIONS:
+        return <CollectionManager />;
+
       case AdminTab.DESIGN:
-        const isAnyModalOpen = isHeaderModalOpen || isHeroModalOpen || isGridModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
+        const isAnyModalOpen = isHeaderModalOpen || isHeroModalOpen || isGridModalOpen || isCollectionModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
         return (
           <div className="flex h-full w-full bg-neutral-950 overflow-hidden">
             {/* LEFT COLUMN: EDITOR */}
@@ -9318,7 +9851,13 @@ Return ONLY the JSON object, no markdown.`;
                               onDragOver={(e) => handleDragOver(e, idx)}
                               onDrop={() => handleDrop(idx)}
                               className={`group flex flex-col p-3 rounded-lg border transition-all cursor-grab active:cursor-grabbing ${selectedBlockId === block.id ? 'bg-neutral-800 border-neutral-700' : 'bg-transparent border-transparent hover:bg-white/5'} ${block.hidden ? 'opacity-50' : ''} ${draggedIndex === idx ? 'opacity-20' : ''}`}
-                              onClick={() => !block.locked && setSelectedBlockId(block.id)}
+                              onClick={() => {
+                                if (block.locked) return;
+                                setSelectedBlockId(block.id);
+                                if (block.type === 'system-hero') setIsHeroModalOpen(true);
+                                else if (block.type === 'system-grid') setIsGridModalOpen(true);
+                                else if (block.type === 'system-collection') setIsCollectionModalOpen(true);
+                              }}
                             >
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-3 overflow-hidden">
@@ -9363,9 +9902,10 @@ Return ONLY the JSON object, no markdown.`;
                                       e.stopPropagation();
                                       if (block.type === 'system-hero') { setSelectedBlockId(block.id); setIsHeroModalOpen(true); }
                                       else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setIsGridModalOpen(true); }
+                                      else if (block.type === 'system-collection') { setSelectedBlockId(block.id); setIsCollectionModalOpen(true); }
                                       else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
                                       else if (block.type.startsWith('system-')) { 
-                                        // All other system blocks: just select them to open UniversalEditor
+                                        // All other system blocks: select them
                                         setSelectedBlockId(block.id);
                                       }
                                       else { handleOpenArchitect(block.id); }
@@ -9416,48 +9956,11 @@ Return ONLY the JSON object, no markdown.`;
                     </button>
                   </div>
 
-                  {/* INLINE BLOCK EDITOR (Restored) */}
-                  {selectedBlockId && activeBlock && activeBlock.type === 'section' && (
-                    <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden animate-in slide-in-from-top-2">
-                      <div className="p-2 border-b border-neutral-800 flex items-center gap-2 bg-black/20">
-                        <button className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white"><Bold size={14} /></button>
-                        <button className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white"><Italic size={14} /></button>
-                        <button className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white"><Link size={14} /></button>
-                        <div className="w-px h-4 bg-neutral-800 mx-1"></div>
-                        <button className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white"><AlignLeft size={14} /></button>
-                        <button className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white"><AlignCenter size={14} /></button>
-                        <button className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white"><AlignRight size={14} /></button>
-                      </div>
-                      <textarea
-                        value={activeBlock.content}
-                        onChange={(e) => updateActiveBlock(e.target.value)}
-                        className="w-full h-64 bg-transparent p-4 text-xs font-mono text-neutral-300 focus:outline-none resize-none"
-                        placeholder="Edit HTML content..."
-                      />
-                    </div>
-                  )}
+                  {/* Inline editor removed - all blocks now use modals */}
 
                 </div>
               </div>
             </div>
-
-            {/* UNIVERSAL EDITOR SIDEBAR - Exclude hero blocks since they use the Hero Studio modal */}
-            {selectedBlockId && activeBlock && activeBlock.type.startsWith('system-') && activeBlock.type !== 'system-hero' && (
-               <div className="w-80 border-r border-neutral-800 bg-neutral-900 h-full overflow-hidden flex flex-col z-20">
-                 <UniversalEditor
-                    blockId={activeBlock.id}
-                    blockType={activeBlock.type}
-                    variant={activeBlock.variant || 'default'}
-                    data={activeBlock.data || {}}
-                    activeField={activeField}
-                    onUpdate={(newData) => updateActiveBlockData(activeBlock.id, newData)}
-                    onSwitchLayout={(newVariant) => {
-                      const newData = mapDataToLayout(activeBlock.data || {}, newVariant);
-                      updateActiveBlockData(activeBlock.id, { ...newData, variant: newVariant });
-                    }}
-                 />
-               </div>
-            )}
 
             {/* RIGHT COLUMN: LIVE CANVAS */}
             <div className="flex-1 bg-[#111] flex flex-col relative overflow-hidden">
@@ -9688,6 +10191,7 @@ Return ONLY the JSON object, no markdown.`;
                         const block = activePage.blocks.find(b => b.id === blockId);
                         if (block?.type === 'system-hero') setIsHeroModalOpen(true);
                         else if (block?.type === 'system-grid') setIsGridModalOpen(true);
+                        else if (block?.type === 'system-collection') setIsCollectionModalOpen(true);
                         
                         // Show first-edit hint if this is user's first time clicking a section
                         if (!hasSeenFirstEditHint) {
@@ -9712,9 +10216,11 @@ Return ONLY the JSON object, no markdown.`;
                         setSelectedBlockId(blockId);
                         if (block.type === 'system-hero') { setIsHeroModalOpen(true); }
                         else if (block.type === 'system-grid') { setIsGridModalOpen(true); }
+                        else if (block.type === 'system-collection') { setIsCollectionModalOpen(true); }
                         else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
                         else if (block.type.startsWith('system-')) {
-                          // Other system blocks - UniversalEditor already opens via setSelectedBlockId
+                          // Other system blocks
+                          setSelectedBlockId(blockId);
                         }
                         else { handleOpenArchitect(blockId); }
                       }}
@@ -10938,6 +11444,7 @@ Return ONLY the JSON object, no markdown.`;
       {renderBlockArchitect()}
       {renderHeroModal()}
       {renderGridModal()}
+      {renderCollectionModal()}
       {renderSystemBlockModal()}
       {renderFooterModal()}
       {renderAddSectionLibrary()}

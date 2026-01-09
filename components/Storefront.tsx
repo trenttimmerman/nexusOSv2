@@ -17,6 +17,7 @@ import { LAYOUT_COMPONENTS } from './LayoutLibrary';
 import { COLLECTION_COMPONENTS } from './CollectionLibrary';
 import { SectionWrapper } from './SectionWrapper';
 import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
+import { getFilteredProducts as getFilteredProductsUtil } from '../lib/productUtils';
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
 import { CartDrawer } from './CartDrawer';
@@ -284,96 +285,20 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
       }
   }
 
+  // Helper to filter and sort products
+  // Helper to filter and sort products
+  const getFilteredProducts = (data: any) => {
+    return getFilteredProductsUtil(data, products, collections);
+  };
+
   // Render System Product Grid
-  const renderProductGrid = (variant?: string, data?: any, blockId?: string, isEditable?: boolean) => {
+  const renderProductGrid = (variant?: string, data?: any, blockId?: string, isEditable?: boolean, onEditBlock?: (id: string) => void) => {
     const styleId = (variant as ProductCardStyleId) || config.productCardStyle || 'classic';
     const CardComponent = PRODUCT_CARD_COMPONENTS[styleId] || PRODUCT_CARD_COMPONENTS['classic'];
     const heading = data?.heading || "Latest Drops.";
     const subheading = data?.subheading || "Curated essentials for the modern digital nomad.";
     
-    // Filter and sort products based on data settings
-    let filteredProducts = [...products];
-    const productSource = data?.productSource || 'all';
-    
-    // Apply filtering based on productSource
-    switch (productSource) {
-      case 'category':
-        if (data?.productCategory) {
-          filteredProducts = filteredProducts.filter(p => 
-            p.category_id === data.productCategory || 
-            p.category?.toLowerCase() === data.productCategory.toLowerCase()
-          );
-        }
-        break;
-      case 'collection':
-        if (data?.productCollection && collections && collections.length > 0) {
-          const collection = collections.find(c => c.id === data.productCollection);
-          if (collection) {
-            if (collection.type === 'manual' && collection.product_ids) {
-              // For manual collections, use the product_ids array
-              filteredProducts = collection.product_ids
-                .map((id: string) => products.find(p => p.id === id))
-                .filter(Boolean) as Product[];
-            } else if (collection.type === 'auto-category' && collection.conditions?.category_id) {
-              // For auto-category collections, filter by category
-              filteredProducts = filteredProducts.filter(p => 
-                p.category_id === collection.conditions?.category_id
-              );
-            } else if (collection.type === 'auto-tag' && collection.conditions?.tags) {
-              // For auto-tag collections, filter by tags
-              filteredProducts = filteredProducts.filter(p => 
-                p.tags?.some(tag => collection.conditions?.tags?.includes(tag))
-              );
-            }
-          }
-        }
-        break;
-      case 'tag':
-        if (data?.productTag) {
-          filteredProducts = filteredProducts.filter(p => 
-            p.tags?.includes(data.productTag)
-          );
-        }
-        break;
-      case 'manual':
-        if (data?.selectedProducts && data.selectedProducts.length > 0) {
-          // Order products by selection order
-          filteredProducts = data.selectedProducts
-            .map((id: string) => products.find(p => p.id === id))
-            .filter(Boolean);
-        }
-        break;
-      // 'all' - use all products
-    }
-    
-    // Apply sorting (only if not manual selection - manual preserves user order)
-    if (productSource !== 'manual') {
-      const sortBy = data?.sortBy || 'newest';
-      switch (sortBy) {
-        case 'oldest':
-          filteredProducts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-          break;
-        case 'newest':
-          filteredProducts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-          break;
-        case 'price-asc':
-          filteredProducts.sort((a, b) => a.price - b.price);
-          break;
-        case 'price-desc':
-          filteredProducts.sort((a, b) => b.price - a.price);
-          break;
-        case 'name-asc':
-          filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
-          break;
-        case 'name-desc':
-          filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
-          break;
-      }
-    }
-    
-    // Apply limit
-    const limit = data?.limit || 8;
-    filteredProducts = filteredProducts.slice(0, limit);
+    const filteredProducts = getFilteredProducts(data);
     
     // Determine grid columns
     const columns = data?.columns || '4';
@@ -396,6 +321,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                  onStyleChange={(style) => onUpdateBlock && blockId && onUpdateBlock(blockId, { heading_style: style })}
                  style={data?.heading_style}
                  isEditable={isEditable} 
+                 onSelect={() => onEditBlock && blockId && onEditBlock(blockId)}
                />
             </h2>
             <p className="text-neutral-500">
@@ -406,6 +332,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
                  onStyleChange={(style) => onUpdateBlock && blockId && onUpdateBlock(blockId, { subheading_style: style })}
                  style={data?.subheading_style}
                  isEditable={isEditable} 
+                 onSelect={() => onEditBlock && blockId && onEditBlock(blockId)}
                />
             </p>
           </div>
@@ -464,7 +391,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
             />
           ) : null;
         case 'system-grid':
-          return renderProductGrid(block.variant, block.data, block.id, isEditable);
+          return renderProductGrid(block.variant, block.data, block.id, isEditable, onEditBlock);
         case 'system-scroll':
           const ScrollComponent = SCROLL_COMPONENTS[block.variant || 'logo-marquee'];
           return ScrollComponent ? (
@@ -538,7 +465,14 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         case 'system-collection':
           const CollectionComponent = COLLECTION_COMPONENTS[block.variant || 'collection-list'];
           return CollectionComponent ? (
-            <CollectionComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+            <CollectionComponent 
+              data={block.data} 
+              products={getFilteredProducts(block.data)} 
+              isEditable={isEditable} 
+              onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
+              onEditBlock={onEditBlock}
+              blockId={block.id}
+            />
           ) : null;
         case 'section':
         default:
