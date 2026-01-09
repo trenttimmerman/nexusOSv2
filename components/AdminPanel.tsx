@@ -5689,7 +5689,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
           <div className="flex-1 flex overflow-hidden">
             <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
-              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Banner Styles</h4>
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
+                <Palette size={14} /> Banner Styles
+              </h4>
               <div className="grid grid-cols-1 gap-2">
                 {PROMO_BANNER_OPTIONS.map(opt => (
                   <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...promoData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-amber-600/20 border-amber-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
@@ -5697,6 +5699,90 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div className="text-xs opacity-60">{opt.description}</div>
                   </button>
                 ))}
+              </div>
+
+              <div className="border-t border-neutral-800 my-4"></div>
+
+              {/* Content Fields */}
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
+                <Type size={14} /> Content
+              </h4>
+              <div className="space-y-4">
+                {currentVariant === 'promo-top' && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-neutral-400">Banner Text</label>
+                    <input
+                      type="text"
+                      value={promoData.text || ''}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...promoData, text: e.target.value })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-500 outline-none"
+                      placeholder="e.g., Free shipping on orders over $100"
+                    />
+                  </div>
+                )}
+
+                {currentVariant === 'promo-hero' && (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Heading</label>
+                      <input
+                        type="text"
+                        value={promoData.heading || ''}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...promoData, heading: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-500 outline-none"
+                        placeholder="e.g., End of Season Sale"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Subheading</label>
+                      <textarea
+                        value={promoData.subheading || ''}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...promoData, subheading: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-500 outline-none resize-none"
+                        rows={2}
+                        placeholder="Describe the promotion..."
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Button Text</label>
+                      <input
+                        type="text"
+                        value={promoData.buttonText || ''}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...promoData, buttonText: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-500 outline-none"
+                        placeholder="e.g., Shop Sale"
+                      />
+                      <div className="flex items-center gap-2 mt-1">
+                        <Link size={12} className="text-neutral-600" />
+                        <select
+                          value={promoData.buttonLink || ''}
+                          onChange={(e) => updateActiveBlockData(selectedBlockId, { ...promoData, buttonLink: e.target.value })}
+                          className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-amber-500 outline-none"
+                        >
+                          <option value="">No link</option>
+                          {localPages.map(page => (
+                            <option key={page.id} value={page.slug || '/'}>
+                              {page.title || page.slug}
+                            </option>
+                          ))}
+                          <option value="external">Custom URL...</option>
+                        </select>
+                      </div>
+                      {promoData.buttonLink === 'external' && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <ExternalLink size={12} className="text-neutral-600" />
+                          <input
+                            type="text"
+                            value={promoData.buttonExternalUrl || ''}
+                            onChange={(e) => updateActiveBlockData(selectedBlockId, { ...promoData, buttonExternalUrl: e.target.value })}
+                            className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-amber-500 outline-none"
+                            placeholder="https://..."
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             <div className="flex-1 bg-neutral-800 p-6 overflow-auto">

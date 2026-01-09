@@ -404,7 +404,16 @@ export const PROMO_BANNER_COMPONENTS: Record<string, React.FC<any>> = {
             isEditable={isEditable}
             className="text-neutral-300 mb-8 text-lg"
           />
-          <button className="bg-white text-black px-8 py-3 rounded-lg font-bold hover:bg-neutral-200 transition-colors">Shop Sale</button>
+          <button 
+            onClick={() => {
+              if (isEditable) return;
+              const link = data?.buttonLink === 'external' ? data?.buttonExternalUrl : data?.buttonLink;
+              if (link) window.location.href = link;
+            }}
+            className="bg-white text-black px-8 py-3 rounded-lg font-bold hover:bg-neutral-200 transition-colors"
+          >
+            {data?.buttonText || 'Shop Sale'}
+          </button>
         </div>
       </div>
     </div>
