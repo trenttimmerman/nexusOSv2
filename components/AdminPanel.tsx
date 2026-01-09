@@ -5978,8 +5978,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const renderLayoutModal = () => {
     if (!isLayoutModalOpen || !selectedBlockId || !activeBlock) return null;
     const layoutData = activeBlock?.data || {};
-    const currentVariant = activeBlock?.variant || 'layout-split';
+    const currentVariant = activeBlock?.variant || 'layout-image-text';
     const LayoutComponent = LAYOUT_COMPONENTS[currentVariant];
+
+    const updateLayoutData = (updates: any) => {
+      setLocalPages(prev => prev.map(p => {
+        if (p.id !== activePage.id) return p;
+        return {
+          ...p,
+          blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, data: { ...b.data, ...updates } } : b)
+        };
+      }));
+      setHasUnsavedChanges(true);
+    };
 
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -5995,17 +6006,144 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsLayoutModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
+            {/* LEFT PANEL - Editing Tools (30%) */}
             <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
-              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Layout Templates</h4>
-              <div className="grid grid-cols-1 gap-2">
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
+                <Palette size={14} /> Layout Templates
+              </h4>
+              <div className="grid grid-cols-1 gap-2 mb-6">
                 {LAYOUT_OPTIONS.map(opt => (
-                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...layoutData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-fuchsia-600/20 border-fuchsia-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                  <button 
+                    key={opt.id} 
+                    onClick={() => {
+                      setLocalPages(prev => prev.map(p => {
+                        if (p.id !== activePage.id) return p;
+                        return {
+                          ...p,
+                          blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: opt.id } : b)
+                        };
+                      }));
+                      setHasUnsavedChanges(true);
+                    }} 
+                    className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-fuchsia-600/20 border-fuchsia-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}
+                  >
                     <div className="font-bold text-sm">{opt.name}</div>
                     <div className="text-xs opacity-60">{opt.description}</div>
                   </button>
                 ))}
               </div>
+
+              <div className="border-t border-neutral-800 my-4"></div>
+
+              {/* Content Fields */}
+              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
+                <Type size={14} /> Content
+              </h4>
+              <div className="space-y-4">
+                {/* Heading field - used by most variants */}
+                {['layout-image-text', 'layout-multicolumn', 'layout-banner', 'layout-timeline', 'layout-accordion', 'layout-tabs'].includes(currentVariant) && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-neutral-400">Heading</label>
+                    <input
+                      type="text"
+                      value={layoutData.heading || ''}
+                      onChange={(e) => updateLayoutData({ heading: e.target.value })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-fuchsia-500 outline-none"
+                      placeholder="e.g., Tell Your Story"
+                    />
+                  </div>
+                )}
+
+                {/* Text field - for image-text layout */}
+                {currentVariant === 'layout-image-text' && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-neutral-400">Body Text</label>
+                    <textarea
+                      value={layoutData.text || ''}
+                      onChange={(e) => updateLayoutData({ text: e.target.value })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-fuchsia-500 outline-none resize-none"
+                      rows={4}
+                      placeholder="Describe your feature..."
+                    />
+                  </div>
+                )}
+
+                {/* Image field */}
+                {['layout-image-text', 'layout-banner'].includes(currentVariant) && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-neutral-400">Image URL</label>
+                    <input
+                      type="text"
+                      value={layoutData.image || ''}
+                      onChange={(e) => updateLayoutData({ image: e.target.value })}
+                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-fuchsia-500 outline-none"
+                      placeholder="https://..."
+                    />
+                  </div>
+                )}
+
+                {/* Reverse option for image-text */}
+                {currentVariant === 'layout-image-text' && (
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-sm text-neutral-400 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={layoutData.reverse || false}
+                        onChange={(e) => updateLayoutData({ reverse: e.target.checked })}
+                        className="w-4 h-4 rounded border-neutral-700 bg-neutral-900 text-fuchsia-500 focus:ring-fuchsia-500 focus:ring-offset-0"
+                      />
+                      Reverse Layout
+                    </label>
+                  </div>
+                )}
+
+                {/* Button text and link - for layouts with CTA buttons */}
+                {['layout-image-text', 'layout-banner'].includes(currentVariant) && (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Button Text</label>
+                      <input
+                        type="text"
+                        value={layoutData.buttonText || ''}
+                        onChange={(e) => updateLayoutData({ buttonText: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-fuchsia-500 outline-none"
+                        placeholder="e.g., Learn More"
+                      />
+                      <div className="flex items-center gap-2 mt-1">
+                        <Link size={12} className="text-neutral-600" />
+                        <select
+                          value={layoutData.buttonLink || ''}
+                          onChange={(e) => updateLayoutData({ buttonLink: e.target.value })}
+                          className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-fuchsia-500 outline-none"
+                        >
+                          <option value="">No link</option>
+                          {localPages.map(page => (
+                            <option key={page.id} value={page.slug || '/'}>
+                              {page.title || page.slug}
+                            </option>
+                          ))}
+                          <option value="external">Custom URL...</option>
+                        </select>
+                      </div>
+                      {layoutData.buttonLink === 'external' && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <ExternalLink size={12} className="text-neutral-600" />
+                          <input
+                            type="text"
+                            value={layoutData.buttonExternalUrl || ''}
+                            onChange={(e) => updateLayoutData({ buttonExternalUrl: e.target.value })}
+                            className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-fuchsia-500 outline-none"
+                            placeholder="https://..."
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
+
+            {/* RIGHT PANEL - Preview */}
             <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
               <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
                 {LayoutComponent && <LayoutComponent data={layoutData} isEditable={false} onUpdate={() => {}} />}

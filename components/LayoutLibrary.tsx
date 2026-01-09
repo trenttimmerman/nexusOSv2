@@ -51,8 +51,15 @@ export const LAYOUT_COMPONENTS: Record<string, React.FC<any>> = {
             isEditable={isEditable}
             className="text-lg text-gray-600 mb-8 leading-relaxed"
           />
-          <button className="px-8 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-800 transition-colors inline-flex items-center gap-2">
-            Learn More <ArrowRight size={16} />
+          <button 
+            onClick={() => {
+              if (isEditable) return;
+              const link = data?.buttonLink === 'external' ? data?.buttonExternalUrl : data?.buttonLink;
+              if (link) window.location.href = link;
+            }}
+            className="px-8 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-800 transition-colors inline-flex items-center gap-2"
+          >
+            {data?.buttonText || 'Learn More'} <ArrowRight size={16} />
           </button>
         </div>
       </div>
@@ -154,8 +161,15 @@ export const LAYOUT_COMPONENTS: Record<string, React.FC<any>> = {
           className="text-5xl font-bold mb-4"
         />
         <p className="text-xl mb-8">Up to 50% off selected items</p>
-        <button className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors">
-          Shop Sale
+        <button 
+          onClick={() => {
+            if (isEditable) return;
+            const link = data?.buttonLink === 'external' ? data?.buttonExternalUrl : data?.buttonLink;
+            if (link) window.location.href = link;
+          }}
+          className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors"
+        >
+          {data?.buttonText || 'Shop Sale'}
         </button>
       </div>
     </div>
