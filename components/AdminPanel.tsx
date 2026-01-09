@@ -1447,17 +1447,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   const deleteBlock = async (id: string, event?: React.MouseEvent) => {
-    if (!window.confirm('Are you sure you want to delete this section? This action can be undone with Ctrl+Z.')) return;
-    
-    // Get button position for toast placement
+    // Capture position BEFORE confirm dialog
     let toastPosition: { x: number; y: number } | undefined;
     if (event) {
       const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
       toastPosition = {
         x: rect.left + rect.width / 2,
-        y: rect.top
+        y: Math.max(80, rect.top) // Ensure at least 80px from top
       };
+      console.log('[deleteBlock] Toast position:', toastPosition, 'Button rect:', rect);
     }
+    
+    if (!window.confirm('Are you sure you want to delete this section? This action can be undone with Ctrl+Z.')) return;
     
     // Find the block to ensure it exists
     const blockToDelete = activePage.blocks.find(b => b.id === id);
@@ -12694,8 +12695,9 @@ Return ONLY the JSON object, no markdown.`;
             toast.x !== undefined && toast.y !== undefined
               ? {
                   left: `${toast.x}px`,
-                  top: `${toast.y - 60}px`,
+                  top: `${toast.y - 50}px`,
                   transform: 'translateX(-50%)',
+                  pointerEvents: 'none'
                 }
               : {
                   bottom: '24px',
@@ -12704,19 +12706,19 @@ Return ONLY the JSON object, no markdown.`;
           }
         >
           {toast.type === 'success' ? (
-            <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
+            <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
               <svg className="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
           ) : (
-            <div className="w-4 h-4 rounded-full bg-red-500/20 flex items-center justify-center">
+            <div className="w-4 h-4 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
               <svg className="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
           )}
-          <span className="text-sm font-medium">{toast.message}</span>
+          <span className="text-sm font-medium whitespace-nowrap">{toast.message}</span>
         </div>
       )}
     </div>
