@@ -6082,6 +6082,282 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
                 )}
 
+                {/* Stats - 4 statistics */}
+                {currentVariant === 'layout-stats' && (
+                  <div className="space-y-3">
+                    {[0, 1, 2, 3].map((idx) => (
+                      <div key={idx} className="p-3 bg-neutral-900/50 rounded-lg border border-neutral-700 space-y-2">
+                        <label className="text-xs text-neutral-500 font-bold">Stat {idx + 1}</label>
+                        <input
+                          type="text"
+                          value={layoutData[`stat${idx}Value`] || ''}
+                          onChange={(e) => updateLayoutData({ [`stat${idx}Value`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder="e.g., 50k+"
+                        />
+                        <input
+                          type="text"
+                          value={layoutData[`stat${idx}Label`] || ''}
+                          onChange={(e) => updateLayoutData({ [`stat${idx}Label`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder="e.g., Happy Customers"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Collage - 4 images with labels */}
+                {currentVariant === 'layout-collage' && (
+                  <div className="space-y-3">
+                    {[0, 1, 2, 3].map((idx) => (
+                      <div key={idx} className="p-3 bg-neutral-900/50 rounded-lg border border-neutral-700 space-y-2">
+                        <label className="text-xs text-neutral-500 font-bold">Image {idx + 1}</label>
+                        <input
+                          type="text"
+                          value={layoutData[`collageImage${idx}`] || ''}
+                          onChange={(e) => updateLayoutData({ [`collageImage${idx}`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder="Image URL"
+                        />
+                        {(idx === 0 || idx === 3) && (
+                          <input
+                            type="text"
+                            value={layoutData[`collageLabel${idx}`] || ''}
+                            onChange={(e) => updateLayoutData({ [`collageLabel${idx}`]: e.target.value })}
+                            className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                            placeholder="Label (optional)"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Multirow - 2 rows with full content */}
+                {currentVariant === 'layout-multirow' && (
+                  <div className="space-y-3">
+                    {[0, 1].map((idx) => (
+                      <div key={idx} className="p-3 bg-neutral-900/50 rounded-lg border border-neutral-700 space-y-2">
+                        <label className="text-xs text-neutral-500 font-bold">Row {idx + 1}</label>
+                        <input
+                          type="text"
+                          value={layoutData[`row${idx}Title`] || ''}
+                          onChange={(e) => updateLayoutData({ [`row${idx}Title`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder="Title"
+                        />
+                        <textarea
+                          value={layoutData[`row${idx}Description`] || ''}
+                          onChange={(e) => updateLayoutData({ [`row${idx}Description`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none resize-none"
+                          rows={2}
+                          placeholder="Description"
+                        />
+                        <input
+                          type="text"
+                          value={layoutData[`row${idx}ButtonText`] || ''}
+                          onChange={(e) => updateLayoutData({ [`row${idx}ButtonText`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder="Button Text"
+                        />
+                        <div className="flex items-center gap-2">
+                          <Link size={12} className="text-neutral-600" />
+                          <select
+                            value={layoutData[`row${idx}ButtonLink`] || ''}
+                            onChange={(e) => updateLayoutData({ [`row${idx}ButtonLink`]: e.target.value })}
+                            className="flex-1 bg-neutral-700 border border-neutral-600 rounded px-2 py-1 text-xs text-neutral-400 focus:border-fuchsia-500 outline-none"
+                          >
+                            <option value="">No link</option>
+                            {localPages.map(page => (
+                              <option key={page.id} value={page.slug || '/'}>
+                                {page.title || page.slug}
+                              </option>
+                            ))}
+                            <option value="external">Custom URL...</option>
+                          </select>
+                        </div>
+                        {layoutData[`row${idx}ButtonLink`] === 'external' && (
+                          <input
+                            type="text"
+                            value={layoutData[`row${idx}ButtonExternalUrl`] || ''}
+                            onChange={(e) => updateLayoutData({ [`row${idx}ButtonExternalUrl`]: e.target.value })}
+                            className="w-full bg-neutral-700 border border-neutral-600 rounded px-2 py-1.5 text-xs text-neutral-400 focus:border-fuchsia-500 outline-none"
+                            placeholder="https://example.com"
+                          />
+                        )}
+                        <input
+                          type="text"
+                          value={layoutData[`row${idx}Image`] || ''}
+                          onChange={(e) => updateLayoutData({ [`row${idx}Image`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder="Image URL"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Multicolumn - 3 columns */}
+                {currentVariant === 'layout-multicolumn' && (
+                  <div className="space-y-3">
+                    {[0, 1, 2].map((idx) => (
+                      <div key={idx} className="p-3 bg-neutral-900/50 rounded-lg border border-neutral-700 space-y-2">
+                        <label className="text-xs text-neutral-500 font-bold">Column {idx + 1}</label>
+                        <input
+                          type="text"
+                          value={layoutData[`col${idx}Title`] || ''}
+                          onChange={(e) => updateLayoutData({ [`col${idx}Title`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder="Title"
+                        />
+                        <textarea
+                          value={layoutData[`col${idx}Description`] || ''}
+                          onChange={(e) => updateLayoutData({ [`col${idx}Description`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none resize-none"
+                          rows={2}
+                          placeholder="Description"
+                        />
+                        <input
+                          type="text"
+                          value={layoutData[`col${idx}Image`] || ''}
+                          onChange={(e) => updateLayoutData({ [`col${idx}Image`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder="Image URL"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Timeline - 4 timeline items */}
+                {currentVariant === 'layout-timeline' && (
+                  <div className="space-y-3">
+                    {[0, 1, 2, 3].map((idx) => (
+                      <div key={idx} className="p-3 bg-neutral-900/50 rounded-lg border border-neutral-700 space-y-2">
+                        <label className="text-xs text-neutral-500 font-bold">Timeline Item {idx + 1}</label>
+                        <input
+                          type="text"
+                          value={layoutData[`timeline${idx}Year`] || ''}
+                          onChange={(e) => updateLayoutData({ [`timeline${idx}Year`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder="Year/Date"
+                        />
+                        <input
+                          type="text"
+                          value={layoutData[`timeline${idx}Title`] || ''}
+                          onChange={(e) => updateLayoutData({ [`timeline${idx}Title`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder="Title"
+                        />
+                        <textarea
+                          value={layoutData[`timeline${idx}Description`] || ''}
+                          onChange={(e) => updateLayoutData({ [`timeline${idx}Description`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none resize-none"
+                          rows={2}
+                          placeholder="Description"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Features - 6 feature items */}
+                {currentVariant === 'layout-features' && (
+                  <div className="space-y-3">
+                    {[0, 1, 2, 3, 4, 5].map((idx) => (
+                      <div key={idx} className="p-3 bg-neutral-900/50 rounded-lg border border-neutral-700 space-y-2">
+                        <label className="text-xs text-neutral-500 font-bold">Feature {idx + 1}</label>
+                        <input
+                          type="text"
+                          value={layoutData[`feature${idx}Title`] || ''}
+                          onChange={(e) => updateLayoutData({ [`feature${idx}Title`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder="Feature Title"
+                        />
+                        <textarea
+                          value={layoutData[`feature${idx}Description`] || ''}
+                          onChange={(e) => updateLayoutData({ [`feature${idx}Description`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none resize-none"
+                          rows={2}
+                          placeholder="Description"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Accordion - 4 accordion sections */}
+                {currentVariant === 'layout-accordion' && (
+                  <div className="space-y-3">
+                    {[0, 1, 2, 3].map((idx) => (
+                      <div key={idx} className="p-3 bg-neutral-900/50 rounded-lg border border-neutral-700 space-y-2">
+                        <label className="text-xs text-neutral-500 font-bold">Section {idx + 1}</label>
+                        <input
+                          type="text"
+                          value={layoutData[`accordion${idx}Title`] || ''}
+                          onChange={(e) => updateLayoutData({ [`accordion${idx}Title`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder="Section Title"
+                        />
+                        <textarea
+                          value={layoutData[`accordion${idx}Content`] || ''}
+                          onChange={(e) => updateLayoutData({ [`accordion${idx}Content`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none resize-none"
+                          rows={2}
+                          placeholder="Content"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Tabs - 3 tabs with content */}
+                {currentVariant === 'layout-tabs' && (
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <label className="text-xs text-neutral-500 font-bold">Tab Labels</label>
+                      {[0, 1, 2].map((idx) => (
+                        <input
+                          key={idx}
+                          type="text"
+                          value={layoutData[`tab${idx}Label`] || ''}
+                          onChange={(e) => updateLayoutData({ [`tab${idx}Label`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder={`Tab ${idx + 1} Label`}
+                        />
+                      ))}
+                    </div>
+                    <div className="p-3 bg-neutral-900/50 rounded-lg border border-neutral-700 space-y-2">
+                      <label className="text-xs text-neutral-500 font-bold">Content Panel</label>
+                      <input
+                        type="text"
+                        value={layoutData.tabContentHeading || ''}
+                        onChange={(e) => updateLayoutData({ tabContentHeading: e.target.value })}
+                        className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                        placeholder="Content Heading"
+                      />
+                      <textarea
+                        value={layoutData.tabContentDescription || ''}
+                        onChange={(e) => updateLayoutData({ tabContentDescription: e.target.value })}
+                        className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none resize-none"
+                        rows={2}
+                        placeholder="Content Description"
+                      />
+                      {[0, 1, 2, 3].map((idx) => (
+                        <input
+                          key={idx}
+                          type="text"
+                          value={layoutData[`tabSpec${idx}`] || ''}
+                          onChange={(e) => updateLayoutData({ [`tabSpec${idx}`]: e.target.value })}
+                          className="w-full bg-neutral-800 border border-neutral-600 rounded px-2 py-1.5 text-sm text-white focus:border-fuchsia-500 outline-none"
+                          placeholder={`Specification ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Image field */}
                 {['layout-image-text', 'layout-banner'].includes(currentVariant) && (
                   <div className="space-y-1.5">
