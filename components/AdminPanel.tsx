@@ -5851,15 +5851,191 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsRichTextModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
-              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Text Styles</h4>
-              <div className="grid grid-cols-1 gap-2">
-                {RICH_TEXT_OPTIONS.map(opt => (
-                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...richTextData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                    <div className="font-bold text-sm">{opt.name}</div>
-                    <div className="text-xs opacity-60">{opt.description}</div>
-                  </button>
-                ))}
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4 space-y-6">
+              <div>
+                <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Text Styles</h4>
+                <div className="grid grid-cols-1 gap-2">
+                  {RICH_TEXT_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...richTextData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-xs opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4 border-t border-neutral-800 pt-4">
+                <div className="flex items-center gap-2">
+                  <Type size={16} className="text-blue-400" />
+                  <h4 className="text-xs font-bold text-neutral-400 uppercase">Content</h4>
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Heading</label>
+                  <input
+                    type="text"
+                    value={richTextData.heading || ''}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, heading: e.target.value })}
+                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                    placeholder="Enter heading"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Content Text</label>
+                  <textarea
+                    value={richTextData.content || ''}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, content: e.target.value })}
+                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                    placeholder="Enter your content"
+                    rows={6}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Subheading (Optional)</label>
+                  <input
+                    type="text"
+                    value={richTextData.subheading || ''}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, subheading: e.target.value })}
+                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                    placeholder="Enter subheading"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Button Text (Optional)</label>
+                  <input
+                    type="text"
+                    value={richTextData.buttonText || ''}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, buttonText: e.target.value })}
+                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                    placeholder="Call to action"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Button Link (Optional)</label>
+                  <input
+                    type="text"
+                    value={richTextData.buttonLink || ''}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, buttonLink: e.target.value })}
+                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                    placeholder="/page or https://"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Text Alignment</label>
+                  <select
+                    value={richTextData.textAlign || 'left'}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, textAlign: e.target.value })}
+                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                  >
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Max Width</label>
+                  <select
+                    value={richTextData.maxWidth || 'max-w-4xl'}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, maxWidth: e.target.value })}
+                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                  >
+                    <option value="max-w-2xl">Small (672px)</option>
+                    <option value="max-w-3xl">Medium (768px)</option>
+                    <option value="max-w-4xl">Large (896px)</option>
+                    <option value="max-w-5xl">Extra Large (1024px)</option>
+                    <option value="max-w-6xl">Extra Extra Large (1152px)</option>
+                    <option value="max-w-full">Full Width</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-4 border-t border-neutral-800 pt-4">
+                <div className="flex items-center gap-2">
+                  <Palette size={16} className="text-blue-400" />
+                  <h4 className="text-xs font-bold text-neutral-400 uppercase">Style</h4>
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Background Color</label>
+                  <input
+                    type="color"
+                    value={richTextData.backgroundColor || '#ffffff'}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, backgroundColor: e.target.value })}
+                    className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Heading Color</label>
+                  <input
+                    type="color"
+                    value={richTextData.headingColor || '#000000'}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, headingColor: e.target.value })}
+                    className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Content Text Color</label>
+                  <input
+                    type="color"
+                    value={richTextData.contentColor || '#6b7280'}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, contentColor: e.target.value })}
+                    className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                {currentVariant === 'rt-bordered' && (
+                  <>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Border Color</label>
+                      <input
+                        type="color"
+                        value={richTextData.borderColor || '#e5e5e5'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, borderColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Container Background</label>
+                      <input
+                        type="color"
+                        value={richTextData.containerBackground || '#ffffff'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, containerBackground: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {richTextData.buttonText && (
+                  <>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Button Background</label>
+                      <input
+                        type="color"
+                        value={richTextData.buttonBackground || '#000000'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, buttonBackground: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Button Text Color</label>
+                      <input
+                        type="color"
+                        value={richTextData.buttonTextColor || '#ffffff'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...richTextData, buttonTextColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             <div className="flex-1 bg-neutral-800 p-6 overflow-auto">

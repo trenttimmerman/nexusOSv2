@@ -12,74 +12,197 @@ export const RICH_TEXT_OPTIONS = [
 ];
 
 export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
-  'rt-centered': ({ data, isEditable, onUpdate }) => (
-    <div className="py-20 px-6 max-w-3xl mx-auto text-center">
-      <EditableText
-        value={data?.heading || 'Tell Your Story'}
-        onChange={(val) => onUpdate?.({ ...data, heading: val })}
-        isEditable={isEditable}
-        className="text-3xl font-bold mb-6"
-      />
-      <EditableText
-        value={data?.content || 'Share information about your brand with your customers. Describe a product, make announcements, or welcome customers to your store.'}
-        onChange={(val) => onUpdate?.({ ...data, content: val })}
-        isEditable={isEditable}
-        className="text-neutral-600 leading-relaxed"
-      />
-    </div>
-  ),
-  'rt-left': ({ data, isEditable, onUpdate }) => (
-    <div className="py-20 px-6 max-w-4xl mx-auto">
-      <EditableText
-        value={data?.heading || 'Our Mission'}
-        onChange={(val) => onUpdate?.({ ...data, heading: val })}
-        isEditable={isEditable}
-        className="text-3xl font-bold mb-6"
-      />
-      <EditableText
-        value={data?.content || 'We believe in quality craftsmanship and sustainable practices. Every piece is designed with longevity in mind, ensuring that your purchase is an investment in the future.'}
-        onChange={(val) => onUpdate?.({ ...data, content: val })}
-        isEditable={isEditable}
-        className="text-neutral-600 leading-relaxed"
-      />
-    </div>
-  ),
-  'rt-bordered': ({ data, isEditable, onUpdate }) => (
-    <div className="py-20 px-6">
-      <div className="max-w-4xl mx-auto border border-neutral-200 p-12 rounded-2xl text-center">
-        <EditableText
-          value={data?.heading || 'Special Announcement'}
-          onChange={(val) => onUpdate?.({ ...data, heading: val })}
-          isEditable={isEditable}
-          className="text-2xl font-bold mb-4"
-        />
-        <EditableText
-          value={data?.content || 'Join us this weekend for an exclusive pop-up event at our downtown location. Free refreshments and exclusive merchandise available.'}
-          onChange={(val) => onUpdate?.({ ...data, content: val })}
-          isEditable={isEditable}
-          className="text-neutral-600"
-        />
+  'rt-centered': ({ data, isEditable, onUpdate }) => {
+    const textAlign = data?.textAlign || 'center';
+    const maxWidth = data?.maxWidth || 'max-w-3xl';
+    const alignmentClass = textAlign === 'center' ? 'mx-auto text-center' : textAlign === 'right' ? 'ml-auto text-right' : '';
+    
+    return (
+      <div 
+        className="py-20 px-6"
+        style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
+      >
+        <div className={`${maxWidth} ${alignmentClass}`}>
+          <EditableText
+            value={data?.heading || 'Tell Your Story'}
+            onChange={(val) => onUpdate?.({ ...data, heading: val })}
+            isEditable={isEditable}
+            className="text-3xl font-bold mb-6"
+            style={{ color: data?.headingColor || '#000000' }}
+          />
+          {data?.subheading && (
+            <div className="text-lg mb-4" style={{ color: data?.contentColor || '#6b7280' }}>
+              {data.subheading}
+            </div>
+          )}
+          <EditableText
+            value={data?.content || 'Share information about your brand with your customers. Describe a product, make announcements, or welcome customers to your store.'}
+            onChange={(val) => onUpdate?.({ ...data, content: val })}
+            isEditable={isEditable}
+            className="leading-relaxed mb-6"
+            style={{ color: data?.contentColor || '#6b7280' }}
+          />
+          {data?.buttonText && (
+            <a 
+              href={data?.buttonLink || '#'} 
+              className="inline-block px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
+              style={{
+                backgroundColor: data?.buttonBackground || '#000000',
+                color: data?.buttonTextColor || '#ffffff'
+              }}
+            >
+              {data.buttonText}
+            </a>
+          )}
+        </div>
       </div>
-    </div>
-  ),
-  'rt-wide': ({ data, isEditable, onUpdate }) => (
-    <div className="py-32 px-6 bg-neutral-50">
-      <div className="max-w-6xl mx-auto text-center">
-        <EditableText
-          value={data?.heading || 'The Future of Fashion'}
-          onChange={(val) => onUpdate?.({ ...data, heading: val })}
-          isEditable={isEditable}
-          className="text-5xl md:text-7xl font-black tracking-tighter mb-8 uppercase"
-        />
-        <EditableText
-          value={data?.content || 'Redefining style for the digital age.'}
-          onChange={(val) => onUpdate?.({ ...data, content: val })}
-          isEditable={isEditable}
-          className="text-xl text-neutral-500 font-medium"
-        />
+    );
+  },
+  'rt-left': ({ data, isEditable, onUpdate }) => {
+    const textAlign = data?.textAlign || 'left';
+    const maxWidth = data?.maxWidth || 'max-w-4xl';
+    const alignmentClass = textAlign === 'center' ? 'mx-auto text-center' : textAlign === 'right' ? 'ml-auto text-right' : 'mx-auto';
+    
+    return (
+      <div 
+        className="py-20 px-6"
+        style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
+      >
+        <div className={`${maxWidth} ${alignmentClass}`}>
+          <EditableText
+            value={data?.heading || 'Our Mission'}
+            onChange={(val) => onUpdate?.({ ...data, heading: val })}
+            isEditable={isEditable}
+            className="text-3xl font-bold mb-6"
+            style={{ color: data?.headingColor || '#000000' }}
+          />
+          {data?.subheading && (
+            <div className="text-lg mb-4" style={{ color: data?.contentColor || '#6b7280' }}>
+              {data.subheading}
+            </div>
+          )}
+          <EditableText
+            value={data?.content || 'We believe in quality craftsmanship and sustainable practices. Every piece is designed with longevity in mind, ensuring that your purchase is an investment in the future.'}
+            onChange={(val) => onUpdate?.({ ...data, content: val })}
+            isEditable={isEditable}
+            className="leading-relaxed mb-6"
+            style={{ color: data?.contentColor || '#6b7280' }}
+          />
+          {data?.buttonText && (
+            <a 
+              href={data?.buttonLink || '#'} 
+              className="inline-block px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
+              style={{
+                backgroundColor: data?.buttonBackground || '#000000',
+                color: data?.buttonTextColor || '#ffffff'
+              }}
+            >
+              {data.buttonText}
+            </a>
+          )}
+        </div>
       </div>
-    </div>
-  ),
+    );
+  },
+  'rt-bordered': ({ data, isEditable, onUpdate }) => {
+    const textAlign = data?.textAlign || 'center';
+    const maxWidth = data?.maxWidth || 'max-w-4xl';
+    const alignmentClass = textAlign === 'center' ? 'mx-auto text-center' : textAlign === 'right' ? 'ml-auto text-right' : 'mx-auto';
+    
+    return (
+      <div 
+        className="py-20 px-6"
+        style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
+      >
+        <div 
+          className={`${maxWidth} ${alignmentClass} p-12 rounded-2xl`}
+          style={{ 
+            borderWidth: '1px',
+            borderColor: data?.borderColor || '#e5e5e5',
+            backgroundColor: data?.containerBackground || '#ffffff'
+          }}
+        >
+          <EditableText
+            value={data?.heading || 'Special Announcement'}
+            onChange={(val) => onUpdate?.({ ...data, heading: val })}
+            isEditable={isEditable}
+            className="text-2xl font-bold mb-4"
+            style={{ color: data?.headingColor || '#000000' }}
+          />
+          {data?.subheading && (
+            <div className="text-lg mb-4" style={{ color: data?.contentColor || '#6b7280' }}>
+              {data.subheading}
+            </div>
+          )}
+          <EditableText
+            value={data?.content || 'Join us this weekend for an exclusive pop-up event at our downtown location. Free refreshments and exclusive merchandise available.'}
+            onChange={(val) => onUpdate?.({ ...data, content: val })}
+            isEditable={isEditable}
+            className="mb-6"
+            style={{ color: data?.contentColor || '#6b7280' }}
+          />
+          {data?.buttonText && (
+            <a 
+              href={data?.buttonLink || '#'} 
+              className="inline-block px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
+              style={{
+                backgroundColor: data?.buttonBackground || '#000000',
+                color: data?.buttonTextColor || '#ffffff'
+              }}
+            >
+              {data.buttonText}
+            </a>
+          )}
+        </div>
+      </div>
+    );
+  },
+  'rt-wide': ({ data, isEditable, onUpdate }) => {
+    const textAlign = data?.textAlign || 'center';
+    const maxWidth = data?.maxWidth || 'max-w-6xl';
+    const alignmentClass = textAlign === 'center' ? 'mx-auto text-center' : textAlign === 'right' ? 'ml-auto text-right' : 'mx-auto';
+    
+    return (
+      <div 
+        className="py-32 px-6"
+        style={{ backgroundColor: data?.backgroundColor || '#f5f5f5' }}
+      >
+        <div className={`${maxWidth} ${alignmentClass}`}>
+          <EditableText
+            value={data?.heading || 'The Future of Fashion'}
+            onChange={(val) => onUpdate?.({ ...data, heading: val })}
+            isEditable={isEditable}
+            className="text-5xl md:text-7xl font-black tracking-tighter mb-8 uppercase"
+            style={{ color: data?.headingColor || '#000000' }}
+          />
+          {data?.subheading && (
+            <div className="text-2xl mb-6" style={{ color: data?.contentColor || '#6b7280' }}>
+              {data.subheading}
+            </div>
+          )}
+          <EditableText
+            value={data?.content || 'Redefining style for the digital age.'}
+            onChange={(val) => onUpdate?.({ ...data, content: val })}
+            isEditable={isEditable}
+            className="text-xl font-medium mb-8"
+            style={{ color: data?.contentColor || '#737373' }}
+          />
+          {data?.buttonText && (
+            <a 
+              href={data?.buttonLink || '#'} 
+              className="inline-block px-8 py-4 rounded-lg font-bold text-lg hover:opacity-80 transition-opacity"
+              style={{
+                backgroundColor: data?.buttonBackground || '#000000',
+                color: data?.buttonTextColor || '#ffffff'
+              }}
+            >
+              {data.buttonText}
+            </a>
+          )}
+        </div>
+      </div>
+    );
+  },
 };
 
 // --- EMAIL SIGNUP ---
