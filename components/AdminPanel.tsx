@@ -5232,6 +5232,42 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       updateActiveBlockData(selectedBlockId, { ...scrollData, ...updates });
     };
 
+    const handleMarqueeLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setIsUploadingLogo(true);
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `marquee_logo_${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+        const filePath = 'public/' + fileName;
+
+        const { error: uploadError } = await supabase.storage
+          .from('media')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('media')
+          .getPublicUrl(filePath);
+
+        const currentLogos = scrollData.logos || [];
+        updateScrollData({ logos: [...currentLogos, publicUrl] });
+      } catch (error: any) {
+        console.error('Error uploading logo:', error);
+        alert('Failed to upload logo: ' + error.message);
+      } finally {
+        setIsUploadingLogo(false);
+      }
+    };
+
+    const removeMarqueeLogo = (index: number) => {
+      const currentLogos = scrollData.logos || [];
+      const newLogos = currentLogos.filter((_: any, i: number) => i != index);
+      updateScrollData({ logos: newLogos });
+    };
+
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
         <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
@@ -5273,27 +5309,58 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <Type size={14} /> Content
                 </h4>
 
-                {/* Logo Marquee - Logo URLs */}
+                {/* Logo Marquee - Logo Upload */}
                 {currentVariant === 'logo-marquee' && (
                   <div className="space-y-3">
-                    <label className="text-xs text-neutral-400">Logo URLs (one per line)</label>
-                    <textarea
-                      value={(scrollData.logos || [
-                        'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/2560px-Google_2015_logo.svg.png',
-                        'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/IBM_logo.svg/2560px-IBM_logo.svg.png',
-                        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/2560px-Amazon_logo.svg.png',
-                        'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/2560px-Netflix_2015_logo.svg.png',
-                        'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1667px-Apple_logo_black.svg.png'
-                      ]).join('\n')}
-                      onChange={(e) => {
-                        const logos = e.target.value.split('\n').filter(l => l.trim());
-                        updateScrollData({ logos });
-                      }}
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-cyan-500 outline-none resize-none font-mono"
-                      rows={8}
-                      placeholder="https://example.com/logo1.png&#10;https://example.com/logo2.png"
-                    />
-                    <p className="text-xs text-neutral-500">Enter logo image URLs, one per line</p>
+                    <label className="text-xs text-neutral-400 font-bold">Logo Images</label>
+                    
+                    {/* Upload Button */}
+                    <label className="block">
+                      <div className="w-full px-4 py-3 bg-cyan-600/20 border border-cyan-500/50 rounded-lg cursor-pointer hover:bg-cyan-600/30 transition-colors flex items-center justify-center gap-2">
+                        {isUploadingLogo ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                            <span className="text-cyan-400 font-bold text-sm">Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload size={16} className="text-cyan-400" />
+                            <span className="text-cyan-400 font-bold text-sm">Upload Logo</span>
+                          </>
+                        )}
+                      </div>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleMarqueeLogoUpload} 
+                        className="hidden" 
+                        disabled={isUploadingLogo}
+                      />
+                    </label>
+
+                    {/* Current Logos */}
+                    <div className="space-y-2">
+                      {(scrollData.logos || []).map((logo: string, idx: number) => {
+                        const parts = logo.split('/');
+                        const filename = parts[parts.length - 1];
+                        return (
+                          <div key={idx} className="flex items-center gap-2 p-2 bg-neutral-800 rounded-lg border border-neutral-700">
+                            <img src={logo} className="h-6 w-auto object-contain" alt={`Logo ${idx + 1}`} />
+                            <span className="flex-1 text-xs text-neutral-400 truncate">{filename}</span>
+                            <button
+                              onClick={() => removeMarqueeLogo(idx)}
+                              className="p-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {(!scrollData.logos || scrollData.logos.length === 0) && (
+                        <p className="text-xs text-neutral-500 text-center py-4">No logos uploaded yet</p>
+                      )}
+                    </div>
+                    <p className="text-xs text-neutral-500">Upload logo images - they will be automatically sized for consistency</p>
                   </div>
                 )}
 
@@ -5352,6 +5419,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   
                   <div className="space-y-3">
                     <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400">Logo Size</label>
+                      <select
+                        value={scrollData.logoSize || 'medium'}
+                        onChange={(e) => updateScrollData({ logoSize: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-cyan-500 outline-none"
+                      >
+                        <option value="small">Small (24px)</option>
+                        <option value="medium">Medium (32px)</option>
+                        <option value="large">Large (48px)</option>
+                        <option value="xlarge">Extra Large (64px)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
                       <label className="text-xs text-neutral-400">Background Color</label>
                       <input
                         type="color"
@@ -5378,7 +5459,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             {/* Right Panel - Preview */}
             <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
               <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
-                {ScrollComponent && <ScrollComponent data={scrollData} isEditable={false} onUpdate={() => {}} />}
+                {ScrollComponent && <ScrollComponent data={scrollData} isEditable={false} onUpdate={updateScrollData} />}
               </div>
             </div>
           </div>

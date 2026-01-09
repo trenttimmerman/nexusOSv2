@@ -28,6 +28,17 @@ const LogoMarquee: React.FC<ScrollSectionProps> = ({ data }) => {
     const logos = rawLogos.filter((l: string) => l && l.trim() !== '');
     const backgroundColor = data?.backgroundColor || '#ffffff';
     const borderColor = data?.borderColor || '#f5f5f5';
+    const logoSize = data?.logoSize || 'medium';
+    
+    // Map size to height in pixels
+    const sizeMap: Record<string, string> = {
+        'small': 'h-6',
+        'medium': 'h-8',
+        'large': 'h-12',
+        'xlarge': 'h-16'
+    };
+    
+    const heightClass = sizeMap[logoSize] || 'h-8';
 
     return (
         <div 
@@ -40,13 +51,13 @@ const LogoMarquee: React.FC<ScrollSectionProps> = ({ data }) => {
             <div className="relative w-full flex overflow-x-hidden">
                 <div className="animate-marquee whitespace-nowrap flex items-center gap-16 px-8">
                     {logos.map((logo: string, i: number) => (
-                        <img key={i} src={logo} className="h-8 w-auto object-contain opacity-40 grayscale hover:grayscale-0 transition-all duration-500" alt="Logo" />
+                        <img key={i} src={logo} className={`${heightClass} w-auto object-contain opacity-40 grayscale hover:grayscale-0 transition-all duration-500`} alt="Logo" />
                     ))}
                     {logos.map((logo: string, i: number) => (
-                        <img key={`dup-${i}`} src={logo} className="h-8 w-auto object-contain opacity-40 grayscale hover:grayscale-0 transition-all duration-500" alt="Logo" />
+                        <img key={`dup-${i}`} src={logo} className={`${heightClass} w-auto object-contain opacity-40 grayscale hover:grayscale-0 transition-all duration-500`} alt="Logo" />
                     ))}
                     {logos.map((logo: string, i: number) => (
-                        <img key={`dup2-${i}`} src={logo} className="h-8 w-auto object-contain opacity-40 grayscale hover:grayscale-0 transition-all duration-500" alt="Logo" />
+                        <img key={`dup2-${i}`} src={logo} className={`${heightClass} w-auto object-contain opacity-40 grayscale hover:grayscale-0 transition-all duration-500`} alt="Logo" />
                     ))}
                 </div>
             </div>
