@@ -17,136 +17,151 @@ export const BLOG_OPTIONS = [
 ];
 
 const MOCK_POSTS = [
-  { id: 1, title: 'The Future of Digital Commerce', excerpt: 'Exploring the trends shaping the next decade of online retail.', date: 'Oct 12, 2023', author: 'Alex Morgan', category: 'Trends', image: 'https://images.unsplash.com/photo-1481437156560-3205f6a55735?w=800&q=80' },
-  { id: 2, title: 'Sustainable Fashion Choices', excerpt: 'How to build a wardrobe that lasts and helps the planet.', date: 'Oct 08, 2023', author: 'Sarah Chen', category: 'Lifestyle', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80' },
-  { id: 3, title: 'Behind the Design Process', excerpt: 'A look into how we create our signature collections.', date: 'Oct 01, 2023', author: 'Mike Ross', category: 'Design', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80' },
-  { id: 4, title: 'Summer Essentials Guide', excerpt: 'Everything you need for the perfect summer getaway.', date: 'Sep 28, 2023', author: 'Emma Wilson', category: 'Guides', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80' },
+  { id: 1, title: 'The Future of Digital Commerce', excerpt: 'Exploring the trends shaping the next decade of online retail.', date: 'Oct 12, 2023', author: 'Alex Morgan', category: 'Trends', image: 'https://images.unsplash.com/photo-1481437156560-3205f6a55735?w=800&q=80', link: '' },
+  { id: 2, title: 'Sustainable Fashion Choices', excerpt: 'How to build a wardrobe that lasts and helps the planet.', date: 'Oct 08, 2023', author: 'Sarah Chen', category: 'Lifestyle', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80', link: '' },
+  { id: 3, title: 'Behind the Design Process', excerpt: 'A look into how we create our signature collections.', date: 'Oct 01, 2023', author: 'Mike Ross', category: 'Design', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80', link: '' },
+  { id: 4, title: 'Summer Essentials Guide', excerpt: 'Everything you need for the perfect summer getaway.', date: 'Sep 28, 2023', author: 'Emma Wilson', category: 'Guides', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80', link: '' },
 ];
 
 export const BLOG_COMPONENTS: Record<string, React.FC<any>> = {
-  'blog-grid': ({ data, isEditable, onUpdate }) => (
-    <div className="py-20 px-6 max-w-7xl mx-auto">
-      <div className="text-center mb-16">
-        <EditableText
-          value={data?.heading || 'Latest Stories'}
-          onChange={(val) => onUpdate?.({ ...data, heading: val })}
-          isEditable={isEditable}
-          className="text-4xl font-bold mb-4"
-        />
-        <p className="text-gray-600 max-w-2xl mx-auto">Insights, thoughts, and trends from our team.</p>
-      </div>
-      <div className="grid md:grid-cols-3 gap-10">
-        {MOCK_POSTS.slice(0, 3).map((post) => (
-          <div key={post.id} className="group cursor-pointer">
-            <div className="aspect-[3/2] bg-gray-100 rounded-xl overflow-hidden mb-6">
-              <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-            </div>
-            <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-              <span className="text-blue-600 font-medium">{post.category}</span>
-              <span>{post.date}</span>
-            </div>
-            <h3 className="text-xl font-bold mb-3 group-hover:text-blue-600 transition-colors">{post.title}</h3>
-            <p className="text-gray-600 line-clamp-2">{post.excerpt}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  ),
-
-  'blog-list': ({ data, isEditable, onUpdate }) => (
-    <div className="py-20 px-6 max-w-5xl mx-auto">
-      <div className="mb-16 border-b pb-8">
-        <EditableText
-          value={data?.heading || 'The Journal'}
-          onChange={(val) => onUpdate?.({ ...data, heading: val })}
-          isEditable={isEditable}
-          className="text-4xl font-serif font-bold"
-        />
-      </div>
-      <div className="space-y-12">
-        {MOCK_POSTS.map((post) => (
-          <div key={post.id} className="flex flex-col md:flex-row gap-8 items-start group cursor-pointer">
-            <div className="w-full md:w-1/3 aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden shrink-0">
-              <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-            </div>
-            <div className="flex-1 py-2">
-              <div className="flex items-center gap-3 text-sm text-gray-500 mb-3">
-                <span className="uppercase tracking-wider text-xs font-bold text-black">{post.category}</span>
-                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <span>{post.date}</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-3 group-hover:underline decoration-2 underline-offset-4">{post.title}</h3>
-              <p className="text-gray-600 mb-4 leading-relaxed">{post.excerpt}</p>
-              <div className="flex items-center gap-2 text-sm font-bold">
-                Read Story <ArrowRight size={16} />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  ),
-
-  'blog-featured': ({ data, isEditable, onUpdate }) => (
-    <div className="py-20 px-6 max-w-7xl mx-auto">
-      <div className="grid lg:grid-cols-2 gap-12 mb-16">
-        <div className="group cursor-pointer">
-          <div className="aspect-video bg-gray-100 rounded-2xl overflow-hidden mb-6">
-            <img src={MOCK_POSTS[0].image} alt={MOCK_POSTS[0].title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-          </div>
-          <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-            <span className="bg-black text-white px-3 py-1 rounded-full text-xs font-bold">Featured</span>
-            <span>{MOCK_POSTS[0].date}</span>
-          </div>
-          <h3 className="text-3xl md:text-4xl font-bold mb-4">{MOCK_POSTS[0].title}</h3>
-          <p className="text-gray-600 text-lg mb-6">{MOCK_POSTS[0].excerpt}</p>
-          <button className="px-6 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-800 transition-colors">Read Article</button>
+  'blog-grid': ({ data, isEditable, onUpdate }) => {
+    const posts = data?.posts || MOCK_POSTS;
+    return (
+      <div className="py-20 px-6 max-w-7xl mx-auto" style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}>
+        <div className="text-center mb-16">
+          <EditableText
+            value={data?.heading || 'Latest Stories'}
+            onChange={(val) => onUpdate?.({ ...data, heading: val })}
+            isEditable={isEditable}
+            className="text-4xl font-bold mb-4"
+            style={{ color: data?.headingColor || '#000000' }}
+          />
+          <p className="max-w-2xl mx-auto" style={{ color: data?.subheadingColor || '#6b7280' }}>{data?.subheading || 'Insights, thoughts, and trends from our team.'}</p>
         </div>
-        <div className="space-y-8">
-          {MOCK_POSTS.slice(1).map((post) => (
-            <div key={post.id} className="flex gap-6 group cursor-pointer">
-              <div className="w-32 aspect-square bg-gray-100 rounded-xl overflow-hidden shrink-0">
-                <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+        <div className="grid md:grid-cols-3 gap-10">
+          {posts.slice(0, 3).map((post: any) => (
+            <a key={post.id} href={post.link || '#'} className="group cursor-pointer block">
+              <div className="aspect-[3/2] bg-gray-100 rounded-xl overflow-hidden mb-6">
+                <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
-              <div>
-                <div className="text-xs font-bold text-blue-600 mb-2">{post.category}</div>
-                <h4 className="text-xl font-bold mb-2 group-hover:text-blue-600 transition-colors">{post.title}</h4>
-                <div className="text-sm text-gray-500">{post.date}</div>
+              <div className="flex items-center gap-4 text-sm mb-3">
+                <span className="font-medium" style={{ color: data?.accentColor || '#2563eb' }}>{post.category}</span>
+                <span style={{ color: data?.metaColor || '#9ca3af' }}>{post.date}</span>
               </div>
-            </div>
+              <h3 className="text-xl font-bold mb-3 transition-colors" style={{ color: data?.titleColor || '#000000' }}>{post.title}</h3>
+              <p className="line-clamp-2" style={{ color: data?.excerptColor || '#6b7280' }}>{post.excerpt}</p>
+            </a>
           ))}
         </div>
       </div>
-    </div>
-  ),
+    );
+  },
 
-  'blog-minimal': ({ data, isEditable, onUpdate }) => (
-    <div className="py-24 px-6 max-w-3xl mx-auto">
-      <div className="text-center mb-20">
-        <EditableText
-          value={data?.heading || 'Words & Thoughts'}
-          onChange={(val) => onUpdate?.({ ...data, heading: val })}
-          isEditable={isEditable}
-          className="text-5xl font-serif italic mb-4"
-        />
+  'blog-list': ({ data, isEditable, onUpdate }) => {
+    const posts = data?.posts || MOCK_POSTS;
+    return (
+      <div className="py-20 px-6 max-w-5xl mx-auto" style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}>
+        <div className="mb-16 pb-8" style={{ borderBottom: `1px solid ${data?.metaColor || '#e5e5e5'}` }}>
+          <EditableText
+            value={data?.heading || 'The Journal'}
+            onChange={(val) => onUpdate?.({ ...data, heading: val })}
+            isEditable={isEditable}
+            className="text-4xl font-serif font-bold"
+            style={{ color: data?.headingColor || '#000000' }}
+          />
+        </div>
+        <div className="space-y-12">
+          {posts.map((post: any) => (
+            <a key={post.id} href={post.link || '#'} className="flex flex-col md:flex-row gap-8 items-start group cursor-pointer">
+              <div className="w-full md:w-1/3 aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              </div>
+              <div className="flex-1 py-2">
+                <div className="flex items-center gap-3 text-sm mb-3">
+                  <span className="uppercase tracking-wider text-xs font-bold" style={{ color: data?.accentColor || '#000000' }}>{post.category}</span>
+                  <span className="w-1 h-1 rounded-full" style={{ backgroundColor: data?.metaColor || '#d1d5db' }}></span>
+                  <span style={{ color: data?.metaColor || '#6b7280' }}>{post.date}</span>
+                </div>
+                <h3 className="text-2xl font-bold mb-3 group-hover:underline decoration-2 underline-offset-4" style={{ color: data?.titleColor || '#000000' }}>{post.title}</h3>
+                <p className="mb-4 leading-relaxed" style={{ color: data?.excerptColor || '#6b7280' }}>{post.excerpt}</p>
+                <div className="flex items-center gap-2 text-sm font-bold" style={{ color: data?.titleColor || '#000000' }}>
+                  Read Story <ArrowRight size={16} />
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
       </div>
-      <div className="space-y-16">
-        {MOCK_POSTS.map((post) => (
-          <div key={post.id} className="group cursor-pointer border-b pb-16 last:border-0">
-            <div className="text-sm text-gray-400 mb-4 flex items-center justify-between">
-              <span>{post.category}</span>
-              <span>{post.date}</span>
+    );
+  },
+
+  'blog-featured': ({ data, isEditable, onUpdate }) => {
+    const posts = data?.posts || MOCK_POSTS;
+    return (
+      <div className="py-20 px-6 max-w-7xl mx-auto" style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}>
+        <div className="grid lg:grid-cols-2 gap-12 mb-16">
+          <a href={posts[0]?.link || '#'} className="group cursor-pointer block">
+            <div className="aspect-video bg-gray-100 rounded-2xl overflow-hidden mb-6">
+              <img src={posts[0]?.image} alt={posts[0]?.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             </div>
-            <h3 className="text-3xl md:text-4xl font-bold mb-6 group-hover:opacity-70 transition-opacity">{post.title}</h3>
-            <p className="text-xl text-gray-600 font-serif leading-relaxed mb-6">{post.excerpt}</p>
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest">
-              Read More <ArrowRight size={14} />
+            <div className="flex items-center gap-4 text-sm mb-3">
+              <span className="px-3 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: data?.overlayColor || '#000000', color: '#ffffff' }}>Featured</span>
+              <span style={{ color: data?.metaColor || '#6b7280' }}>{posts[0]?.date}</span>
             </div>
+            <h3 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: data?.titleColor || '#000000' }}>{posts[0]?.title}</h3>
+            <p className="text-lg mb-6" style={{ color: data?.excerptColor || '#6b7280' }}>{posts[0]?.excerpt}</p>
+            <button className="px-6 py-3 rounded-full font-bold transition-colors" style={{ backgroundColor: data?.accentColor || '#000000', color: '#ffffff' }}>Read Article</button>
+          </a>
+          <div className="space-y-8">
+            {posts.slice(1).map((post: any) => (
+              <a key={post.id} href={post.link || '#'} className="flex gap-6 group cursor-pointer">
+                <div className="w-32 aspect-square bg-gray-100 rounded-xl overflow-hidden shrink-0">
+                  <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold mb-2" style={{ color: data?.accentColor || '#2563eb' }}>{post.category}</div>
+                  <h4 className="text-xl font-bold mb-2 transition-colors" style={{ color: data?.titleColor || '#000000' }}>{post.title}</h4>
+                  <div className="text-sm" style={{ color: data?.metaColor || '#6b7280' }}>{post.date}</div>
+                </div>
+              </a>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
-    </div>
-  ),
+    );
+  },
+
+  'blog-minimal': ({ data, isEditable, onUpdate }) => {
+    const posts = data?.posts || MOCK_POSTS;
+    return (
+      <div className="py-24 px-6 max-w-3xl mx-auto" style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}>
+        <div className="text-center mb-20">
+          <EditableText
+            value={data?.heading || 'Words & Thoughts'}
+            onChange={(val) => onUpdate?.({ ...data, heading: val })}
+            isEditable={isEditable}
+            className="text-5xl font-serif italic mb-4"
+            style={{ color: data?.headingColor || '#000000' }}
+          />
+        </div>
+        <div className="space-y-16">
+          {posts.map((post: any) => (
+            <a key={post.id} href={post.link || '#'} className="group cursor-pointer block pb-16 last:border-0" style={{ borderBottom: `1px solid ${data?.metaColor || '#e5e5e5'}` }}>
+              <div className="text-sm mb-4 flex items-center justify-between" style={{ color: data?.metaColor || '#9ca3af' }}>
+                <span>{post.category}</span>
+                <span>{post.date}</span>
+              </div>
+              <h3 className="text-3xl md:text-4xl font-bold mb-6 group-hover:opacity-70 transition-opacity" style={{ color: data?.titleColor || '#000000' }}>{post.title}</h3>
+              <p className="text-xl font-serif leading-relaxed mb-6" style={{ color: data?.excerptColor || '#6b7280' }}>{post.excerpt}</p>
+              <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest" style={{ color: data?.titleColor || '#000000' }}>
+                Read More <ArrowRight size={14} />
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    );
+  },
 
   'blog-magazine': ({ data, isEditable, onUpdate }) => (
     <div className="py-16 px-6 max-w-7xl mx-auto bg-white">

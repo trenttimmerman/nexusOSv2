@@ -6380,6 +6380,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const currentVariant = activeBlock?.variant || 'blog-grid';
     const BlogComponent = BLOG_COMPONENTS[currentVariant];
 
+    const handleBlogImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, postIndex: number) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = 'blog_post_' + Math.random().toString(36).substring(2) + '_' + Date.now() + '.' + fileExt;
+        const filePath = 'public/' + fileName;
+
+        const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file);
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage.from('media').getPublicUrl(filePath);
+        const posts = blogData.posts || [];
+        const updatedPosts = [...posts];
+        updatedPosts[postIndex] = { ...updatedPosts[postIndex], image: urlData.publicUrl };
+        updateActiveBlockData(selectedBlockId, { ...blogData, posts: updatedPosts });
+      } catch (error) {
+        alert('Error uploading image');
+      }
+    };
+
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
         <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
@@ -6394,15 +6416,299 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsBlogModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
-              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Blog Layouts</h4>
-              <div className="grid grid-cols-1 gap-2">
-                {BLOG_OPTIONS.map(opt => (
-                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...blogData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-teal-600/20 border-teal-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                    <div className="font-bold text-sm">{opt.name}</div>
-                    <div className="text-xs opacity-60">{opt.description}</div>
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4 space-y-6">
+              <div>
+                <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Blog Layouts</h4>
+                <div className="grid grid-cols-1 gap-2">
+                  {BLOG_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...blogData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-teal-600/20 border-teal-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
+                      <div className="font-bold text-sm">{opt.name}</div>
+                      <div className="text-xs opacity-60">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4 border-t border-neutral-800 pt-4">
+                <div className="flex items-center gap-2">
+                  <Type size={16} className="text-teal-400" />
+                  <h4 className="text-xs font-bold text-neutral-400 uppercase">Content</h4>
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Section Heading</label>
+                  <input
+                    type="text"
+                    value={blogData.heading || ''}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...blogData, heading: e.target.value })}
+                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                    placeholder="Enter heading"
+                  />
+                </div>
+
+                {(currentVariant === 'blog-grid' || currentVariant === 'blog-cards') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Subheading</label>
+                    <input
+                      type="text"
+                      value={blogData.subheading || ''}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...blogData, subheading: e.target.value })}
+                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+                      placeholder="Enter subheading"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-2 block">Blog Posts ({(blogData.posts || []).length || 4} articles)</label>
+                  <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+                    {(blogData.posts || []).map((post: any, index: number) => (
+                      <div key={index} className="bg-neutral-900 border border-neutral-700 rounded-lg p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-neutral-400">Article {index + 1}</span>
+                          <button
+                            onClick={() => {
+                              const posts = [...(blogData.posts || [])];
+                              posts.splice(index, 1);
+                              updateActiveBlockData(selectedBlockId, { ...blogData, posts });
+                            }}
+                            className="text-red-400 hover:text-red-300 text-xs"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        {post.image && (
+                          <img src={post.image} className="w-full h-24 object-cover rounded" />
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleBlogImageUpload(e, index)}
+                          className="hidden"
+                          id={`blog-upload-${index}`}
+                        />
+                        <label htmlFor={`blog-upload-${index}`} className="block w-full text-center px-3 py-2 bg-teal-600/20 hover:bg-teal-600/30 border border-teal-500/50 rounded-lg text-teal-400 text-xs cursor-pointer">
+                          Change Image
+                        </label>
+                        <input
+                          type="text"
+                          value={post.title || ''}
+                          onChange={(e) => {
+                            const posts = [...(blogData.posts || [])];
+                            posts[index] = { ...posts[index], title: e.target.value };
+                            updateActiveBlockData(selectedBlockId, { ...blogData, posts });
+                          }}
+                          className="w-full px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-white text-xs"
+                          placeholder="Article title"
+                        />
+                        <textarea
+                          value={post.excerpt || ''}
+                          onChange={(e) => {
+                            const posts = [...(blogData.posts || [])];
+                            posts[index] = { ...posts[index], excerpt: e.target.value };
+                            updateActiveBlockData(selectedBlockId, { ...blogData, posts });
+                          }}
+                          className="w-full px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-white text-xs"
+                          placeholder="Article excerpt"
+                          rows={2}
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={post.category || ''}
+                            onChange={(e) => {
+                              const posts = [...(blogData.posts || [])];
+                              posts[index] = { ...posts[index], category: e.target.value };
+                              updateActiveBlockData(selectedBlockId, { ...blogData, posts });
+                            }}
+                            className="px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-white text-xs"
+                            placeholder="Category"
+                          />
+                          <input
+                            type="text"
+                            value={post.author || ''}
+                            onChange={(e) => {
+                              const posts = [...(blogData.posts || [])];
+                              posts[index] = { ...posts[index], author: e.target.value };
+                              updateActiveBlockData(selectedBlockId, { ...blogData, posts });
+                            }}
+                            className="px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-white text-xs"
+                            placeholder="Author"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={post.date || ''}
+                            onChange={(e) => {
+                              const posts = [...(blogData.posts || [])];
+                              posts[index] = { ...posts[index], date: e.target.value };
+                              updateActiveBlockData(selectedBlockId, { ...blogData, posts });
+                            }}
+                            className="px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-white text-xs"
+                            placeholder="Date"
+                          />
+                          <input
+                            type="text"
+                            value={post.link || ''}
+                            onChange={(e) => {
+                              const posts = [...(blogData.posts || [])];
+                              posts[index] = { ...posts[index], link: e.target.value };
+                              updateActiveBlockData(selectedBlockId, { ...blogData, posts });
+                            }}
+                            className="px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-white text-xs"
+                            placeholder="Article link"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      const posts = blogData.posts || [];
+                      const newPost = {
+                        id: posts.length + 1,
+                        title: 'New Article',
+                        excerpt: 'Article description here',
+                        date: 'Jan 9, 2026',
+                        author: 'Staff Writer',
+                        category: 'News',
+                        image: 'https://images.unsplash.com/photo-1481437156560-3205f6a55735?w=800&q=80',
+                        link: ''
+                      };
+                      updateActiveBlockData(selectedBlockId, { ...blogData, posts: [...posts, newPost] });
+                    }}
+                    className="w-full mt-3 px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs rounded-lg font-medium"
+                  >
+                    Add Article
                   </button>
-                ))}
+                </div>
+              </div>
+
+              <div className="space-y-4 border-t border-neutral-800 pt-4">
+                <div className="flex items-center gap-2">
+                  <Palette size={16} className="text-teal-400" />
+                  <h4 className="text-xs font-bold text-neutral-400 uppercase">Style</h4>
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Background Color</label>
+                  <input
+                    type="color"
+                    value={blogData.backgroundColor || '#ffffff'}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...blogData, backgroundColor: e.target.value })}
+                    className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Heading Color</label>
+                  <input
+                    type="color"
+                    value={blogData.headingColor || '#000000'}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...blogData, headingColor: e.target.value })}
+                    className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                {(currentVariant === 'blog-grid' || currentVariant === 'blog-cards') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Subheading Color</label>
+                    <input
+                      type="color"
+                      value={blogData.subheadingColor || '#6b7280'}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...blogData, subheadingColor: e.target.value })}
+                      className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Article Title Color</label>
+                  <input
+                    type="color"
+                    value={blogData.titleColor || '#000000'}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...blogData, titleColor: e.target.value })}
+                    className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Excerpt Text Color</label>
+                  <input
+                    type="color"
+                    value={blogData.excerptColor || '#6b7280'}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...blogData, excerptColor: e.target.value })}
+                    className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Category/Accent Color</label>
+                  <input
+                    type="color"
+                    value={blogData.accentColor || '#2563eb'}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...blogData, accentColor: e.target.value })}
+                    className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-neutral-400 mb-1 block">Meta Text Color</label>
+                  <input
+                    type="color"
+                    value={blogData.metaColor || '#9ca3af'}
+                    onChange={(e) => updateActiveBlockData(selectedBlockId, { ...blogData, metaColor: e.target.value })}
+                    className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                {(currentVariant === 'blog-cards' || currentVariant === 'blog-sidebar') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Card Background</label>
+                    <input
+                      type="color"
+                      value={blogData.cardBackground || '#ffffff'}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...blogData, cardBackground: e.target.value })}
+                      className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                )}
+
+                {(currentVariant === 'blog-featured' || currentVariant === 'blog-overlay') && (
+                  <div>
+                    <label className="text-xs text-neutral-400 mb-1 block">Overlay Color</label>
+                    <input
+                      type="color"
+                      value={blogData.overlayColor || '#000000'}
+                      onChange={(e) => updateActiveBlockData(selectedBlockId, { ...blogData, overlayColor: e.target.value })}
+                      className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                )}
+
+                {currentVariant === 'blog-magazine' && (
+                  <>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Border Color</label>
+                      <input
+                        type="color"
+                        value={blogData.borderColor || '#000000'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...blogData, borderColor: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Sidebar Background</label>
+                      <input
+                        type="color"
+                        value={blogData.sidebarBackground || '#f5f5f5'}
+                        onChange={(e) => updateActiveBlockData(selectedBlockId, { ...blogData, sidebarBackground: e.target.value })}
+                        className="w-full h-10 bg-neutral-900 border border-neutral-700 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
