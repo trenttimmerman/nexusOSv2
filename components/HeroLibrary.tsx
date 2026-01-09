@@ -571,6 +571,15 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
     animation === 'slide' ? 'animate-in slide-in-from-bottom-8 duration-1000' :
     animation === 'zoom' ? 'animate-in zoom-in-95 duration-1000' : '';
 
+  // Extract color values from style object
+  const style = data?.style || {};
+  const backgroundColor = style.backgroundColor || '#ffffff';
+  const headingColor = style.headingColor || style.textColor || '#171717';
+  const subheadingColor = style.subheadingColor || '#737373';
+  const buttonTextColor = style.buttonTextColor || '#000000';
+  const buttonBorderColor = style.buttonBorderColor || '#000000';
+  const dividerColor = style.dividerColor || style.borderColor || '#e5e5e5';
+
   const handleSelect = (field: string) => {
     if (isEditable) {
       onEditBlock?.(blockId || '');
@@ -579,10 +588,10 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
   };
 
   return (
-    <section className={`w-full min-h-[80vh] flex flex-col ${contentPosition === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'} bg-white relative group/hero`}>
-       <div className={`w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center items-start border-b md:border-b-0 ${contentPosition === 'right' ? 'md:border-l' : 'md:border-r'} border-neutral-200 ${animClass}`}>
+    <section className={`w-full min-h-[80vh] flex flex-col ${contentPosition === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'} relative group/hero`} style={{ backgroundColor }}>
+       <div className={`w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center items-start border-b md:border-b-0 ${contentPosition === 'right' ? 'md:border-l' : 'md:border-r'} ${animClass}`} style={{ borderColor: dividerColor }}>
           <div className="mb-8">
-             <div className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-6 text-neutral-900">
+             <div className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-6" style={{ color: headingColor }}>
                 <EditableText 
                  tagName="h1" 
                  value={heading} 
@@ -594,7 +603,7 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
                  onSelect={() => handleSelect('heading')}
                />
              </div>
-             <div className="text-xl text-neutral-500 max-w-md leading-relaxed">
+             <div className="text-xl max-w-md leading-relaxed" style={{ color: subheadingColor }}>
                 <EditableText 
                  tagName="p" 
                  value={subheading} 
@@ -613,7 +622,8 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
               const link = data?.buttonLink === 'external' ? data?.buttonExternalUrl : data?.buttonLink;
               if (link) window.location.href = link;
             }}
-            className="group flex items-center gap-3 text-lg font-medium text-black border-b-2 border-black pb-1 hover:gap-5 transition-all"
+            className="group flex items-center gap-3 text-lg font-medium border-b-2 pb-1 hover:gap-5 transition-all"
+            style={{ color: buttonTextColor, borderColor: buttonBorderColor }}
           >
              <EditableText 
                  tagName="span"
@@ -669,6 +679,17 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, primaryColor, data
     animation === 'slide' ? 'animate-in slide-in-from-bottom-8 duration-1000' :
     animation === 'zoom' ? 'animate-in zoom-in-95 duration-1000' : '';
 
+  // Extract color values from style object
+  const style = data?.style || {};
+  const backgroundColor = style.backgroundColor || accentColor;
+  const headingColor = style.headingColor || style.textColor || '#000000';
+  const marqueeColor = style.marqueeColor || '#ffffff';
+  const marqueeBgColor = style.marqueeBgColor || '#000000';
+  const buttonBgColor = style.buttonBgColor || '#000000';
+  const buttonTextColor = style.buttonTextColor || accentColor;
+  const borderColor = style.borderColor || '#000000';
+  const gridLineColor = style.gridLineColor || '#000000';
+
   const handleSelect = (field: string) => {
     if (isEditable) {
       onEditBlock?.(blockId || '');
@@ -677,15 +698,15 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, primaryColor, data
   };
 
   return (
-    <section className={`relative w-full h-[85vh] overflow-hidden flex flex-col border-b-4 border-black ${animClass}`} style={{ backgroundColor: accentColor }}>
+    <section className={`relative w-full h-[85vh] overflow-hidden flex flex-col border-b-4 ${animClass}`} style={{ backgroundColor, borderColor }}>
       <div className="absolute inset-0 opacity-10 pointer-events-none">
          <div className="grid grid-cols-12 h-full w-full">
-            {[...Array(12)].map((_, i) => <div key={i} className="border-r border-black h-full"></div>)}
+            {[...Array(12)].map((_, i) => <div key={i} className="border-r h-full" style={{ borderColor: gridLineColor }}></div>)}
          </div>
       </div>
 
       {/* Top Marquee */}
-      <div className="bg-black text-white py-2 border-b-4 border-black overflow-hidden whitespace-nowrap rotate-1 absolute top-12 left-[-10%] w-[120%] z-20 shadow-xl pointer-events-auto">
+      <div className="py-2 border-b-4 overflow-hidden whitespace-nowrap rotate-1 absolute top-12 left-[-10%] w-[120%] z-20 shadow-xl pointer-events-auto" style={{ backgroundColor: marqueeBgColor, color: marqueeColor, borderColor }}>
          <div className="animate-marquee inline-block font-mono font-bold text-xl">
             <EditableText 
                  tagName="span"
@@ -701,7 +722,7 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, primaryColor, data
       </div>
 
       <div className="flex-1 flex items-center justify-center relative z-10">
-         <div className="text-[12vw] font-black leading-none tracking-tighter text-black mix-blend-multiply text-center uppercase relative z-20 pointer-events-none md:pointer-events-auto">
+         <div className="text-[12vw] font-black leading-none tracking-tighter mix-blend-multiply text-center uppercase relative z-20 pointer-events-none md:pointer-events-auto" style={{ color: headingColor }}>
             <EditableText 
              tagName="h1" 
              value={heading} 
@@ -714,7 +735,7 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, primaryColor, data
              onSelect={() => handleSelect('heading')}
            />
          </div>
-         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[500px] h-[450px] md:h-[600px] border-4 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] rotate-[-4deg] hover:rotate-0 transition-transform duration-500 z-10">
+         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[500px] h-[450px] md:h-[600px] border-4 rotate-[-4deg] hover:rotate-0 transition-transform duration-500 z-10" style={{ borderColor, boxShadow: `16px 16px 0px 0px ${borderColor}` }}>
             <EditableImage 
                 src={image} 
                 onChange={(val) => onUpdate && onUpdate({ image: val })} 
@@ -735,7 +756,13 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, primaryColor, data
               const link = data?.buttonLink === 'external' ? data?.buttonExternalUrl : data?.buttonLink;
               if (link) window.location.href = link;
             }}
-            className="bg-black text-xl font-black uppercase italic px-12 py-4 shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:translate-y-1 hover:shadow-none transition-all border-2 border-white" style={{ color: accentColor }}
+            className="text-xl font-black uppercase italic px-12 py-4 hover:translate-y-1 hover:shadow-none transition-all border-2" 
+            style={{ 
+              backgroundColor: buttonBgColor, 
+              color: buttonTextColor, 
+              borderColor: buttonTextColor,
+              boxShadow: `8px 8px 0px 0px ${buttonTextColor}` 
+            }}
          >
             <EditableText 
                  tagName="span"
@@ -981,9 +1008,18 @@ export const HeroTypographic: React.FC<HeroProps> = ({
   const link1Label = data?.link1Label || "Shop Apparel";
   const link2Label = data?.link2Label || "Shop Tech";
   const link3Label = data?.link3Label || "Shop Footwear";
-  const bgColor = data?.style?.backgroundColor || '#ffffff';
-  const textColor = data?.style?.textColor || '#000000';
   const animation = data?.animation || 'fade';
+
+  // Extract color values from style object
+  const style = data?.style || {};
+  const bgColor = style.backgroundColor || '#ffffff';
+  const textColor = style.textColor || style.headingColor || '#000000';
+  const headingColor = style.headingColor || textColor;
+  const subheadingColor = style.subheadingColor || textColor;
+  const badgeColor = style.badgeColor || style.topBadgeColor || textColor;
+  const linkLabelColor = style.linkLabelColor || style.linkColor || textColor;
+  const linkBorderColor = style.linkBorderColor || style.borderColor || textColor;
+  const cardBgColor = style.cardBgColor || (textColor === '#ffffff' ? '#333333' : '#f5f5f5');
 
   const handleSelect = (field: string) => {
     if (isEditable) {
@@ -997,11 +1033,11 @@ export const HeroTypographic: React.FC<HeroProps> = ({
     animation === 'zoom' ? 'animate-in zoom-in-95 duration-1000' : '';
   
   return (
-    <section className={`relative w-full min-h-[80vh] flex flex-col items-center justify-center py-20 ${animClass}`} style={{ backgroundColor: bgColor, color: textColor }}>
+    <section className={`relative w-full min-h-[80vh] flex flex-col items-center justify-center py-20 ${animClass}`} style={{ backgroundColor: bgColor }}>
        <div className="max-w-5xl mx-auto px-6 text-center">
           <div className="flex items-center justify-center gap-4 mb-8">
-             <Star size={12} style={{ color: textColor, opacity: 0.4 }} />
-             <span className="text-xs font-medium uppercase tracking-[0.3em]" style={{ color: textColor, opacity: 0.4 }}>
+             <Star size={12} style={{ color: badgeColor, opacity: 0.4 }} />
+             <span className="text-xs font-medium uppercase tracking-[0.3em]" style={{ color: badgeColor, opacity: 0.4 }}>
                  <EditableText 
                      tagName="span"
                      value={topBadge}
@@ -1013,10 +1049,10 @@ export const HeroTypographic: React.FC<HeroProps> = ({
                      onSelect={() => handleSelect('topBadge')}
                    />
              </span>
-             <Star size={12} style={{ color: textColor, opacity: 0.4 }} />
+             <Star size={12} style={{ color: badgeColor, opacity: 0.4 }} />
           </div>
           
-          <div className="text-5xl md:text-8xl font-black tracking-tighter mb-8 leading-[0.9] uppercase">
+          <div className="text-5xl md:text-8xl font-black tracking-tighter mb-8 leading-[0.9] uppercase" style={{ color: headingColor }}>
              <EditableText 
                  tagName="h1" 
                  value={heading} 
@@ -1029,7 +1065,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({
              />
           </div>
 
-          <div className="max-w-xl mx-auto text-lg mb-12" style={{ color: textColor, opacity: 0.5 }}>
+          <div className="max-w-xl mx-auto text-lg mb-12" style={{ color: subheadingColor, opacity: 0.5 }}>
              <EditableText 
                  tagName="p" 
                  value={subheading} 
@@ -1054,7 +1090,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({
                 }}
                 className="group flex flex-col items-center gap-2 cursor-pointer"
              >
-                <div className="w-48 h-64 rounded-lg overflow-hidden mb-2 relative" style={{ backgroundColor: textColor === '#ffffff' ? '#333' : '#f5f5f5' }}>
+                <div className="w-48 h-64 rounded-lg overflow-hidden mb-2 relative" style={{ backgroundColor: cardBgColor }}>
                    <EditableImage 
                       src={data?.link1Image || "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=1000&auto=format&fit=crop"}
                       onChange={(val) => onUpdate && onUpdate({ link1Image: val })}
@@ -1065,7 +1101,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({
                    />
                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
                 </div>
-                <div className="text-sm font-bold pb-0.5" style={{ borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: textColor }}>
+                <div className="text-sm font-bold pb-0.5" style={{ color: linkLabelColor, borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: linkBorderColor }}>
                     <EditableText 
                      tagName="span"
                      value={link1Label}
@@ -1089,7 +1125,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({
                 }}
                 className="group flex flex-col items-center gap-2 mt-12 md:mt-24 cursor-pointer"
              >
-                <div className="w-48 h-64 rounded-lg overflow-hidden mb-2 relative" style={{ backgroundColor: textColor === '#ffffff' ? '#333' : '#f5f5f5' }}>
+                <div className="w-48 h-64 rounded-lg overflow-hidden mb-2 relative" style={{ backgroundColor: cardBgColor }}>
                    <EditableImage 
                       src={data?.link2Image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop"}
                       onChange={(val) => onUpdate && onUpdate({ link2Image: val })}
@@ -1099,7 +1135,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({
                       onSelect={() => handleSelect('link2Image')}
                    />
                 </div>
-                <div className="text-sm font-bold pb-0.5" style={{ borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: textColor }}>
+                <div className="text-sm font-bold pb-0.5" style={{ color: linkLabelColor, borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: linkBorderColor }}>
                     <EditableText 
                      tagName="span"
                      value={link2Label}
@@ -1123,7 +1159,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({
                 }}
                 className="group flex flex-col items-center gap-2 cursor-pointer"
              >
-                <div className="w-48 h-64 rounded-lg overflow-hidden mb-2 relative" style={{ backgroundColor: textColor === '#ffffff' ? '#333' : '#f5f5f5' }}>
+                <div className="w-48 h-64 rounded-lg overflow-hidden mb-2 relative" style={{ backgroundColor: cardBgColor }}>
                    <EditableImage 
                       src={data?.link3Image || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop"}
                       onChange={(val) => onUpdate && onUpdate({ link3Image: val })}
@@ -1133,7 +1169,7 @@ export const HeroTypographic: React.FC<HeroProps> = ({
                       onSelect={() => handleSelect('link3Image')}
                    />
                 </div>
-                <div className="text-sm font-bold pb-0.5" style={{ borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: textColor }}>
+                <div className="text-sm font-bold pb-0.5" style={{ color: linkLabelColor, borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: linkBorderColor }}>
                     <EditableText 
                      tagName="span"
                      value={link3Label}
