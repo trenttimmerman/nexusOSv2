@@ -27,6 +27,7 @@ import { CollectionManager } from './CollectionManager';
 import { ClientManagement } from './ClientManagement';
 import EmailSubscribers from './EmailSubscribers';
 import EmailSettings from './EmailSettings';
+import Customers from './Customers';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
 import { GoogleGenAI } from '@google/genai';
@@ -1649,6 +1650,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.DASHBOARD, icon: LayoutDashboard, label: 'Command Center' },
           { id: AdminTab.ORDERS, icon: ShoppingBag, label: 'Orders' },
           { id: AdminTab.PRODUCTS, icon: Package, label: 'Products' },
+          { id: AdminTab.CUSTOMERS, icon: Users, label: 'Customers' },
           { id: AdminTab.COLLECTIONS, icon: Layers, label: 'Collections' },
           { id: AdminTab.DISCOUNTS, icon: Tag, label: 'Discounts' },
           { id: AdminTab.SHIPPING, icon: Truck, label: 'Shipping' },
@@ -13359,6 +13361,11 @@ Return ONLY the JSON object, no markdown.`;
               />
             )}
           </div>
+        );
+
+      case AdminTab.CUSTOMERS:
+        return (
+          <Customers siteId={storeId || ''} />
         );
 
       case AdminTab.PAGES:

@@ -8,6 +8,7 @@ export enum AdminTab {
   DASHBOARD = 'DASHBOARD',
   ORDERS = 'ORDERS',
   PRODUCTS = 'PRODUCTS',
+  CUSTOMERS = 'CUSTOMERS',
   CATEGORIES = 'CATEGORIES',
   COLLECTIONS = 'COLLECTIONS',
   PAGES = 'PAGES',
@@ -504,7 +505,11 @@ export interface Customer {
   first_name?: string;
   last_name?: string;
   phone?: string;
+  email_marketing?: boolean;
+  created_via?: string;
+  auth_user_id?: string;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface Order {
