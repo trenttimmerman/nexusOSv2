@@ -5243,7 +5243,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const ScrollComponent = SCROLL_COMPONENTS[currentVariant];
 
     const updateScrollData = (updates: any) => {
-      updateActiveBlockData(selectedBlockId, { ...scrollData, ...updates });
+      setLocalPages(prev => prev.map(p => {
+        if (p.id !== activePage.id) return p;
+        return {
+          ...p,
+          blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, data: { ...b.data, ...updates } } : b)
+        };
+      }));
+      setHasUnsavedChanges(true);
     };
 
     const handleMarqueeLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -6112,8 +6119,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       { key: 'disclaimerColor', label: 'Disclaimer', defaultValue: '#a3a3a3' },
     ];
 
-    const updateEmailData = (updates: Partial<typeof emailData>) => {
-      updateActiveBlockData(selectedBlockId, { ...emailData, ...updates });
+    const updateEmailData = (updates: any) => {
+      setLocalPages(prev => prev.map(p => {
+        if (p.id !== activePage.id) return p;
+        return {
+          ...p,
+          blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, data: { ...b.data, ...updates } } : b)
+        };
+      }));
+      setHasUnsavedChanges(true);
     };
 
     const generateEmailCopy = async (field: string) => {
