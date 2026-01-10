@@ -4663,10 +4663,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
               <div className="flex-1 overflow-auto bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px] p-8">
-                <div className="bg-white min-h-full rounded-xl shadow-2xl p-8 overflow-hidden">
+                <div 
+                  style={{ backgroundColor: gridData.backgroundColor || '#ffffff' }}
+                  className="min-h-full rounded-xl shadow-2xl p-8 overflow-hidden"
+                >
                   <div className="mb-8">
-                    <h2 className="text-3xl font-black text-neutral-900 mb-2">{gridData.heading || 'Latest Collection.'}</h2>
-                    <p className="text-neutral-500 max-w-lg">{gridData.subheading || 'Browse our newest arrivals and curated essentials.'}</p>
+                    <h2 
+                      style={{ color: gridData.headingColor || '#171717' }}
+                      className="text-3xl font-black mb-2"
+                    >
+                      {gridData.heading || 'Latest Collection.'}
+                    </h2>
+                    <p 
+                      style={{ color: gridData.subheadingColor || '#737373' }}
+                      className="max-w-lg"
+                    >
+                      {gridData.subheading || 'Browse our newest arrivals and curated essentials.'}
+                    </p>
                   </div>
                   
                   {/* Grid Preview Logic */}
@@ -4696,6 +4709,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               product={product}
                               onAddToCart={() => {}}
                               primaryColor={config.primaryColor}
+                              data={gridData}
                             />
                           ))
                         ) : (

@@ -310,56 +310,67 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
     }[columns] || 'lg:grid-cols-4';
 
     return (
-      <section className="py-24 px-6 max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-12">
-          <div>
-            <h2 className="text-3xl font-bold mb-2">
-               <EditableText 
-                 tagName="span" 
-                 value={heading} 
-                 onChange={(val) => onUpdateBlock && blockId && onUpdateBlock(blockId, { heading: val })} 
-                 onStyleChange={(style) => onUpdateBlock && blockId && onUpdateBlock(blockId, { heading_style: style })}
-                 style={data?.heading_style}
-                 isEditable={isEditable} 
-                 onSelect={() => onEditBlock && blockId && onEditBlock(blockId)}
-               />
-            </h2>
-            <p className="text-neutral-500">
-               <EditableText 
-                 tagName="span" 
-                 value={subheading} 
-                 onChange={(val) => onUpdateBlock && blockId && onUpdateBlock(blockId, { subheading: val })} 
-                 onStyleChange={(style) => onUpdateBlock && blockId && onUpdateBlock(blockId, { subheading_style: style })}
-                 style={data?.subheading_style}
-                 isEditable={isEditable} 
-                 onSelect={() => onEditBlock && blockId && onEditBlock(blockId)}
-               />
-            </p>
-          </div>
-          {data?.buttonText && (
-            <a href={data?.buttonLink || '/shop'} className="text-sm font-bold underline underline-offset-4">
-              {data.buttonText}
-            </a>
-          )}
-          {!data?.buttonText && <a href="#" className="text-sm font-bold underline underline-offset-4">View All</a>}
-        </div>
-
-        <div className={`grid grid-cols-1 md:grid-cols-2 ${gridCols} gap-x-8 gap-y-16`}>
-          {filteredProducts.length === 0 ? (
-            <div className="col-span-full text-center py-12 text-neutral-500">
-              No products found matching your criteria.
+      <section 
+        style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
+        className="py-24 px-6"
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <h2 
+                style={{ color: data?.headingColor || '#000000' }}
+                className="text-3xl font-bold mb-2"
+              >
+                <EditableText 
+                  tagName="span" 
+                  value={heading} 
+                  onChange={(val) => onUpdateBlock && blockId && onUpdateBlock(blockId, { heading: val })} 
+                  onStyleChange={(style) => onUpdateBlock && blockId && onUpdateBlock(blockId, { heading_style: style })}
+                  style={data?.heading_style}
+                  isEditable={isEditable} 
+                  onSelect={() => onEditBlock && blockId && onEditBlock(blockId)}
+                />
+              </h2>
+              <p 
+                style={{ color: data?.subheadingColor || '#737373' }}
+              >
+                <EditableText 
+                  tagName="span" 
+                  value={subheading} 
+                  onChange={(val) => onUpdateBlock && blockId && onUpdateBlock(blockId, { subheading: val })} 
+                  onStyleChange={(style) => onUpdateBlock && blockId && onUpdateBlock(blockId, { subheading_style: style })}
+                  style={data?.subheading_style}
+                  isEditable={isEditable} 
+                  onSelect={() => onEditBlock && blockId && onEditBlock(blockId)}
+                />
+              </p>
             </div>
-          ) : (
-            filteredProducts.map((product) => (
-              <CardComponent
-                key={product.id}
-                product={product}
-                onAddToCart={addToCart}
-                onNavigate={() => onNavigate && onNavigate(`/products/${product.seo.slug || product.id}`)}
-                primaryColor={config.primaryColor}
-              />
-            ))
-          )}
+            {data?.buttonText && (
+              <a href={data?.buttonLink || '/shop'} className="text-sm font-bold underline underline-offset-4">
+                {data.buttonText}
+              </a>
+            )}
+            {!data?.buttonText && <a href="#" className="text-sm font-bold underline underline-offset-4">View All</a>}
+          </div>
+
+          <div className={`grid grid-cols-1 md:grid-cols-2 ${gridCols} gap-x-8 gap-y-16`}>
+            {filteredProducts.length === 0 ? (
+              <div className="col-span-full text-center py-12 text-neutral-500">
+                No products found matching your criteria.
+              </div>
+            ) : (
+              filteredProducts.map((product) => (
+                <CardComponent
+                  key={product.id}
+                  product={product}
+                  onAddToCart={addToCart}
+                  onNavigate={() => onNavigate && onNavigate(`/products/${product.seo.slug || product.id}`)}
+                  primaryColor={config.primaryColor}
+                  data={data}
+                />
+              ))
+            )}
+          </div>
         </div>
       </section>
     );
