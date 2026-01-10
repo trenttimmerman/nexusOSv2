@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StorefrontProps, Product, PageBlock, HeroStyleId, ProductCardStyleId } from '../types';
 import { HEADER_COMPONENTS } from './HeaderLibrary';
 import { HERO_COMPONENTS, HERO_OPTIONS, EditableText, EditableImage, HERO_FIELDS } from './HeroLibrary';
@@ -131,6 +131,14 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   const { addToCart, cartCount, setIsCartOpen } = useCart();
   // Get collections from context (avoids prop drilling TDZ issues)
   const { collections } = useData();
+
+  // Set up global store context for email forms
+  useEffect(() => {
+    (window as any).__STORE_CONTEXT__ = {
+      storeId: config.id,
+      currentPage: activePage?.slug || 'home',
+    };
+  }, [config.id, activePage?.slug]);
 
   // Search modal state
   const [isSearchOpen, setIsSearchOpen] = useState(false);

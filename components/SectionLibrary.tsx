@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { EditableText } from './HeroLibrary';
 import { Plus, Minus, ChevronDown, ChevronUp, Mail, ArrowRight, Check, Star } from 'lucide-react';
+import { subscribeEmail, getUTMParams } from '../lib/emailService';
+import ThankYouPopup from './ThankYouPopup';
 
 // --- RICH TEXT ---
 export const RICH_TEXT_OPTIONS = [
@@ -215,32 +217,76 @@ export const EMAIL_SIGNUP_OPTIONS = [
 export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
   'email-minimal': ({ data, isEditable, onUpdate }) => {
     const [email, setEmail] = useState('');
-    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [showThankYou, setShowThankYou] = useState(false);
+    const [emailSettings, setEmailSettings] = useState<any>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!email) return;
+      if (!email || status === 'submitting') return;
+
+      setStatus('submitting');
+      setErrorMessage('');
 
       try {
-        if (data?.formAction) {
+        // Get store context from window (set by Storefront component)
+        const siteId = (window as any).__STORE_CONTEXT__?.storeId;
+        const pageSlug = (window as any).__STORE_CONTEXT__?.currentPage;
+        
+        if (siteId) {
+          // Use new email service
+          const result = await subscribeEmail({
+            email,
+            site_id: siteId,
+            page_slug: pageSlug,
+            block_id: data?.blockId,
+            variant: 'email-minimal',
+            utm_params: getUTMParams(),
+          });
+
+          if (result.success) {
+            setStatus('success');
+            setEmail('');
+            
+            // Show thank you popup if enabled
+            if (result.settings?.thank_you_enabled) {
+              setEmailSettings(result.settings);
+              setShowThankYou(true);
+            } else if (data?.buttonLink) {
+              // Fallback to old redirect behavior
+              const url = data.buttonLink === 'external' ? data.buttonExternalUrl : data.buttonLink;
+              if (url) {
+                setTimeout(() => window.location.href = url, 1500);
+              }
+            }
+          } else {
+            setStatus('error');
+            setErrorMessage(result.message);
+          }
+        } else if (data?.formAction) {
+          // Backward compatibility: use legacy formAction if no siteId
           await fetch(data.formAction, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email }),
           });
-        }
-        setStatus('success');
-        setEmail('');
-        
-        // Redirect if link is set
-        if (data?.buttonLink) {
-          const url = data.buttonLink === 'external' ? data.buttonExternalUrl : data.buttonLink;
-          if (url) {
-            setTimeout(() => window.location.href = url, 1500);
+          setStatus('success');
+          setEmail('');
+          
+          if (data?.buttonLink) {
+            const url = data.buttonLink === 'external' ? data.buttonExternalUrl : data.buttonLink;
+            if (url) {
+              setTimeout(() => window.location.href = url, 1500);
+            }
           }
+        } else {
+          setStatus('error');
+          setErrorMessage('Email signups are not configured');
         }
       } catch (error) {
         setStatus('error');
+        setErrorMessage('An error occurred. Please try again.');
       }
     };
 
@@ -275,7 +321,7 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
             </div>
           ) : status === 'error' ? (
             <div className="text-red-400 font-medium mb-4">
-              {data?.errorMessage || 'Please enter a valid email address'}
+              {errorMessage || data?.errorMessage || 'Please enter a valid email address'}
             </div>
           ) : null}
           <form onSubmit={handleSubmit} className="flex gap-2">
@@ -292,49 +338,98 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
                 color: data?.inputTextColor || '#ffffff'
               }}
               required
+              disabled={status === 'submitting'}
             />
             <button 
               type="submit"
-              className="px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
+              disabled={status === 'submitting'}
+              className="px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity disabled:opacity-50"
               style={{
                 backgroundColor: data?.buttonBgColor || '#ffffff',
                 color: data?.buttonTextColor || '#000000'
               }}
             >
-              {data?.buttonText || 'Subscribe'}
+              {status === 'submitting' ? 'Subscribing...' : (data?.buttonText || 'Subscribe')}
             </button>
           </form>
+          {emailSettings && (
+            <ThankYouPopup
+              isOpen={showThankYou}
+              onClose={() => setShowThankYou(false)}
+              settings={emailSettings}
+            />
+          )}
         </div>
       </div>
     );
   },
   'email-split': ({ data, isEditable, onUpdate }) => {
     const [email, setEmail] = useState('');
-    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [showThankYou, setShowThankYou] = useState(false);
+    const [emailSettings, setEmailSettings] = useState<any>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!email) return;
+      if (!email || status === 'submitting') return;
+
+      setStatus('submitting');
+      setErrorMessage('');
 
       try {
-        if (data?.formAction) {
+        const siteId = (window as any).__STORE_CONTEXT__?.storeId;
+        const pageSlug = (window as any).__STORE_CONTEXT__?.currentPage;
+        
+        if (siteId) {
+          const result = await subscribeEmail({
+            email,
+            site_id: siteId,
+            page_slug: pageSlug,
+            block_id: data?.blockId,
+            variant: 'email-split',
+            utm_params: getUTMParams(),
+          });
+
+          if (result.success) {
+            setStatus('success');
+            setEmail('');
+            
+            if (result.settings?.thank_you_enabled) {
+              setEmailSettings(result.settings);
+              setShowThankYou(true);
+            } else if (data?.buttonLink) {
+              const url = data.buttonLink === 'external' ? data.buttonExternalUrl : data.buttonLink;
+              if (url) {
+                setTimeout(() => window.location.href = url, 1500);
+              }
+            }
+          } else {
+            setStatus('error');
+            setErrorMessage(result.message);
+          }
+        } else if (data?.formAction) {
           await fetch(data.formAction, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email }),
           });
-        }
-        setStatus('success');
-        setEmail('');
-        
-        if (data?.buttonLink) {
-          const url = data.buttonLink === 'external' ? data.buttonExternalUrl : data.buttonLink;
-          if (url) {
-            setTimeout(() => window.location.href = url, 1500);
+          setStatus('success');
+          setEmail('');
+          
+          if (data?.buttonLink) {
+            const url = data.buttonLink === 'external' ? data.buttonExternalUrl : data.buttonLink;
+            if (url) {
+              setTimeout(() => window.location.href = url, 1500);
+            }
           }
+        } else {
+          setStatus('error');
+          setErrorMessage('Email signups are not configured');
         }
       } catch (error) {
         setStatus('error');
+        setErrorMessage('An error occurred. Please try again.');
       }
     };
 
@@ -370,7 +465,7 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
               </div>
             ) : status === 'error' ? (
               <div className="text-red-600 font-medium mb-4">
-                {data?.errorMessage || 'Please enter a valid email address'}
+                {errorMessage || data?.errorMessage || 'Please enter a valid email address'}
               </div>
             ) : null}
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -387,18 +482,27 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
                   color: data?.inputTextColor || '#000000'
                 }}
                 required
+                disabled={status === 'submitting'}
               />
               <button 
                 type="submit"
-                className="w-full px-6 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                disabled={status === 'submitting'}
+                className="w-full px-6 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
                 style={{
                   backgroundColor: data?.buttonBgColor || '#000000',
                   color: data?.buttonTextColor || '#ffffff'
                 }}
               >
-                {data?.buttonText || 'Sign Up'} <ArrowRight size={16} />
+                {status === 'submitting' ? 'Signing Up...' : (data?.buttonText || 'Sign Up')} {status !== 'submitting' && <ArrowRight size={16} />}
               </button>
             </form>
+            {emailSettings && (
+              <ThankYouPopup
+                isOpen={showThankYou}
+                onClose={() => setShowThankYou(false)}
+                settings={emailSettings}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -406,31 +510,71 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
   },
   'email-card': ({ data, isEditable, onUpdate }) => {
     const [email, setEmail] = useState('');
-    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [showThankYou, setShowThankYou] = useState(false);
+    const [emailSettings, setEmailSettings] = useState<any>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!email) return;
+      if (!email || status === 'submitting') return;
+
+      setStatus('submitting');
+      setErrorMessage('');
 
       try {
-        if (data?.formAction) {
+        const siteId = (window as any).__STORE_CONTEXT__?.storeId;
+        const pageSlug = (window as any).__STORE_CONTEXT__?.currentPage;
+        
+        if (siteId) {
+          const result = await subscribeEmail({
+            email,
+            site_id: siteId,
+            page_slug: pageSlug,
+            block_id: data?.blockId,
+            variant: 'email-card',
+            utm_params: getUTMParams(),
+          });
+
+          if (result.success) {
+            setStatus('success');
+            setEmail('');
+            
+            if (result.settings?.thank_you_enabled) {
+              setEmailSettings(result.settings);
+              setShowThankYou(true);
+            } else if (data?.buttonLink) {
+              const url = data.buttonLink === 'external' ? data.buttonExternalUrl : data.buttonLink;
+              if (url) {
+                setTimeout(() => window.location.href = url, 1500);
+              }
+            }
+          } else {
+            setStatus('error');
+            setErrorMessage(result.message);
+          }
+        } else if (data?.formAction) {
           await fetch(data.formAction, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email }),
           });
-        }
-        setStatus('success');
-        setEmail('');
-        
-        if (data?.buttonLink) {
-          const url = data.buttonLink === 'external' ? data.buttonExternalUrl : data.buttonLink;
-          if (url) {
-            setTimeout(() => window.location.href = url, 1500);
+          setStatus('success');
+          setEmail('');
+          
+          if (data?.buttonLink) {
+            const url = data.buttonLink === 'external' ? data.buttonExternalUrl : data.buttonLink;
+            if (url) {
+              setTimeout(() => window.location.href = url, 1500);
+            }
           }
+        } else {
+          setStatus('error');
+          setErrorMessage('Email signups are not configured');
         }
       } catch (error) {
         setStatus('error');
+        setErrorMessage('An error occurred. Please try again.');
       }
     };
 
@@ -463,7 +607,7 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
             </div>
           ) : status === 'error' ? (
             <div className="text-red-600 font-medium mb-4">
-              {data?.errorMessage || 'Please enter a valid email address'}
+              {errorMessage || data?.errorMessage || 'Please enter a valid email address'}
             </div>
           ) : null}
           <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
@@ -480,16 +624,18 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
                 color: data?.inputTextColor || '#000000'
               }}
               required
+              disabled={status === 'submitting'}
             />
             <button 
               type="submit"
-              className="px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity"
+              disabled={status === 'submitting'}
+              className="px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
               style={{
                 backgroundColor: data?.buttonBgColor || '#000000',
                 color: data?.buttonTextColor || '#ffffff'
               }}
             >
-              {data?.buttonText || 'Get Code'}
+              {status === 'submitting' ? 'Submitting...' : (data?.buttonText || 'Get Code')}
             </button>
           </form>
           <p 
@@ -498,6 +644,13 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
           >
             {data?.disclaimer || 'No spam, unsubscribe anytime.'}
           </p>
+          {emailSettings && (
+            <ThankYouPopup
+              isOpen={showThankYou}
+              onClose={() => setShowThankYou(false)}
+              settings={emailSettings}
+            />
+          )}
         </div>
       </div>
     );

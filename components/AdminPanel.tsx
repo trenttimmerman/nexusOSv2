@@ -25,6 +25,8 @@ import { DiscountManager } from './DiscountManager';
 import { ShippingManager } from './ShippingManager';
 import { CollectionManager } from './CollectionManager';
 import { ClientManagement } from './ClientManagement';
+import EmailSubscribers from './EmailSubscribers';
+import EmailSettings from './EmailSettings';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
 import { GoogleGenAI } from '@google/genai';
@@ -1654,6 +1656,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.MEDIA, icon: FolderOpen, label: 'Media Library' },
           { id: AdminTab.DESIGN, icon: Palette, label: 'Design Studio' },
           { id: AdminTab.CAMPAIGNS, icon: Megaphone, label: 'Marketing' },
+          { id: AdminTab.EMAIL_SUBSCRIBERS, icon: Mail, label: 'Email Subscribers' },
+          { id: AdminTab.EMAIL_SETTINGS, icon: Send, label: 'Email Settings' },
           { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' },
           ...(userRole === 'superuser' ? [{ id: AdminTab.PLATFORM, icon: Users, label: 'Platform Admin' }] : [])
         ].map((item) => (
@@ -13417,6 +13421,16 @@ Return ONLY the JSON object, no markdown.`;
       case AdminTab.CAMPAIGNS:
         return (
           <CampaignManager storeId={storeId || null} />
+        );
+
+      case AdminTab.EMAIL_SUBSCRIBERS:
+        return (
+          <EmailSubscribers siteId={storeId || ''} />
+        );
+
+      case AdminTab.EMAIL_SETTINGS:
+        return (
+          <EmailSettings siteId={storeId || ''} />
         );
 
       case AdminTab.SETTINGS:
