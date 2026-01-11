@@ -132,6 +132,10 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   // Get collections from context (avoids prop drilling TDZ issues)
   const { collections } = useData();
 
+  // Ensure pages is always an array - must be before activePage usage
+  const safePages = pages || [];
+  const activePage = safePages.find(p => p.id === activePageId) || safePages[0];
+
   // Set up global store context for email forms
   useEffect(() => {
     (window as any).__STORE_CONTEXT__ = {
@@ -206,9 +210,6 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   // Hero, Card, Footer components are now determined dynamically in renderBlock to allow for variants
   const FooterComponent = FOOTER_COMPONENTS[config.footerStyle] || FOOTER_COMPONENTS['columns'];
 
-  // Ensure pages is always an array
-  const safePages = pages || [];
-  const activePage = safePages.find(p => p.id === activePageId) || safePages[0];
   const isSidebar = config.headerStyle === 'studio';
 
   // Sort pages by display_order for navigation, filter out hidden pages
