@@ -508,6 +508,40 @@ export interface Customer {
   email_marketing?: boolean;
   created_via?: string;
   auth_user_id?: string;
+  client_type?: 'organization' | 'individual';
+  company_name?: string;
+  tax_exempt?: boolean;
+  tax_number?: string;
+  notes?: string;
+  tags?: string[];
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface CustomerContact {
+  id: string;
+  customer_id: string;
+  full_name: string;
+  role?: string;
+  email?: string;
+  phone?: string;
+  is_primary?: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface CustomerAddress {
+  id: string;
+  customer_id: string;
+  address_type?: 'billing' | 'shipping' | 'both';
+  label?: string;
+  address_line1: string;
+  address_line2?: string;
+  city?: string;
+  state_province?: string;
+  postal_code?: string;
+  country?: string;
+  is_default?: boolean;
   created_at: string;
   updated_at?: string;
 }
