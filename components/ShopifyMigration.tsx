@@ -1,7 +1,10 @@
 import React, { useState, useCallback } from 'react';
-import { Upload, FileText, CheckCircle, AlertTriangle, Download, Package, Zap, Eye, Settings } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertTriangle, Download, Package, Zap, Eye, Settings, Sparkles } from 'lucide-react';
 import { extractShopifyTheme, getThemeInfo, ShopifyThemeStructure, extractThemeSettings, parseLiquidSection } from '../lib/shopifyThemeParser';
 import { extractDataReferences } from '../lib/liquidParser';
+import { generateBlockMapping, getSectionMappingSuggestions, MappedBlock } from '../lib/sectionMatcher';
+import { extractContentFromTheme, extractColorPalette, extractTypography } from '../lib/shopifyDataExtractor';
+import { uploadThemeAssets, AssetUploadProgress, createAssetUrlMap } from '../lib/assetUploader';
 import { supabase } from '../lib/supabaseClient';
 
 interface ShopifyMigrationProps {
@@ -38,6 +41,8 @@ export default function ShopifyMigration({ storeId, onComplete }: ShopifyMigrati
   const [progress, setProgress] = useState(0);
   const [currentTask, setCurrentTask] = useState('');
   const [migrationId, setMigrationId] = useState<string | null>(null);
+  const [mappedBlocks, setMappedBlocks] = useState<MappedBlock[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<AssetUploadProgress | null>(null);
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = e.target.files?.[0];
@@ -152,9 +157,121 @@ export default function ShopifyMigration({ storeId, onComplete }: ShopifyMigrati
     }
   }, [storeId]);
 
-  const handleStartMigration = () => {
-    setStep('mapping');
-    // Next phase will handle section mapping
+  const handleStartMigration = async () => {
+    if (!analysis) return;
+    
+    try {
+      setStep('mapping');
+      setProgress(0);
+      setCurrentTask('Mapping sections to nexusOS blocks...');
+      
+      // Generate block mappings
+      const blocks = generateBlockMapping(analysis.theme.files.sections);
+      setMappedBlocks(blocks);
+      setProgress(100);
+      
+      // Auto-proceed to importing after brief delay
+      setTimeout(() => {
+        handleStartImport();
+      }, 1500);
+      
+    } catch (error: any) {
+      alert(`Mapping failed: ${error.message}`);
+    }
+  };
+  
+  const handleStartImport = async () => {
+    if (!analysis || !migrationId) return;
+    
+    try {
+      setStep('importing');
+      setProgress(0);
+      setCurrentTask('Starting import...');
+      
+      // 1. Upload assets
+      setCurrentTask('Uploading theme assets...');
+      const uploadedAssets = await uploadThemeAssets(
+        storeId,
+        migrationId,
+        analysis.theme.files.assets,
+        supabase,
+        setUploadProgress
+      );
+      
+      setProgress(30);
+      
+      // 2. Extract content
+      setCurrentTask('Extracting content data...');
+      const content = extractContentFromTheme(analysis.theme);
+      const colors = extractColorPalette(analysis.theme);
+      const typography = extractTypography(analysis.theme);
+      
+      setProgress(50);
+      
+      // 3. Save blocks to database
+      setCurrentTask('Saving blocks to database...');
+      
+      // Create a new page for the migrated content
+      const pageId = `migrated_${Date.now()}`;
+      const { error: pageError } = await supabase.from('pages').insert([{
+        id: pageId,
+        store_id: storeId,
+        title: 'Migrated Homepage',
+        slug: 'migrated-home',
+        type: 'custom',
+        blocks: mappedBlocks.map(block => ({
+          id: `block_${Math.random().toString(36).substr(2, 9)}`,
+          type: block.type,
+          variant: block.variant,
+          data: block.data
+        }))
+      }]);
+      
+      if (pageError) {
+        throw new Error(`Failed to save page: ${pageError.message}`);
+      }
+      
+      setProgress(70);
+      
+      // 4. Update store config with theme settings
+      setCurrentTask('Applying theme settings...');
+      const { error: configError } = await supabase
+        .from('store_config')
+        .update({
+          primary_color: colors.primary,
+          secondary_color: colors.secondary,
+          background_color: colors.background
+        })
+        .eq('store_id', storeId);
+      
+      if (configError) {
+        console.error('Failed to update config:', configError);
+      }
+      
+      setProgress(90);
+      
+      // 5. Update migration status
+      setCurrentTask('Finalizing migration...');
+      await supabase
+        .from('shopify_migrations')
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          migration_data: {
+            ...analysis.theme.detectedTheme,
+            blocks: mappedBlocks.length,
+            assets: uploadedAssets.length
+          }
+        })
+        .eq('id', migrationId);
+      
+      setProgress(100);
+      setStep('complete');
+      
+    } catch (error: any) {
+      alert(`Import failed: ${error.message}`);
+      console.error('Import error:', error);
+    }
   };
 
   const handleReset = () => {
@@ -384,21 +501,174 @@ export default function ShopifyMigration({ storeId, onComplete }: ShopifyMigrati
       )}
 
       {step === 'mapping' && (
-        <div className="max-w-4xl mx-auto text-center">
-          <Settings size={64} className="mx-auto mb-4 text-purple-600" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Section Mapping</h2>
-          <p className="text-gray-600 mb-8">Phase 2: Section conversion coming next...</p>
-          
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-left">
-            <h3 className="font-semibold text-blue-900 mb-3">Next Steps (Phase 2):</h3>
-            <ul className="text-sm text-blue-800 space-y-2">
-              <li>✓ Theme structure analyzed</li>
-              <li>→ Map Shopify sections to nexusOS blocks</li>
-              <li>→ Convert Liquid templates to React components</li>
-              <li>→ Extract and migrate content data</li>
-              <li>→ Upload assets to storage</li>
-              <li>→ Generate preview site</li>
-            </ul>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-6">
+            <Sparkles size={48} className="mx-auto mb-4 text-purple-600 animate-pulse" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Mapping Sections</h2>
+            <p className="text-gray-600">Converting Shopify sections to nexusOS blocks...</p>
+          </div>
+
+          <div className="mb-6">
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>Progress</span>
+              <span>{progress}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className="bg-purple-600 h-3 rounded-full transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+
+          {mappedBlocks.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Mapped Blocks ({mappedBlocks.length})</h3>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {mappedBlocks.map((block, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <div className="font-medium text-gray-900">{block.type}</div>
+                      <div className="text-sm text-gray-600">Variant: {block.variant}</div>
+                    </div>
+                    {block.warnings.length > 0 && (
+                      <AlertTriangle size={18} className="text-yellow-600" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {step === 'importing' && (
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-6">
+            <Zap size={48} className="mx-auto mb-4 text-purple-600 animate-pulse" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Importing to nexusOS</h2>
+            <p className="text-gray-600">{currentTask}</p>
+          </div>
+
+          <div className="mb-6">
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>Overall Progress</span>
+              <span>{progress}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className="bg-purple-600 h-3 rounded-full transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+
+          {uploadProgress && (
+            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Asset Upload</h3>
+              <div className="mb-2">
+                <div className="flex justify-between text-sm text-gray-600 mb-1">
+                  <span>{uploadProgress.current}</span>
+                  <span>{uploadProgress.uploaded} / {uploadProgress.total}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(uploadProgress.uploaded / uploadProgress.total) * 100}%` }}
+                  />
+                </div>
+              </div>
+              {uploadProgress.errors.length > 0 && (
+                <div className="mt-4 text-sm text-red-600">
+                  {uploadProgress.errors.length} upload error(s)
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-purple-600 mb-1">{mappedBlocks.length}</div>
+              <div className="text-sm text-gray-600">Blocks Created</div>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-blue-600 mb-1">
+                {uploadProgress?.uploaded || 0}
+              </div>
+              <div className="text-sm text-gray-600">Assets Uploaded</div>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-600 mb-1">{progress}%</div>
+              <div className="text-sm text-gray-600">Complete</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {step === 'complete' && (
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-6">
+            <CheckCircle size={64} className="mx-auto mb-4 text-green-600" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Migration Complete!</h2>
+            <p className="text-gray-600">Your Shopify theme has been successfully migrated to nexusOS</p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+              <div className="text-3xl font-bold text-green-900 mb-1">{mappedBlocks.length}</div>
+              <div className="text-sm text-green-700">Blocks Created</div>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+              <div className="text-3xl font-bold text-blue-900 mb-1">
+                {uploadProgress?.uploaded || 0}
+              </div>
+              <div className="text-sm text-blue-700">Assets Migrated</div>
+            </div>
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+              <div className="text-3xl font-bold text-purple-900 mb-1">1</div>
+              <div className="text-sm text-purple-700">Page Created</div>
+            </div>
+          </div>
+
+          {mappedBlocks.some(b => b.warnings.length > 0) && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle size={20} className="text-yellow-600" />
+                <h3 className="font-semibold text-yellow-900">Post-Migration Notes</h3>
+              </div>
+              <ul className="text-sm text-yellow-800 space-y-1">
+                {Array.from(new Set(mappedBlocks.flatMap(b => b.warnings))).map((warning, idx) => (
+                  <li key={idx}>• {warning}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <h3 className="font-semibold text-blue-900 mb-3">Next Steps:</h3>
+            <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
+              <li>Review the migrated page: "Migrated Homepage"</li>
+              <li>Customize colors and fonts in Design Studio</li>
+              <li>Add your products and collections</li>
+              <li>Adjust block layouts and content as needed</li>
+              <li>Preview and publish your site</li>
+            </ol>
+          </div>
+
+          <div className="flex justify-center gap-3">
+            <button
+              onClick={handleReset}
+              className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+            >
+              Migrate Another Theme
+            </button>
+            <button
+              onClick={onComplete}
+              className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center gap-2"
+            >
+              <Eye size={18} />
+              View Migrated Site
+            </button>
           </div>
         </div>
       )}
