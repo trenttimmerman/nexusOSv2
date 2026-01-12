@@ -51,6 +51,7 @@ export async function extractShopifyTheme(file: File): Promise<ShopifyThemeStruc
   // Process all files in the ZIP
   const filePromises: Promise<void>[] = [];
 
+  const allPaths: string[] = [];
   zipContent.forEach((relativePath, zipEntry) => {
     if (zipEntry.dir) return;
 
@@ -60,10 +61,18 @@ export async function extractShopifyTheme(file: File): Promise<ShopifyThemeStruc
       ? pathParts.slice(1).join('/')
       : relativePath;
 
+    allPaths.push(normalizedPath);
     filePromises.push(processFile(normalizedPath, zipEntry, structure));
   });
 
+  console.log('[ThemeParser] Total files in ZIP:', allPaths.length);
+  console.log('[ThemeParser] Sample paths:', allPaths.slice(0, 10));
+  console.log('[ThemeParser] Section files:', allPaths.filter(p => p.startsWith('sections/')));
+
   await Promise.all(filePromises);
+
+  console.log('[ThemeParser] Extracted sections:', Object.keys(structure.files.sections).length);
+  console.log('[ThemeParser] Section names:', Object.keys(structure.files.sections));
 
   // Detect theme type
   structure.detectedTheme = detectThemeType(structure);
@@ -106,6 +115,7 @@ async function processFile(
   else if (path.startsWith('sections/') && fileName.endsWith('.liquid')) {
     const content = await zipEntry.async('string');
     structure.files.sections[fileName] = content;
+    console.log('[ThemeParser] Found section:', fileName);
   }
   
   // Snippets

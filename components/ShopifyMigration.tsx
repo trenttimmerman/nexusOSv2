@@ -171,13 +171,13 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
       console.log('[Migration] Section files:', Object.keys(analysis.theme.files.sections));
       
       // Generate block mappings
-      const blocks = generateBlockMapping(analysis.theme.files.sections);
+      let blocks = generateBlockMapping(analysis.theme.files.sections);
       console.log('[Migration] Generated blocks:', blocks.length, blocks);
       
       // If no blocks generated, create default blocks
       if (blocks.length === 0) {
         console.warn('[Migration] No blocks generated, creating defaults');
-        blocks.push({
+        blocks = [{
           type: 'system-hero',
           variant: 'split',
           data: {
@@ -193,9 +193,10 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
           },
           order: 0,
           warnings: ['Created default hero section - no sections found in theme']
-        });
+        }];
       }
       
+      console.log('[Migration] Final blocks to use:', blocks.length, blocks);
       setMappedBlocks(blocks);
       setProgress(100);
       
