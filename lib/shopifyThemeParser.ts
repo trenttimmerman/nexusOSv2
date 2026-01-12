@@ -52,8 +52,11 @@ export async function extractShopifyTheme(file: File): Promise<ShopifyThemeStruc
   const filePromises: Promise<void>[] = [];
 
   const allPaths: string[] = [];
+  const rawPaths: string[] = [];
   zipContent.forEach((relativePath, zipEntry) => {
     if (zipEntry.dir) return;
+
+    rawPaths.push(relativePath);
 
     // Normalize path (remove leading theme folder if present)
     const pathParts = relativePath.split('/');
@@ -66,7 +69,8 @@ export async function extractShopifyTheme(file: File): Promise<ShopifyThemeStruc
   });
 
   console.log('[ThemeParser] Total files in ZIP:', allPaths.length);
-  console.log('[ThemeParser] Sample paths:', allPaths.slice(0, 10));
+  console.log('[ThemeParser] RAW paths (before normalization):', rawPaths.slice(0, 10));
+  console.log('[ThemeParser] NORMALIZED paths:', allPaths.slice(0, 10));
   console.log('[ThemeParser] Section files:', allPaths.filter(p => p.startsWith('sections/')));
 
   await Promise.all(filePromises);
