@@ -7,19 +7,39 @@ export interface ImportRow {
   last_name?: string;
   phone?: string;
   company_name?: string;
+  website?: string;
   client_type?: 'individual' | 'organization';
   email_marketing?: boolean;
   tags?: string[];
   notes?: string;
   tax_exempt?: boolean;
+  tax_number?: string;
   
-  // Address fields
+  // Legacy address fields (generic)
   address_line1?: string;
   address_line2?: string;
   city?: string;
   state_province?: string;
   postal_code?: string;
   country?: string;
+  
+  // Shipping address fields
+  shipping_address_1?: string;
+  shipping_address_2?: string;
+  shipping_city?: string;
+  shipping_state?: string;
+  shipping_postal_code?: string;
+  shipping_country?: string;
+  shipping_label?: string;
+  
+  // Billing address fields
+  billing_address_1?: string;
+  billing_address_2?: string;
+  billing_city?: string;
+  billing_state?: string;
+  billing_postal_code?: string;
+  billing_country?: string;
+  billing_label?: string;
   
   // B2B Contact fields (when company_name is present)
   contact_first_name?: string;
@@ -103,6 +123,7 @@ export async function processImportRow(
           email_marketing: row.email_marketing,
           notes: row.notes || null,
           tax_exempt: row.tax_exempt || false,
+          tax_number: row.tax_number || null,
         };
 
         // Handle tags
@@ -141,6 +162,7 @@ export async function processImportRow(
           email_marketing: row.email_marketing !== undefined ? row.email_marketing : existingCustomer.email_marketing,
           notes: [existingCustomer.notes, row.notes].filter(Boolean).join('\n\n') || null,
           tax_exempt: row.tax_exempt || existingCustomer.tax_exempt,
+          tax_number: row.tax_number || existingCustomer.tax_number,
           tags: mergedTags.length > 0 ? mergedTags : null,
         };
 
@@ -173,6 +195,7 @@ export async function processImportRow(
       email_marketing: row.email_marketing || false,
       notes: row.notes || null,
       tax_exempt: row.tax_exempt || false,
+      tax_number: row.tax_number || null,
       tags: row.tags && row.tags.length > 0 ? row.tags : null,
     };
 
@@ -189,27 +212,78 @@ export async function processImportRow(
     let addressesCreated = 0;
     let contactsCreated = 0;
 
-    // Step 5: Create address if data provided
-    if (options.createAddresses && row.address_line1) {
-      const addressData: Partial<CustomerAddress> = {
-        customer_id: newCustomer.id,
-        address_type: 'both',
-        label: 'Primary',
-        address_line1: row.address_line1,
-        address_line2: row.address_line2 || null,
-        city: row.city || null,
-        state_province: row.state_province || null,
-        postal_code: row.postal_code || null,
-        country: row.country || null,
-        is_default: true,
-      };
+    // Step 5: Create addresses if data provided
+    if (options.createAddresses) {
+      // Create shipping address if shipping data exists
+      if (row.shipping_address_1) {
+        const shippingData: Partial<CustomerAddress> = {
+          customer_id: newCustomer.id,
+          address_type: 'shipping',
+          label: row.shipping_label || 'Shipping',
+          address_line1: row.shipping_address_1,
+          address_line2: row.shipping_address_2 || null,
+          city: row.shipping_city || null,
+          state_province: row.shipping_state || null,
+          postal_code: row.shipping_postal_code || null,
+          country: row.shipping_country || null,
+          is_default: true,
+        };
 
-      const { error: addressError } = await supabase
-        .from('customer_addresses')
-        .insert(addressData);
+        const { error: shippingError } = await supabase
+          .from('customer_addresses')
+          .insert(shippingData);
 
-      if (!addressError) {
-        addressesCreated = 1;
+        if (!shippingError) {
+          addressesCreated++;
+        }
+      }
+
+      // Create billing address if billing data exists
+      if (row.billing_address_1) {
+        const billingData: Partial<CustomerAddress> = {
+          customer_id: newCustomer.id,
+          address_type: 'billing',
+          label: row.billing_label || 'Billing',
+          address_line1: row.billing_address_1,
+          address_line2: row.billing_address_2 || null,
+          city: row.billing_city || null,
+          state_province: row.billing_state || null,
+          postal_code: row.billing_postal_code || null,
+          country: row.billing_country || null,
+          is_default: !row.shipping_address_1, // Default if no shipping address
+        };
+
+        const { error: billingError } = await supabase
+          .from('customer_addresses')
+          .insert(billingData);
+
+        if (!billingError) {
+          addressesCreated++;
+        }
+      }
+
+      // Fallback to legacy address fields if no shipping/billing specific data
+      if (!row.shipping_address_1 && !row.billing_address_1 && row.address_line1) {
+        const addressData: Partial<CustomerAddress> = {
+          customer_id: newCustomer.id,
+          address_type: 'both',
+          label: 'Primary',
+          address_line1: row.address_line1,
+          address_line2: row.address_line2 || null,
+          city: row.city || null,
+          state_province: row.state_province || null,
+          postal_code: row.postal_code || null,
+          country: row.country || null,
+          is_default: true,
+        };
+
+        const { error: addressError } = await supabase
+          .from('customer_addresses')
+          .insert(addressData);
+
+        if (!addressError) {
+          addressesCreated++;
+        }
       }
     }
 

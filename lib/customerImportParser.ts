@@ -117,19 +117,42 @@ export function suggestMapping(headers: string[]): Map<string, string> {
   const suggestions = new Map<string, string>();
   
   const fieldSuggestions: Record<string, string[]> = {
-    'email': ['email', 'e-mail', 'email address', 'customer email', 'mail'],
-    'first_name': ['first name', 'firstname', 'fname', 'given name', 'first'],
-    'last_name': ['last name', 'lastname', 'lname', 'surname', 'family name', 'last'],
-    'phone': ['phone', 'telephone', 'mobile', 'phone number', 'cell', 'tel'],
-    'company_name': ['company', 'organization', 'business name', 'org'],
+    'email': ['email', 'e-mail', 'email address', 'customer email', 'mail', 'contact_email'],
+    'first_name': ['first name', 'firstname', 'fname', 'given name', 'first', 'contact_first_name'],
+    'last_name': ['last name', 'lastname', 'lname', 'surname', 'family name', 'last', 'contact_last_name'],
+    'phone': ['phone', 'telephone', 'mobile', 'phone number', 'cell', 'tel', 'contact_phone'],
+    'company_name': ['company', 'organization', 'business name', 'org', 'company name'],
+    'website': ['website', 'url', 'web', 'site'],
+    'notes': ['note', 'notes', 'comments', 'description', 'internal_notes', 'internal notes'],
+    'tax_number': ['tax id', 'tax_id', 'tax number', 'resale number', 'resale_number', 'vat', 'gst'],
+    
+    // Shipping address
+    'shipping_address_1': ['shipping address', 'shipping_address', 'shipping address 1', 'shipping_address_1', 'ship address', 'ship_address_1'],
+    'shipping_address_2': ['shipping address 2', 'shipping_address_2', 'ship address 2', 'ship_address_2'],
+    'shipping_city': ['shipping city', 'shipping_city', 'ship city', 'ship_city'],
+    'shipping_state': ['shipping state', 'shipping_state', 'shipping province', 'shipping_province', 'shipping_state_code', 'ship state'],
+    'shipping_postal_code': ['shipping zip', 'shipping_zip', 'shipping postal', 'shipping_postal_code', 'shipping postal code', 'ship zip'],
+    'shipping_country': ['shipping country', 'shipping_country', 'shipping_country_code', 'ship country'],
+    'shipping_label': ['shipping label', 'shipping_label'],
+    
+    // Billing address
+    'billing_address_1': ['billing address', 'billing_address', 'billing address 1', 'billing_address_1', 'bill address', 'bill_address_1'],
+    'billing_address_2': ['billing address 2', 'billing_address_2', 'bill address 2', 'bill_address_2'],
+    'billing_city': ['billing city', 'billing_city', 'bill city', 'bill_city'],
+    'billing_state': ['billing state', 'billing_state', 'billing province', 'billing_province', 'billing_state_code', 'bill state'],
+    'billing_postal_code': ['billing zip', 'billing_zip', 'billing postal', 'billing_postal_code', 'billing postal code', 'bill zip'],
+    'billing_country': ['billing country', 'billing_country', 'billing_country_code', 'bill country'],
+    'billing_label': ['billing label', 'billing_label'],
+    
+    // Legacy address fields (fallback)
     'address_line1': ['address', 'address1', 'street', 'address line 1', 'address 1'],
     'address_line2': ['address2', 'address line 2', 'address 2', 'apt', 'suite'],
     'city': ['city', 'town', 'locality'],
     'state_province': ['state', 'province', 'region', 'province code'],
     'postal_code': ['zip', 'postal code', 'postcode', 'zip code', 'postal'],
     'country': ['country', 'country name', 'country code'],
+    
     'tags': ['tags', 'segments', 'labels', 'categories'],
-    'notes': ['note', 'notes', 'comments', 'description'],
   };
 
   for (const header of headers) {

@@ -271,18 +271,30 @@ export default function CustomerImport({ storeId, onComplete }: CustomerImportPr
                     <option value="last_name">Last Name</option>
                     <option value="phone">Phone</option>
                     <option value="company_name">Company Name</option>
-                    <option value="notes">Notes</option>
+                    <option value="website">Website</option>
+                    <option value="notes">Notes / Internal Notes</option>
                     <option value="tags">Tags</option>
                     <option value="tax_exempt">Tax Exempt</option>
+                    <option value="tax_number">Tax ID / Resale Number</option>
                     <option value="email_marketing">Email Marketing</option>
                   </optgroup>
-                  <optgroup label="Address">
-                    <option value="address_line1">Address Line 1</option>
-                    <option value="address_line2">Address Line 2</option>
-                    <option value="city">City</option>
-                    <option value="state_province">State/Province</option>
-                    <option value="postal_code">Postal Code</option>
-                    <option value="country">Country</option>
+                  <optgroup label="Shipping Address">
+                    <option value="shipping_address_1">Shipping Address 1</option>
+                    <option value="shipping_address_2">Shipping Address 2</option>
+                    <option value="shipping_city">Shipping City</option>
+                    <option value="shipping_state">Shipping State/Province</option>
+                    <option value="shipping_postal_code">Shipping Postal Code</option>
+                    <option value="shipping_country">Shipping Country</option>
+                    <option value="shipping_label">Shipping Label</option>
+                  </optgroup>
+                  <optgroup label="Billing Address">
+                    <option value="billing_address_1">Billing Address 1</option>
+                    <option value="billing_address_2">Billing Address 2</option>
+                    <option value="billing_city">Billing City</option>
+                    <option value="billing_state">Billing State/Province</option>
+                    <option value="billing_postal_code">Billing Postal Code</option>
+                    <option value="billing_country">Billing Country</option>
+                    <option value="billing_label">Billing Label</option>
                   </optgroup>
                   <optgroup label="Contact (B2B)">
                     <option value="contact_first_name">Contact First Name</option>
