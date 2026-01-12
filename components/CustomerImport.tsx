@@ -87,6 +87,11 @@ export default function CustomerImport({ storeId, onComplete }: CustomerImportPr
         }
       }
       
+      // If contact_email was mapped but not email, use contact_email as the main email
+      if (!transformed.email && transformed.contact_email) {
+        transformed.email = transformed.contact_email;
+      }
+      
       return transformed;
     });
 
@@ -330,7 +335,7 @@ export default function CustomerImport({ storeId, onComplete }: CustomerImportPr
           </div>
           <button
             onClick={handleNextFromMapping}
-            disabled={!fieldMapping.has('email')}
+            disabled={!fieldMapping.has('email') && !fieldMapping.has('contact_email')}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Continue →
