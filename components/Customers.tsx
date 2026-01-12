@@ -62,7 +62,7 @@ export default function Customers({ siteId }: CustomersProps) {
       const { data: customersData, error: customersError } = await supabase
         .from('customers')
         .select('*')
-        .eq('site_id', siteId)
+        .eq('store_id', siteId)
         .order('created_at', { ascending: false });
 
       if (customersError) throw customersError;
@@ -83,14 +83,14 @@ export default function Customers({ siteId }: CustomersProps) {
       const { data: orderStats } = await supabase
         .from('orders')
         .select('customer_id, total_amount, created_at')
-        .eq('site_id', siteId)
+        .eq('store_id', siteId)
         .not('customer_id', 'is', null);
 
       // Fetch email subscriber status
       const { data: subscribers } = await supabase
         .from('email_subscribers')
         .select('customer_id')
-        .eq('site_id', siteId)
+        .eq('store_id', siteId)
         .is('unsubscribed_at', null);
 
       // Group contacts and addresses by customer
@@ -193,7 +193,7 @@ export default function Customers({ siteId }: CustomersProps) {
       const { data: customer, error: customerError } = await supabase
         .from('customers')
         .insert({
-          site_id: siteId,
+          store_id: siteId,
           ...newCustomer,
           created_via: 'manual',
         })

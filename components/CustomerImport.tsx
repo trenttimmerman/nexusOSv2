@@ -115,34 +115,37 @@ export default function CustomerImport({ storeId, onComplete }: CustomerImportPr
     setImporting(true);
     setStep('processing');
 
-    // Create import record
-    const { data: importRecord, error: importError } = await supabase
-      .from('customer_imports')
-      .insert({
-        store_id: storeId,
-        source_platform: platform,
-        status: 'processing',
-        total_records: csvData.data.length,
-        filename: file?.name,
-        file_size: file?.size,
-        mapping_config: Object.fromEntries(fieldMapping),
-        import_options: {
-          duplicateStrategy,
-          createAddresses,
-          createContacts,
-          autoDetectB2B,
-        },
-      })
-      .select()
-      .single();
-
-    if (importError) {
-      alert(`Failed to create import record: ${importError.message}`);
-      setImporting(false);
-      return;
+    // Create import record (optional - table may not exist yet)
+    let importRecord: any = null;
+    try {
+      const { data, error } = await supabase
+        .from('customer_imports')
+        .insert({
+          store_id: storeId,
+          source_platform: platform,
+          status: 'processing',
+          total_records: csvData.data.length,
+          filename: file?.name,
+          file_size: file?.size,
+          mapping_config: Object.fromEntries(fieldMapping),
+          import_options: {
+            duplicateStrategy,
+            createAddresses,
+            createContacts,
+            autoDetectB2B,
+          },
+        })
+        .select()
+        .single();
+      
+      if (!error) {
+        importRecord = data;
+        setImportId(data.id);
+      }
+      // If table doesn't exist (404), continue without tracking
+    } catch (err) {
+      console.warn('Import tracking table not available, continuing without tracking');
     }
-
-    setImportId(importRecord.id);
 
     try {
       // Filter out rows with validation errors (missing email)
@@ -164,38 +167,42 @@ export default function CustomerImport({ storeId, onComplete }: CustomerImportPr
         setProgress
       );
 
-      // Update import record
-      await supabase
-        .from('customer_imports')
-        .update({
-          status: finalProgress.errors.length > 0 ? 'partial' : 'completed',
-          customers_created: finalProgress.customersCreated,
-          customers_updated: finalProgress.customersUpdated,
-          customers_skipped: finalProgress.customersSkipped,
-          addresses_created: finalProgress.addressesCreated,
-          contacts_created: finalProgress.contactsCreated,
-          errors_count: finalProgress.errors.length,
-          error_log: finalProgress.errors,
-          summary: {
-            totalProcessed: finalProgress.current,
-            successRate: ((finalProgress.current - finalProgress.errors.length) / finalProgress.current) * 100,
-          },
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', importRecord.id);
+      // Update import record (if tracking is available)
+      if (importRecord?.id) {
+        await supabase
+          .from('customer_imports')
+          .update({
+            status: finalProgress.errors.length > 0 ? 'partial' : 'completed',
+            customers_created: finalProgress.customersCreated,
+            customers_updated: finalProgress.customersUpdated,
+            customers_skipped: finalProgress.customersSkipped,
+            addresses_created: finalProgress.addressesCreated,
+            contacts_created: finalProgress.contactsCreated,
+            errors_count: finalProgress.errors.length,
+            error_log: finalProgress.errors,
+            summary: {
+              totalProcessed: finalProgress.current,
+              successRate: ((finalProgress.current - finalProgress.errors.length) / finalProgress.current) * 100,
+            },
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', importRecord.id);
+      }
 
       setProgress(finalProgress);
       setStep('complete');
     } catch (error: any) {
       alert(`Import failed: ${error.message}`);
       
-      await supabase
-        .from('customer_imports')
-        .update({
-          status: 'failed',
-          error_log: [{ error: error.message }],
-        })
-        .eq('id', importRecord.id);
+      if (importRecord?.id) {
+        await supabase
+          .from('customer_imports')
+          .update({
+            status: 'failed',
+            error_log: [{ error: error.message }],
+          })
+          .eq('id', importRecord.id);
+      }
     } finally {
       setImporting(false);
     }
