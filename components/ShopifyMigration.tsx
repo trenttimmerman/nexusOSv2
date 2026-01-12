@@ -167,8 +167,35 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
       setProgress(0);
       setCurrentTask('Mapping sections to nexusOS blocks...');
       
+      console.log('[Migration] Sections available:', Object.keys(analysis.theme.files.sections).length);
+      console.log('[Migration] Section files:', Object.keys(analysis.theme.files.sections));
+      
       // Generate block mappings
       const blocks = generateBlockMapping(analysis.theme.files.sections);
+      console.log('[Migration] Generated blocks:', blocks.length, blocks);
+      
+      // If no blocks generated, create default blocks
+      if (blocks.length === 0) {
+        console.warn('[Migration] No blocks generated, creating defaults');
+        blocks.push({
+          type: 'system-hero',
+          variant: 'split',
+          data: {
+            heading: 'Welcome to Your Store',
+            subheading: 'Start customizing your migrated theme',
+            buttonText: 'Shop Now',
+            buttonLink: '/products',
+            backgroundImage: '',
+            overlayOpacity: 0.3,
+            textAlign: 'left',
+            textColor: '#ffffff',
+            showButton: true
+          },
+          order: 0,
+          warnings: ['Created default hero section - no sections found in theme']
+        });
+      }
+      
       setMappedBlocks(blocks);
       setProgress(100);
       
@@ -213,6 +240,8 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
       // 3. Save blocks to database
       setCurrentTask('Saving blocks to database...');
       
+      console.log('[Migration] Saving blocks:', mappedBlocks.length);
+      
       // Check if migrated page already exists
       const migratedSlug = 'migrated-home';
       const { data: existingPage } = await supabase
@@ -228,6 +257,8 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
         variant: block.variant,
         data: block.data
       }));
+      
+      console.log('[Migration] Page blocks to save:', pageBlocks.length, pageBlocks);
       
       let createdPageId: string;
       
