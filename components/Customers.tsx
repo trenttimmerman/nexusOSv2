@@ -46,6 +46,8 @@ export default function Customers({ siteId }: CustomersProps) {
   ]);
   const [newAddresses, setNewAddresses] = useState<Omit<CustomerAddress, 'id' | 'customer_id' | 'created_at' | 'updated_at'>[]>([]);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [selectedCustomers, setSelectedCustomers] = useState<Set<string>>(new Set());
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     loadCustomers();
@@ -296,6 +298,69 @@ export default function Customers({ siteId }: CustomersProps) {
     setNewAddresses(newAddresses.filter((_, i) => i !== index));
   }
 
+  function toggleSelectCustomer(customerId: string) {
+    const newSelected = new Set(selectedCustomers);
+    if (newSelected.has(customerId)) {
+      newSelected.delete(customerId);
+    } else {
+      newSelected.add(customerId);
+    }
+    setSelectedCustomers(newSelected);
+  }
+
+  function toggleSelectAll() {
+    if (selectedCustomers.size === filteredCustomers.length) {
+      setSelectedCustomers(new Set());
+    } else {
+      setSelectedCustomers(new Set(filteredCustomers.map(c => c.id)));
+    }
+  }
+
+  async function deleteSelectedCustomers() {
+    if (selectedCustomers.size === 0) return;
+
+    try {
+      // Delete in order: contacts, addresses, then customers
+      const customerIds = Array.from(selectedCustomers);
+
+      // Delete contacts
+      const { error: contactsError } = await supabase
+        .from('customer_contacts')
+        .delete()
+        .in('customer_id', customerIds);
+
+      if (contactsError) throw contactsError;
+
+      // Delete addresses
+      const { error: addressesError } = await supabase
+        .from('customer_addresses')
+        .delete()
+        .in('customer_id', customerIds);
+
+      if (addressesError) throw addressesError;
+
+      // Delete customers
+      const { error: customersError } = await supabase
+        .from('customers')
+        .delete()
+        .in('id', customerIds);
+
+      if (customersError) throw customersError;
+
+      // Clear states before reloading
+      setSelectedCustomers(new Set());
+      setShowDeleteConfirm(false);
+      setSelectedCustomer(null);
+      
+      // Reload customers and wait for it to complete
+      await loadCustomers();
+      
+      alert(`Successfully deleted ${customerIds.length} customer${customerIds.length > 1 ? 's' : ''}`);
+    } catch (error: any) {
+      alert('Error deleting customers: ' + error.message);
+    }
+  }
+
   function updateAddress(index: number, field: string, value: any) {
     const updated = [...newAddresses];
     updated[index] = { ...updated[index], [field]: value };
@@ -426,6 +491,30 @@ export default function Customers({ siteId }: CustomersProps) {
         </div>
       </div>
 
+      {/* Bulk Actions Toolbar */}
+      {selectedCustomers.size > 0 && (
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-blue-900">
+              {selectedCustomers.size} customer{selectedCustomers.size > 1 ? 's' : ''} selected
+            </span>
+            <button
+              onClick={() => setSelectedCustomers(new Set())}
+              className="text-sm text-blue-700 hover:text-blue-900 underline"
+            >
+              Clear selection
+            </button>
+          </div>
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            <Trash2 size={16} />
+            Delete Selected
+          </button>
+        </div>
+      )}
+
       {/* Customer Table */}
       {filteredCustomers.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
@@ -436,6 +525,14 @@ export default function Customers({ siteId }: CustomersProps) {
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="px-4 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    checked={selectedCustomers.size === filteredCustomers.length && filteredCustomers.length > 0}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  />
+                </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Type</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Customer</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Contact</th>
@@ -450,9 +547,16 @@ export default function Customers({ siteId }: CustomersProps) {
                 <React.Fragment key={customer.id}>
                   <tr 
                     className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
-                    onClick={() => toggleCustomerDetails(customer.id)}
                   >
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedCustomers.has(customer.id)}
+                        onChange={() => toggleSelectCustomer(customer.id)}
+                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                      />
+                    </td>
+                    <td className="px-4 py-3" onClick={() => toggleCustomerDetails(customer.id)}>
                       {customer.client_type === 'organization' ? (
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                           <Building2 size={12} className="mr-1" />
@@ -480,7 +584,7 @@ export default function Customers({ siteId }: CustomersProps) {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={() => toggleCustomerDetails(customer.id)}>
                       {customer.phone || customer.contacts?.find(c => c.is_primary)?.phone ? (
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Phone size={14} />
@@ -490,15 +594,15 @@ export default function Customers({ siteId }: CustomersProps) {
                         <span className="text-gray-400 text-sm">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={() => toggleCustomerDetails(customer.id)}>
                       <span className="text-gray-900 font-medium">{customer.order_count || 0}</span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={() => toggleCustomerDetails(customer.id)}>
                       <span className="text-gray-900 font-medium">
                         ${(customer.total_spent || 0).toFixed(2)}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={() => toggleCustomerDetails(customer.id)}>
                       <div className="flex gap-1 flex-wrap">
                         {customer.is_subscriber && (
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -513,7 +617,7 @@ export default function Customers({ siteId }: CustomersProps) {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={() => toggleCustomerDetails(customer.id)}>
                       {selectedCustomer === customer.id ? (
                         <ChevronUp size={18} className="text-gray-400" />
                       ) : (
@@ -525,7 +629,7 @@ export default function Customers({ siteId }: CustomersProps) {
                   {/* Expanded Details */}
                   {selectedCustomer === customer.id && (
                     <tr>
-                      <td colSpan={7} className="px-4 py-4 bg-gray-50">
+                      <td colSpan={8} className="px-4 py-4 bg-gray-50">
                         <div className="grid grid-cols-3 gap-6">
                           {/* Column 1: Customer Info */}
                           <div>
@@ -1055,6 +1159,43 @@ export default function Customers({ siteId }: CustomersProps) {
                   loadCustomers();
                 }}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <Trash2 size={24} className="text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Delete Customers</h3>
+                <p className="text-sm text-gray-500">This action cannot be undone</p>
+              </div>
+            </div>
+            
+            <p className="text-gray-700 mb-6">
+              Are you sure you want to delete <strong>{selectedCustomers.size}</strong> customer{selectedCustomers.size > 1 ? 's' : ''}? 
+              This will also delete all associated contacts, addresses, and order history.
+            </p>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteSelectedCustomers}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete {selectedCustomers.size} Customer{selectedCustomers.size > 1 ? 's' : ''}
+              </button>
             </div>
           </div>
         </div>
