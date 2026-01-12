@@ -145,9 +145,13 @@ export default function CustomerImport({ storeId, onComplete }: CustomerImportPr
     setImportId(importRecord.id);
 
     try {
+      // Filter out rows with validation errors (missing email)
+      const validRows = csvData.data.filter((row: any) => row.email);
+      const skippedCount = csvData.data.length - validRows.length;
+      
       // Process import
       const finalProgress = await processBatchImport(
-        csvData.data as ImportRow[],
+        validRows as ImportRow[],
         storeId,
         {
           duplicateStrategy,
@@ -400,6 +404,9 @@ export default function CustomerImport({ storeId, onComplete }: CustomerImportPr
               <AlertTriangle className="w-5 h-5 text-yellow-600" />
               <h3 className="font-semibold text-yellow-900">Duplicate Emails Found</h3>
             </div>
+            <p className="text-sm text-yellow-800 mb-3">
+              These will be handled according to your duplicate strategy in the next step.
+            </p>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {Array.from(duplicates.entries()).slice(0, 5).map(([email, rows]) => (
                 <div key={email} className="text-sm text-yellow-800">
@@ -427,6 +434,19 @@ export default function CustomerImport({ storeId, onComplete }: CustomerImportPr
             </p>
           </div>
         )}
+        
+        {/* Partial Success with Errors */}
+        {validationErrors.length > 0 && csvData?.data.length - validationErrors.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-blue-600" />
+              <h3 className="font-semibold text-blue-900">Partial Import Available</h3>
+            </div>
+            <p className="text-sm text-blue-800 mt-2">
+              {csvData?.data.length - validationErrors.length} rows can be imported. Rows with errors will be skipped automatically.
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="mt-6 flex justify-between items-center">
@@ -436,13 +456,19 @@ export default function CustomerImport({ storeId, onComplete }: CustomerImportPr
         >
           ← Back to Mapping
         </button>
-        <button
-          onClick={handleNextFromValidation}
-          disabled={validationErrors.length > 0}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Continue →
-        </button>
+        <div className="flex items-center gap-3">
+          {validationErrors.length > 0 && (
+            <span className="text-sm text-gray-600">
+              {validationErrors.length} rows will be skipped
+            </span>
+          )}
+          <button
+            onClick={handleNextFromValidation}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Continue →
+          </button>
+        </div>
       </div>
     </div>
   );
