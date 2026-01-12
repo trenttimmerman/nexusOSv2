@@ -12,10 +12,10 @@ create table if not exists categories (
 );
 
 -- Add index for parent_id lookups (for hierarchical queries)
-create index idx_categories_parent_id on categories(parent_id);
+create index if not exists idx_categories_parent_id on categories(parent_id);
 
 -- Add index for slug lookups
-create index idx_categories_slug on categories(slug);
+create index if not exists idx_categories_slug on categories(slug);
 
 -- Add trigger to auto-update updated_at
 create or replace function update_categories_updated_at()
@@ -26,6 +26,7 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists categories_updated_at on categories;
 create trigger categories_updated_at
   before update on categories
   for each row
@@ -35,7 +36,7 @@ create trigger categories_updated_at
 alter table products add column if not exists category_id text references categories(id) on delete set null;
 
 -- Create index for category_id lookups
-create index idx_products_category_id on products(category_id);
+create index if not exists idx_products_category_id on products(category_id);
 
 -- Note: We keep the old 'category' text column for now to allow gradual migration
 -- Once all products are migrated, we can drop it with:

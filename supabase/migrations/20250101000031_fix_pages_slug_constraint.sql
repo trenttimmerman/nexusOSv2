@@ -5,7 +5,8 @@
 -- Drop the global unique constraint
 ALTER TABLE pages DROP CONSTRAINT IF EXISTS pages_slug_key;
 
--- Add composite unique constraint (store_id + slug)
+-- Drop and recreate composite unique constraint (store_id + slug)
+ALTER TABLE pages DROP CONSTRAINT IF EXISTS pages_store_slug_unique;
 ALTER TABLE pages ADD CONSTRAINT pages_store_slug_unique UNIQUE (store_id, slug);
 
 -- Add comment explaining the change

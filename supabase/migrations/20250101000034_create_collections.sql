@@ -34,14 +34,15 @@ create table if not exists collection_products (
 );
 
 -- Add indexes
-create index idx_collections_store_id on collections(store_id);
-create index idx_collections_slug on collections(slug);
-create index idx_collections_type on collections(type);
-create index idx_collections_featured on collections(is_featured) where is_featured = true;
-create index idx_collection_products_collection_id on collection_products(collection_id);
-create index idx_collection_products_product_id on collection_products(product_id);
+create index if not exists idx_collections_store_id on collections(store_id);
+create index if not exists idx_collections_slug on collections(slug);
+create index if not exists idx_collections_type on collections(type);
+create index if not exists idx_collections_featured on collections(is_featured) where is_featured = true;
+create index if not exists idx_collection_products_collection_id on collection_products(collection_id);
+create index if not exists idx_collection_products_product_id on collection_products(product_id);
 
 -- Add unique constraint for slug per store
+drop index if exists collections_slug_store_id_key;
 create unique index collections_slug_store_id_key on collections(slug, store_id);
 
 -- Add trigger to auto-update updated_at
@@ -53,6 +54,7 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists collections_updated_at on collections;
 create trigger collections_updated_at
   before update on collections
   for each row
