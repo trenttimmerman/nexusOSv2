@@ -211,24 +211,50 @@ export default function ShopifyMigration({ storeId, onComplete }: ShopifyMigrati
       // 3. Save blocks to database
       setCurrentTask('Saving blocks to database...');
       
-      // Create a new page for the migrated content
-      const pageId = `migrated_${Date.now()}`;
-      const { error: pageError } = await supabase.from('pages').insert([{
-        id: pageId,
-        store_id: storeId,
-        title: 'Migrated Homepage',
-        slug: 'migrated-home',
-        type: 'custom',
-        blocks: mappedBlocks.map(block => ({
-          id: `block_${Math.random().toString(36).substr(2, 9)}`,
-          type: block.type,
-          variant: block.variant,
-          data: block.data
-        }))
-      }]);
+      // Check if migrated page already exists
+      const migratedSlug = 'migrated-home';
+      const { data: existingPage } = await supabase
+        .from('pages')
+        .select('id')
+        .eq('store_id', storeId)
+        .eq('slug', migratedSlug)
+        .single();
       
-      if (pageError) {
-        throw new Error(`Failed to save page: ${pageError.message}`);
+      const pageBlocks = mappedBlocks.map(block => ({
+        id: `block_${Math.random().toString(36).substr(2, 9)}`,
+        type: block.type,
+        variant: block.variant,
+        data: block.data
+      }));
+      
+      if (existingPage) {
+        // Update existing page
+        const { error: pageError } = await supabase
+          .from('pages')
+          .update({
+            title: 'Migrated Homepage',
+            blocks: pageBlocks
+          })
+          .eq('id', existingPage.id);
+        
+        if (pageError) {
+          throw new Error(`Failed to update page: ${pageError.message}`);
+        }
+      } else {
+        // Create new page
+        const pageId = `migrated_${Date.now()}`;
+        const { error: pageError } = await supabase.from('pages').insert([{
+          id: pageId,
+          store_id: storeId,
+          title: 'Migrated Homepage',
+          slug: migratedSlug,
+          type: 'custom',
+          blocks: pageBlocks
+        }]);
+        
+        if (pageError) {
+          throw new Error(`Failed to save page: ${pageError.message}`);
+        }
       }
       
       setProgress(70);
