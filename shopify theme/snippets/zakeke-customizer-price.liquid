@@ -1,0 +1,50 @@
+<script>
+  window.zakekeProductAdvancedProcessing = true;
+  
+  {% if product %}
+  window.zakekePricingData = {
+    variantId: {{ product.selected_or_first_available_variant.id | json }},
+    cart: {{ cart | json }},
+    product: {{ product | json }}
+  };
+  {% endif %}
+
+  window.zakekeShopLocales = [
+    {% for locale in shop.published_locales %}
+    {
+      iso_code: {{ locale.iso_code | json }},
+      root_url: {{ locale.root_url | json }},
+      primary: {{ locale.primary | json }}
+    },
+    {% endfor %}
+  ];
+</script>
+
+<script>
+      function zakekePostprocessProperties(props){
+        if (props.customization) {
+    		props._customization = props.customization;
+    		delete props.customization;
+    	}
+        if (props.Preview) {
+          delete props.Preview;
+        }
+        return props;
+      }
+      
+      function zakekeBeforeAddToCart(designID) {
+        return new Promise(() => {
+          fetch('/apps/customizer/preview/' + designID).then(res => res.blob()).then(previewImg => {
+            const form = document.getElementById('zakeke-addtocart');
+            const body = new FormData(form);
+            body.set('properties[Preview]', previewImg, 'Preview.png');
+            return fetch(form.action, {
+              method: 'POST',
+              body: body
+            }).then(() => {
+              window.location.href = '/cart';
+            });
+          });
+        });
+      }
+</script>

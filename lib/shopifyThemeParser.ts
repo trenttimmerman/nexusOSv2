@@ -58,11 +58,19 @@ export async function extractShopifyTheme(file: File): Promise<ShopifyThemeStruc
 
     rawPaths.push(relativePath);
 
-    // Normalize path (remove leading theme folder if present)
+    // Normalize path - remove theme name wrapper if present
+    // Shopify themes might be wrapped like: "themename/sections/header.liquid"
+    // We want to detect this and strip only the theme wrapper
     const pathParts = relativePath.split('/');
-    const normalizedPath = pathParts.length > 1 && !pathParts[0].includes('.') 
-      ? pathParts.slice(1).join('/')
-      : relativePath;
+    let normalizedPath = relativePath;
+    
+    // If there are multiple parts and first part doesn't look like a theme folder
+    // (i.e., it's not config, sections, snippets, templates, layout, assets, locales)
+    const themeFolders = ['config', 'sections', 'snippets', 'templates', 'layout', 'assets', 'locales'];
+    if (pathParts.length > 1 && !themeFolders.includes(pathParts[0])) {
+      // Strip the first part (theme name wrapper)
+      normalizedPath = pathParts.slice(1).join('/');
+    }
 
     allPaths.push(normalizedPath);
     filePromises.push(processFile(normalizedPath, zipEntry, structure));
