@@ -37,6 +37,11 @@ export function detectSectionType(filename: string, section: ParsedSection): str
     return 'footer';
   }
   
+  // Announcement bar
+  if (name.includes('announcement')) {
+    return 'announcement';
+  }
+  
   // Hero/Banner detection
   if (
     name.includes('hero') ||
@@ -53,29 +58,39 @@ export function detectSectionType(filename: string, section: ParsedSection): str
     name.includes('featured-collection') ||
     name.includes('featured_collection') ||
     name.includes('collection-list') ||
+    name.includes('collection_list') ||
     name.includes('product-grid') ||
-    name.includes('product_grid')
+    name.includes('product_grid') ||
+    name.includes('main-collection')
   ) {
     return 'collection';
   }
   
-  // Featured product
-  if (name.includes('featured-product') || name.includes('featured_product')) {
+  // Featured product or main product
+  if (name.includes('featured-product') || name.includes('featured_product') || name.includes('main-product')) {
     return 'featured-product';
   }
   
-  // Multi-column / features
+  // Blog
+  if (name.includes('blog') || name.includes('article')) {
+    return 'blog';
+  }
+  
+  // Multi-column / features / image-with-text
   if (
     name.includes('multicolumn') ||
     name.includes('multi-column') ||
+    name.includes('multirow') ||
     name.includes('features') ||
-    name.includes('rich-text')
+    name.includes('rich-text') ||
+    name.includes('image-with-text') ||
+    name.includes('collapsible')
   ) {
     return 'layout';
   }
   
-  // Contact form
-  if (name.includes('contact') || name.includes('newsletter')) {
+  // Contact form / newsletter
+  if (name.includes('contact') || name.includes('newsletter') || name.includes('email-signup')) {
     return 'contact';
   }
   
@@ -84,9 +99,24 @@ export function detectSectionType(filename: string, section: ParsedSection): str
     return 'video';
   }
   
-  // Gallery/images
+  // Gallery/images/collage
   if (name.includes('gallery') || name.includes('collage')) {
     return 'gallery';
+  }
+  
+  // Cart sections - skip these as they're functional, not content
+  if (name.includes('cart') || name.includes('quick-order')) {
+    return 'skip';
+  }
+  
+  // Main template sections - skip these as they're page templates
+  if (name.startsWith('main-') && !name.includes('product') && !name.includes('collection') && !name.includes('blog')) {
+    return 'skip';
+  }
+  
+  // Apps, pickup, predictive search - skip functional sections
+  if (name.includes('apps') || name.includes('pickup') || name.includes('predictive') || name.includes('quick-order')) {
+    return 'skip';
   }
   
   return 'custom';
@@ -103,6 +133,17 @@ export function mapSectionToBlock(
   const sectionType = detectSectionType(filename, section);
   const schema = section.schema;
   const warnings: string[] = [];
+  
+  // Skip functional sections
+  if (sectionType === 'skip') {
+    return {
+      type: 'skip',
+      variant: 'skip',
+      data: {},
+      order: -1,
+      warnings: [`Skipped functional section: ${filename}`]
+    };
+  }
   
   // Map based on section type
   switch (sectionType) {
@@ -129,6 +170,15 @@ export function mapSectionToBlock(
     
     case 'gallery':
       return mapGallerySection(schema, order, warnings);
+    
+    case 'announcement':
+      return mapAnnouncementSection(schema, order, warnings);
+    
+    case 'blog':
+      return mapBlogSection(schema, order, warnings);
+    
+    case 'video':
+      return mapVideoSection(schema, order, warnings);
     
     default:
       warnings.push(`Unknown section type: ${filename}. Creating generic block.`);
@@ -329,6 +379,62 @@ function mapGallerySection(schema: any, order: number, warnings: string[]): Mapp
   };
 }
 
+function mapAnnouncementSection(schema: any, order: number, warnings: string[]): MappedBlock {
+  const settings = extractSettings(schema);
+  
+  return {
+    type: 'system-promo-banner',
+    variant: 'slide',
+    data: {
+      text: settings.text || settings.announcement_text || 'Special Offer!',
+      backgroundColor: settings.background_color || '#000000',
+      textColor: settings.text_color || '#ffffff',
+      linkUrl: settings.link || '',
+      linkText: settings.link_text || ''
+    },
+    order,
+    warnings
+  };
+}
+
+function mapBlogSection(schema: any, order: number, warnings: string[]): MappedBlock {
+  const settings = extractSettings(schema);
+  
+  return {
+    type: 'system-blog',
+    variant: 'grid',
+    data: {
+      heading: settings.heading || settings.title || 'Latest Posts',
+      subheading: settings.subheading || '',
+      blogHandle: settings.blog || '',
+      postsToShow: parseInt(settings.post_limit || '3'),
+      showImage: settings.show_image !== false,
+      showDate: settings.show_date !== false,
+      showAuthor: settings.show_author !== false
+    },
+    order,
+    warnings
+  };
+}
+
+function mapVideoSection(schema: any, order: number, warnings: string[]): MappedBlock {
+  const settings = extractSettings(schema);
+  
+  return {
+    type: 'system-video',
+    variant: 'embed',
+    data: {
+      heading: settings.heading || settings.title || '',
+      videoUrl: settings.video_url || settings.url || '',
+      coverImage: settings.cover_image || '',
+      autoplay: settings.enable_video_looping !== false,
+      fullWidth: settings.full_width === true
+    },
+    order,
+    warnings
+  };
+}
+
 /**
  * Extract settings from schema
  */
@@ -408,7 +514,10 @@ export function generateBlockMapping(sections: Record<string, ParsedSection>): M
   prioritySections.forEach(priority => {
     Object.entries(sections).forEach(([filename, section]) => {
       if (filename.toLowerCase().includes(priority) && !processedFiles.has(filename)) {
-        blocks.push(mapSectionToBlock(filename, section, order++));
+        const block = mapSectionToBlock(filename, section, order++);
+        if (block.type !== 'skip') {
+          blocks.push(block);
+        }
         processedFiles.add(filename);
       }
     });
@@ -418,7 +527,10 @@ export function generateBlockMapping(sections: Record<string, ParsedSection>): M
   Object.entries(sections).forEach(([filename, section]) => {
     const isFooter = footerSections.some(f => filename.toLowerCase().includes(f));
     if (!processedFiles.has(filename) && !isFooter) {
-      blocks.push(mapSectionToBlock(filename, section, order++));
+      const block = mapSectionToBlock(filename, section, order++);
+      if (block.type !== 'skip') {
+        blocks.push(block);
+      }
       processedFiles.add(filename);
     }
   });
@@ -426,7 +538,10 @@ export function generateBlockMapping(sections: Record<string, ParsedSection>): M
   // 3. Process footer sections last
   Object.entries(sections).forEach(([filename, section]) => {
     if (!processedFiles.has(filename)) {
-      blocks.push(mapSectionToBlock(filename, section, order++));
+      const block = mapSectionToBlock(filename, section, order++);
+      if (block.type !== 'skip') {
+        blocks.push(block);
+      }
       processedFiles.add(filename);
     }
   });
