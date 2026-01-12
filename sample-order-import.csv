@@ -1,0 +1,6 @@
+Name,Email,Financial Status,Fulfillment Status,Currency,Subtotal,Shipping,Taxes,Total,Lineitem quantity,Lineitem name,Lineitem price,Lineitem sku,Created at,Notes,Tags
+#1001,customer@example.com,paid,fulfilled,USD,49.99,5.00,4.50,59.49,1,Premium Widget,49.99,WIDGET-001,2024-01-15,First order,vip
+#1002,jane@example.com,paid,unfulfilled,USD,89.99,7.50,8.10,105.59,2,Deluxe Gadget,44.99,GADGET-002,2024-01-16,Rush delivery requested,priority
+#1003,bob@example.com,pending,unfulfilled,USD,25.00,3.00,2.25,30.25,1,Basic Tool,25.00,TOOL-003,2024-01-17,,standard
+#1004,alice@example.com,paid,fulfilled,USD,149.99,0.00,13.50,163.49,3,Pro Package,49.99,PACKAGE-004,2024-01-18,Gift wrapped,gift;vip
+#1005,charlie@example.com,refunded,unfulfilled,USD,75.00,5.00,6.75,86.75,1,Special Edition,75.00,SPECIAL-005,2024-01-19,Customer requested refund,refund
