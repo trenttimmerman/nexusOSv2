@@ -3,8 +3,9 @@ import { supabase } from '../lib/supabaseClient';
 import { Customer, CustomerContact, CustomerAddress, Order } from '../types';
 import { 
   Mail, Phone, Calendar, ShoppingBag, Download, Plus, Search, X, 
-  ChevronDown, ChevronUp, Building2, User, MapPin, Edit2, Trash2
+  ChevronDown, ChevronUp, Building2, User, MapPin, Edit2, Trash2, Upload
 } from 'lucide-react';
+import CustomerImport from './CustomerImport';
 
 interface CustomersProps {
   siteId: string;
@@ -44,6 +45,7 @@ export default function Customers({ siteId }: CustomersProps) {
     { full_name: '', role: 'primary', email: '', phone: '', is_primary: true }
   ]);
   const [newAddresses, setNewAddresses] = useState<Omit<CustomerAddress, 'id' | 'customer_id' | 'created_at' | 'updated_at'>[]>([]);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   useEffect(() => {
     loadCustomers();
@@ -370,6 +372,13 @@ export default function Customers({ siteId }: CustomersProps) {
           >
             <Download size={18} />
             Export CSV
+          </button>
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+          >
+            <Upload size={18} />
+            Import
           </button>
           <button
             onClick={() => setShowAddModal(true)}
@@ -1020,6 +1029,32 @@ export default function Customers({ siteId }: CustomersProps) {
               >
                 Add Customer
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-7xl h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">Import Customers</h2>
+              <button
+                onClick={() => setShowImportModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto">
+              <CustomerImport
+                storeId={siteId} 
+                onComplete={() => {
+                  setShowImportModal(false);
+                  loadCustomers();
+                }}
+              />
             </div>
           </div>
         </div>

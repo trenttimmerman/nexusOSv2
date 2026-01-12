@@ -1,0 +1,6 @@
+First Name,Last Name,Email,Phone,Company,Address1,Address2,City,Province,Province Code,Country,Country Code,Zip,Accepts Email Marketing,Accepts SMS Marketing,Tags,Note,Tax Exempt
+John,Doe,john@example.com,555-0100,,123 Main St,Apt 4B,Toronto,Ontario,ON,Canada,CA,M5H 2N2,yes,no,vip,Preferred customer,no
+Jane,Smith,jane@acmecorp.com,555-0101,ACME Corporation,456 Business Ave,Suite 200,Vancouver,British Columbia,BC,Canada,CA,V6B 1A1,yes,yes,"wholesale,b2b",Large volume purchaser,yes
+Bob,Johnson,bob@example.com,555-0102,,789 Oak St,,Calgary,Alberta,AB,Canada,CA,T2P 1J9,no,no,retail,Regular customer,no
+Alice,Williams,alice@techstart.io,555-0103,TechStart Inc,321 Innovation Dr,Building 3,Montreal,Quebec,QC,Canada,CA,H3B 1Y3,yes,no,"b2b,tech,startup",Startup customer with potential,yes
+Mike,Brown,mike@example.com,555-0104,,654 Elm Street,Unit 12,Ottawa,Ontario,ON,Canada,CA,K1P 5E7,yes,yes,"newsletter,promo",Signed up via newsletter,no
