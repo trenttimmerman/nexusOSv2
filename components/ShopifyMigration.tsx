@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabaseClient';
 interface ShopifyMigrationProps {
   storeId: string;
   onComplete?: () => void;
+  onNavigateToPage?: (pageId: string) => void;
 }
 
 
@@ -34,13 +35,14 @@ interface AnalysisResult {
   };
 }
 
-export default function ShopifyMigration({ storeId, onComplete }: ShopifyMigrationProps) {
+export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage }: ShopifyMigrationProps) {
   const [step, setStep] = useState<MigrationStep>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [progress, setProgress] = useState(0);
   const [currentTask, setCurrentTask] = useState('');
   const [migrationId, setMigrationId] = useState<string | null>(null);
+  const [migratedPageId, setMigratedPageId] = useState<string | null>(null);
   const [mappedBlocks, setMappedBlocks] = useState<MappedBlock[]>([]);
   const [uploadProgress, setUploadProgress] = useState<AssetUploadProgress | null>(null);
 
@@ -227,6 +229,8 @@ export default function ShopifyMigration({ storeId, onComplete }: ShopifyMigrati
         data: block.data
       }));
       
+      let createdPageId: string;
+      
       if (existingPage) {
         // Update existing page
         const { error: pageError } = await supabase
@@ -240,6 +244,7 @@ export default function ShopifyMigration({ storeId, onComplete }: ShopifyMigrati
         if (pageError) {
           throw new Error(`Failed to update page: ${pageError.message}`);
         }
+        createdPageId = existingPage.id;
       } else {
         // Create new page
         const pageId = `migrated_${Date.now()}`;
@@ -255,7 +260,11 @@ export default function ShopifyMigration({ storeId, onComplete }: ShopifyMigrati
         if (pageError) {
           throw new Error(`Failed to save page: ${pageError.message}`);
         }
+        createdPageId = pageId;
       }
+      
+      // Store the page ID for navigation
+      setMigratedPageId(createdPageId);
       
       setProgress(70);
       
@@ -689,7 +698,13 @@ export default function ShopifyMigration({ storeId, onComplete }: ShopifyMigrati
               Migrate Another Theme
             </button>
             <button
-              onClick={onComplete}
+              onClick={() => {
+                if (migratedPageId && onNavigateToPage) {
+                  onNavigateToPage(migratedPageId);
+                } else if (onComplete) {
+                  onComplete();
+                }
+              }}
               className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center gap-2"
             >
               <Eye size={18} />

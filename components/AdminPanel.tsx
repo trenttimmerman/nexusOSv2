@@ -13446,8 +13446,11 @@ Return ONLY the JSON object, no markdown.`;
         return (
           <ShopifyMigration 
             storeId={storeId || ''} 
+            onNavigateToPage={(pageId) => {
+              onSetActivePage(pageId);
+              onTabChange(AdminTab.DESIGN);
+            }}
             onComplete={() => {
-              // Optionally refresh data or show success message
               onTabChange(AdminTab.DASHBOARD);
             }} 
           />
