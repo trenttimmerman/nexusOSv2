@@ -170,8 +170,14 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
       console.log('[Migration] Sections available:', Object.keys(analysis.theme.files.sections).length);
       console.log('[Migration] Section files:', Object.keys(analysis.theme.files.sections));
       
+      // Parse sections from strings to ParsedSection objects
+      const parsedSections: Record<string, any> = {};
+      Object.entries(analysis.theme.files.sections).forEach(([filename, liquidContent]) => {
+        parsedSections[filename] = parseLiquidSection(liquidContent);
+      });
+      
       // Generate block mappings
-      let blocks = generateBlockMapping(analysis.theme.files.sections);
+      let blocks = generateBlockMapping(parsedSections);
       console.log('[Migration] Generated blocks:', blocks.length, blocks);
       
       // If no blocks generated, create default blocks
