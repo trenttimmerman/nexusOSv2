@@ -262,9 +262,9 @@ export default function CustomerImport({ storeId, onComplete }: CustomerImportPr
                     }
                     setFieldMapping(newMapping);
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="">Skip this field</option>
+                  <option value="" className="text-gray-900">Skip this field</option>
                   <optgroup label="Customer">
                     <option value="email">Email *</option>
                     <option value="first_name">First Name</option>
