@@ -206,9 +206,9 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
       setMappedBlocks(blocks);
       setProgress(100);
       
-      // Auto-proceed to importing after brief delay
+      // Auto-proceed to importing - pass blocks directly to avoid state timing issues
       setTimeout(() => {
-        handleStartImport();
+        handleStartImport(blocks);
       }, 1500);
       
     } catch (error: any) {
@@ -216,8 +216,13 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
     }
   };
   
-  const handleStartImport = async () => {
+  const handleStartImport = async (blocksToImport?: MappedBlock[]) => {
     if (!analysis || !migrationId) return;
+    
+    // Use passed blocks or fall back to state
+    const blocksToSave = blocksToImport || mappedBlocks;
+    
+    console.log('[Migration] Starting import with blocks:', blocksToSave.length);
     
     try {
       setStep('importing');
@@ -247,7 +252,7 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
       // 3. Save blocks to database
       setCurrentTask('Saving blocks to database...');
       
-      console.log('[Migration] Saving blocks:', mappedBlocks.length);
+      console.log('[Migration] Saving blocks:', blocksToSave.length);
       
       // Check if migrated page already exists
       const migratedSlug = 'migrated-home';
@@ -256,9 +261,9 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
         .select('id')
         .eq('store_id', storeId)
         .eq('slug', migratedSlug)
-        .single();
+        .maybeSingle();
       
-      const pageBlocks = mappedBlocks.map(block => ({
+      const pageBlocks = blocksToSave.map(block => ({
         id: `block_${Math.random().toString(36).substr(2, 9)}`,
         type: block.type,
         variant: block.variant,
