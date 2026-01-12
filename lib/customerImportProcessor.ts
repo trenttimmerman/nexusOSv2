@@ -81,10 +81,17 @@ export async function processImportRow(
   supabase: any
 ): Promise<ImportResult> {
   try {
-    // Step 1: Auto-detect B2B if enabled
-    if (options.autoDetectB2B && row.company_name && !row.client_type) {
-      row.client_type = 'organization';
-    } else if (!row.client_type) {
+    // Step 1: Determine account type (explicit mapping takes priority)
+    if (!row.client_type) {
+      // Auto-detect B2B if enabled and company name exists
+      if (options.autoDetectB2B && row.company_name) {
+        row.client_type = 'organization';
+      } else {
+        row.client_type = 'individual';
+      }
+    }
+    // Ensure valid client_type value
+    if (row.client_type !== 'organization' && row.client_type !== 'individual') {
       row.client_type = 'individual';
     }
 

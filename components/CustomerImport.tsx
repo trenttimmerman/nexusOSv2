@@ -74,6 +74,14 @@ export default function CustomerImport({ storeId, onComplete }: CustomerImportPr
           transformed[targetField] = value.split(',').map((t: string) => t.trim());
         } else if (targetField === 'email_marketing' || targetField === 'tax_exempt') {
           transformed[targetField] = value?.toLowerCase() === 'yes' || value?.toLowerCase() === 'true';
+        } else if (targetField === 'client_type') {
+          // Normalize client_type values
+          const normalized = value?.toLowerCase().trim();
+          if (normalized === 'organization' || normalized === 'business' || normalized === 'company' || normalized === 'b2b') {
+            transformed[targetField] = 'organization';
+          } else if (normalized === 'individual' || normalized === 'consumer' || normalized === 'personal' || normalized === 'b2c') {
+            transformed[targetField] = 'individual';
+          }
         } else if (value !== undefined && value !== null && value !== '') {
           transformed[targetField] = value;
         }
@@ -271,6 +279,7 @@ export default function CustomerImport({ storeId, onComplete }: CustomerImportPr
                     <option value="last_name">Last Name</option>
                     <option value="phone">Phone</option>
                     <option value="company_name">Company Name</option>
+                    <option value="client_type">Account Type (organization/individual)</option>
                     <option value="website">Website</option>
                     <option value="notes">Notes / Internal Notes</option>
                     <option value="tags">Tags</option>
@@ -528,10 +537,26 @@ export default function CustomerImport({ storeId, onComplete }: CustomerImportPr
               className="w-4 h-4 text-blue-600 rounded"
             />
             <div>
-              <div className="font-medium text-gray-900">Auto-detect B2B</div>
-              <div className="text-sm text-gray-600">Mark customers with company names as organizations</div>
+              <div className="font-medium text-gray-900">Auto-detect Organizations</div>
+              <div className="text-sm text-gray-600">
+                Automatically set account type to "organization" when company name is present
+                <span className="block text-xs text-gray-500 mt-1">
+                  (Overridden by explicit Account Type field if mapped)
+                </span>
+              </div>
             </div>
           </label>
+        </div>
+
+        {/* Info Box */}
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h4 className="font-medium text-blue-900 mb-2 text-sm">Account Type Detection</h4>
+          <ul className="text-xs text-blue-800 space-y-1">
+            <li>• <strong>Explicit mapping:</strong> If you mapped an "Account Type" field, those values will be used directly</li>
+            <li>• <strong>Auto-detect (if enabled):</strong> Customers with company names become "organization" accounts</li>
+            <li>• <strong>Default:</strong> Customers without company names are "individual" accounts</li>
+            <li>• <strong>Accepted values:</strong> organization, business, company, b2b → Organization | individual, consumer, personal, b2c → Individual</li>
+          </ul>
         </div>
       </div>
 

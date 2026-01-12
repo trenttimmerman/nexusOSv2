@@ -122,6 +122,7 @@ export function suggestMapping(headers: string[]): Map<string, string> {
     'last_name': ['last name', 'lastname', 'lname', 'surname', 'family name', 'last', 'contact_last_name'],
     'phone': ['phone', 'telephone', 'mobile', 'phone number', 'cell', 'tel', 'contact_phone'],
     'company_name': ['company', 'organization', 'business name', 'org', 'company name'],
+    'client_type': ['account type', 'customer type', 'client type', 'type', 'account_type', 'customer_type'],
     'website': ['website', 'url', 'web', 'site'],
     'notes': ['note', 'notes', 'comments', 'description', 'internal_notes', 'internal notes'],
     'tax_number': ['tax id', 'tax_id', 'tax number', 'resale number', 'resale_number', 'vat', 'gst'],
