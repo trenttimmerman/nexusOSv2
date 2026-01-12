@@ -322,6 +322,7 @@ export default function Customers({ siteId }: CustomersProps) {
     try {
       // Delete in order: contacts, addresses, then customers
       const customerIds = Array.from(selectedCustomers);
+      console.log('Deleting customers:', customerIds);
 
       // Delete contacts
       const { error: contactsError } = await supabase
@@ -329,7 +330,10 @@ export default function Customers({ siteId }: CustomersProps) {
         .delete()
         .in('customer_id', customerIds);
 
-      if (contactsError) throw contactsError;
+      if (contactsError) {
+        console.error('Error deleting contacts:', contactsError);
+        throw contactsError;
+      }
 
       // Delete addresses
       const { error: addressesError } = await supabase
@@ -337,15 +341,23 @@ export default function Customers({ siteId }: CustomersProps) {
         .delete()
         .in('customer_id', customerIds);
 
-      if (addressesError) throw addressesError;
+      if (addressesError) {
+        console.error('Error deleting addresses:', addressesError);
+        throw addressesError;
+      }
 
       // Delete customers
-      const { error: customersError } = await supabase
+      const { error: customersError, count } = await supabase
         .from('customers')
         .delete()
         .in('id', customerIds);
 
-      if (customersError) throw customersError;
+      if (customersError) {
+        console.error('Error deleting customers:', customersError);
+        throw customersError;
+      }
+
+      console.log('Successfully deleted customers, count:', count);
 
       // Clear states before reloading
       setSelectedCustomers(new Set());
@@ -357,7 +369,8 @@ export default function Customers({ siteId }: CustomersProps) {
       
       alert(`Successfully deleted ${customerIds.length} customer${customerIds.length > 1 ? 's' : ''}`);
     } catch (error: any) {
-      alert('Error deleting customers: ' + error.message);
+      console.error('Delete failed:', error);
+      alert('Error deleting customers: ' + (error.message || JSON.stringify(error)));
     }
   }
 
