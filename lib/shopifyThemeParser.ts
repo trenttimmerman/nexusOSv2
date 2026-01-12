@@ -1,4 +1,6 @@
 import JSZip from 'jszip';
+import { parseSettingsData, ShopifySettings } from './shopifySettingsParser';
+import { parseAllTemplates, ParsedTemplate } from './shopifyTemplateParser';
 
 export interface ShopifyThemeStructure {
   themeName: string;
@@ -22,6 +24,8 @@ export interface ShopifyThemeStructure {
     locales: Record<string, any>;
   };
   detectedTheme: 'dawn' | 'debut' | 'brooklyn' | 'narrative' | 'supply' | 'venture' | 'boundless' | 'unknown';
+  settings?: ShopifySettings; // Parsed theme settings
+  parsedTemplates?: Record<string, ParsedTemplate>; // Parsed page templates
 }
 
 export async function extractShopifyTheme(file: File): Promise<ShopifyThemeStructure> {
@@ -88,6 +92,24 @@ export async function extractShopifyTheme(file: File): Promise<ShopifyThemeStruc
 
   // Detect theme type
   structure.detectedTheme = detectThemeType(structure);
+  
+  // Parse settings data if available
+  if (structure.files.config.settings_data) {
+    try {
+      structure.settings = parseSettingsData(structure.files.config.settings_data);
+      console.log('[ThemeParser] Parsed settings:', structure.settings);
+    } catch (error) {
+      console.error('[ThemeParser] Failed to parse settings_data:', error);
+    }
+  }
+  
+  // Parse all template files
+  try {
+    structure.parsedTemplates = parseAllTemplates(structure.files.templates);
+    console.log('[ThemeParser] Parsed templates:', Object.keys(structure.parsedTemplates));
+  } catch (error) {
+    console.error('[ThemeParser] Failed to parse templates:', error);
+  }
   
   // Extract theme version from settings if available
   if (structure.files.config.settings_data?.current) {

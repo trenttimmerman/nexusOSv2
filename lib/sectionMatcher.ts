@@ -3,6 +3,7 @@
  */
 
 import { ParsedSection } from './shopifyThemeParser';
+import { TemplateSection } from './shopifyTemplateParser';
 
 export interface SectionMapping {
   shopifySection: string;
@@ -18,6 +19,34 @@ export interface MappedBlock {
   data: Record<string, any>;
   order: number;
   warnings: string[];
+}
+
+/**
+ * Generate block mapping using actual template data
+ */
+export function generateBlockMappingFromTemplate(
+  templateSections: TemplateSection[],
+  liquidSections: Record<string, ParsedSection>
+): MappedBlock[] {
+  const blocks: MappedBlock[] = [];
+  
+  templateSections.forEach((templateSection, index) => {
+    const liquidSection = liquidSections[`${templateSection.type}.liquid`];
+    
+    // Map section using both template data (real values) and liquid (schema)
+    const block = mapSectionWithTemplateData(
+      templateSection.type,
+      templateSection,
+      liquidSection,
+      index
+    );
+    
+    if (block.type !== 'skip') {
+      blocks.push(block);
+    }
+  });
+  
+  return blocks;
 }
 
 /**
@@ -123,7 +152,193 @@ export function detectSectionType(filename: string, section: ParsedSection): str
 }
 
 /**
- * Map Shopify section to nexusOS block
+ * Map section using template data (real configured values)
+ */
+export function mapSectionWithTemplateData(
+  sectionType: string,
+  templateSection: TemplateSection,
+  liquidSection: ParsedSection | undefined,
+  order: number
+): MappedBlock {
+  const warnings: string[] = [];
+  const settings = templateSection.settings;
+  const blocks = templateSection.blocks || [];
+  
+  const detectedType = detectSectionType(sectionType, liquidSection || { liquidContent: '' });
+  
+  // Skip functional sections
+  if (detectedType === 'skip') {
+    return {
+      type: 'skip',
+      variant: 'skip',
+      data: {},
+      order: -1,
+      warnings: [`Skipped functional section: ${sectionType}`]
+    };
+  }
+  
+  // Map based on detected type
+  switch (detectedType) {
+    case 'header':
+      return {
+        type: 'system-header',
+        variant: 'minimal',
+        data: {
+          logoText: settings.logo_text || '',
+          showSearch: true,
+          showCart: true,
+          sticky: true
+        },
+        order,
+        warnings
+      };
+    
+    case 'footer':
+      return {
+        type: 'system-footer',
+        variant: 'standard',
+        data: {
+          backgroundColor: settings.background_color || '#000000',
+          textColor: settings.text_color || '#ffffff'
+        },
+        order,
+        warnings
+      };
+    
+    case 'announcement':
+      const announcementBlock = blocks.find(b => b.type === 'heading' || b.type === 'text');
+      return {
+        type: 'system-promo-banner',
+        variant: 'slide',
+        data: {
+          text: announcementBlock?.settings.heading || announcementBlock?.settings.text || 'Special Offer!',
+          backgroundColor: settings.color_scheme || '#000000',
+          textColor: '#ffffff',
+          linkUrl: announcementBlock?.settings.link || '',
+          linkText: announcementBlock?.settings.link_text || ''
+        },
+        order,
+        warnings
+      };
+    
+    case 'hero':
+      const heroHeading = blocks.find(b => b.type === 'heading');
+      const heroText = blocks.find(b => b.type === 'text');
+      const heroButton = blocks.find(b => b.type === 'buttons' || b.type === 'button');
+      
+      return {
+        type: 'system-hero',
+        variant: settings.desktop_content_position?.includes('center') ? 'centered' : 'split',
+        data: {
+          heading: heroHeading?.settings.heading || 'Welcome',
+          subheading: heroText?.settings.text?.replace(/<[^>]*>/g, '') || '',
+          buttonText: heroButton?.settings.button_label || heroButton?.settings.button_label_1 || 'Shop Now',
+          buttonLink: heroButton?.settings.button_link || heroButton?.settings.button_link_1 || '/',
+          backgroundImage: settings.image || '',
+          overlayOpacity: (settings.image_overlay_opacity || 40) / 100,
+          textAlign: settings.desktop_content_alignment || 'left',
+          textColor: '#ffffff',
+          showButton: !!heroButton && !heroButton.disabled
+        },
+        order,
+        warnings
+      };
+    
+    case 'collection':
+      return {
+        type: 'system-collection',
+        variant: 'featured-collection',
+        data: {
+          heading: settings.title || settings.heading || 'Featured Products',
+          subheading: settings.description || '',
+          collectionId: settings.collection || '',
+          productsToShow: parseInt(settings.products_to_show || '4'),
+          columns: parseInt(settings.columns_desktop || '4'),
+          showViewAll: settings.show_view_all !== false
+        },
+        order,
+        warnings
+      };
+    
+    case 'layout':
+      // Handle multirow/multicolumn sections with actual content
+      const layoutBlocks = blocks.map(block => ({
+        heading: block.settings.heading || block.settings.title || '',
+        text: block.settings.text?.replace(/<[^>]*>/g, '') || '',
+        image: block.settings.image || '',
+        buttonLabel: block.settings.button_label || '',
+        buttonLink: block.settings.button_link || ''
+      }));
+      
+      return {
+        type: 'system-layout',
+        variant: sectionType.includes('multicolumn') ? 'columns' : 'rows',
+        data: {
+          heading: settings.title || '',
+          columns: parseInt(settings.columns_desktop || '3'),
+          items: layoutBlocks
+        },
+        order,
+        warnings
+      };
+    
+    case 'contact':
+      return {
+        type: 'system-contact',
+        variant: 'form',
+        data: {
+          heading: settings.heading || 'Get in Touch',
+          subheading: settings.subheading || ''
+        },
+        order,
+        warnings
+      };
+    
+    case 'blog':
+      return {
+        type: 'system-blog',
+        variant: 'grid',
+        data: {
+          heading: settings.heading || settings.title || 'Latest Posts',
+          blogHandle: settings.blog || '',
+          postsToShow: parseInt(settings.post_limit || '3'),
+          showImage: settings.show_image !== false,
+          showDate: settings.show_date !== false
+        },
+        order,
+        warnings
+      };
+    
+    case 'video':
+      return {
+        type: 'system-video',
+        variant: 'embed',
+        data: {
+          heading: settings.heading || '',
+          videoUrl: settings.video_url || '',
+          coverImage: settings.cover_image || ''
+        },
+        order,
+        warnings
+      };
+    
+    default:
+      warnings.push(`Unknown section type: ${sectionType}. Creating generic block.`);
+      return {
+        type: 'system-layout',
+        variant: 'blank',
+        data: {
+          sectionName: sectionType,
+          rawSettings: settings
+        },
+        order,
+        warnings
+      };
+  }
+}
+
+/**
+ * Map Shopify section to nexusOS block (legacy - uses schema only)
  */
 export function mapSectionToBlock(
   filename: string,

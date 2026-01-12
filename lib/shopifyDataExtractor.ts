@@ -340,6 +340,25 @@ function extractNavigation(theme: ShopifyThemeStructure): {
  */
 export function extractColorPalette(theme: ShopifyThemeStructure): Record<string, string> {
   const colors: Record<string, string> = {};
+  
+  // Use parsed settings if available
+  if (theme.settings?.colors?.schemes) {
+    const schemes = theme.settings.colors.schemes;
+    const schemeKeys = Object.keys(schemes);
+    if (schemeKeys.length > 0) {
+      const primaryScheme = schemes[schemeKeys[0]];
+      return {
+        primary: primaryScheme.text || '#000000',
+        secondary: primaryScheme.button || '#6b7280',
+        background: primaryScheme.background || '#ffffff',
+        text: primaryScheme.text || '#000000',
+        button: primaryScheme.button || '#000000',
+        buttonText: primaryScheme.buttonLabel || '#ffffff'
+      };
+    }
+  }
+  
+  // Fallback to raw settings_data
   const settingsData = theme.files.config.settings_data?.current || {};
   
   // Common color keys
@@ -375,6 +394,17 @@ export function extractColorPalette(theme: ShopifyThemeStructure): Record<string
  */
 export function extractTypography(theme: ShopifyThemeStructure): Record<string, string> {
   const typography: Record<string, string> = {};
+  
+  // Use parsed settings if available
+  if (theme.settings?.typography) {
+    return {
+      headingFont: theme.settings.typography.headerFont || 'Sans-serif',
+      bodyFont: theme.settings.typography.bodyFont || 'Sans-serif',
+      baseFontSize: `${theme.settings.typography.bodyScale || 100}%`
+    };
+  }
+  
+  // Fallback to raw settings_data
   const settingsData = theme.files.config.settings_data?.current || {};
   
   typography.headingFont = settingsData.type_header_font || settingsData.font_heading || 'Sans-serif';

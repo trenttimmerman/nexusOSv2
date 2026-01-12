@@ -2,9 +2,10 @@ import React, { useState, useCallback } from 'react';
 import { Upload, FileText, CheckCircle, AlertTriangle, Download, Package, Zap, Eye, Settings, Sparkles } from 'lucide-react';
 import { extractShopifyTheme, getThemeInfo, ShopifyThemeStructure, extractThemeSettings, parseLiquidSection } from '../lib/shopifyThemeParser';
 import { extractDataReferences } from '../lib/liquidParser';
-import { generateBlockMapping, getSectionMappingSuggestions, MappedBlock } from '../lib/sectionMatcher';
+import { generateBlockMapping, generateBlockMappingFromTemplate, getSectionMappingSuggestions, MappedBlock } from '../lib/sectionMatcher';
 import { extractContentFromTheme, extractColorPalette, extractTypography } from '../lib/shopifyDataExtractor';
 import { uploadThemeAssets, AssetUploadProgress, createAssetUrlMap } from '../lib/assetUploader';
+import { ParsedTemplate } from '../lib/shopifyTemplateParser';
 import { supabase } from '../lib/supabaseClient';
 
 interface ShopifyMigrationProps {
@@ -45,6 +46,7 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
   const [migratedPageId, setMigratedPageId] = useState<string | null>(null);
   const [mappedBlocks, setMappedBlocks] = useState<MappedBlock[]>([]);
   const [uploadProgress, setUploadProgress] = useState<AssetUploadProgress | null>(null);
+  const [pagesCreated, setPagesCreated] = useState<number>(0);
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = e.target.files?.[0];
@@ -173,12 +175,28 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
       // Parse sections from strings to ParsedSection objects
       const parsedSections: Record<string, any> = {};
       Object.entries(analysis.theme.files.sections).forEach(([filename, liquidContent]) => {
-        parsedSections[filename] = parseLiquidSection(liquidContent);
+        parsedSections[filename] = parseLiquidSection(liquidContent as string);
       });
       
-      // Generate block mappings
-      let blocks = generateBlockMapping(parsedSections);
-      console.log('[Migration] Generated blocks:', blocks.length, blocks);
+      let blocks: MappedBlock[] = [];
+      
+      // Use template data if available (REAL CONFIGURED VALUES)
+      if (analysis.theme.parsedTemplates?.index) {
+        console.log('[Migration] Using template data for accurate mapping');
+        const indexTemplate = analysis.theme.parsedTemplates.index;
+        
+        // generateBlockMappingFromTemplate expects array of sections and Record of liquid sections
+        blocks = generateBlockMappingFromTemplate(
+          indexTemplate.sections, 
+          parsedSections
+        );
+        console.log('[Migration] Generated blocks from template data:', blocks.length, blocks);
+      } else {
+        // Fallback to legacy schema-only mapping
+        console.log('[Migration] No template data found, using schema-only mapping (less accurate)');
+        blocks = generateBlockMapping(parsedSections);
+        console.log('[Migration] Generated blocks from schema:', blocks.length, blocks);
+      }
       
       // If no blocks generated, create default blocks
       if (blocks.length === 0) {
@@ -249,77 +267,173 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
       
       setProgress(50);
       
-      // 3. Save blocks to database
-      setCurrentTask('Saving blocks to database...');
+      // 3. Save blocks to database - Create pages for all templates
+      setCurrentTask('Creating pages from templates...');
       
-      console.log('[Migration] Saving blocks:', blocksToSave.length);
+      console.log('[Migration] Available templates:', analysis.theme.parsedTemplates ? Object.keys(analysis.theme.parsedTemplates) : 'none');
       
-      // Check if migrated page already exists
-      const migratedSlug = 'migrated-home';
-      const { data: existingPage } = await supabase
-        .from('pages')
-        .select('id')
-        .eq('store_id', storeId)
-        .eq('slug', migratedSlug)
-        .maybeSingle();
+      // Parse sections for template mapping
+      const parsedSections: Record<string, any> = {};
+      Object.entries(analysis.theme.files.sections).forEach(([filename, liquidContent]) => {
+        parsedSections[filename] = parseLiquidSection(liquidContent as string);
+      });
       
-      const pageBlocks = blocksToSave.map(block => ({
-        id: `block_${Math.random().toString(36).substr(2, 9)}`,
-        type: block.type,
-        variant: block.variant,
-        data: block.data
-      }));
+      const createdPages: string[] = [];
+      let homepageId: string | null = null;
       
-      console.log('[Migration] Page blocks to save:', pageBlocks.length, pageBlocks);
-      
-      let createdPageId: string;
-      
-      if (existingPage) {
-        // Update existing page
-        const { error: pageError } = await supabase
-          .from('pages')
-          .update({
-            title: 'Migrated Homepage',
-            blocks: pageBlocks
-          })
-          .eq('id', existingPage.id);
-        
-        if (pageError) {
-          throw new Error(`Failed to update page: ${pageError.message}`);
+      // Process all available templates
+      if (analysis.theme.parsedTemplates) {
+        for (const [templateName, templateData] of Object.entries(analysis.theme.parsedTemplates)) {
+          const template = templateData as ParsedTemplate;
+          
+          // Generate blocks for this template
+          const templateBlocks = generateBlockMappingFromTemplate(
+            template.sections,
+            parsedSections
+          );
+          
+          if (templateBlocks.length === 0) {
+            console.log(`[Migration] Skipping ${templateName} - no blocks generated`);
+            continue;
+          }
+          
+          // Determine page title and slug
+          let pageTitle = 'Migrated Page';
+          let pageSlug = `migrated-${templateName.replace('.json', '')}`;
+          let pageType = 'custom';
+          
+          if (templateName === 'index') {
+            pageTitle = 'Migrated Homepage';
+            pageSlug = 'migrated-home';
+          } else if (templateName === 'product') {
+            pageTitle = 'Product Template';
+            pageSlug = 'migrated-product';
+          } else if (templateName === 'collection') {
+            pageTitle = 'Collection Template';
+            pageSlug = 'migrated-collection';
+          } else if (templateName === 'blog') {
+            pageTitle = 'Blog Template';
+            pageSlug = 'migrated-blog';
+          } else if (templateName === 'article') {
+            pageTitle = 'Article Template';
+            pageSlug = 'migrated-article';
+          } else if (templateName.startsWith('page.')) {
+            pageTitle = `Page: ${templateName.replace('page.', '').replace('.json', '')}`;
+            pageSlug = `migrated-${templateName.replace('.json', '')}`;
+          }
+          
+          const pageBlocks = templateBlocks.map(block => ({
+            id: `block_${Math.random().toString(36).substr(2, 9)}`,
+            type: block.type,
+            variant: block.variant,
+            data: block.data
+          }));
+          
+          console.log(`[Migration] Creating page: ${pageTitle} (${templateBlocks.length} blocks)`);
+          
+          // Check if page exists
+          const { data: existingPage } = await supabase
+            .from('pages')
+            .select('id')
+            .eq('store_id', storeId)
+            .eq('slug', pageSlug)
+            .maybeSingle();
+          
+          if (existingPage) {
+            // Update existing page
+            const { error: pageError } = await supabase
+              .from('pages')
+              .update({
+                title: pageTitle,
+                blocks: pageBlocks
+              })
+              .eq('id', existingPage.id);
+            
+            if (!pageError) {
+              createdPages.push(existingPage.id);
+              if (templateName === 'index') homepageId = existingPage.id;
+            }
+          } else {
+            // Create new page
+            const pageId = `migrated_${templateName}_${Date.now()}`;
+            const { error: pageError } = await supabase.from('pages').insert([{
+              id: pageId,
+              store_id: storeId,
+              title: pageTitle,
+              slug: pageSlug,
+              type: pageType,
+              blocks: pageBlocks
+            }]);
+            
+            if (!pageError) {
+              createdPages.push(pageId);
+              if (templateName === 'index') homepageId = pageId;
+            }
+          }
         }
-        createdPageId = existingPage.id;
-      } else {
-        // Create new page
+      }
+      
+      // If no templates were processed, create default homepage with the mapped blocks
+      if (createdPages.length === 0 && blocksToSave.length > 0) {
+        console.log('[Migration] No templates processed, creating default homepage');
+        const pageBlocks = blocksToSave.map(block => ({
+          id: `block_${Math.random().toString(36).substr(2, 9)}`,
+          type: block.type,
+          variant: block.variant,
+          data: block.data
+        }));
+        
         const pageId = `migrated_${Date.now()}`;
         const { error: pageError } = await supabase.from('pages').insert([{
           id: pageId,
           store_id: storeId,
           title: 'Migrated Homepage',
-          slug: migratedSlug,
+          slug: 'migrated-home',
           type: 'custom',
           blocks: pageBlocks
         }]);
         
-        if (pageError) {
-          throw new Error(`Failed to save page: ${pageError.message}`);
+        if (!pageError) {
+          createdPages.push(pageId);
+          homepageId = pageId;
         }
-        createdPageId = pageId;
       }
       
-      // Store the page ID for navigation
-      setMigratedPageId(createdPageId);
+      console.log(`[Migration] Created ${createdPages.length} pages`);
+      
+      // Store the homepage ID for navigation and page count
+      setMigratedPageId(homepageId || createdPages[0] || null);
+      setPagesCreated(createdPages.length);
       
       setProgress(70);
       
       // 4. Update store config with theme settings
       setCurrentTask('Applying theme settings...');
+      
+      // Prepare config updates
+      const configUpdates: any = {
+        primary_color: colors.primary,
+        secondary_color: colors.secondary,
+        background_color: colors.background
+      };
+      
+      // Add logo if available from settings
+      if (analysis.theme.settings?.logo) {
+        configUpdates.logo_url = analysis.theme.settings.logo;
+      }
+      
+      // Add social media links if available
+      if (analysis.theme.settings?.social) {
+        const social = analysis.theme.settings.social;
+        if (social.facebook) configUpdates.facebook_url = social.facebook;
+        if (social.instagram) configUpdates.instagram_url = social.instagram;
+        if (social.twitter) configUpdates.twitter_url = social.twitter;
+        if (social.tiktok) configUpdates.tiktok_url = social.tiktok;
+      }
+      
       const { error: configError } = await supabase
         .from('store_config')
-        .update({
-          primary_color: colors.primary,
-          secondary_color: colors.secondary,
-          background_color: colors.background
-        })
+        .update(configUpdates)
         .eq('store_id', storeId);
       
       if (configError) {
@@ -337,8 +451,9 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
           completed_at: new Date().toISOString(),
           migration_data: {
             ...analysis.theme.detectedTheme,
-            blocks: mappedBlocks.length,
-            assets: uploadedAssets.length
+            blocks: blocksToSave.length,
+            assets: uploadedAssets.length,
+            pages: createdPages.length
           }
         })
         .eq('id', migrationId);
@@ -358,6 +473,7 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
     setAnalysis(null);
     setProgress(0);
     setMigrationId(null);
+    setPagesCreated(0);
   };
 
   return (
@@ -703,8 +819,8 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
               <div className="text-sm text-blue-700">Assets Migrated</div>
             </div>
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
-              <div className="text-3xl font-bold text-purple-900 mb-1">1</div>
-              <div className="text-sm text-purple-700">Page Created</div>
+              <div className="text-3xl font-bold text-purple-900 mb-1">{pagesCreated || 1}</div>
+              <div className="text-sm text-purple-700">{pagesCreated === 1 ? 'Page' : 'Pages'} Created</div>
             </div>
           </div>
 
