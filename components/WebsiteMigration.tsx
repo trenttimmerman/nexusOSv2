@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Globe, Search, CheckCircle, AlertTriangle, Eye, Sparkles, ExternalLink } from 'lucide-react';
-import { crawlWebsite, CrawlResult, CrawledPage, CrawledProduct, CrawledCollection } from '../lib/websiteCrawler';
+import { crawlWebsite, CrawlResult } from '../lib/crawlerAPI';
 import { supabase } from '../lib/supabaseClient';
 
 interface WebsiteMigrationProps {
