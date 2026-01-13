@@ -66,7 +66,7 @@ export default async function handler(
     };
 
     const maxDepth = options.maxDepth || 3;
-    const maxPages = options.maxPages || 50;
+    const maxPages = options.maxPages || 100; // Increased from 50
     const visitedUrls = new Set<string>();
     const urlsToVisit: Array<{ url: string; depth: number }> = [
       { url: targetUrl.href, depth: 0 }
@@ -123,13 +123,29 @@ export default async function handler(
           result.design = extractDesign(html, currentUrl);
         }
 
-        // Add internal links to queue
+        // Add internal links to queue (prioritize product/collection pages)
         if (depth < maxDepth) {
+          const productLinks: Array<{url: string, depth: number}> = [];
+          const collectionLinks: Array<{url: string, depth: number}> = [];
+          const otherLinks: Array<{url: string, depth: number}> = [];
+          
           for (const link of pageData.links) {
             if (link.startsWith(targetUrl.origin) && !visitedUrls.has(link)) {
-              urlsToVisit.push({ url: link, depth: depth + 1 });
+              const linkLower = link.toLowerCase();
+              
+              // Prioritize product and collection pages
+              if (linkLower.includes('/product') || linkLower.includes('/item')) {
+                productLinks.push({ url: link, depth: depth + 1 });
+              } else if (linkLower.includes('/collection') || linkLower.includes('/category') || linkLower.includes('/shop')) {
+                collectionLinks.push({ url: link, depth: depth + 1 });
+              } else {
+                otherLinks.push({ url: link, depth: depth + 1 });
+              }
             }
           }
+          
+          // Add in priority order: products first, then collections, then other pages
+          urlsToVisit.push(...productLinks, ...collectionLinks, ...otherLinks.slice(0, 10));
         }
 
       } catch (error: any) {
@@ -173,6 +189,20 @@ async function parseHTML(html: string, url: string, baseOrigin: string) {
   const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
   if (descMatch) {
     pageData.description = descMatch[1].trim();
+  }
+
+  // Detect page type
+  const urlPath = url.toLowerCase();
+  const ogType = html.match(/<meta[^>]*property=["']og:type["'][^>]*content=["']([^"']+)["']/i);
+  
+  if (ogType && ogType[1] === 'product') {
+    pageData.type = 'product';
+  } else if (urlPath.includes('/product') || urlPath.includes('/item')) {
+    pageData.type = 'product';
+  } else if (urlPath.includes('/collection') || urlPath.includes('/category') || urlPath.includes('/shop')) {
+    pageData.type = 'collection';
+  } else if (urlPath === baseOrigin || urlPath === baseOrigin + '/' || urlPath.endsWith('/')) {
+    pageData.type = 'home';
   }
 
   // Extract headings
@@ -239,28 +269,95 @@ function detectPlatform(html: string): string {
 function extractProducts(html: string, url: string): any[] {
   const products: any[] = [];
 
-  // Simple heuristic: look for product schema or common product patterns
-  const productSchemaMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([^<]+)<\/script>/gi);
+  // Method 1: JSON-LD Schema.org Product markup
+  const productSchemaMatch = html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([^<]+)<\/script>/gi);
   
-  if (productSchemaMatch) {
-    for (const match of productSchemaMatch) {
-      try {
-        const jsonMatch = match.match(/>([^<]+)</);
-        if (jsonMatch) {
-          const data = JSON.parse(jsonMatch[1]);
-          if (data['@type'] === 'Product') {
-            products.push({
-              name: data.name,
-              description: data.description,
-              price: parseFloat(data.offers?.price) || 0,
-              images: Array.isArray(data.image) ? data.image : [data.image],
-              url
-            });
-          }
+  for (const match of productSchemaMatch) {
+    try {
+      const jsonMatch = match[1];
+      const data = JSON.parse(jsonMatch);
+      
+      // Handle single product or array
+      const items = Array.isArray(data) ? data : [data];
+      
+      for (const item of items) {
+        if (item['@type'] === 'Product' || item['@type']?.includes?.('Product')) {
+          products.push({
+            name: item.name || 'Untitled Product',
+            description: item.description || '',
+            price: parseFloat(item.offers?.price || item.offers?.[0]?.price || '0'),
+            compareAtPrice: parseFloat(item.offers?.priceSpecification?.price || '0') || undefined,
+            images: Array.isArray(item.image) ? item.image : item.image ? [item.image] : [],
+            url: item.url || url,
+            sku: item.sku || undefined,
+            brand: item.brand?.name || undefined
+          });
         }
-      } catch (e) {
-        // Ignore parsing errors
       }
+    } catch (e) {
+      // Ignore parsing errors
+    }
+  }
+
+  // Method 2: Shopify-specific product data
+  const shopifyProductMatch = html.match(/var\s+meta\s*=\s*\{[^}]*product[^}]*\}/gi);
+  if (shopifyProductMatch) {
+    for (const match of shopifyProductMatch) {
+      try {
+        const productData = match.match(/product:\s*({[^}]+})/);
+        if (productData) {
+          const product = JSON.parse(productData[1]);
+          products.push({
+            name: product.title || 'Product',
+            description: '',
+            price: parseFloat(product.price) / 100 || 0,
+            compareAtPrice: product.compare_at_price ? parseFloat(product.compare_at_price) / 100 : undefined,
+            images: product.featured_image ? [product.featured_image] : [],
+            url
+          });
+        }
+      } catch (e) {}
+    }
+  }
+
+  // Method 3: OpenGraph product meta tags
+  const ogType = html.match(/<meta[^>]*property=["']og:type["'][^>]*content=["']product["']/i);
+  if (ogType) {
+    const productData: any = { url };
+    
+    const ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+    if (ogTitle) productData.name = ogTitle[1];
+    
+    const ogDesc = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+    if (ogDesc) productData.description = ogDesc[1];
+    
+    const ogPrice = html.match(/<meta[^>]*property=["']product:price:amount["'][^>]*content=["']([^"']+)["']/i);
+    if (ogPrice) productData.price = parseFloat(ogPrice[1]);
+    
+    const ogImage = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+    if (ogImage) productData.images = [ogImage[1]];
+    
+    if (productData.name) {
+      products.push(productData);
+    }
+  }
+
+  // Method 4: Common e-commerce class patterns
+  const urlPath = url.toLowerCase();
+  if (urlPath.includes('/product') || urlPath.includes('/item')) {
+    const titleMatch = html.match(/<h1[^>]*class=["'][^"']*product[^"']*["'][^>]*>([^<]+)<\/h1>/i) ||
+                       html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+    
+    const priceMatch = html.match(/<[^>]*class=["'][^"']*price[^"']*["'][^>]*>.*?(\d+\.?\d*)/i);
+    
+    if (titleMatch && !products.length) {
+      products.push({
+        name: titleMatch[1].trim(),
+        description: '',
+        price: priceMatch ? parseFloat(priceMatch[1]) : 0,
+        images: [],
+        url
+      });
     }
   }
 
@@ -273,20 +370,70 @@ function extractProducts(html: string, url: string): any[] {
 function extractCollections(html: string, url: string): any[] {
   const collections: any[] = [];
 
-  // Look for collection patterns
+  // Method 1: Check URL patterns for collection/category pages
   const urlPath = new URL(url).pathname.toLowerCase();
-  if (urlPath.includes('/collections/') || urlPath.includes('/collection/') || urlPath.includes('/category/')) {
+  const isCollectionPage = urlPath.includes('/collections/') || 
+                          urlPath.includes('/collection/') || 
+                          urlPath.includes('/category/') ||
+                          urlPath.includes('/categories/') ||
+                          urlPath.includes('/shop/');
+
+  if (isCollectionPage) {
     const titleMatch = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+    
+    // Count product links on the page
+    const productLinks = html.match(/<a[^>]*href=["'][^"']*\/product[^"']*["']/gi) || [];
+    
     if (titleMatch) {
       collections.push({
         name: titleMatch[1].trim(),
         url,
+        productCount: productLinks.length,
+        description: extractMetaDescription(html)
+      });
+    }
+  }
+
+  // Method 2: Extract collection links from navigation
+  const navMatch = html.matchAll(/<a[^>]*href=["']([^"']*(?:collection|category|shop)[^"']*)["'][^>]*>([^<]+)<\/a>/gi);
+  
+  for (const match of navMatch) {
+    const collectionUrl = match[1];
+    const collectionName = match[2].trim();
+    
+    if (!collections.find(c => c.url === collectionUrl)) {
+      collections.push({
+        name: collectionName,
+        url: resolveUrl(collectionUrl, new URL(url).origin) || collectionUrl,
         productCount: 0
       });
     }
   }
 
+  // Method 3: Shopify collections JSON
+  const shopifyCollMatch = html.match(/collections:\s*(\[.*?\])/s);
+  if (shopifyCollMatch) {
+    try {
+      const colls = JSON.parse(shopifyCollMatch[1]);
+      for (const coll of colls) {
+        collections.push({
+          name: coll.title || coll.handle,
+          url: `/collections/${coll.handle}`,
+          productCount: coll.products_count || 0
+        });
+      }
+    } catch (e) {}
+  }
+
   return collections;
+}
+
+/**
+ * Extract meta description helper
+ */
+function extractMetaDescription(html: string): string {
+  const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+  return descMatch ? descMatch[1].trim() : '';
 }
 
 /**
@@ -296,37 +443,104 @@ function extractDesign(html: string, url: string): any {
   const design = {
     colors: { primary: [], secondary: [], accent: [], background: [], text: [] },
     fonts: { headings: [], body: [] },
-    logo: null,
+    logo: null as string | null,
     navigation: { header: [], footer: [] }
   };
 
-  // Extract CSS color variables
+  // Extract CSS colors from style tags and inline styles
   const styleMatch = html.match(/<style[^>]*>([^<]+)<\/style>/gi);
+  const allColors = new Set<string>();
+  
   if (styleMatch) {
     for (const style of styleMatch) {
-      const colors = style.match(/#[0-9a-f]{6}/gi);
-      if (colors) {
-        design.colors.primary = [...new Set(colors)].slice(0, 5);
+      // Hex colors
+      const hexColors = style.match(/#[0-9a-f]{3,6}/gi);
+      if (hexColors) hexColors.forEach(c => allColors.add(c.toLowerCase()));
+      
+      // RGB/RGBA colors
+      const rgbColors = style.match(/rgba?\([^)]+\)/gi);
+      if (rgbColors) rgbColors.forEach(c => allColors.add(c));
+    }
+  }
+
+  // Extract inline style colors
+  const inlineStyles = html.matchAll(/style=["'][^"']*(?:color|background)[^"']*["']/gi);
+  for (const match of inlineStyles) {
+    const hexMatch = match[0].match(/#[0-9a-f]{3,6}/gi);
+    if (hexMatch) hexMatch.forEach(c => allColors.add(c.toLowerCase()));
+  }
+
+  // Categorize colors (simple heuristic based on common patterns)
+  const colorArray = Array.from(allColors);
+  design.colors.primary = colorArray.slice(0, 3);
+  design.colors.background = colorArray.filter(c => c.includes('fff') || c.includes('f0f0f0'));
+  design.colors.text = colorArray.filter(c => c.includes('000') || c.includes('333'));
+
+  // Extract fonts
+  const fontMatch = html.match(/font-family:\s*([^;}"]+)/gi);
+  const allFonts = new Set<string>();
+  
+  if (fontMatch) {
+    for (const match of fontMatch) {
+      const font = match.replace(/font-family:\s*/i, '').replace(/['"]/g, '').split(',')[0].trim();
+      if (font && !font.includes('!')) allFonts.add(font);
+    }
+  }
+  
+  const fontArray = Array.from(allFonts);
+  design.fonts.headings = fontArray.slice(0, 2);
+  design.fonts.body = fontArray.slice(0, 3);
+
+  // Extract logo - multiple patterns
+  const logoPatterns = [
+    /<img[^>]*class=["'][^"']*logo[^"']*["'][^>]*src=["']([^"']+)["']/i,
+    /<img[^>]*alt=["'][^"']*logo[^"']*["'][^>]*src=["']([^"']+)["']/i,
+    /<img[^>]*id=["'][^"']*logo[^"']*["'][^>]*src=["']([^"']+)["']/i,
+    /<a[^>]*class=["'][^"']*logo[^"']*["'][^>]*>\s*<img[^>]*src=["']([^"']+)["']/i
+  ];
+
+  for (const pattern of logoPatterns) {
+    const logoMatch = html.match(pattern);
+    if (logoMatch) {
+      design.logo = resolveUrl(logoMatch[1], new URL(url).origin);
+      break;
+    }
+  }
+
+  // Extract navigation from header
+  const headerNav = html.match(/<(?:header|nav)[^>]*>([^<]*(?:<(?!\/(?:header|nav)>)[^<]*)*)<\/(?:header|nav)>/gi);
+  if (headerNav) {
+    for (const nav of headerNav) {
+      const links = nav.matchAll(/<a[^>]*href=["']([^"']+)["'][^>]*>([^<]+)<\/a>/gi);
+      for (const link of links) {
+        const title = link[2].trim().replace(/\s+/g, ' ');
+        const href = link[1];
+        
+        if (title && href && !href.startsWith('#') && design.navigation.header.length < 10) {
+          design.navigation.header.push({
+            title,
+            url: resolveUrl(href, new URL(url).origin) || href
+          });
+        }
       }
     }
   }
 
-  // Extract logo
-  const logoMatch = html.match(/<img[^>]*class=["'][^"']*logo[^"']*["'][^>]*src=["']([^"']+)["']/i);
-  if (logoMatch) {
-    design.logo = resolveUrl(logoMatch[1], new URL(url).origin);
-  }
-
-  // Extract navigation
-  const navMatch = html.match(/<nav[^>]*>([^<]*(?:<(?!\/nav>)[^<]*)*)<\/nav>/gi);
-  if (navMatch) {
-    for (const nav of navMatch) {
+  // Extract footer navigation
+  const footerNav = html.match(/<footer[^>]*>([^<]*(?:<(?!\/footer>)[^<]*)*)<\/footer>/gi);
+  if (footerNav) {
+    for (const nav of footerNav) {
       const links = nav.matchAll(/<a[^>]*href=["']([^"']+)["'][^>]*>([^<]+)<\/a>/gi);
       for (const link of links) {
-        design.navigation.header.push({
-          title: link[2].trim(),
-          url: resolveUrl(link[1], new URL(url).origin)
-        });
+        const title = link[2].trim().replace(/\s+/g, ' ');
+        const href = link[1];
+        
+        if (title && href && !href.startsWith('#') && design.navigation.footer.length < 10) {
+          design.navigation.footer.push({
+            title,
+            url: resolveUrl(href, new URL(url).origin) || href
+          });
+        }
       }
     }
   }
