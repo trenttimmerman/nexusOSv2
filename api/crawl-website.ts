@@ -44,8 +44,8 @@ export default async function handler(
     let targetUrl: URL;
     try {
       targetUrl = new URL(url);
-    } catch (e) {
-      return res.status(400).json({ error: 'Invalid URL format' });
+    } catch (e: any) {
+      return res.status(400).json({ error: 'Invalid URL format', details: e.message });
     }
 
     console.log(`[Crawler] Starting crawl for: ${targetUrl.href}`);
@@ -65,15 +65,28 @@ export default async function handler(
       errors: []
     };
 
-    const maxDepth = options.maxDepth || 3;
-    const maxPages = options.maxPages || 100; // Increased from 50
+    const maxDepth = options.maxDepth || 2; // Reduced from 3
+    const maxPages = options.maxPages || 30; // Reduced from 100 for serverless timeout
     const visitedUrls = new Set<string>();
     const urlsToVisit: Array<{ url: string; depth: number }> = [
       { url: targetUrl.href, depth: 0 }
     ];
 
+    console.log(`[Crawler] Limits: maxDepth=${maxDepth}, maxPages=${maxPages}`);
+
+    // BFS crawl with timeout protection
+    const startTime = Date.now();
+    const maxExecutionTime = 8000; // 8 seconds max (Vercel has 10s limit)
+
     // Crawl pages
     while (urlsToVisit.length > 0 && result.pages.length < maxPages) {
+      // Check timeout
+      if (Date.now() - startTime > maxExecutionTime) {
+        console.log('[Crawler] Timeout reached, stopping crawl');
+        result.errors.push('Crawl stopped due to time limit');
+        break;
+      }
+
       const { url: currentUrl, depth } = urlsToVisit.shift()!;
 
       if (visitedUrls.has(currentUrl) || depth > maxDepth) {
@@ -89,7 +102,7 @@ export default async function handler(
           headers: {
             'User-Agent': 'Mozilla/5.0 (compatible; NexusOSBot/1.0; +https://nexusos.io/bot)',
           },
-          signal: AbortSignal.timeout(10000) // 10 second timeout
+          signal: AbortSignal.timeout(5000) // 5 second timeout per request
         });
 
         if (!response.ok) {
@@ -159,8 +172,12 @@ export default async function handler(
     return res.status(200).json(result);
 
   } catch (error: any) {
-    console.error('[Crawler] Error:', error);
-    return res.status(500).json({ error: error.message || 'Internal server error' });
+    console.error('[Crawler] Fatal error:', error);
+    console.error('[Crawler] Stack:', error.stack);
+    return res.status(500).json({ 
+      error: error.message || 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 }
 
