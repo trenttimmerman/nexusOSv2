@@ -28,6 +28,7 @@ import { ClientManagement } from './ClientManagement';
 import EmailSubscribers from './EmailSubscribers';
 import EmailSettings from './EmailSettings';
 import ShopifyMigration from './ShopifyMigration';
+import WebsiteMigration from './WebsiteMigration';
 import Customers from './Customers';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
@@ -1662,6 +1663,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.EMAIL_SUBSCRIBERS, icon: Mail, label: 'Email Subscribers' },
           { id: AdminTab.EMAIL_SETTINGS, icon: Send, label: 'Email Settings' },
           { id: AdminTab.SHOPIFY_MIGRATION, icon: Upload, label: 'Shopify Import' },
+          { id: AdminTab.WEBSITE_MIGRATION, icon: Globe, label: 'Website Import' },
           { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' },
           ...(userRole === 'superuser' ? [{ id: AdminTab.PLATFORM, icon: Users, label: 'Platform Admin' }] : [])
         ].map((item) => (
@@ -13445,6 +13447,20 @@ Return ONLY the JSON object, no markdown.`;
       case AdminTab.SHOPIFY_MIGRATION:
         return (
           <ShopifyMigration 
+            storeId={storeId || ''} 
+            onNavigateToPage={(pageId) => {
+              onSetActivePage(pageId);
+              onTabChange(AdminTab.DESIGN);
+            }}
+            onComplete={() => {
+              onTabChange(AdminTab.DASHBOARD);
+            }} 
+          />
+        );
+
+      case AdminTab.WEBSITE_MIGRATION:
+        return (
+          <WebsiteMigration 
             storeId={storeId || ''} 
             onNavigateToPage={(pageId) => {
               onSetActivePage(pageId);

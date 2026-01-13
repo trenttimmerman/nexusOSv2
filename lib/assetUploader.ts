@@ -287,7 +287,96 @@ export function createAssetUrlMap(uploadedAssets: UploadedAsset[]): Map<string, 
   
   uploadedAssets.forEach(asset => {
     map.set(asset.originalName, asset.publicUrl);
+    
+    // Also map without 'assets/' prefix if present
+    const nameWithoutPrefix = asset.originalName.replace(/^assets\//, '');
+    if (nameWithoutPrefix !== asset.originalName) {
+      map.set(nameWithoutPrefix, asset.publicUrl);
+    }
   });
   
   return map;
+}
+
+/**
+ * Rewrite asset URLs in block data to use uploaded assets
+ * Recursively processes all string values in the block data object
+ */
+export function rewriteBlockAssetUrls(
+  blockData: any,
+  assetUrlMap: Map<string, string>
+): any {
+  if (typeof blockData === 'string') {
+    return rewriteStringAssetUrl(blockData, assetUrlMap);
+  }
+  
+  if (Array.isArray(blockData)) {
+    return blockData.map(item => rewriteBlockAssetUrls(item, assetUrlMap));
+  }
+  
+  if (blockData && typeof blockData === 'object') {
+    const rewritten: any = {};
+    for (const [key, value] of Object.entries(blockData)) {
+      rewritten[key] = rewriteBlockAssetUrls(value, assetUrlMap);
+    }
+    return rewritten;
+  }
+  
+  return blockData;
+}
+
+/**
+ * Rewrite a single string value that might contain an asset URL
+ */
+function rewriteStringAssetUrl(
+  value: string,
+  assetUrlMap: Map<string, string>
+): string {
+  if (!value || typeof value !== 'string') {
+    return value;
+  }
+  
+  // Check if this is a Shopify CDN URL
+  if (value.includes('cdn.shopify.com') || value.includes('shopify.com/s/files')) {
+    // Extract filename from URL
+    const match = value.match(/\/([^/?]+)(?:\?|$)/);
+    if (match) {
+      const filename = match[1];
+      
+      // Try exact match first
+      if (assetUrlMap.has(filename)) {
+        return assetUrlMap.get(filename)!;
+      }
+      
+      // Try matching with various prefixes removed
+      for (const [originalName, newUrl] of assetUrlMap.entries()) {
+        if (originalName.endsWith(filename) || 
+            originalName === filename ||
+            originalName.includes(filename)) {
+          return newUrl;
+        }
+      }
+    }
+  }
+  
+  // Check if this looks like a relative asset path
+  if (value.startsWith('assets/') || value.startsWith('./assets/') || value.startsWith('../assets/')) {
+    const cleanPath = value.replace(/^\.\.?\//, '');
+    if (assetUrlMap.has(cleanPath)) {
+      return assetUrlMap.get(cleanPath)!;
+    }
+    
+    // Try without 'assets/' prefix
+    const withoutPrefix = cleanPath.replace(/^assets\//, '');
+    if (assetUrlMap.has(withoutPrefix)) {
+      return assetUrlMap.get(withoutPrefix)!;
+    }
+  }
+  
+  // Check direct filename match
+  if (assetUrlMap.has(value)) {
+    return assetUrlMap.get(value)!;
+  }
+  
+  return value;
 }

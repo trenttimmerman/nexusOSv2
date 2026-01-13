@@ -2,6 +2,19 @@
  * Parse Shopify settings_data.json to extract configured theme values
  */
 
+export interface ShopifyMenuItem {
+  title: string;
+  url: string;
+  target?: string;
+  type?: string; // 'page', 'collection', 'product', 'blog', 'custom', 'http'
+  children?: ShopifyMenuItem[];
+}
+
+export interface ShopifyMenu {
+  handle: string;
+  items: ShopifyMenuItem[];
+}
+
 export interface ShopifySettings {
   logo?: string;
   logoWidth?: number;
@@ -43,6 +56,7 @@ export interface ShopifySettings {
     description: string;
     brandImage?: string;
   };
+  menus?: ShopifyMenu[];
 }
 
 export interface ColorScheme {
@@ -95,7 +109,8 @@ export function parseSettingsData(settingsJson: any): ShopifySettings {
       headline: current.brand_headline || '',
       description: current.brand_description || '',
       brandImage: current.brand_image
-    }
+    },
+    menus: parseMenus(current)
   };
 }
 
@@ -133,4 +148,101 @@ export function convertToNexusTheme(settings: ShopifySettings) {
     pageWidth: settings.layout.pageWidth,
     spacing: settings.layout.spacingSections
   };
+}
+
+/**
+ * Parse menu configuration from Shopify settings
+ * Shopify stores menu links in settings like menu_main, menu_footer, etc.
+ */
+function parseMenus(settings: any): ShopifyMenu[] {
+  const menus: ShopifyMenu[] = [];
+  
+  // Common menu keys in Shopify themes
+  const menuKeys = [
+    'menu', 'menu_main', 'menu_primary', 'menu_header',
+    'menu_footer', 'menu_secondary'
+  ];
+  
+  menuKeys.forEach(key => {
+    if (settings[key]) {
+      const menuHandle = key.replace('menu_', '');
+      const menuItems = parseMenuItems(settings[key]);
+      
+      if (menuItems.length > 0) {
+        menus.push({
+          handle: menuHandle,
+          items: menuItems
+        });
+      }
+    }
+  });
+  
+  return menus;
+}
+
+/**
+ * Parse individual menu items, handling nested menus
+ */
+function parseMenuItems(menuData: any): ShopifyMenuItem[] {
+  if (!menuData) return [];
+  
+  // Handle string references to menu handles (e.g., "main-menu")
+  if (typeof menuData === 'string') {
+    // This is a menu handle reference - we'd need the full menu data
+    // For now, create a placeholder that can be enhanced later
+    return [];
+  }
+  
+  // Handle menu items array
+  if (Array.isArray(menuData)) {
+    return menuData.map(item => parseMenuItem(item)).filter(Boolean) as ShopifyMenuItem[];
+  }
+  
+  // Handle menu object with links property
+  if (menuData.links) {
+    return parseMenuItems(menuData.links);
+  }
+  
+  return [];
+}
+
+/**
+ * Parse a single menu item
+ */
+function parseMenuItem(item: any): ShopifyMenuItem | null {
+  if (!item) return null;
+  
+  const menuItem: ShopifyMenuItem = {
+    title: item.title || item.name || item.label || 'Untitled',
+    url: item.url || item.link || '#',
+    target: item.target || item.new_tab ? '_blank' : undefined,
+    type: detectLinkType(item.url || item.link || '#')
+  };
+  
+  // Handle nested menu items (dropdown menus)
+  if (item.links && Array.isArray(item.links)) {
+    menuItem.children = item.links.map(parseMenuItem).filter(Boolean) as ShopifyMenuItem[];
+  } else if (item.children && Array.isArray(item.children)) {
+    menuItem.children = item.children.map(parseMenuItem).filter(Boolean) as ShopifyMenuItem[];
+  }
+  
+  return menuItem;
+}
+
+/**
+ * Detect the type of link based on URL patterns
+ */
+function detectLinkType(url: string): string {
+  if (!url || url === '#') return 'custom';
+  
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return 'http';
+  }
+  
+  if (url.includes('/collections/')) return 'collection';
+  if (url.includes('/products/')) return 'product';
+  if (url.includes('/pages/')) return 'page';
+  if (url.includes('/blogs/')) return 'blog';
+  
+  return 'custom';
 }
