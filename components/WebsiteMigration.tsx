@@ -60,6 +60,12 @@ export default function WebsiteMigration({ storeId, onComplete, onNavigateToPage
           setProgress(Math.round((progress.current / progress.total) * 60));
           setCurrentTask(`Crawling page ${progress.current} of ${progress.total}...`);
         }
+      }).catch((error) => {
+        // Handle CORS and network errors
+        if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+          throw new Error('CORS_ERROR');
+        }
+        throw error;
       });
 
       setProgress(70);
@@ -134,8 +140,23 @@ export default function WebsiteMigration({ storeId, onComplete, onNavigateToPage
       setStep('preview');
 
     } catch (error: any) {
-      alert(`Failed to crawl website: ${error.message}`);
+      console.error('Website crawl error:', error);
+      
+      if (error.message === 'CORS_ERROR') {
+        alert(
+          '⚠️ Browser Security Limitation\n\n' +
+          'Direct website crawling is blocked by browser CORS policy.\n\n' +
+          'Alternative options:\n' +
+          '1. Use "Shopify Import" with a theme ZIP file instead\n' +
+          '2. Contact support about backend crawler service\n\n' +
+          'Note: Website crawling requires a server-side proxy to bypass CORS restrictions.'
+        );
+      } else {
+        alert(`Failed to crawl website: ${error.message}`);
+      }
+      
       setStep('input');
+      setProgress(0);
     }
   }, [websiteUrl, storeId]);
 
@@ -428,6 +449,26 @@ export default function WebsiteMigration({ storeId, onComplete, onNavigateToPage
                     <span>Images and assets</span>
                   </li>
                 </ul>
+              </div>
+
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <h4 className="font-semibold text-red-900 mb-2 flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5" />
+                  🚧 Feature Currently Limited
+                </h4>
+                <p className="text-sm text-red-800 mb-2">
+                  <strong>Browser CORS restrictions prevent direct website crawling.</strong>
+                </p>
+                <p className="text-sm text-red-700 mb-2">
+                  This feature requires a backend server to bypass CORS. For now, please use:
+                </p>
+                <ul className="space-y-1 text-sm text-red-700">
+                  <li>• <strong>Shopify Import:</strong> Upload your theme ZIP file instead</li>
+                  <li>• <strong>Manual Setup:</strong> Create pages and products directly in the editor</li>
+                </ul>
+                <p className="text-xs text-red-600 mt-2 italic">
+                  Backend crawler service coming soon!
+                </p>
               </div>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
