@@ -1,94 +1,110 @@
 /**
- * Server-side API endpoint for website crawling
- * This should be deployed as a serverless function or API endpoint
+ * API for calling the website crawler backend service
+ * Uses Vercel serverless function to bypass CORS
  */
 
-export interface CrawlRequest {
-  url: string;
-  maxPages?: number;
+export interface CrawlOptions {
   maxDepth?: number;
+  maxPages?: number;
   includeProducts?: boolean;
   includeCollections?: boolean;
+  onProgress?: (progress: { current: number; total: number; currentUrl: string }) => void;
 }
 
-export interface CrawlResponse {
-  success: boolean;
-  data?: any;
-  error?: string;
-  progress?: number;
+export interface CrawlResult {
+  pages: Array<{
+    url: string;
+    title: string;
+    description: string;
+    headings: string[];
+    paragraphs: string[];
+    images: string[];
+    links: string[];
+    type: 'home' | 'product' | 'collection' | 'page';
+  }>;
+  products: Array<{
+    name: string;
+    description: string;
+    price: number;
+    compareAtPrice?: number;
+    images: string[];
+    url: string;
+  }>;
+  collections: Array<{
+    name: string;
+    url: string;
+    productCount: number;
+  }>;
+  design: {
+    colors: {
+      primary: string[];
+      secondary: string[];
+      accent: string[];
+      background: string[];
+      text: string[];
+    };
+    fonts: {
+      headings: string[];
+      body: string[];
+    };
+    logo: string | null;
+    navigation: {
+      header: Array<{ title: string; url: string }>;
+      footer: Array<{ title: string; url: string }>;
+    };
+  };
+  platform: string;
+  errors: string[];
 }
 
 /**
- * API Handler for website crawling
- * In production, this would be a Vercel/Netlify function or API route
+ * Crawl a website using the backend proxy service
+ * This prevents CORS issues by making the request server-side
  */
-export async function crawlWebsiteAPI(request: CrawlRequest): Promise<CrawlResponse> {
-  try {
-    const { url, maxPages = 20, maxDepth = 2 } = request;
+export async function crawlWebsite(url: string, options: CrawlOptions = {}): Promise<CrawlResult> {
+  const { onProgress, ...apiOptions } = options;
 
-    // Validate URL
-    try {
-      new URL(url);
-    } catch {
-      return {
-        success: false,
-        error: 'Invalid URL provided'
-      };
+  try {
+    console.log('[CrawlerAPI] Starting crawl via backend:', url);
+
+    const response = await fetch('/api/crawl-website', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url,
+        options: apiOptions
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(error.error || `HTTP ${response.status}`);
     }
 
-    // In production, this would make a request to your backend crawler service
-    // For now, we'll simulate the response structure
-    
-    const result = {
-      baseUrl: url,
-      pages: [],
-      products: [],
-      collections: [],
-      design: {
-        colors: { primary: [], background: [], text: [] },
-        fonts: { headings: [], body: [] },
-        navigation: { header: [], footer: [] },
-        socialLinks: {}
-      },
-      platform: 'custom',
-      errors: []
-    };
+    const result: CrawlResult = await response.json();
 
-    return {
-      success: true,
-      data: result,
-      progress: 100
-    };
+    console.log('[CrawlerAPI] Crawl complete:', {
+      pages: result.pages.length,
+      products: result.products.length,
+      collections: result.collections.length,
+      errors: result.errors.length
+    });
+
+    // Simulate progress callback if provided
+    if (onProgress && result.pages.length > 0) {
+      onProgress({
+        current: result.pages.length,
+        total: result.pages.length,
+        currentUrl: result.pages[result.pages.length - 1].url
+      });
+    }
+
+    return result;
 
   } catch (error: any) {
-    return {
-      success: false,
-      error: error.message
-    };
+    console.error('[CrawlerAPI] Error:', error);
+    throw new Error(error.message || 'Failed to crawl website');
   }
-}
-
-/**
- * Simple fetch-based crawler (no headless browser needed)
- * Works for most static sites and server-rendered content
- */
-export async function simpleCrawl(url: string, options: any = {}) {
-  const response = await fetch(url, {
-    headers: {
-      'User-Agent': 'NexusOS-Crawler/1.0'
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${url}: ${response.status}`);
-  }
-
-  const html = await response.text();
-  
-  return {
-    url,
-    html,
-    status: response.status,
-    contentType: response.headers.get('content-type')
-  };
 }
