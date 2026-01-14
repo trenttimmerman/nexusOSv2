@@ -15,6 +15,7 @@ import { VIDEO_COMPONENTS } from './VideoLibrary';
 import { CONTACT_COMPONENTS } from './ContactLibrary';
 import { LAYOUT_COMPONENTS } from './LayoutLibrary';
 import { COLLECTION_COMPONENTS } from './CollectionLibrary';
+import { CATEGORY_COMPONENTS } from './CategoryLibrary';
 import { SectionWrapper } from './SectionWrapper';
 import { Plus, ArrowUp, ArrowDown, Trash2, Copy, Layout, Settings, AlignLeft, AlignCenter, AlignRight, Palette, Maximize2, Minimize2 } from 'lucide-react';
 import { getFilteredProducts as getFilteredProductsUtil } from '../lib/productUtils';
@@ -488,6 +489,18 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
             <CollectionComponent 
               data={block.data} 
               products={getFilteredProducts(block.data)} 
+              isEditable={isEditable} 
+              onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
+              onEditBlock={onEditBlock}
+              blockId={block.id}
+            />
+          ) : null;
+        case 'system-category':
+          const CategoryComponent = CATEGORY_COMPONENTS[block.variant || 'category-grid'];
+          return CategoryComponent ? (
+            <CategoryComponent 
+              data={block.data} 
+              categories={categories} 
               isEditable={isEditable} 
               onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
               onEditBlock={onEditBlock}

@@ -15,6 +15,7 @@ import { VIDEO_OPTIONS, VIDEO_COMPONENTS } from './VideoLibrary';
 import { CONTACT_OPTIONS, CONTACT_COMPONENTS } from './ContactLibrary';
 import { LAYOUT_OPTIONS, LAYOUT_COMPONENTS } from './LayoutLibrary';
 import { COLLECTION_OPTIONS, COLLECTION_COMPONENTS } from './CollectionLibrary';
+import { CATEGORY_OPTIONS, CATEGORY_COMPONENTS } from './CategoryLibrary';
 import { Storefront } from './Storefront';
 import { CartDrawer } from './CartDrawer';
 import { MediaLibrary } from './MediaLibrary';
@@ -898,6 +899,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isHeroModalOpen, setIsHeroModalOpen] = useState(false);
   const [isGridModalOpen, setIsGridModalOpen] = useState(false);
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   
   // Additional Section Modals
   const [isScrollModalOpen, setIsScrollModalOpen] = useState(false);
@@ -1333,6 +1335,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     if (blockType === 'system-hero') setIsHeroModalOpen(true);
     if (blockType === 'system-grid') setIsGridModalOpen(true);
     if (blockType === 'system-collection') setIsCollectionModalOpen(true);
+    if (blockType === 'system-category') setIsCategoryModalOpen(true);
 
     setPreviewBlock(null);
     setAddSectionStep('categories');
@@ -1701,6 +1704,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               setIsAddSectionOpen(false);
               setIsArchitectOpen(false);
               setIsProductEditorOpen(false);
+              setIsCategoryModalOpen(false);
               setIsHeroModalOpen(false);
               setIsGridModalOpen(false);
               setIsCollectionModalOpen(false);
@@ -5258,6 +5262,291 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         );
                     })()}
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // --- CATEGORY MODAL ---
+  const renderCategoryModal = () => {
+    if (!isCategoryModalOpen) return null;
+
+    const activeBlock = activePage?.blocks?.find(b => b.id === selectedBlockId);
+    if (!activeBlock || activeBlock.type !== 'system-category') return null;
+
+    const currentVariant = activeBlock.variant || 'category-grid';
+    const categoryData = activeBlock.data || {};
+    const CategoryComponent = CATEGORY_COMPONENTS[currentVariant] || CATEGORY_COMPONENTS['category-grid'];
+
+    const handleCategoryStyleChange = (newVariant: string) => {
+      setLocalPages(prev => prev.map(p => {
+        if (p.id !== activePage.id) return p;
+        return {
+          ...p,
+          blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: newVariant } : b)
+        };
+      }));
+      setHasUnsavedChanges(true);
+    };
+
+    const updateCategoryData = (updates: any) => {
+      setLocalPages(prev => prev.map(p => {
+        if (p.id !== activePage.id) return p;
+        return {
+          ...p,
+          blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, data: { ...b.data, ...updates } } : b)
+        };
+      }));
+      setHasUnsavedChanges(true);
+    };
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+          {/* Modal Header */}
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-600/20 rounded-lg">
+                <FolderTree size={20} className="text-purple-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold">Category Studio</h3>
+                <p className="text-xs text-neutral-500">Design category navigation and displays</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setIsCategoryModalOpen(false)} 
+              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Modal Content - Side by Side */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* LEFT PANEL - Editing Tools (30%) */}
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative">
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                {/* 1. Layout Selection */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Layers size={12} /> Layout Style
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {CATEGORY_OPTIONS.map(opt => (
+                      <button
+                        key={opt.id}
+                        onClick={() => handleCategoryStyleChange(opt.id)}
+                        className={`p-3 rounded-lg border text-left transition-all ${currentVariant === opt.id ? 'bg-purple-600/20 border-purple-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}
+                      >
+                        <div className="font-bold text-xs mb-0.5">{opt.name}</div>
+                        <div className="text-[10px] opacity-60">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Copy & Messaging */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Pencil size={12} /> Copy & Messaging
+                  </h4>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1.5 block">Heading</label>
+                      <input 
+                        type="text"
+                        value={categoryData.heading || 'Shop by Category'}
+                        onChange={e => updateCategoryData({ heading: e.target.value })}
+                        className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        style={{ color: '#ffffff' }}
+                        placeholder="Section heading"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1.5 block">Subheading</label>
+                      <input 
+                        type="text"
+                        value={categoryData.subheading || ''}
+                        onChange={e => updateCategoryData({ subheading: e.target.value })}
+                        className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        style={{ color: '#ffffff' }}
+                        placeholder="Optional subheading"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Display Options */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Sliders size={12} /> Display Options
+                  </h4>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1.5 block">Category Limit</label>
+                      <input 
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={categoryData.limit || 8}
+                        onChange={e => updateCategoryData({ limit: parseInt(e.target.value) || 8 })}
+                        className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        style={{ color: '#ffffff' }}
+                      />
+                    </div>
+                    <label className="flex items-center justify-between py-2 px-3 bg-black border border-neutral-700 rounded-lg cursor-pointer hover:border-neutral-600 transition-colors">
+                      <span className="text-xs text-neutral-300">Show Descriptions</span>
+                      <input 
+                        type="checkbox"
+                        checked={categoryData.showDescription || false}
+                        onChange={e => updateCategoryData({ showDescription: e.target.checked })}
+                        className="rounded"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between py-2 px-3 bg-black border border-neutral-700 rounded-lg cursor-pointer hover:border-neutral-600 transition-colors">
+                      <span className="text-xs text-neutral-300">Show Subcategories</span>
+                      <input 
+                        type="checkbox"
+                        checked={categoryData.showSubcategories || false}
+                        onChange={e => updateCategoryData({ showSubcategories: e.target.checked })}
+                        className="rounded"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* 4. Colors */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Palette size={12} /> Colors
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1.5 block">Background</label>
+                      <input 
+                        type="color"
+                        value={categoryData.backgroundColor || '#ffffff'}
+                        onChange={e => updateCategoryData({ backgroundColor: e.target.value })}
+                        className="w-full h-10 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1.5 block">Heading</label>
+                      <input 
+                        type="color"
+                        value={categoryData.headingColor || '#000000'}
+                        onChange={e => updateCategoryData({ headingColor: e.target.value })}
+                        className="w-full h-10 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1.5 block">Card BG</label>
+                      <input 
+                        type="color"
+                        value={categoryData.cardBgColor || '#f3f4f6'}
+                        onChange={e => updateCategoryData({ cardBgColor: e.target.value })}
+                        className="w-full h-10 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1.5 block">Category Name</label>
+                      <input 
+                        type="color"
+                        value={categoryData.categoryNameColor || '#000000'}
+                        onChange={e => updateCategoryData({ categoryNameColor: e.target.value })}
+                        className="w-full h-10 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1.5 block">Icon Color</label>
+                      <input 
+                        type="color"
+                        value={categoryData.iconColor || '#000000'}
+                        onChange={e => updateCategoryData({ iconColor: e.target.value })}
+                        className="w-full h-10 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1.5 block">Link Color</label>
+                      <input 
+                        type="color"
+                        value={categoryData.linkColor || '#000000'}
+                        onChange={e => updateCategoryData({ linkColor: e.target.value })}
+                        className="w-full h-10 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Footer */}
+              <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0">
+                <button 
+                  onClick={() => setIsCategoryModalOpen(false)}
+                  className="w-full px-6 py-2.5 bg-purple-600 hover:bg-purple-500 rounded-lg font-bold text-sm transition-colors text-white"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT PANEL - Preview (70%) */}
+            <div className="flex-1 bg-neutral-800 flex flex-col relative overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px]"></div>
+              
+              <div className="relative p-3 border-b border-neutral-700 bg-neutral-900 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-4">
+                  <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Live Preview</span>
+                  <div className="h-4 w-px bg-neutral-700"></div>
+                  <div className="flex items-center gap-2">
+                    <Monitor size={14} className="text-purple-500" />
+                    <span className="text-[10px] text-neutral-500">Desktop View</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+                  <span className="text-[10px] text-neutral-500">Live Editor Active</span>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-auto p-12 custom-scrollbar relative z-10 flex items-center justify-center">
+                {/* Floating Layout Selector */}
+                <div className="absolute top-6 right-6 z-20 flex flex-col gap-2">
+                  <div className="bg-neutral-900/90 backdrop-blur-md border border-neutral-700 p-1.5 rounded-xl shadow-2xl flex flex-col gap-1 ring-1 ring-white/10">
+                    <div className="px-2 py-1 mb-1 border-b border-neutral-800">
+                      <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">Quick Layouts</span>
+                    </div>
+                    {CATEGORY_OPTIONS.slice(0, 4).map(opt => (
+                      <button
+                        key={opt.id}
+                        onClick={() => handleCategoryStyleChange(opt.id)}
+                        className={`p-2 rounded-lg transition-all flex items-center gap-3 group ${currentVariant === opt.id ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20' : 'hover:bg-white/5 text-neutral-400'}`}
+                      >
+                        <div className="flex-1 text-left">
+                          <div className={`text-[10px] font-bold ${currentVariant === opt.id ? 'text-white' : 'text-neutral-300 group-hover:text-white'}`}>
+                            {opt.name}
+                          </div>
+                        </div>
+                        {currentVariant === opt.id && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Live Component Preview */}
+                <div className="w-full max-w-6xl bg-white rounded-xl shadow-2xl overflow-hidden">
+                  {CategoryComponent && (
+                    <CategoryComponent 
+                      data={categoryData}
+                      categories={categories}
+                      isEditable={false}
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -12473,6 +12762,14 @@ Return ONLY the JSON object, no markdown.`;
                   </div>
                 </button>
 
+                <button onClick={() => { setSelectedCategory('category'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-violet-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
+                  <div className="p-3 bg-violet-900/20 text-violet-500 rounded-lg group-hover:bg-violet-500 group-hover:text-white transition-colors"><FolderTree size={24} /></div>
+                  <div className="text-center">
+                    <span className="block text-sm font-bold text-white">Categories</span>
+                    <span className="text-xs text-neutral-500">Navigation & browsing</span>
+                  </div>
+                </button>
+
                 <button onClick={() => { setSelectedCategory('layout'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-cyan-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
                   <div className="p-3 bg-cyan-900/20 text-cyan-500 rounded-lg group-hover:bg-cyan-500 group-hover:text-white transition-colors"><Layout size={24} /></div>
                   <div className="text-center">
@@ -12573,6 +12870,15 @@ Return ONLY the JSON object, no markdown.`;
                   {selectedCategory === 'collection' && COLLECTION_OPTIONS.map(opt => (
                     <button key={opt.id} onClick={() => addBlock('system-collection', opt.name, '', opt.id)} className={`text-left rounded-xl border transition-all overflow-hidden ${previewBlock?.variant === opt.id ? 'bg-emerald-600/20 border-emerald-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
                       <SectionPreview category="collection" variantId={opt.id} />
+                      <div className="p-4">
+                        <div className="font-bold text-sm">{opt.name}</div>
+                        <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                      </div>
+                    </button>
+                  ))}
+
+                  {selectedCategory === 'category' && CATEGORY_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('system-category', opt.name, '', opt.id)} className={`text-left rounded-xl border transition-all overflow-hidden ${previewBlock?.variant === opt.id ? 'bg-violet-600/20 border-violet-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
                       <div className="p-4">
                         <div className="font-bold text-sm">{opt.name}</div>
                         <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
@@ -12778,7 +13084,7 @@ Return ONLY the JSON object, no markdown.`;
         />;
 
       case AdminTab.DESIGN:
-        const isAnyModalOpen = isHeaderModalOpen || isHeroModalOpen || isGridModalOpen || isCollectionModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
+        const isAnyModalOpen = isHeaderModalOpen || isHeroModalOpen || isGridModalOpen || isCollectionModalOpen || isCategoryModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
         return (
           <div className="flex h-full w-full bg-neutral-950 overflow-hidden">
             {/* LEFT COLUMN: EDITOR */}
@@ -13064,6 +13370,7 @@ Return ONLY the JSON object, no markdown.`;
                                 if (block.type === 'system-hero') setIsHeroModalOpen(true);
                                 else if (block.type === 'system-grid') setIsGridModalOpen(true);
                                 else if (block.type === 'system-collection') setIsCollectionModalOpen(true);
+                                else if (block.type === 'system-category') setIsCategoryModalOpen(true);
                                 else if (block.type === 'system-scroll') setIsScrollModalOpen(true);
                                 else if (block.type === 'system-social') setIsSocialModalOpen(true);
                                 else if (block.type === 'system-rich-text') setIsRichTextModalOpen(true);
@@ -13122,6 +13429,7 @@ Return ONLY the JSON object, no markdown.`;
                                       if (block.type === 'system-hero') { setSelectedBlockId(block.id); setIsHeroModalOpen(true); }
                                       else if (block.type === 'system-grid') { setSelectedBlockId(block.id); setIsGridModalOpen(true); }
                                       else if (block.type === 'system-collection') { setSelectedBlockId(block.id); setIsCollectionModalOpen(true); }
+                                      else if (block.type === 'system-category') { setSelectedBlockId(block.id); setIsCategoryModalOpen(true); }
                                       else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
                                       else if (block.type === 'system-scroll') { setSelectedBlockId(block.id); setIsScrollModalOpen(true); }
                                       else if (block.type === 'system-social') { setSelectedBlockId(block.id); setIsSocialModalOpen(true); }
@@ -13423,6 +13731,7 @@ Return ONLY the JSON object, no markdown.`;
                         if (block?.type === 'system-hero') setIsHeroModalOpen(true);
                         else if (block?.type === 'system-grid') setIsGridModalOpen(true);
                         else if (block?.type === 'system-collection') setIsCollectionModalOpen(true);
+                        else if (block?.type === 'system-category') setIsCategoryModalOpen(true);
                         else if (block?.type === 'system-scroll') setIsScrollModalOpen(true);
                         else if (block?.type === 'system-social') setIsSocialModalOpen(true);
                         else if (block?.type === 'system-rich-text') setIsRichTextModalOpen(true);
@@ -13460,6 +13769,7 @@ Return ONLY the JSON object, no markdown.`;
                         if (block.type === 'system-hero') { setIsHeroModalOpen(true); }
                         else if (block.type === 'system-grid') { setIsGridModalOpen(true); }
                         else if (block.type === 'system-collection') { setIsCollectionModalOpen(true); }
+                        else if (block.type === 'system-category') { setIsCategoryModalOpen(true); }
                         else if (block.type === 'system-footer') { setIsFooterModalOpen(true); }
                         else if (block.type === 'system-scroll') { setIsScrollModalOpen(true); }
                         else if (block.type === 'system-social') { setIsSocialModalOpen(true); }
@@ -14743,6 +15053,7 @@ Return ONLY the JSON object, no markdown.`;
       {renderHeroModal()}
       {renderGridModal()}
       {renderCollectionModal()}
+      {renderCategoryModal()}
       {renderSystemBlockModal()}
       {renderFooterModal()}
       {renderScrollModal()}
