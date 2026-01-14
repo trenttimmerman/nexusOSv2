@@ -5,8 +5,10 @@ import { useData } from '../context/DataContext';
 import { supabase } from '../lib/supabaseClient';
 import { GoogleGenAI } from '@google/genai';
 
-// Initialize Gemini AI
-const genAI = import.meta.env.VITE_GEMINI_API_KEY ? new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY) : null;
+// Initialize Gemini AI - only if key is set and not empty
+const genAI = (import.meta.env.VITE_GEMINI_API_KEY && import.meta.env.VITE_GEMINI_API_KEY.trim()) 
+  ? new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY) 
+  : null;
 
 // Import Options
 import { BLOG_OPTIONS } from './BlogLibrary';
