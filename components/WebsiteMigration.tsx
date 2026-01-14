@@ -181,6 +181,7 @@ export default function WebsiteMigration({ storeId, onComplete, onNavigateToPage
           
           return {
             id: productId,
+            store_id: storeId, // Required for RLS policies
             name: product.name || 'Untitled Product',
             description: product.description || '',
             price: product.price || 0,
@@ -230,6 +231,7 @@ export default function WebsiteMigration({ storeId, onComplete, onNavigateToPage
           
           return {
             id: collectionId,
+            store_id: storeId, // Required for RLS policies
             name: collection.name,
             slug: slug,
             description: collection.description || '',
