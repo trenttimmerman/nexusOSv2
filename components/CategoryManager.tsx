@@ -177,7 +177,8 @@ export const CategoryManager: React.FC = () => {
                   type="text"
                   value={formData.name}
                   onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 bg-white text-black border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{ color: '#000000' }}
                   placeholder="Category name"
                 />
               </div>
@@ -187,7 +188,8 @@ export const CategoryManager: React.FC = () => {
                   type="text"
                   value={formData.slug}
                   onChange={e => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                  className="w-full px-3 py-2 bg-white text-black border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{ color: '#000000' }}
                   placeholder="category-slug"
                 />
               </div>
@@ -198,7 +200,8 @@ export const CategoryManager: React.FC = () => {
               <textarea
                 value={formData.description}
                 onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                className="w-full px-3 py-2 bg-white text-black border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={{ color: '#000000' }}
                 rows={2}
                 placeholder="Optional description"
               />
@@ -227,7 +230,8 @@ export const CategoryManager: React.FC = () => {
                   type="number"
                   value={formData.display_order}
                   onChange={e => setFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-3 py-2 bg-white text-black border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{ color: '#000000' }}
                 />
               </div>
               
@@ -367,7 +371,8 @@ export const CategoryManager: React.FC = () => {
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             placeholder="Search categories..."
-            className="w-full pl-10 pr-4 py-2 bg-white text-black border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            style={{ color: '#000000' }}
           />
         </div>
       </div>
@@ -383,7 +388,8 @@ export const CategoryManager: React.FC = () => {
                 type="text"
                 value={formData.name}
                 onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full px-3 py-2 bg-white text-black border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={{ color: '#000000' }}
                 placeholder="Category name"
               />
             </div>
@@ -393,7 +399,8 @@ export const CategoryManager: React.FC = () => {
                 type="text"
                 value={formData.slug}
                 onChange={e => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                className="w-full px-3 py-2 bg-white text-black border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={{ color: '#000000' }}
                 placeholder="category-slug"
               />
             </div>

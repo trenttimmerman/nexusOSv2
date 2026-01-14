@@ -35,10 +35,10 @@ export const CONTACT_COMPONENTS: Record<string, React.FC<any>> = {
       </div>
       <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
         <div className="grid grid-cols-2 gap-4">
-          <input type="text" placeholder="Name" className="w-full p-3 bg-white text-black border rounded-lg focus:ring-2 focus:ring-black outline-none" />
-          <input type="email" placeholder="Email" className="w-full p-3 bg-white text-black border rounded-lg focus:ring-2 focus:ring-black outline-none" />
+          <input type="text" placeholder="Name" className="w-full p-3 bg-white border rounded-lg focus:ring-2 focus:ring-black outline-none" style={{ color: '#000000' }} />
+          <input type="email" placeholder="Email" className="w-full p-3 bg-white border rounded-lg focus:ring-2 focus:ring-black outline-none" style={{ color: '#000000' }} />
         </div>
-        <textarea placeholder="Message" rows={4} className="w-full p-3 bg-white text-black border rounded-lg focus:ring-2 focus:ring-black outline-none"></textarea>
+        <textarea placeholder="Message" rows={4} className="w-full p-3 bg-white border rounded-lg focus:ring-2 focus:ring-black outline-none" style={{ color: '#000000' }}></textarea>
         <button className="w-full py-4 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
           Send Message <Send size={16} />
         </button>
@@ -88,10 +88,10 @@ export const CONTACT_COMPONENTS: Record<string, React.FC<any>> = {
         </div>
         <div className="bg-gray-50 p-8 rounded-2xl">
           <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-            <input type="text" placeholder="Name" className="w-full p-3 bg-white text-black border rounded-lg focus:ring-2 focus:ring-black outline-none" />
-            <input type="email" placeholder="Email" className="w-full p-3 bg-white text-black border rounded-lg focus:ring-2 focus:ring-black outline-none" />
-            <input type="tel" placeholder="Phone" className="w-full p-3 bg-white text-black border rounded-lg focus:ring-2 focus:ring-black outline-none" />
-            <textarea placeholder="How can we help?" rows={4} className="w-full p-3 bg-white text-black border rounded-lg focus:ring-2 focus:ring-black outline-none"></textarea>
+            <input type="text" placeholder="Name" className="w-full p-3 bg-white border rounded-lg focus:ring-2 focus:ring-black outline-none" style={{ color: '#000000' }} />
+            <input type="email" placeholder="Email" className="w-full p-3 bg-white border rounded-lg focus:ring-2 focus:ring-black outline-none" style={{ color: '#000000' }} />
+            <input type="tel" placeholder="Phone" className="w-full p-3 bg-white border rounded-lg focus:ring-2 focus:ring-black outline-none" style={{ color: '#000000' }} />
+            <textarea placeholder="How can we help?" rows={4} className="w-full p-3 bg-white border rounded-lg focus:ring-2 focus:ring-black outline-none" style={{ color: '#000000' }}></textarea>
             <button className="w-full py-4 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-colors">
               Send Message
             </button>
@@ -242,9 +242,9 @@ export const CONTACT_COMPONENTS: Record<string, React.FC<any>> = {
         <div className="bg-gray-50 p-8 rounded-2xl">
           <h3 className="text-2xl font-bold mb-6">Still have questions?</h3>
           <form className="space-y-4">
-            <input type="text" placeholder="Name" className="w-full p-3 bg-white text-black border rounded-lg" />
-            <input type="email" placeholder="Email" className="w-full p-3 bg-white text-black border rounded-lg" />
-            <textarea placeholder="Message" rows={4} className="w-full p-3 bg-white text-black border rounded-lg"></textarea>
+            <input type="text" placeholder="Name" className="w-full p-3 bg-white border rounded-lg" style={{ color: '#000000' }} />
+            <input type="email" placeholder="Email" className="w-full p-3 bg-white border rounded-lg" style={{ color: '#000000' }} />
+            <textarea placeholder="Message" rows={4} className="w-full p-3 bg-white border rounded-lg" style={{ color: '#000000' }}></textarea>
             <button className="w-full py-3 bg-black text-white font-bold rounded-lg">Submit Question</button>
           </form>
         </div>

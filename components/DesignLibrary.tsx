@@ -287,7 +287,7 @@ const DesignCard: React.FC<DesignCardProps> = ({
               setIsEditingName(false);
             }
           }}
-          className="w-full px-2 py-1 bg-white text-black border border-blue-500 rounded mb-3 font-semibold"
+          className="w-full px-2 py-1 bg-white border border-blue-500 rounded mb-3 font-semibold text-black"
           autoFocus
         />
       ) : (
