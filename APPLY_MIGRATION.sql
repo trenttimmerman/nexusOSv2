@@ -31,22 +31,22 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_active_design ON store_designs(stor
 ALTER TABLE store_designs ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view their store designs" ON store_designs FOR SELECT USING (
-  store_id IN (SELECT store_id FROM user_stores WHERE user_id = auth.uid())
+  store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid())
   OR EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_superuser = true)
 );
 
 CREATE POLICY "Users can create designs for their stores" ON store_designs FOR INSERT WITH CHECK (
-  store_id IN (SELECT store_id FROM user_stores WHERE user_id = auth.uid())
+  store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid())
   OR EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_superuser = true)
 );
 
 CREATE POLICY "Users can update their store designs" ON store_designs FOR UPDATE USING (
-  store_id IN (SELECT store_id FROM user_stores WHERE user_id = auth.uid())
+  store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid())
   OR EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_superuser = true)
 );
 
 CREATE POLICY "Users can delete their store designs" ON store_designs FOR DELETE USING (
-  store_id IN (SELECT store_id FROM user_stores WHERE user_id = auth.uid())
+  store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid())
   OR EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_superuser = true)
 );
 
