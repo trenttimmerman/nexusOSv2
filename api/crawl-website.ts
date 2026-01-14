@@ -1,6 +1,12 @@
 /**
  * Vercel Serverless Function - Website Crawler Proxy
  * Bypasses CORS by crawling websites server-side
+ * 
+ * Features:
+ * - robots.txt compliance
+ * - Rate limiting (configurable delay between requests)
+ * - Retry logic for failed requests
+ * - Sitemap.xml parsing for better discovery
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
@@ -10,6 +16,9 @@ interface CrawlOptions {
   maxPages?: number;
   includeProducts?: boolean;
   includeCollections?: boolean;
+  rateLimitMs?: number; // Delay between requests (default: 100ms)
+  respectRobotsTxt?: boolean; // Check robots.txt (default: true)
+  maxRetries?: number; // Retry failed requests (default: 2)
 }
 
 interface CrawlResult {
@@ -19,6 +28,14 @@ interface CrawlResult {
   design: any;
   platform: string;
   errors: string[];
+  robotsTxtAllowed?: boolean;
+  sitemapUrls?: string[];
+}
+
+interface RobotsTxtRules {
+  allowed: boolean;
+  disallowedPaths: string[];
+  crawlDelay?: number;
 }
 
 export default async function handler(
@@ -50,6 +67,13 @@ export default async function handler(
 
     console.log(`[Crawler] Starting crawl for: ${targetUrl.href}`);
 
+    // Configuration
+    const maxDepth = options.maxDepth || 3;
+    const maxPages = options.maxPages || 50;
+    const rateLimitMs = options.rateLimitMs || 100; // 100ms between requests
+    const respectRobotsTxt = options.respectRobotsTxt !== false; // Default true
+    const maxRetries = options.maxRetries || 2;
+
     // Initialize crawl result
     const result: CrawlResult = {
       pages: [],
@@ -62,15 +86,47 @@ export default async function handler(
         navigation: { header: [], footer: [] }
       },
       platform: 'unknown',
-      errors: []
+      errors: [],
+      robotsTxtAllowed: true,
+      sitemapUrls: []
     };
 
-    const maxDepth = options.maxDepth || 3;
-    const maxPages = options.maxPages || 50;
+    // Check robots.txt
+    let robotsRules: RobotsTxtRules = { allowed: true, disallowedPaths: [] };
+    if (respectRobotsTxt) {
+      robotsRules = await checkRobotsTxt(targetUrl.origin);
+      result.robotsTxtAllowed = robotsRules.allowed;
+      
+      if (!robotsRules.allowed) {
+        console.log(`[Crawler] Blocked by robots.txt`);
+        return res.status(403).json({ 
+          error: 'Crawling not allowed by robots.txt',
+          result 
+        });
+      }
+      
+      // Use crawl-delay from robots.txt if specified
+      if (robotsRules.crawlDelay) {
+        console.log(`[Crawler] Using crawl-delay from robots.txt: ${robotsRules.crawlDelay}ms`);
+      }
+    }
+
+    // Try to fetch sitemap for better URL discovery
+    const sitemapUrls = await fetchSitemap(targetUrl.origin);
+    result.sitemapUrls = sitemapUrls.slice(0, 20); // Limit for response size
+    console.log(`[Crawler] Found ${sitemapUrls.length} URLs in sitemap`);
+
     const visitedUrls = new Set<string>();
     const urlsToVisit: Array<{ url: string; depth: number }> = [
       { url: targetUrl.href, depth: 0 }
     ];
+
+    // Add sitemap URLs to queue (low priority)
+    for (const sitemapUrl of sitemapUrls.slice(0, maxPages)) {
+      if (!visitedUrls.has(sitemapUrl)) {
+        urlsToVisit.push({ url: sitemapUrl, depth: 1 });
+      }
+    }
 
     // Crawl pages
     while (urlsToVisit.length > 0 && result.pages.length < maxPages) {
@@ -82,21 +138,56 @@ export default async function handler(
 
       visitedUrls.add(currentUrl);
 
+      // Check if URL is disallowed by robots.txt
+      if (respectRobotsTxt && isDisallowed(currentUrl, robotsRules.disallowedPaths)) {
+        console.log(`[Crawler] Skipping ${currentUrl} - disallowed by robots.txt`);
+        continue;
+      }
+
+      // Rate limiting - wait between requests
+      if (visitedUrls.size > 1) { // Skip delay for first request
+        const delay = robotsRules.crawlDelay || rateLimitMs;
+        await sleep(delay);
+      }
+
       try {
         console.log(`[Crawler] Fetching: ${currentUrl} (depth: ${depth})`);
 
-        const response = await fetch(currentUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (compatible; NexusOSBot/1.0; +https://nexusos.io/bot)',
-          },
-          signal: AbortSignal.timeout(10000) // 10 second timeout
-        });
+        // Retry logic
+        let html: string | null = null;
+        let lastError: Error | null = null;
+        
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+          try {
+            if (attempt > 0) {
+              console.log(`[Crawler] Retry ${attempt}/${maxRetries} for ${currentUrl}`);
+              await sleep(1000 * attempt); // Exponential backoff
+            }
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+            const response = await fetch(currentUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (compatible; NexusOSBot/1.0; +https://nexusos.io/bot)',
+              },
+              signal: AbortSignal.timeout(10000) // 10 second timeout
+            });
+
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+
+            html = await response.text();
+            break; // Success, exit retry loop
+          } catch (error: any) {
+            lastError = error;
+            if (attempt === maxRetries) {
+              throw error; // Final attempt failed
+            }
+          }
         }
 
-        const html = await response.text();
+        if (!html) {
+          throw lastError || new Error('Failed to fetch HTML');
+        }
         const pageData = await parseHTML(html, currentUrl, targetUrl.origin);
 
         result.pages.push(pageData);
@@ -603,4 +694,147 @@ function resolveUrl(url: string, baseOrigin: string): string | null {
   }
   
   return null;
+}
+
+/**
+ * Sleep utility for rate limiting
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Check robots.txt for crawling permissions
+ */
+async function checkRobotsTxt(origin: string): Promise<RobotsTxtRules> {
+  const rules: RobotsTxtRules = {
+    allowed: true,
+    disallowedPaths: []
+  };
+
+  try {
+    const robotsUrl = `${origin}/robots.txt`;
+    const response = await fetch(robotsUrl, {
+      signal: AbortSignal.timeout(5000)
+    });
+
+    if (!response.ok) {
+      // No robots.txt means crawling is allowed
+      return rules;
+    }
+
+    const robotsTxt = await response.text();
+    const lines = robotsTxt.split('\n');
+    
+    let isRelevantSection = false;
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      
+      // Check for our user-agent or wildcard
+      if (trimmed.toLowerCase().startsWith('user-agent:')) {
+        const agent = trimmed.substring(11).trim().toLowerCase();
+        isRelevantSection = agent === '*' || agent.includes('nexusosbot');
+      }
+      
+      // Parse rules for relevant section
+      if (isRelevantSection) {
+        if (trimmed.toLowerCase().startsWith('disallow:')) {
+          const path = trimmed.substring(9).trim();
+          if (path === '/') {
+            // Disallow all
+            rules.allowed = false;
+            return rules;
+          }
+          if (path) {
+            rules.disallowedPaths.push(path);
+          }
+        }
+        
+        if (trimmed.toLowerCase().startsWith('crawl-delay:')) {
+          const delay = parseInt(trimmed.substring(12).trim(), 10);
+          if (!isNaN(delay)) {
+            rules.crawlDelay = delay * 1000; // Convert seconds to milliseconds
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.log('[checkRobotsTxt] Error (allowing crawl):', error);
+    // On error, allow crawling
+  }
+
+  return rules;
+}
+
+/**
+ * Check if URL is disallowed by robots.txt rules
+ */
+function isDisallowed(url: string, disallowedPaths: string[]): boolean {
+  try {
+    const urlPath = new URL(url).pathname;
+    
+    for (const disallowedPath of disallowedPaths) {
+      if (disallowedPath === '/') {
+        return true; // Everything is disallowed
+      }
+      
+      // Check if URL starts with disallowed path
+      if (urlPath.startsWith(disallowedPath)) {
+        return true;
+      }
+      
+      // Support wildcards (* at end)
+      if (disallowedPath.endsWith('*')) {
+        const prefix = disallowedPath.slice(0, -1);
+        if (urlPath.startsWith(prefix)) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('[isDisallowed] Error:', error);
+    return false; // On error, allow
+  }
+}
+
+/**
+ * Fetch and parse sitemap.xml for URL discovery
+ */
+async function fetchSitemap(origin: string): Promise<string[]> {
+  const urls: string[] = [];
+  
+  try {
+    const sitemapUrl = `${origin}/sitemap.xml`;
+    const response = await fetch(sitemapUrl, {
+      signal: AbortSignal.timeout(5000)
+    });
+
+    if (!response.ok) {
+      return urls; // No sitemap found
+    }
+
+    const xml = await response.text();
+    
+    // Parse sitemap XML (simple regex approach)
+    // Matches: <loc>https://example.com/page</loc>
+    const locPattern = /<loc>([^<]+)<\/loc>/gi;
+    const matches = xml.matchAll(locPattern);
+    
+    for (const match of matches) {
+      const url = match[1].trim();
+      if (url.startsWith(origin)) {
+        urls.push(url);
+      }
+    }
+    
+    console.log(`[fetchSitemap] Found ${urls.length} URLs in sitemap`);
+    
+  } catch (error) {
+    console.log('[fetchSitemap] No sitemap or error (continuing without):', error);
+  }
+
+  return urls;
 }
