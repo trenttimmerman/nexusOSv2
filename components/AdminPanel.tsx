@@ -4849,6 +4849,87 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             {/* LEFT PANEL - Editing Tools (30%) */}
             <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative">
               <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                {/* 0. Collection Data (if specific collection selected) */}
+                {collectionData.collectionId && (() => {
+                  const selectedCollection = collections.find(c => c.id === collectionData.collectionId);
+                  return selectedCollection ? (
+                    <div className="mb-6 p-4 bg-blue-600/10 border border-blue-600/30 rounded-xl">
+                      <h4 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <Package size={14} /> Collection Settings
+                      </h4>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-xs text-neutral-400 mb-1.5 block">Collection Name</label>
+                          <input
+                            type="text"
+                            value={selectedCollection.name}
+                            onChange={e => {
+                              const updated = { ...selectedCollection, name: e.target.value };
+                              saveCollection(updated);
+                            }}
+                            className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            style={{ color: '#ffffff' }}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-neutral-400 mb-1.5 block">Description</label>
+                          <textarea
+                            value={selectedCollection.description || ''}
+                            onChange={e => {
+                              const updated = { ...selectedCollection, description: e.target.value };
+                              saveCollection(updated);
+                            }}
+                            className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                            style={{ color: '#ffffff' }}
+                            rows={3}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-neutral-400 mb-1.5 block">Image URL</label>
+                          <input
+                            type="text"
+                            value={selectedCollection.image_url || ''}
+                            onChange={e => {
+                              const updated = { ...selectedCollection, image_url: e.target.value };
+                              saveCollection(updated);
+                            }}
+                            className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            style={{ color: '#ffffff' }}
+                            placeholder="https://..."
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <label className="flex items-center justify-between py-2 px-3 bg-black border border-neutral-700 rounded-lg cursor-pointer">
+                            <span className="text-xs text-neutral-300">Featured</span>
+                            <input
+                              type="checkbox"
+                              checked={selectedCollection.is_featured || false}
+                              onChange={e => {
+                                const updated = { ...selectedCollection, is_featured: e.target.checked };
+                                saveCollection(updated);
+                              }}
+                              className="rounded"
+                            />
+                          </label>
+                          <label className="flex items-center justify-between py-2 px-3 bg-black border border-neutral-700 rounded-lg cursor-pointer">
+                            <span className="text-xs text-neutral-300">Visible</span>
+                            <input
+                              type="checkbox"
+                              checked={selectedCollection.is_visible !== false}
+                              onChange={e => {
+                                const updated = { ...selectedCollection, is_visible: e.target.checked };
+                                saveCollection(updated);
+                              }}
+                              className="rounded"
+                            />
+                          </label>
+                        </div>
+                      </div>
+                      <div className="border-t border-blue-600/30 my-4"></div>
+                    </div>
+                  ) : null;
+                })()}
+
                 {/* 1. Layout Selection */}
                 <div className="mb-6">
                   <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -5331,6 +5412,78 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             {/* LEFT PANEL - Editing Tools (30%) */}
             <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative">
               <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                {/* 0. Category Data (if specific category selected) */}
+                {categoryData.categoryId && (() => {
+                  const selectedCategory = categories.find(c => c.id === categoryData.categoryId);
+                  return selectedCategory ? (
+                    <div className="mb-6 p-4 bg-purple-600/10 border border-purple-600/30 rounded-xl">
+                      <h4 className="text-xs font-bold text-purple-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <FolderTree size={14} /> Category Settings
+                      </h4>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-xs text-neutral-400 mb-1.5 block">Category Name</label>
+                          <input
+                            type="text"
+                            value={selectedCategory.name}
+                            onChange={e => {
+                              const updated = { ...selectedCategory, name: e.target.value };
+                              saveCategory(updated);
+                            }}
+                            className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            style={{ color: '#ffffff' }}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-neutral-400 mb-1.5 block">Description</label>
+                          <textarea
+                            value={selectedCategory.description || ''}
+                            onChange={e => {
+                              const updated = { ...selectedCategory, description: e.target.value };
+                              saveCategory(updated);
+                            }}
+                            className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                            style={{ color: '#ffffff' }}
+                            rows={3}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-neutral-400 mb-1.5 block">Image URL</label>
+                          <input
+                            type="text"
+                            value={selectedCategory.image_url || ''}
+                            onChange={e => {
+                              const updated = { ...selectedCategory, image_url: e.target.value };
+                              saveCategory(updated);
+                            }}
+                            className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            style={{ color: '#ffffff' }}
+                            placeholder="https://..."
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <label className="flex items-center justify-between py-2 px-3 bg-black border border-neutral-700 rounded-lg cursor-pointer">
+                            <span className="text-xs text-neutral-300">Visible</span>
+                            <input
+                              type="checkbox"
+                              checked={selectedCategory.is_visible !== false}
+                              onChange={e => {
+                                const updated = { ...selectedCategory, is_visible: e.target.checked };
+                                saveCategory(updated);
+                              }}
+                              className="rounded"
+                            />
+                          </label>
+                          <div className="py-2 px-3 bg-black border border-neutral-700 rounded-lg">
+                            <span className="text-xs text-neutral-300">Order: {selectedCategory.display_order || 0}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="border-t border-purple-600/30 my-4"></div>
+                    </div>
+                  ) : null;
+                })()}
+
                 {/* 1. Layout Selection */}
                 <div className="mb-6">
                   <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
