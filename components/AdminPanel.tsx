@@ -6435,6 +6435,39 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const currentVariant = activeBlock?.variant || 'col-simple';
     const CollapsibleComponent = COLLAPSIBLE_COMPONENTS[currentVariant];
 
+    const updateCollapsibleData = (updates: any) => {
+      setLocalPages(prev => prev.map(p => {
+        if (p.id !== activePage.id) return p;
+        return {
+          ...p,
+          blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, data: { ...b.data, ...updates } } : b)
+        };
+      }));
+      setHasUnsavedChanges(true);
+    };
+
+    const items = collapsibleData.items || [
+      { title: 'Question 1', content: 'Answer 1' },
+      { title: 'Question 2', content: 'Answer 2' },
+      { title: 'Question 3', content: 'Answer 3' },
+    ];
+
+    const addItem = () => {
+      const newItems = [...items, { title: 'New Item', content: 'Add your content here...' }];
+      updateCollapsibleData({ items: newItems });
+    };
+
+    const updateItem = (index: number, field: 'title' | 'content', value: string) => {
+      const newItems = [...items];
+      newItems[index] = { ...newItems[index], [field]: value };
+      updateCollapsibleData({ items: newItems });
+    };
+
+    const deleteItem = (index: number) => {
+      const newItems = items.filter((_: any, i: number) => i !== index);
+      updateCollapsibleData({ items: newItems });
+    };
+
     return (
       <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
         <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
@@ -6449,20 +6482,191 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsCollapsibleModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
-              <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Accordion Styles</h4>
-              <div className="grid grid-cols-1 gap-2">
-                {COLLAPSIBLE_OPTIONS.map(opt => (
-                  <button key={opt.id} onClick={() => updateActiveBlockData(selectedBlockId, { ...collapsibleData, variant: opt.id })} className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-indigo-600/20 border-indigo-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
-                    <div className="font-bold text-sm">{opt.name}</div>
-                    <div className="text-xs opacity-60">{opt.description}</div>
-                  </button>
-                ))}
+            {/* LEFT PANEL */}
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0">
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                {/* Accordion Styles */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
+                    <LayoutTemplate size={14} /> Accordion Styles
+                  </h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {COLLAPSIBLE_OPTIONS.map(opt => (
+                      <button 
+                        key={opt.id} 
+                        onClick={() => {
+                          setLocalPages(prev => prev.map(p => {
+                            if (p.id !== activePage.id) return p;
+                            return {
+                              ...p,
+                              blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: opt.id } : b)
+                            };
+                          }));
+                          setHasUnsavedChanges(true);
+                        }}
+                        className={`p-3 rounded-lg border text-left ${currentVariant === opt.id ? 'bg-indigo-600/20 border-indigo-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}
+                      >
+                        <div className="font-bold text-sm">{opt.name}</div>
+                        <div className="text-xs opacity-60">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t border-neutral-800 my-4"></div>
+
+                {/* Content Items */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-2">
+                      <Type size={14} /> Content Items ({items.length})
+                    </h4>
+                    <button
+                      onClick={addItem}
+                      className="p-1 text-indigo-400 hover:text-indigo-300 transition-colors"
+                      title="Add Item"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {items.map((item: any, index: number) => (
+                      <div key={index} className="bg-neutral-900 border border-neutral-800 rounded-lg p-3 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs text-neutral-500">#{index + 1}</span>
+                          <button
+                            onClick={() => deleteItem(index)}
+                            className="p-1 text-red-400 hover:text-red-300 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={item.title || ''}
+                          onChange={(e) => updateItem(index, 'title', e.target.value)}
+                          placeholder="Item title..."
+                          className="w-full bg-neutral-800 border border-neutral-700 rounded px-2 py-1.5 text-xs text-white focus:border-indigo-500 outline-none"
+                        />
+                        <textarea
+                          value={item.content || ''}
+                          onChange={(e) => updateItem(index, 'content', e.target.value)}
+                          placeholder="Item content..."
+                          rows={2}
+                          className="w-full bg-neutral-800 border border-neutral-700 rounded px-2 py-1.5 text-xs text-white focus:border-indigo-500 outline-none resize-none"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t border-neutral-800 my-4"></div>
+
+                {/* Header Content */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
+                    <AlignLeft size={14} /> Section Header
+                  </h4>
+                  <input
+                    type="text"
+                    value={collapsibleData.heading || ''}
+                    onChange={(e) => updateCollapsibleData({ heading: e.target.value })}
+                    placeholder="Section heading..."
+                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 outline-none"
+                  />
+                </div>
+
+                <div className="border-t border-neutral-800 my-4"></div>
+
+                {/* Color Controls */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
+                    <Palette size={14} /> Colors
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collapsibleData.backgroundColor || '#ffffff'}
+                        onChange={(e) => updateCollapsibleData({ backgroundColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Background</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collapsibleData.headingColor || '#000000'}
+                        onChange={(e) => updateCollapsibleData({ headingColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Heading</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collapsibleData.titleColor || '#000000'}
+                        onChange={(e) => updateCollapsibleData({ titleColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Item Title</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collapsibleData.contentColor || '#6b7280'}
+                        onChange={(e) => updateCollapsibleData({ contentColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Content</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collapsibleData.borderColor || '#e5e7eb'}
+                        onChange={(e) => updateCollapsibleData({ borderColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Borders</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                      <input
+                        type="color"
+                        value={collapsibleData.accentColor || '#6366f1'}
+                        onChange={(e) => updateCollapsibleData({ accentColor: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                      <span className="text-[10px] text-neutral-300 leading-tight">Accent</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0">
+                <button 
+                  onClick={() => setIsCollapsibleModalOpen(false)}
+                  className="w-full px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-bold text-sm transition-colors text-white"
+                >
+                  Done
+                </button>
               </div>
             </div>
-            <div className="flex-1 bg-neutral-800 p-6 overflow-auto">
-              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
-                {CollapsibleComponent && <CollapsibleComponent data={collapsibleData} isEditable={false} onUpdate={() => {}} />}
+
+            {/* RIGHT PANEL - Preview */}
+            <div className="flex-1 bg-neutral-800 flex flex-col">
+              <div className="p-3 border-b border-neutral-700 bg-neutral-900 flex items-center justify-between shrink-0">
+                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Live Preview</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                  <span className="text-[10px] text-neutral-500">Updates instantly</span>
+                </div>
+              </div>
+              <div className="flex-1 overflow-auto p-6">
+                <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                  {CollapsibleComponent && <CollapsibleComponent data={collapsibleData} isEditable={false} onUpdate={() => {}} />}
+                </div>
               </div>
             </div>
           </div>

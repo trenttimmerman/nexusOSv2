@@ -673,25 +673,47 @@ export const COLLAPSIBLE_COMPONENTS: Record<string, React.FC<any>> = {
     ];
 
     return (
-      <div className="py-20 px-6 max-w-2xl mx-auto">
-        <EditableText
-          value={data?.heading || 'Details'}
-          onChange={(val) => onUpdate?.({ ...data, heading: val })}
-          isEditable={isEditable}
-          className="text-2xl font-bold mb-8"
-        />
-        <div className="space-y-4">
-          {items.map((item: any, i: number) => (
-            <div key={i} className="border-b border-neutral-200 pb-4">
-              <button onClick={() => setOpenIndex(openIndex === i ? null : i)} className="w-full flex justify-between items-center text-left py-2">
-                <span className="font-bold text-lg">{item.title}</span>
-                {openIndex === i ? <Minus size={20} /> : <Plus size={20} />}
-              </button>
-              <div className={`overflow-hidden transition-all duration-300 ${openIndex === i ? 'max-h-40 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
-                <p className="text-neutral-600">{item.content}</p>
+      <div 
+        style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
+        className="py-20 px-6"
+      >
+        <div className="max-w-2xl mx-auto">
+          <EditableText
+            value={data?.heading || 'Details'}
+            onChange={(val) => onUpdate?.({ ...data, heading: val })}
+            isEditable={isEditable}
+            style={{ color: data?.headingColor || '#000000' }}
+            className="text-2xl font-bold mb-8"
+          />
+          <div className="space-y-4">
+            {items.map((item: any, i: number) => (
+              <div 
+                key={i} 
+                style={{ borderColor: data?.borderColor || '#e5e7eb' }}
+                className="border-b pb-4"
+              >
+                <button 
+                  onClick={() => setOpenIndex(openIndex === i ? null : i)} 
+                  className="w-full flex justify-between items-center text-left py-2"
+                >
+                  <span 
+                    style={{ color: data?.titleColor || '#000000' }}
+                    className="font-bold text-lg"
+                  >
+                    {item.title}
+                  </span>
+                  <span style={{ color: data?.accentColor || '#6366f1' }}>
+                    {openIndex === i ? <Minus size={20} /> : <Plus size={20} />}
+                  </span>
+                </button>
+                <div className={`overflow-hidden transition-all duration-300 ${openIndex === i ? 'max-h-40 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                  <p style={{ color: data?.contentColor || '#6b7280' }}>
+                    {item.content}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -706,26 +728,57 @@ export const COLLAPSIBLE_COMPONENTS: Record<string, React.FC<any>> = {
     ];
 
     return (
-      <div className="py-24 px-6 bg-neutral-50">
+      <div 
+        style={{ backgroundColor: data?.backgroundColor || '#f9fafb' }}
+        className="py-24 px-6"
+      >
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <EditableText
               value={data?.heading || 'Frequently Asked Questions'}
               onChange={(val) => onUpdate?.({ ...data, heading: val })}
               isEditable={isEditable}
+              style={{ color: data?.headingColor || '#000000' }}
               className="text-3xl font-bold mb-4"
             />
-            <p className="text-neutral-500">Everything you need to know about the product and billing.</p>
+            <p style={{ color: data?.contentColor || '#6b7280' }}>
+              Everything you need to know about the product and billing.
+            </p>
           </div>
           <div className="space-y-4">
             {items.map((item: any, i: number) => (
-              <div key={i} className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-                <button onClick={() => setOpenIndex(openIndex === i ? null : i)} className="w-full flex justify-between items-center text-left p-6 hover:bg-neutral-50 transition-colors">
-                  <span className="font-bold text-neutral-900">{item.title}</span>
-                  {openIndex === i ? <ChevronUp size={20} className="text-neutral-400" /> : <ChevronDown size={20} className="text-neutral-400" />}
+              <div 
+                key={i} 
+                style={{ 
+                  backgroundColor: data?.cardBgColor || '#ffffff',
+                  borderColor: data?.borderColor || '#e5e7eb'
+                }}
+                className="rounded-xl border overflow-hidden"
+              >
+                <button 
+                  onClick={() => setOpenIndex(openIndex === i ? null : i)} 
+                  className="w-full flex justify-between items-center text-left p-6 hover:opacity-90 transition-opacity"
+                >
+                  <span 
+                    style={{ color: data?.titleColor || '#111827' }}
+                    className="font-bold"
+                  >
+                    {item.title}
+                  </span>
+                  <span style={{ color: data?.accentColor || '#6366f1' }}>
+                    {openIndex === i ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </span>
                 </button>
-                <div className={`transition-all duration-300 bg-neutral-50/50 ${openIndex === i ? 'max-h-40 opacity-100 border-t border-neutral-100' : 'max-h-0 opacity-0'}`}>
-                  <p className="text-neutral-600 p-6 pt-4">{item.content}</p>
+                <div 
+                  style={{ borderColor: data?.borderColor || '#e5e7eb' }}
+                  className={`transition-all duration-300 ${openIndex === i ? 'max-h-40 opacity-100 border-t' : 'max-h-0 opacity-0'}`}
+                >
+                  <p 
+                    style={{ color: data?.contentColor || '#6b7280' }}
+                    className="p-6 pt-4"
+                  >
+                    {item.content}
+                  </p>
                 </div>
               </div>
             ))}
