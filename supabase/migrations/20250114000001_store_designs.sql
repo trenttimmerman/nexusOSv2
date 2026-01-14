@@ -40,16 +40,17 @@ CREATE TABLE IF NOT EXISTS store_designs (
   
   -- Metadata
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
-  -- Ensure only one active design per store
-  CONSTRAINT unique_active_design UNIQUE (store_id, is_active) 
-    WHERE is_active = true
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_store_designs_store_id ON store_designs(store_id);
 CREATE INDEX IF NOT EXISTS idx_store_designs_active ON store_designs(store_id, is_active) WHERE is_active = true;
+
+-- Create partial unique index to ensure only one active design per store
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_active_design 
+  ON store_designs(store_id) 
+  WHERE is_active = true;
 
 -- Enable RLS
 ALTER TABLE store_designs ENABLE ROW LEVEL SECURITY;
