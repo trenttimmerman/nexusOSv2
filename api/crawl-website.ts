@@ -125,11 +125,32 @@ export default async function handler(
 
         // Add internal links to queue
         if (depth < maxDepth) {
+          // Prioritize product and collection pages
+          const productLinks: Array<{ url: string; depth: number }> = [];
+          const collectionLinks: Array<{ url: string; depth: number }> = [];
+          const otherLinks: Array<{ url: string; depth: number }> = [];
+
           for (const link of pageData.links) {
             if (link.startsWith(targetUrl.origin) && !visitedUrls.has(link)) {
-              urlsToVisit.push({ url: link, depth: depth + 1 });
+              const linkLower = link.toLowerCase();
+              
+              // Prioritize product pages
+              if (linkLower.includes('/product') || linkLower.includes('/item') || linkLower.includes('/p/')) {
+                productLinks.push({ url: link, depth: depth + 1 });
+              }
+              // Then collection/category pages
+              else if (linkLower.includes('/collection') || linkLower.includes('/category') || linkLower.includes('/shop')) {
+                collectionLinks.push({ url: link, depth: depth + 1 });
+              }
+              // Other pages (limited to avoid crawling too much)
+              else if (otherLinks.length < 5) {
+                otherLinks.push({ url: link, depth: depth + 1 });
+              }
             }
           }
+
+          // Add in priority order: products first, then collections, then limited other pages
+          urlsToVisit.push(...productLinks, ...collectionLinks, ...otherLinks);
         }
 
       } catch (error: any) {
@@ -139,6 +160,29 @@ export default async function handler(
     }
 
     console.log(`[Crawler] Complete. Pages: ${result.pages.length}, Products: ${result.products.length}, Collections: ${result.collections.length}`);
+
+    // Deduplicate products by name and URL
+    const uniqueProducts = new Map();
+    for (const product of result.products) {
+      const key = `${product.name}|${product.url}`;
+      if (!uniqueProducts.has(key)) {
+        uniqueProducts.set(key, product);
+      }
+    }
+    result.products = Array.from(uniqueProducts.values());
+
+    // Deduplicate collections by URL
+    const uniqueCollections = new Map();
+    for (const collection of result.collections) {
+      // Prioritize actual collection pages over discovered links
+      const existing = uniqueCollections.get(collection.url);
+      if (!existing || (!collection.isDiscovered && existing.isDiscovered)) {
+        uniqueCollections.set(collection.url, collection);
+      }
+    }
+    result.collections = Array.from(uniqueCollections.values());
+
+    console.log(`[Crawler] After deduplication - Products: ${result.products.length}, Collections: ${result.collections.length}`);
 
     return res.status(200).json(result);
 
@@ -203,12 +247,27 @@ async function parseHTML(html: string, url: string, baseOrigin: string) {
 
   // Detect page type
   const urlPath = new URL(url).pathname.toLowerCase();
-  if (urlPath.includes('/products/') || urlPath.includes('/product/')) {
-    pageData.type = 'product';
-  } else if (urlPath.includes('/collections/') || urlPath.includes('/collection/') || urlPath.includes('/category/')) {
-    pageData.type = 'collection';
-  } else if (urlPath === '/' || urlPath === '') {
-    pageData.type = 'home';
+  
+  // Check OpenGraph type first (most reliable)
+  const ogTypeMatch = html.match(/<meta[^>]*property=["']og:type["'][^>]*content=["']([^"']+)["']/i);
+  if (ogTypeMatch) {
+    const ogType = ogTypeMatch[1].toLowerCase();
+    if (ogType === 'product') {
+      pageData.type = 'product';
+    } else if (ogType === 'website' && (urlPath === '/' || urlPath === '')) {
+      pageData.type = 'home';
+    }
+  }
+  
+  // Fallback to URL pattern matching
+  if (pageData.type === 'page') {
+    if (urlPath.includes('/product') || urlPath.includes('/item') || urlPath.includes('/p/')) {
+      pageData.type = 'product';
+    } else if (urlPath.includes('/collection') || urlPath.includes('/category') || urlPath.includes('/shop')) {
+      pageData.type = 'collection';
+    } else if (urlPath === '/' || urlPath === '') {
+      pageData.type = 'home';
+    }
   }
 
   return pageData;
@@ -239,29 +298,140 @@ function detectPlatform(html: string): string {
 function extractProducts(html: string, url: string): any[] {
   const products: any[] = [];
 
-  // Simple heuristic: look for product schema or common product patterns
-  const productSchemaMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([^<]+)<\/script>/gi);
-  
-  if (productSchemaMatch) {
-    for (const match of productSchemaMatch) {
+  try {
+    // Method 1: JSON-LD Schema.org Product markup (most reliable)
+    const productSchemaMatches = html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([^<]+)<\/script>/gi);
+    
+    for (const match of productSchemaMatches) {
       try {
-        const jsonMatch = match.match(/>([^<]+)</);
-        if (jsonMatch) {
-          const data = JSON.parse(jsonMatch[1]);
-          if (data['@type'] === 'Product') {
+        const jsonText = match[1].trim();
+        if (!jsonText) continue;
+        
+        const data = JSON.parse(jsonText);
+        
+        // Handle both single objects and arrays
+        const items = Array.isArray(data) ? data : [data];
+        
+        for (const item of items) {
+          try {
+            // Check if it's a Product type (supports @type as string or array)
+            const itemType = Array.isArray(item['@type']) ? item['@type'] : [item['@type']];
+            const isProduct = itemType.some((t: string) => t === 'Product' || t?.includes('Product'));
+            
+            if (isProduct && item.name) {
+              const product: any = {
+                name: item.name || 'Untitled Product',
+                description: item.description || '',
+                url: item.url || url,
+                images: [],
+                price: 0,
+                sku: item.sku || undefined,
+                brand: item.brand?.name || undefined,
+                variants: []
+              };
+
+              // Extract images
+              if (item.image) {
+                product.images = Array.isArray(item.image) ? item.image : [item.image];
+              }
+
+              // Extract price from offers
+              if (item.offers) {
+                const offers = Array.isArray(item.offers) ? item.offers : [item.offers];
+                const mainOffer = offers[0];
+                
+                if (mainOffer) {
+                  product.price = parseFloat(mainOffer.price || mainOffer.lowPrice || '0');
+                  product.currency = mainOffer.priceCurrency || 'USD';
+                  product.availability = mainOffer.availability?.split('/').pop() || 'unknown';
+                  
+                  // Check for compare at price
+                  if (mainOffer.priceSpecification?.price) {
+                    product.compareAtPrice = parseFloat(mainOffer.priceSpecification.price);
+                  }
+                }
+              }
+
+              // Extract variants if available
+              if (item.hasVariant || item.model) {
+                const variants = Array.isArray(item.hasVariant) ? item.hasVariant : item.hasVariant ? [item.hasVariant] : [];
+                variants.forEach((variant: any) => {
+                  if (variant.name || variant.sku) {
+                    product.variants.push({
+                      name: variant.name,
+                      sku: variant.sku,
+                      price: parseFloat(variant.offers?.price || product.price)
+                    });
+                  }
+                });
+              }
+
+              products.push(product);
+            }
+          } catch (itemError) {
+            // Skip individual item errors
+            console.error('[extractProducts] Error parsing item:', itemError);
+          }
+        }
+      } catch (jsonError) {
+        // Skip JSON parsing errors for this script tag
+        console.error('[extractProducts] JSON parse error:', jsonError);
+      }
+    }
+
+    // Method 2: Shopify product JSON (if detected)
+    if (html.includes('Shopify')) {
+      try {
+        const shopifyProductMatch = html.match(/var\s+meta\s*=\s*({[^}]+})/);
+        if (shopifyProductMatch) {
+          const meta = JSON.parse(shopifyProductMatch[1]);
+          if (meta.product) {
             products.push({
-              name: data.name,
-              description: data.description,
-              price: parseFloat(data.offers?.price) || 0,
-              images: Array.isArray(data.image) ? data.image : [data.image],
-              url
+              name: meta.product.title,
+              description: meta.product.description,
+              price: parseFloat(meta.product.price) / 100,
+              images: meta.product.images || [],
+              url: url,
+              sku: meta.product.variants?.[0]?.sku,
+              variants: meta.product.variants || []
             });
           }
         }
-      } catch (e) {
-        // Ignore parsing errors
+      } catch (shopifyError) {
+        // Shopify extraction failed, continue
       }
     }
+
+    // Method 3: OpenGraph product meta tags (fallback)
+    if (products.length === 0) {
+      try {
+        const ogType = html.match(/<meta[^>]*property=["']og:type["'][^>]*content=["']product["']/i);
+        if (ogType) {
+          const ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+          const ogDescription = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+          const ogImage = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+          const ogPrice = html.match(/<meta[^>]*property=["']product:price:amount["'][^>]*content=["']([^"']+)["']/i);
+          const ogCurrency = html.match(/<meta[^>]*property=["']product:price:currency["'][^>]*content=["']([^"']+)["']/i);
+
+          if (ogTitle) {
+            products.push({
+              name: ogTitle[1],
+              description: ogDescription?.[1] || '',
+              price: parseFloat(ogPrice?.[1] || '0'),
+              currency: ogCurrency?.[1] || 'USD',
+              images: ogImage ? [ogImage[1]] : [],
+              url: url,
+              variants: []
+            });
+          }
+        }
+      } catch (ogError) {
+        // OpenGraph extraction failed
+      }
+    }
+
+  } catch (error) {
+    console.error('[extractProducts] Unexpected error:', error);
   }
 
   return products;
@@ -273,17 +443,97 @@ function extractProducts(html: string, url: string): any[] {
 function extractCollections(html: string, url: string): any[] {
   const collections: any[] = [];
 
-  // Look for collection patterns
-  const urlPath = new URL(url).pathname.toLowerCase();
-  if (urlPath.includes('/collections/') || urlPath.includes('/collection/') || urlPath.includes('/category/')) {
-    const titleMatch = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
-    if (titleMatch) {
+  try {
+    const urlPath = new URL(url).pathname.toLowerCase();
+    
+    // Check if this is a collection/category page
+    const isCollectionPage = urlPath.includes('/collections/') || 
+                             urlPath.includes('/collection/') || 
+                             urlPath.includes('/category/') ||
+                             urlPath.includes('/categories/') ||
+                             urlPath.includes('/shop/');
+
+    if (isCollectionPage) {
+      // Extract collection name from h1 or page title
+      const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+      
+      const collectionName = h1Match?.[1]?.trim() || titleMatch?.[1]?.trim()?.split('|')[0]?.trim() || 'Unknown Collection';
+
+      // Try to count products on the page
+      let productCount = 0;
+      
+      // Method 1: Count product cards (common class names)
+      const productCardPatterns = [
+        /<div[^>]*class=["'][^"']*product-card[^"']*["']/gi,
+        /<div[^>]*class=["'][^"']*product-item[^"']*["']/gi,
+        /<article[^>]*class=["'][^"']*product[^"']*["']/gi,
+      ];
+      
+      for (const pattern of productCardPatterns) {
+        const matches = html.match(pattern);
+        if (matches && matches.length > productCount) {
+          productCount = matches.length;
+        }
+      }
+
+      // Method 2: Check for collection JSON-LD
+      try {
+        const collectionSchemaMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([^<]+)<\/script>/gi);
+        if (collectionSchemaMatch) {
+          for (const match of collectionSchemaMatch) {
+            const jsonText = match.match(/>([^<]+)</)?.[1];
+            if (jsonText) {
+              const data = JSON.parse(jsonText);
+              if (data['@type'] === 'CollectionPage' || data['@type'] === 'ItemList') {
+                if (data.numberOfItems) {
+                  productCount = parseInt(data.numberOfItems);
+                }
+                if (data.name) {
+                  // Use schema name if available
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        // Schema parsing failed, use counted products
+      }
+
+      // Extract collection description if available
+      const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+      const collectionDesc = descMatch?.[1] || '';
+
       collections.push({
-        name: titleMatch[1].trim(),
+        name: collectionName,
+        description: collectionDesc,
         url,
-        productCount: 0
+        productCount: productCount || 0,
+        slug: urlPath.split('/').filter(Boolean).pop() || ''
       });
     }
+
+    // Also detect collection links from the page (for discovery)
+    const collectionLinkPattern = /<a[^>]*href=["']([^"']*(?:\/collection|\/category)[^"']*)["'][^>]*>([^<]+)<\/a>/gi;
+    const collectionLinks = html.matchAll(collectionLinkPattern);
+    
+    for (const match of collectionLinks) {
+      const href = match[1];
+      const name = match[2]?.trim();
+      
+      if (name && href && !collections.some(c => c.url === href)) {
+        collections.push({
+          name: name,
+          url: href.startsWith('http') ? href : new URL(url).origin + href,
+          productCount: 0,
+          slug: href.split('/').filter(Boolean).pop() || '',
+          isDiscovered: true // Mark as discovered link vs actual page
+        });
+      }
+    }
+
+  } catch (error) {
+    console.error('[extractCollections] Error:', error);
   }
 
   return collections;
