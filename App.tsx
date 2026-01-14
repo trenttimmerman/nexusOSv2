@@ -102,13 +102,21 @@ const PublicStoreWrapper = () => {
 
         console.log('[PublicStore] Loaded store:', { storeSlug, storeId: store.id, pagesCount: pagesData?.length });
         
+        // Load active design for this store
+        const { data: activeDesign } = await supabase
+          .from('store_designs')
+          .select('*')
+          .eq('store_id', store.id)
+          .eq('is_active', true)
+          .single();
+        
         // Default home page blocks for new/empty stores
         const defaultHomeBlocks = [
           {
             id: 'default-hero',
             type: 'system-hero',
             name: 'Hero',
-            variant: storeConfig?.hero_style || 'impact',
+            variant: activeDesign?.hero_style || storeConfig?.hero_style || 'impact',
             content: '',
             data: {
               heading: `Welcome to ${storeConfig?.name || store.name || 'Our Store'}`,
@@ -122,7 +130,7 @@ const PublicStoreWrapper = () => {
             id: 'default-products',
             type: 'system-grid',
             name: 'Featured Products',
-            variant: storeConfig?.product_card_style || 'classic',
+            variant: activeDesign?.product_card_style || storeConfig?.product_card_style || 'classic',
             content: '',
             data: {
               heading: 'Featured Products',
@@ -145,22 +153,23 @@ const PublicStoreWrapper = () => {
           return { ...p, blocks };
         });
 
-        // Build store config - prioritize store_config table, fallback to stores.settings
+        // Build store config - use active design settings, fallback to store_config, then stores.settings
         const config = {
           name: storeConfig?.name || store.name || 'Store',
           currency: storeConfig?.currency || store.settings?.currency || 'USD',
-          headerStyle: storeConfig?.header_style || store.settings?.headerStyle || 'canvas',
-          headerData: storeConfig?.header_data || store.settings?.headerData || {},
-          heroStyle: storeConfig?.hero_style || store.settings?.heroStyle || 'impact',
-          productCardStyle: storeConfig?.product_card_style || store.settings?.productCardStyle || 'classic',
-          footerStyle: storeConfig?.footer_style || store.settings?.footerStyle || 'columns',
-          scrollbarStyle: storeConfig?.scrollbar_style || store.settings?.scrollbarStyle || 'native',
-          primaryColor: storeConfig?.primary_color || store.settings?.primary_color || '#6366F1',
-          secondaryColor: storeConfig?.secondary_color || store.settings?.secondary_color || '#8B5CF6',
-          backgroundColor: storeConfig?.background_color || store.settings?.background_color || '#FFFFFF',
-          storeType: storeConfig?.store_type || store.settings?.store_type,
-          storeVibe: storeConfig?.store_vibe || store.settings?.store_vibe || 'minimal',
-          colorPalette: storeConfig?.color_palette || store.settings?.color_palette,
+          headerStyle: activeDesign?.header_style || storeConfig?.header_style || store.settings?.headerStyle || 'canvas',
+          headerData: activeDesign?.header_data || storeConfig?.header_data || store.settings?.headerData || {},
+          heroStyle: activeDesign?.hero_style || storeConfig?.hero_style || store.settings?.heroStyle || 'impact',
+          productCardStyle: activeDesign?.product_card_style || storeConfig?.product_card_style || store.settings?.productCardStyle || 'classic',
+          footerStyle: activeDesign?.footer_style || storeConfig?.footer_style || store.settings?.footerStyle || 'columns',
+          scrollbarStyle: activeDesign?.scrollbar_style || storeConfig?.scrollbar_style || store.settings?.scrollbarStyle || 'native',
+          primaryColor: activeDesign?.primary_color || storeConfig?.primary_color || store.settings?.primary_color || '#6366F1',
+          secondaryColor: activeDesign?.secondary_color || storeConfig?.secondary_color || store.settings?.secondary_color || '#8B5CF6',
+          backgroundColor: activeDesign?.background_color || storeConfig?.background_color || store.settings?.background_color || '#FFFFFF',
+          storeType: activeDesign?.store_type || storeConfig?.store_type || store.settings?.store_type,
+          storeVibe: activeDesign?.store_vibe || storeConfig?.store_vibe || store.settings?.store_vibe || 'minimal',
+          colorPalette: activeDesign?.color_palette || storeConfig?.color_palette || store.settings?.color_palette,
+          typography: activeDesign?.typography || storeConfig?.typography,
           logoUrl: storeConfig?.logo_url || store.settings?.logoUrl || '',
           logoHeight: storeConfig?.logo_height || store.settings?.logoHeight || 32,
         };

@@ -25,6 +25,7 @@ import { DiscountManager } from './DiscountManager';
 import { ShippingManager } from './ShippingManager';
 import { CollectionManager } from './CollectionManager';
 import { ClientManagement } from './ClientManagement';
+import { DesignLibrary } from './DesignLibrary';
 import EmailSubscribers from './EmailSubscribers';
 import EmailSettings from './EmailSettings';
 import ShopifyMigration from './ShopifyMigration';
@@ -1659,6 +1660,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.PAGES, icon: FileText, label: 'Pages' },
           { id: AdminTab.MEDIA, icon: FolderOpen, label: 'Media Library' },
           { id: AdminTab.DESIGN, icon: Palette, label: 'Design Studio' },
+          { id: AdminTab.DESIGN_LIBRARY, icon: Layers, label: 'Design Library' },
           { id: AdminTab.CAMPAIGNS, icon: Megaphone, label: 'Marketing' },
           { id: AdminTab.EMAIL_SUBSCRIBERS, icon: Mail, label: 'Email Subscribers' },
           { id: AdminTab.EMAIL_SETTINGS, icon: Send, label: 'Email Settings' },
@@ -12737,6 +12739,12 @@ Return ONLY the JSON object, no markdown.`;
 
       case AdminTab.COLLECTIONS:
         return <CollectionManager />;
+
+      case AdminTab.DESIGN_LIBRARY:
+        return <DesignLibrary storeId={storeId || ''} onDesignActivated={(design) => {
+          // Reload store config after activating a new design
+          window.location.reload();
+        }} />;
 
       case AdminTab.DESIGN:
         const isAnyModalOpen = isHeaderModalOpen || isHeroModalOpen || isGridModalOpen || isCollectionModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;

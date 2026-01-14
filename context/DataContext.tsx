@@ -340,28 +340,39 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setCampaigns([]);
           }
 
-          // 6. Config
+          // 6. Config - Load active design settings
           const { data: configData } = await supabase.from('store_config').select('*').eq('store_id', currentStoreId).single();
           // Also fetch store slug for public URL
           const { data: storeData } = await supabase.from('stores').select('slug').eq('id', currentStoreId).single();
+          
+          // Load active design
+          const { data: activeDesign } = await supabase
+            .from('store_designs')
+            .select('*')
+            .eq('store_id', currentStoreId)
+            .eq('is_active', true)
+            .single();
+          
           if (configData) {
             setStoreConfig({
               store_id: configData.store_id,
               slug: storeData?.slug || '',
               name: configData.name,
               currency: configData.currency,
-              headerStyle: configData.header_style as any,
-              headerData: configData.header_data,
-              heroStyle: configData.hero_style as any,
-              productCardStyle: configData.product_card_style as any,
-              footerStyle: configData.footer_style as any,
-              scrollbarStyle: configData.scrollbar_style as any,
-              primaryColor: configData.primary_color,
-              secondaryColor: configData.secondary_color,
-              backgroundColor: configData.background_color,
-              storeType: configData.store_type,
-              storeVibe: configData.store_vibe as any,
-              colorPalette: configData.color_palette,
+              // Use active design settings if available, fall back to store_config
+              headerStyle: (activeDesign?.header_style || configData.header_style) as any,
+              headerData: activeDesign?.header_data || configData.header_data,
+              heroStyle: (activeDesign?.hero_style || configData.hero_style) as any,
+              productCardStyle: (activeDesign?.product_card_style || configData.product_card_style) as any,
+              footerStyle: (activeDesign?.footer_style || configData.footer_style) as any,
+              scrollbarStyle: (activeDesign?.scrollbar_style || configData.scrollbar_style) as any,
+              primaryColor: activeDesign?.primary_color || configData.primary_color,
+              secondaryColor: activeDesign?.secondary_color || configData.secondary_color,
+              backgroundColor: activeDesign?.background_color || configData.background_color,
+              storeType: activeDesign?.store_type || configData.store_type,
+              storeVibe: (activeDesign?.store_vibe || configData.store_vibe) as any,
+              colorPalette: activeDesign?.color_palette || configData.color_palette,
+              typography: activeDesign?.typography || configData.typography,
               logoUrl: configData.logo_url,
               logoHeight: configData.logo_height,
               paymentProvider: configData.payment_provider as any,

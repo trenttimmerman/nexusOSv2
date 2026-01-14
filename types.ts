@@ -14,6 +14,7 @@ export enum AdminTab {
   PAGES = 'PAGES',
   MEDIA = 'MEDIA',
   DESIGN = 'DESIGN',
+  DESIGN_LIBRARY = 'DESIGN_LIBRARY',
   CAMPAIGNS = 'CAMPAIGNS',
   DISCOUNTS = 'DISCOUNTS',
   SHIPPING = 'SHIPPING',
@@ -127,6 +128,57 @@ export type ScrollbarStyleId =
   | 'glass-acrylic'
   | 'glass-mirror'
   | 'glass-glacier';
+
+// Store Design - Multiple themes per store
+export interface StoreDesign {
+  id: string;
+  store_id: string;
+  name: string;
+  is_active: boolean;
+  
+  // Layout Styles
+  header_style: HeaderStyleId;
+  header_data?: Record<string, any>;
+  hero_style: HeroStyleId;
+  product_card_style: ProductCardStyleId;
+  footer_style: FooterStyleId;
+  scrollbar_style: ScrollbarStyleId;
+  
+  // Colors
+  primary_color: string;
+  secondary_color?: string;
+  background_color?: string;
+  
+  // Store Theme
+  store_type?: string;
+  store_vibe?: 'playful' | 'minimal' | 'bold' | 'cozy' | 'luxury' | 'retro';
+  color_palette?: string;
+  
+  // Typography
+  typography?: {
+    headingFont?: string;
+    bodyFont?: string;
+    accentFont?: string;
+    headingColor?: string;
+    bodyColor?: string;
+    linkColor?: string;
+    linkHoverColor?: string;
+    mutedColor?: string;
+    baseFontSize?: string;
+    headingScale?: 'compact' | 'default' | 'large' | 'dramatic';
+    headingWeight?: '400' | '500' | '600' | '700' | '800' | '900';
+    bodyWeight?: '300' | '400' | '500';
+    headingLineHeight?: string;
+    bodyLineHeight?: string;
+    headingLetterSpacing?: string;
+    bodyLetterSpacing?: string;
+    headingTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
+  };
+  
+  // Metadata
+  created_at?: string;
+  updated_at?: string;
+}
 
 export interface StoreConfig {
   id?: number; // Legacy ID
