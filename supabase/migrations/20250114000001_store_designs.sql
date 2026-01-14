@@ -62,9 +62,7 @@ CREATE POLICY "Users can view their store designs"
     store_id IN (
       SELECT store_id FROM profiles WHERE id = auth.uid()
     )
-    OR EXISTS (
-      SELECT 1 FROM users WHERE id = auth.uid() AND is_superuser = true
-    )
+    OR public.is_superuser()
   );
 
 CREATE POLICY "Users can create designs for their stores"
@@ -73,9 +71,7 @@ CREATE POLICY "Users can create designs for their stores"
     store_id IN (
       SELECT store_id FROM profiles WHERE id = auth.uid()
     )
-    OR EXISTS (
-      SELECT 1 FROM users WHERE id = auth.uid() AND is_superuser = true
-    )
+    OR public.is_superuser()
   );
 
 CREATE POLICY "Users can update their store designs"
@@ -84,9 +80,7 @@ CREATE POLICY "Users can update their store designs"
     store_id IN (
       SELECT store_id FROM profiles WHERE id = auth.uid()
     )
-    OR EXISTS (
-      SELECT 1 FROM users WHERE id = auth.uid() AND is_superuser = true
-    )
+    OR public.is_superuser()
   );
 
 CREATE POLICY "Users can delete their store designs"
@@ -95,9 +89,7 @@ CREATE POLICY "Users can delete their store designs"
     store_id IN (
       SELECT store_id FROM profiles WHERE id = auth.uid()
     )
-    OR EXISTS (
-      SELECT 1 FROM users WHERE id = auth.uid() AND is_superuser = true
-    )
+    OR public.is_superuser()
   );
 
 -- Public read for active designs (for storefront)
