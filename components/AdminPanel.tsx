@@ -24,6 +24,7 @@ import { DomainManager } from './DomainManager';
 import { DiscountManager } from './DiscountManager';
 import { ShippingManager } from './ShippingManager';
 import { CollectionManager } from './CollectionManager';
+import { CategoryManager } from './CategoryManager';
 import { ClientManagement } from './ClientManagement';
 import { DesignLibrary } from './DesignLibrary';
 import EmailSubscribers from './EmailSubscribers';
@@ -177,6 +178,7 @@ import {
   AlertTriangle,
   Repeat,
   FolderOpen,
+  FolderTree,
   CreditCard,
   MapPin,
   Globe,
@@ -1672,6 +1674,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.ORDERS, icon: ShoppingBag, label: 'Orders' },
           { id: AdminTab.PRODUCTS, icon: Package, label: 'Products' },
           { id: AdminTab.CUSTOMERS, icon: Users, label: 'Customers' },
+          { id: AdminTab.CATEGORIES, icon: FolderTree, label: 'Categories' },
           { id: AdminTab.COLLECTIONS, icon: Layers, label: 'Collections' },
           { id: AdminTab.DISCOUNTS, icon: Tag, label: 'Discounts' },
           { id: AdminTab.SHIPPING, icon: Truck, label: 'Shipping' },
@@ -12754,6 +12757,9 @@ Return ONLY the JSON object, no markdown.`;
 
       case AdminTab.SHIPPING:
         return <ShippingManager storeId={storeId || null} />;
+
+      case AdminTab.CATEGORIES:
+        return <CategoryManager />;
 
       case AdminTab.COLLECTIONS:
         return <CollectionManager />;
