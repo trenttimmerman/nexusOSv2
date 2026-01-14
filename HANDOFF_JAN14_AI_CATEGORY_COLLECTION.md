@@ -293,6 +293,70 @@ const getGenAI = () => {
 
 ---
 
+### **Issue #3: "An API Key must be set" Browser Error**
+
+**Problem:**
+```
+Uncaught Error: An API Key must be set when running in a browser
+    at new C1 (index-XXX.js:5193:79)
+```
+
+**Root Cause:**
+- GoogleGenAI was being instantiated at module load time (top-level) in **three files**: AdminPanel, UniversalEditor, CategoryManager, CollectionManager
+- Empty string `""` or `undefined` API key would still try to instantiate GoogleGenAI
+- Even with ternary check `import.meta.env.VITE_GEMINI_API_KEY ? new GoogleGenAI(...) : null`, if the env var was an empty string `""`, it would pass the truthy check but fail in the GoogleGenAI constructor
+
+**Files Affected:**
+1. `components/AdminPanel.tsx` (line 41)
+2. `components/UniversalEditor.tsx` (line 9)
+3. `components/CategoryManager.tsx` (line 47)
+4. `components/CollectionManager.tsx` (line 54)
+
+**Solution:**
+```typescript
+// BEFORE (broken - empty string passes truthy check)
+const genAI = import.meta.env.VITE_GEMINI_API_KEY 
+  ? new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY) 
+  : null;
+
+// AFTER (fixed - checks for empty strings)
+const genAI = (import.meta.env.VITE_GEMINI_API_KEY && import.meta.env.VITE_GEMINI_API_KEY.trim()) 
+  ? new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY) 
+  : null;
+
+// For managers, use separate flag
+const hasAI = !!(import.meta.env.VITE_GEMINI_API_KEY && import.meta.env.VITE_GEMINI_API_KEY.trim());
+
+const getGenAI = () => {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey || !apiKey.trim()) return null;
+  try {
+    return new GoogleGenAI(apiKey);
+  } catch (error) {
+    console.error('Failed to initialize AI:', error);
+    return null;
+  }
+};
+```
+
+**Key Changes:**
+1. Check `import.meta.env.VITE_GEMINI_API_KEY.trim()` to ensure not empty string
+2. Use `hasAI` boolean flag for conditional rendering instead of calling `getGenAI()` during render
+3. Wrap GoogleGenAI instantiation in try-catch for safety
+4. Only instantiate when actually needed (not during render)
+
+**Commits:**
+- `f7fdcc0` - Fix: prevent GoogleGenAI instantiation error when API key is missing
+- `a53900f` - Fix: handle empty API key strings to prevent GoogleGenAI instantiation error
+- `3b2f51f` - Fix: also check for empty API key in UniversalEditor
+
+**Why This Matters:**
+- Vite can expose empty string environment variables
+- Build process may generate `.env` with placeholder values
+- Without proper validation, app crashes on load even if AI features aren't used
+
+---
+
 ## 🔐 Environment Configuration
 
 ### **Required Environment Variable:**
@@ -371,7 +435,16 @@ VITE_GEMINI_API_KEY=your_gemini_api_key_here
 ```
 851fa45 - feat: majorly enhance CategoryManager and CollectionManager with AI and uploads
 65231df - fix: use GoogleGenAI import directly in CategoryManager and CollectionManager
+f7fdcc0 - fix: prevent GoogleGenAI instantiation error when API key is missing
+a53900f - fix: handle empty API key strings to prevent GoogleGenAI instantiation error
+3b2f51f - fix: also check for empty API key in UniversalEditor
 ```
+
+**Total Changes:**
+- 3 files modified for AI features (CategoryManager, CollectionManager, types.ts)
+- 3 files fixed for API key handling (AdminPanel, UniversalEditor, both managers)
+- 1 handoff document created
+- 5 commits pushed to main
 
 ---
 
@@ -410,10 +483,16 @@ SELECT * FROM storage.buckets WHERE name = 'product-images';
 
 ### **Environment Variables:**
 
-**Development:**
+**Development (Local):**
 ```bash
 # .env.local (git ignored)
 VITE_GEMINI_API_KEY=your_dev_api_key
+
+# CRITICAL: After adding this line, you MUST restart the dev server!
+# Vite only reads environment variables at startup
+# 1. Stop current server (Ctrl+C)
+# 2. npm run dev
+# 3. Reload browser
 ```
 
 **Production (Vercel/Netlify):**
@@ -625,10 +704,65 @@ const descMatch = text.match(/DESCRIPTION:\s*(.+?)(?:\n|$)/i);
 ### **For Next Developer:**
 
 **If AI buttons not showing:**
-1. Check `.env.local` has `VITE_GEMINI_API_KEY`
-2. Restart dev server after adding env var
-3. Verify import from `@google/genai` not `@google/generative-ai`
-4. Check browser console for errors
+1. Check `.env.local` has `VITE_GEMINI_API_KEY=your_actual_key_here`
+2. **CRITICAL:** Restart dev server after adding/changing env var
+   ```bash
+   # Stop current dev server (Ctrl+C)
+   npm run dev
+   ```
+3. Verify the API key is actually set (not empty):
+   ```bash
+   # In dev server terminal, you should see the key loaded
+   cat .env.local | grep VITE_GEMINI_API_KEY
+   ```
+4. Clear browser cache and hard reload (Cmd/Ctrl + Shift + R)
+5. Check browser console for the error:
+   - If you see "An API Key must be set when running in a browser" → API key is empty/missing
+   - If buttons still don't show → check `hasAI` flag in DevTools console
+6. Verify import from `@google/genai` not `@google/generative-ai`
+
+**If "An API Key must be set" error appears:**
+1. **Stop the dev server immediately** (the error means GoogleGenAI is trying to instantiate with empty/invalid key)
+2. Check all places where GoogleGenAI is instantiated:
+   - `components/AdminPanel.tsx` line ~41
+   - `components/UniversalEditor.tsx` line ~9
+   - `components/CategoryManager.tsx` (inside getGenAI function)
+   - `components/CollectionManager.tsx` (inside getGenAI function)
+3. Each should check: `import.meta.env.VITE_GEMINI_API_KEY && import.meta.env.VITE_GEMINI_API_KEY.trim()`
+4. Add valid API key to `.env.local`
+5. Restart dev server
+6. Test in browser
+
+**Environment Variable Not Loading:**
+```bash
+# Vite only loads env vars at BUILD TIME
+# Changes to .env or .env.local require dev server restart
+
+# Steps:
+1. Edit .env.local → Add VITE_GEMINI_API_KEY=your_key
+2. Stop dev server (Ctrl+C in terminal)
+3. Start dev server: npm run dev
+4. Open browser (new tab/incognito to avoid cache)
+5. Check console for errors
+6. AI buttons should appear if key is valid
+```
+
+**Testing if API Key is Loaded:**
+Open browser DevTools console and run:
+```javascript
+// This will show if Vite loaded the key
+console.log('API Key present:', !!import.meta.env.VITE_GEMINI_API_KEY);
+console.log('API Key value:', import.meta.env.VITE_GEMINI_API_KEY?.substring(0, 10) + '...');
+```
+
+**Production Deployment (Vercel):**
+1. Go to Vercel Dashboard → Project Settings → Environment Variables
+2. Add variable:
+   - Key: `VITE_GEMINI_API_KEY`
+   - Value: Your Gemini API key
+   - Environment: Production (and Preview if needed)
+3. Redeploy the app (Vercel auto-rebuilds on env var changes)
+4. AI buttons will appear in production build
 
 **If AI generation fails:**
 1. Verify API key is valid (test in Google AI Studio)
