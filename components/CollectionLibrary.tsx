@@ -70,7 +70,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
   ),
 
   'featured-collection': ({ data, isEditable, onUpdate, products, onEditBlock, blockId }) => {
-    const displayProducts = (products && products.length > 0) ? products : MOCK_PRODUCTS;
+    const displayProducts = products && products.length > 0 ? products : [];
     const isDark = data?.darkMode;
     const isFullWidth = data?.fullWidth;
     const sectionStyle = data?.sectionStyle || 'clean';
@@ -102,8 +102,14 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
               View All <ArrowRight size={16} />
             </button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {displayProducts.map((product) => (
+          {displayProducts.length === 0 ? (
+            <div className="text-center py-12 text-neutral-400">
+              <ShoppingBag size={48} className="mx-auto mb-4 opacity-50" />
+              <p>No products available. Add products or adjust filters in Collection Studio.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {displayProducts.map((product) => (
               <div key={product.id} className="group cursor-pointer">
                 <div 
                   style={{ backgroundColor: data?.cardBgColor || '#f3f4f6' }}
@@ -135,7 +141,8 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
                 </p>
               </div>
             ))}
-          </div>
+            </div>
+          )}
           <div className="mt-12 text-center md:hidden">
             <button 
               style={{
@@ -261,7 +268,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
   ),
 
   'collection-grid-tight': ({ data, isEditable, onUpdate, products, onEditBlock, blockId }) => {
-    const displayProducts = (products && products.length > 0) ? products : MOCK_PRODUCTS;
+    const displayProducts = products && products.length > 0 ? products : [];
     const isDark = data?.darkMode;
     const isFullWidth = data?.fullWidth;
     const sectionStyle = data?.sectionStyle || 'clean';
@@ -289,6 +296,12 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
             </p>
           )}
         </div>
+        {displayProducts.length === 0 ? (
+          <div className="text-center py-12 text-neutral-400">
+            <ShoppingBag size={48} className="mx-auto mb-4 opacity-50" />
+            <p>No products available. Add products or adjust filters in Collection Studio.</p>
+          </div>
+        ) : (
         <div className={`grid grid-cols-2 md:grid-cols-4 ${isFullWidth ? '' : 'max-w-7xl mx-auto'}`}>
           {displayProducts.map((product, i) => (
             <div key={i} className="aspect-square relative group cursor-pointer overflow-hidden">
@@ -324,18 +337,27 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
             </div>
           ))}
         </div>
+        )}
       </div>
     );
   },
 
-  'collection-masonry': ({ data, isEditable, onUpdate }) => (
+  'collection-masonry': ({ data, isEditable, onUpdate, products }) => {
+    const displayProducts = products && products.length > 0 ? products : [];
+    return (
     <div 
       style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
       className="py-20 px-6"
     >
       <div className="max-w-7xl mx-auto">
+        {displayProducts.length === 0 ? (
+          <div className="text-center py-12 text-neutral-400">
+            <ShoppingBag size={48} className="mx-auto mb-4 opacity-50" />
+            <p>No products available. Add products or adjust filters in Collection Studio.</p>
+          </div>
+        ) : (
         <div className="columns-2 md:columns-3 gap-6 space-y-6">
-          {MOCK_PRODUCTS.concat(MOCK_PRODUCTS).map((product, i) => (
+          {displayProducts.concat(displayProducts).map((product, i) => (
             <div key={i} className="break-inside-avoid group cursor-pointer">
               <div 
                 style={{ backgroundColor: data?.cardBgColor || '#f3f4f6' }}
@@ -360,11 +382,15 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
             </div>
           ))}
         </div>
+        )}
       </div>
     </div>
-  ),
+    );
+  },
 
-  'collection-carousel': ({ data, isEditable, onUpdate, onEditBlock, blockId }) => (
+  'collection-carousel': ({ data, isEditable, onUpdate, onEditBlock, blockId, products }) => {
+    const displayProducts = products && products.length > 0 ? products : [];
+    return (
     <div 
       style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
       className="py-20 overflow-hidden"
@@ -393,8 +419,14 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
           </button>
         </div>
       </div>
+      {displayProducts.length === 0 ? (
+        <div className="text-center py-12 text-neutral-400">
+          <ShoppingBag size={48} className="mx-auto mb-4 opacity-50" />
+          <p>No products available. Add products or adjust filters in Collection Studio.</p>
+        </div>
+      ) : (
       <div className="flex gap-6 px-6 max-w-7xl mx-auto overflow-x-auto pb-8 scrollbar-hide snap-x">
-        {MOCK_PRODUCTS.concat(MOCK_PRODUCTS).map((product, i) => (
+        {displayProducts.concat(displayProducts).map((product, i) => (
           <div key={i} className="min-w-[280px] snap-start group cursor-pointer">
             <div 
               style={{ backgroundColor: data?.cardBgColor || '#f3f4f6' }}
@@ -423,10 +455,14 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
           </div>
         ))}
       </div>
+      )}
     </div>
-  ),
+    );
+  },
 
-  'collection-tabs': ({ data, isEditable, onUpdate, onEditBlock, blockId }) => (
+  'collection-tabs': ({ data, isEditable, onUpdate, onEditBlock, blockId, products }) => {
+    const displayProducts = products && products.length > 0 ? products.slice(0, 8) : [];
+    return (
     <div 
       style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
       className="py-20 px-6"
@@ -456,8 +492,14 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
             ))}
           </div>
         </div>
+        {displayProducts.length === 0 ? (
+          <div className="text-center py-12 text-neutral-400">
+            <ShoppingBag size={48} className="mx-auto mb-4 opacity-50" />
+            <p>No products available. Add products or adjust filters in Collection Studio.</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
-          {MOCK_PRODUCTS.slice(0, 8).map((product) => (
+          {displayProducts.map((product) => (
             <div key={product.id} className="group cursor-pointer">
               <div 
                 style={{ backgroundColor: data?.cardBgColor || '#f3f4f6' }}
@@ -477,11 +519,15 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
             </div>
           ))}
         </div>
+        )}
       </div>
     </div>
-  ),
+    );
+  },
 
-  'collection-lookbook': ({ data, isEditable, onUpdate, onEditBlock, blockId }) => (
+  'collection-lookbook': ({ data, isEditable, onUpdate, onEditBlock, blockId, products }) => {
+    const displayProducts = products && products.length > 0 ? products.slice(0, 2) : [];
+    return (
     <div 
       style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
       className="py-20 px-6"
@@ -512,8 +558,14 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
               className="text-4xl font-bold mb-8"
               onSelect={() => onEditBlock?.(blockId || '')}
             />
+            {displayProducts.length === 0 ? (
+              <div className="text-center py-12 text-neutral-400">
+                <ShoppingBag size={48} className="mx-auto mb-4 opacity-50" />
+                <p>No products available. Add products or adjust filters in Collection Studio.</p>
+              </div>
+            ) : (
             <div className="space-y-6">
-              {MOCK_PRODUCTS.slice(0, 2).map((product) => (
+              {displayProducts.map((product) => (
                 <div 
                   key={product.id} 
                   style={{ backgroundColor: data?.cardBgColor ? `${data.cardBgColor}80` : 'transparent' }}
@@ -551,13 +603,17 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
                 </div>
               ))}
             </div>
+            )}
           </div>
         </div>
       </div>
     </div>
-  ),
+    );
+  },
 
-  'collection-split': ({ data, isEditable, onUpdate }) => (
+  'collection-split': ({ data, isEditable, onUpdate, products }) => {
+    const displayProducts = products && products.length > 0 ? products : [];
+    return (
     <div className="flex flex-col md:flex-row h-screen">
       <div className="flex-1 relative bg-gray-100">
         <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80" className="absolute inset-0 w-full h-full object-cover" alt="Collection" />
@@ -590,8 +646,14 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
         style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
         className="flex-1 p-12 overflow-y-auto"
       >
+        {displayProducts.length === 0 ? (
+          <div className="text-center py-12 text-neutral-400">
+            <ShoppingBag size={48} className="mx-auto mb-4 opacity-50" />
+            <p>No products available. Add products or adjust filters in Collection Studio.</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-2 gap-6">
-          {MOCK_PRODUCTS.concat(MOCK_PRODUCTS).map((product, i) => (
+          {displayProducts.concat(displayProducts).map((product, i) => (
             <div key={i} className="group cursor-pointer">
               <div 
                 style={{ backgroundColor: data?.cardBgColor || '#f3f4f6' }}
@@ -614,7 +676,9 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
             </div>
           ))}
         </div>
+        )}
       </div>
     </div>
-  ),
+    );
+  },
 };
