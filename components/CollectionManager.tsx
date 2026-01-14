@@ -51,13 +51,14 @@ export const CollectionManager: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState<'description' | 'seo' | null>(null);
 
   // Check if AI is available
-  const hasAI = !!import.meta.env.VITE_GEMINI_API_KEY;
+  const hasAI = !!(import.meta.env.VITE_GEMINI_API_KEY && import.meta.env.VITE_GEMINI_API_KEY.trim());
   
   // Create AI instance only when needed
   const getGenAI = () => {
-    if (!import.meta.env.VITE_GEMINI_API_KEY) return null;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey || !apiKey.trim()) return null;
     try {
-      return new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY);
+      return new GoogleGenAI(apiKey);
     } catch (error) {
       console.error('Failed to initialize AI:', error);
       return null;

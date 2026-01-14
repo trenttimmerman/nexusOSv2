@@ -37,8 +37,10 @@ import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
 import { GoogleGenAI } from '@google/genai';
 
-// Initialize Gemini AI
-const genAI = import.meta.env.VITE_GEMINI_API_KEY ? new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY) : null;
+// Initialize Gemini AI - only if key is set and not empty
+const genAI = (import.meta.env.VITE_GEMINI_API_KEY && import.meta.env.VITE_GEMINI_API_KEY.trim()) 
+  ? new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY) 
+  : null;
 
 const SCROLLBAR_OPTIONS = [
   { id: 'native', name: 'Native', description: 'Default browser scrollbar' },
