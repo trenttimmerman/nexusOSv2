@@ -340,9 +340,12 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
+  image_url?: string;
   parent_id?: string | null;
   display_order: number;
   is_visible: boolean;
+  seo_title?: string;
+  seo_description?: string;
   created_at: string;
   updated_at: string;
 }

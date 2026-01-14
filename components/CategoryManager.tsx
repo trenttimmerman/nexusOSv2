@@ -15,22 +15,43 @@ import {
   Search,
   GripVertical,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Wand2,
+  Upload,
+  Image as ImageIcon,
+  Loader
 } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
 
 export const CategoryManager: React.FC = () => {
   const { categories, saveCategory, deleteCategory, reorderCategories } = useDataContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [isUploading, setIsUploading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState<'description' | 'seo' | null>(null);
   const [formData, setFormData] = useState<Partial<Category>>({
     name: '',
     slug: '',
     description: '',
+    image_url: '',
     parent_id: null,
     display_order: 0,
-    is_visible: true
+    is_visible: true,
+    seo_title: '',
+    seo_description: ''
   });
+
+  // Access Gemini AI from window (loaded in AdminPanel)
+  const getGenAI = () => {
+    if (typeof window !== 'undefined' && (window as any).__GEMINI_API_KEY) {
+      const GoogleGenerativeAI = (window as any).GoogleGenerativeAI;
+      if (GoogleGenerativeAI) {
+        return new GoogleGenerativeAI((window as any).__GEMINI_API_KEY);
+      }
+    }
+    return null;
+  };
 
   // Auto-generate slug from name
   useEffect(() => {
@@ -54,10 +75,101 @@ export const CategoryManager: React.FC = () => {
       name: '',
       slug: '',
       description: '',
+      image_url: '',
       parent_id: null,
       display_order: 0,
-      is_visible: true
+      is_visible: true,
+      seo_title: '',
+      seo_description: ''
     });
+  };
+
+  // AI Generate Description
+  const generateDescription = async () => {
+    const genAI = getGenAI();
+    if (!genAI || !formData.name) return;
+    
+    setIsGenerating('description');
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const prompt = `Write a compelling 2-3 sentence description for a product category called "${formData.name}". Make it engaging and SEO-friendly. Return ONLY the description text, no quotes or extra formatting.`;
+      
+      const result = await model.generateContent(prompt);
+      const description = result.response.text().trim();
+      setFormData(prev => ({ ...prev, description }));
+    } catch (error) {
+      console.error('AI generation failed:', error);
+      alert('Failed to generate description. Please try again.');
+    } finally {
+      setIsGenerating(null);
+    }
+  };
+
+  // AI Generate SEO Meta
+  const generateSEO = async () => {
+    const genAI = getGenAI();
+    if (!genAI || !formData.name) return;
+    
+    setIsGenerating('seo');
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const prompt = `Generate SEO metadata for a product category called "${formData.name}".
+      
+Return in this exact format:
+TITLE: [SEO title under 60 characters]
+DESCRIPTION: [SEO description under 160 characters]
+
+Return ONLY those two lines, nothing else.`;
+      
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim();
+      
+      const titleMatch = text.match(/TITLE:\s*(.+)/);
+      const descMatch = text.match(/DESCRIPTION:\s*(.+)/);
+      
+      if (titleMatch && descMatch) {
+        setFormData(prev => ({
+          ...prev,
+          seo_title: titleMatch[1].trim(),
+          seo_description: descMatch[1].trim()
+        }));
+      }
+    } catch (error) {
+      console.error('AI generation failed:', error);
+      alert('Failed to generate SEO. Please try again.');
+    } finally {
+      setIsGenerating(null);
+    }
+  };
+
+  // Image Upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `categories/${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({ ...prev, image_url: publicUrl }));
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -197,14 +309,119 @@ export const CategoryManager: React.FC = () => {
             
             <div className="mb-3">
               <label className="block text-sm font-medium text-neutral-700 mb-1">Description</label>
-              <textarea
-                value={formData.description}
-                onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                style={{ color: '#000000' }}
-                rows={2}
-                placeholder="Optional description"
-              />
+              <div className="relative">
+                <textarea
+                  value={formData.description}
+                  onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{ color: '#000000' }}
+                  rows={2}
+                  placeholder="Optional description"
+                />  
+                {getGenAI() && (
+                  <button
+                    onClick={generateDescription}
+                    disabled={!formData.name || isGenerating === 'description'}
+                    className="absolute top-2 right-2 p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Generate with AI"
+                  >
+                    {isGenerating === 'description' ? (
+                      <Loader className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Wand2 className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">Category Image</label>
+              <div className="flex gap-3">
+                {formData.image_url && (
+                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                    <img src={formData.image_url} alt="" className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={formData.image_url || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                    className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                    style={{ color: '#000000' }}
+                    placeholder="Image URL or upload..."
+                  />
+                  <label className="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 hover:bg-neutral-200 rounded-lg cursor-pointer transition-colors text-sm">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      disabled={isUploading}
+                    />
+                    {isUploading ? (
+                      <>
+                        <Loader className="w-4 h-4 animate-spin" />
+                        <span>Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4" />
+                        <span>Upload Image</span>
+                      </>
+                    )}
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-neutral-700">SEO Metadata</label>
+                {getGenAI() && (
+                  <button
+                    onClick={generateSEO}
+                    disabled={!formData.name || isGenerating === 'seo'}
+                    className="flex items-center gap-1.5 px-2 py-1 text-xs text-blue-600 hover:bg-blue-100 rounded transition-colors disabled:opacity-50"
+                  >
+                    {isGenerating === 'seo' ? (
+                      <>
+                        <Loader className="w-3 h-3 animate-spin" />
+                        <span>Generating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="w-3 h-3" />
+                        <span>Generate SEO</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={formData.seo_title || ''}
+                  onChange={e => setFormData(prev => ({ ...prev, seo_title: e.target.value }))}
+                  className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  style={{ color: '#000000' }}
+                  placeholder="SEO Title (60 chars max)"
+                  maxLength={60}
+                />
+                <textarea
+                  value={formData.seo_description || ''}
+                  onChange={e => setFormData(prev => ({ ...prev, seo_description: e.target.value }))}
+                  className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  style={{ color: '#000000' }}
+                  placeholder="SEO Description (160 chars max)"
+                  rows={2}
+                  maxLength={160}
+                />
+                <div className="text-xs text-neutral-500">
+                  Title: {(formData.seo_title || '').length}/60 • Description: {(formData.seo_description || '').length}/160
+                </div>
+              </div>
             </div>
             
             <div className="grid grid-cols-3 gap-4 mb-3">

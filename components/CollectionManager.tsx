@@ -20,7 +20,9 @@ import {
   Tag,
   FolderTree,
   Image as ImageIcon,
-  Upload
+  Upload,
+  Wand2,
+  Loader
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
@@ -38,11 +40,25 @@ export const CollectionManager: React.FC = () => {
     is_visible: true,
     display_order: 0,
     product_ids: [],
-    conditions: {}
+    conditions: {},
+    seo_title: '',
+    seo_description: ''
   });
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [productSearch, setProductSearch] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState<'description' | 'seo' | null>(null);
+
+  // Access Gemini AI from window (loaded in AdminPanel)
+  const getGenAI = () => {
+    if (typeof window !== 'undefined' && (window as any).__GEMINI_API_KEY) {
+      const GoogleGenerativeAI = (window as any).GoogleGenerativeAI;
+      if (GoogleGenerativeAI) {
+        return new GoogleGenerativeAI((window as any).__GEMINI_API_KEY);
+      }
+    }
+    return null;
+  };
 
   // Auto-generate slug from name
   useEffect(() => {
@@ -138,9 +154,69 @@ export const CollectionManager: React.FC = () => {
       is_visible: true,
       display_order: 0,
       product_ids: [],
-      conditions: {}
+      conditions: {},
+      seo_title: '',
+      seo_description: ''
     });
     setSelectedProducts([]);
+  };
+
+  // AI Generate Description
+  const generateDescription = async () => {
+    const genAI = getGenAI();
+    if (!genAI || !formData.name) return;
+    
+    setIsGenerating('description');
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const prompt = `Write a compelling 2-3 sentence description for a product collection called "${formData.name}". Make it engaging and SEO-friendly. Return ONLY the description text, no quotes or extra formatting.`;
+      
+      const result = await model.generateContent(prompt);
+      const description = result.response.text().trim();
+      setFormData(prev => ({ ...prev, description }));
+    } catch (error) {
+      console.error('AI generation failed:', error);
+      alert('Failed to generate description. Please try again.');
+    } finally {
+      setIsGenerating(null);
+    }
+  };
+
+  // AI Generate SEO Meta
+  const generateSEO = async () => {
+    const genAI = getGenAI();
+    if (!genAI || !formData.name) return;
+    
+    setIsGenerating('seo');
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const prompt = `Generate SEO metadata for a product collection called "${formData.name}".
+      
+Return in this exact format:
+TITLE: [SEO title under 60 characters]
+DESCRIPTION: [SEO description under 160 characters]
+
+Return ONLY those two lines, nothing else.`;
+      
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim();
+      
+      const titleMatch = text.match(/TITLE:\s*(.+)/);
+      const descMatch = text.match(/DESCRIPTION:\s*(.+)/);
+      
+      if (titleMatch && descMatch) {
+        setFormData(prev => ({
+          ...prev,
+          seo_title: titleMatch[1].trim(),
+          seo_description: descMatch[1].trim()
+        }));
+      }
+    } catch (error) {
+      console.error('AI generation failed:', error);
+      alert('Failed to generate SEO. Please try again.');
+    } finally {
+      setIsGenerating(null);
+    }
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -323,13 +399,29 @@ export const CollectionManager: React.FC = () => {
       
       <div className="mb-4">
         <label className="block text-sm font-medium text-neutral-400 mb-2">Description</label>
-        <textarea
-          value={formData.description}
-          onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-          className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          rows={3}
-          placeholder="A curated selection of summer essentials"
-        />
+        <div className="relative">
+          <textarea
+            value={formData.description}
+            onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={3}
+            placeholder="A curated selection of summer essentials"
+          />
+          {getGenAI() && (
+            <button
+              onClick={generateDescription}
+              disabled={!formData.name || isGenerating === 'description'}
+              className="absolute top-2 right-2 p-1.5 text-blue-400 hover:bg-blue-900/30 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Generate with AI"
+            >
+              {isGenerating === 'description' ? (
+                <Loader className="w-4 h-4 animate-spin" />
+              ) : (
+                <Wand2 className="w-4 h-4" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
       
       {/* Collection Image */}
@@ -462,6 +554,59 @@ export const CollectionManager: React.FC = () => {
           />
         </div>
       )}
+      
+      {/* SEO Metadata */}
+      <div className="mb-4 p-4 bg-blue-950/20 border border-blue-800/30 rounded-lg">
+        <div className="flex items-center justify-between mb-3">
+          <label className="block text-sm font-medium text-neutral-300">SEO Metadata</label>
+          {getGenAI() && (
+            <button
+              onClick={generateSEO}
+              disabled={!formData.name || isGenerating === 'seo'}
+              className="flex items-center gap-1.5 px-2 py-1 text-xs text-blue-400 hover:bg-blue-900/30 rounded transition-colors disabled:opacity-50"
+            >
+              {isGenerating === 'seo' ? (
+                <>
+                  <Loader className="w-3 h-3 animate-spin" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-3 h-3" />
+                  <span>Generate SEO</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-neutral-400 mb-1 block">SEO Title</label>
+            <input
+              type="text"
+              value={formData.seo_title || ''}
+              onChange={e => setFormData(prev => ({ ...prev, seo_title: e.target.value }))}
+              className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="SEO title (60 chars max)"
+              maxLength={60}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-neutral-400 mb-1 block">SEO Description</label>
+            <textarea
+              value={formData.seo_description || ''}
+              onChange={e => setFormData(prev => ({ ...prev, seo_description: e.target.value }))}
+              className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="SEO description (160 chars max)"
+              rows={2}
+              maxLength={160}
+            />
+          </div>
+          <div className="text-xs text-neutral-500">
+            Title: {(formData.seo_title || '').length}/60 • Description: {(formData.seo_description || '').length}/160
+          </div>
+        </div>
+      </div>
       
       {/* Manual Product Selection */}
       {formData.type === 'manual' && (
