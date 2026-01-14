@@ -5698,6 +5698,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       />
                     </div>
                     <div>
+                      <label className="text-xs text-neutral-400 mb-1.5 block">Subheading</label>
+                      <input 
+                        type="color"
+                        value={categoryData.subheadingColor || '#6b7280'}
+                        onChange={e => updateCategoryData({ subheadingColor: e.target.value })}
+                        className="w-full h-10 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div>
                       <label className="text-xs text-neutral-400 mb-1.5 block">Card BG</label>
                       <input 
                         type="color"

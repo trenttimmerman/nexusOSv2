@@ -169,6 +169,11 @@ export const CATEGORY_COMPONENTS: Record<string, React.FC<any>> = {
               className="text-3xl font-bold"
               onSelect={() => onEditBlock?.(blockId || '')}
             />
+            {data?.subheading && (
+              <p style={{ color: data?.subheadingColor || '#737373' }} className="text-lg mt-2">
+                {data.subheading}
+              </p>
+            )}
           </div>
 
           {displayCategories.length === 0 ? (
@@ -263,6 +268,11 @@ export const CATEGORY_COMPONENTS: Record<string, React.FC<any>> = {
               className="text-3xl font-bold"
               onSelect={() => onEditBlock?.(blockId || '')}
             />
+            {data?.subheading && (
+              <p style={{ color: data?.subheadingColor || '#737373' }} className="text-lg mt-2">
+                {data.subheading}
+              </p>
+            )}
           </div>
 
           {displayCategories.length === 0 ? (
@@ -327,6 +337,11 @@ export const CATEGORY_COMPONENTS: Record<string, React.FC<any>> = {
               className="text-4xl font-bold"
               onSelect={() => onEditBlock?.(blockId || '')}
             />
+            {data?.subheading && (
+              <p style={{ color: data?.subheadingColor || '#737373' }} className="text-lg mt-2">
+                {data.subheading}
+              </p>
+            )}
           </div>
 
           {displayCategories.length === 0 ? (
@@ -433,6 +448,11 @@ export const CATEGORY_COMPONENTS: Record<string, React.FC<any>> = {
               className="text-3xl font-bold"
               onSelect={() => onEditBlock?.(blockId || '')}
             />
+            {data?.subheading && (
+              <p style={{ color: data?.subheadingColor || '#737373' }} className="text-lg mt-2">
+                {data.subheading}
+              </p>
+            )}
           </div>
 
           {displayCategories.length === 0 ? (
