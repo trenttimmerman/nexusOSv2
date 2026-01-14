@@ -175,22 +175,33 @@ export default function WebsiteMigration({ storeId, onComplete, onNavigateToPage
         setCurrentTask(`Importing ${crawlResult.products.length} products...`);
         setProgress(10);
 
-        const productsToImport = crawlResult.products.map(product => ({
-          store_id: storeId,
-          title: product.name,
-          description: product.description,
-          price: product.price,
-          compare_at_price: product.compareAtPrice,
-          image_url: product.images[0] || null,
-          status: 'active',
-          sku: product.sku || null,
-          inventory_quantity: product.inStock ? 10 : 0, // Default quantity
-          metadata: {
-            originalUrl: product.url,
-            images: product.images,
-            variants: product.variants
-          }
-        }));
+        const productsToImport = crawlResult.products.map(product => {
+          // Generate UUID for product ID
+          const productId = crypto.randomUUID();
+          
+          return {
+            id: productId,
+            name: product.name || 'Untitled Product',
+            description: product.description || '',
+            price: product.price || 0,
+            compare_at_price: product.compareAtPrice || null,
+            image: product.images?.[0] || null,
+            images: product.images || [],
+            status: 'active',
+            sku: product.sku || null,
+            stock: product.availability === 'InStock' ? 10 : 0,
+            track_inventory: true,
+            has_variants: (product.variants?.length || 0) > 0,
+            variants: product.variants || [],
+            tags: product.brand ? [product.brand] : [],
+            category: null,
+            seo: {
+              title: product.name,
+              description: product.description?.substring(0, 160) || '',
+              slug: product.url?.split('/').pop() || productId
+            }
+          };
+        });
 
         const { data: importedProducts, error: productsError } = await supabase
           .from('products')
@@ -199,6 +210,8 @@ export default function WebsiteMigration({ storeId, onComplete, onNavigateToPage
 
         if (productsError) {
           console.error('Failed to import products:', productsError);
+          console.error('Products data:', productsToImport[0]); // Log first product for debugging
+          alert(`Error importing products: ${productsError.message}\n\nCheck console for details.`);
         } else {
           setProductsCreated(importedProducts?.length || 0);
         }
@@ -211,16 +224,26 @@ export default function WebsiteMigration({ storeId, onComplete, onNavigateToPage
         setCurrentTask(`Importing ${crawlResult.collections.length} collections...`);
         setProgress(40);
 
-        const collectionsToImport = crawlResult.collections.map(collection => ({
-          store_id: storeId,
-          name: collection.name,
-          description: collection.description,
-          image_url: collection.image || null,
-          metadata: {
-            originalUrl: collection.url,
-            productCount: collection.productCount
-          }
-        }));
+        const collectionsToImport = crawlResult.collections.map(collection => {
+          const collectionId = crypto.randomUUID();
+          const slug = collection.slug || collection.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          
+          return {
+            id: collectionId,
+            name: collection.name,
+            slug: slug,
+            description: collection.description || '',
+            image_url: null, // Collections don't always have images in crawl data
+            type: 'manual',
+            is_featured: false,
+            is_visible: true,
+            display_order: 0,
+            conditions: {
+              originalUrl: collection.url,
+              productCount: collection.productCount || 0
+            }
+          };
+        });
 
         const { data: importedCollections, error: collectionsError } = await supabase
           .from('collections')
@@ -229,6 +252,8 @@ export default function WebsiteMigration({ storeId, onComplete, onNavigateToPage
 
         if (collectionsError) {
           console.error('Failed to import collections:', collectionsError);
+          console.error('Collections data:', collectionsToImport[0]); // Log first collection for debugging
+          alert(`Error importing collections: ${collectionsError.message}\n\nCheck console for details.`);
         } else {
           setCollectionsCreated(importedCollections?.length || 0);
         }
