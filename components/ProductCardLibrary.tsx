@@ -3,6 +3,17 @@ import React from 'react';
 import { ShoppingBag, Plus, Star, ArrowRight, Zap, Eye } from 'lucide-react';
 import { Product } from '../types';
 
+// Helper function to get product image URL (handles both legacy and new image structure)
+const getProductImage = (product: Product): string => {
+  // Try images array first (new structure)
+  if (product.images && product.images.length > 0) {
+    const primaryImage = product.images.find(img => img.isPrimary);
+    return primaryImage?.url || product.images[0]?.url || product.image || '';
+  }
+  // Fall back to legacy image field
+  return product.image || '';
+};
+
 interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product) => void;
@@ -27,7 +38,7 @@ export const ProductCardClassic: React.FC<ProductCardProps> = ({ product, onAddT
     >
       {product.image && (
         <img 
-          src={product.image} 
+          src={getProductImage(product)} 
           alt={product.name} 
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
         />
@@ -133,7 +144,7 @@ export const ProductCardFocus: React.FC<ProductCardProps> = ({ product, onAddToC
   >
     {product.image && (
       <img 
-        src={product.image} 
+        src={getProductImage(product)} 
         alt={product.name} 
         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
       />

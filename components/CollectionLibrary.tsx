@@ -3,6 +3,26 @@ import React, { useState } from 'react';
 import { EditableText } from './HeroLibrary';
 import { ArrowRight, ChevronLeft, ChevronRight, ShoppingBag, Star, Filter, Grid, List } from 'lucide-react';
 
+// Helper function to get product image URL (handles both legacy and new image structure)
+const getProductImage = (product: any): string => {
+  // Try images array first (new structure)
+  if (product.images && product.images.length > 0) {
+    const primaryImage = product.images.find((img: any) => img.isPrimary);
+    return primaryImage?.url || product.images[0]?.url || product.image || '';
+  }
+  // Fall back to legacy image field
+  return product.image || '';
+};
+
+// Helper function to format product price
+const formatPrice = (price: any): string => {
+  if (typeof price === 'number') {
+    return `$${price.toFixed(2)}`;
+  }
+  // Already formatted string or undefined
+  return price || '$0.00';
+};
+
 export const COLLECTION_OPTIONS = [
   { id: 'collection-list', name: 'Collection List', description: 'Grid of collections' },
   { id: 'featured-collection', name: 'Featured Collection', description: 'Grid of products from a collection' },
@@ -116,7 +136,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
                   className={`aspect-[3/4] rounded-xl overflow-hidden mb-4 relative ${sectionStyle === 'glass' ? 'backdrop-blur-md bg-white/5 border border-white/10' : ''}`}
                 >
                   <img 
-                    src={product.image || (product as any).image}
+                    src={getProductImage(product)}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     alt={product.name}
                   />
@@ -305,7 +325,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
         <div className={`grid grid-cols-2 md:grid-cols-4 ${isFullWidth ? '' : 'max-w-7xl mx-auto'}`}>
           {displayProducts.map((product, i) => (
             <div key={i} className="aspect-square relative group cursor-pointer overflow-hidden">
-              <img src={product.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={product.name} />
+              <img src={getProductImage(product)} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={product.name} />
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 text-center">
                 <h4 
                   style={{ color: data?.productNameColor || '#ffffff' }}
@@ -364,7 +384,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
                 className="rounded-2xl overflow-hidden mb-3"
               >
                 <img 
-                  src={product.image} 
+                  src={getProductImage(product)} 
                   className="w-full object-cover hover:scale-105 transition-transform duration-500" 
                   style={{ height: i % 2 === 0 ? '400px' : '300px' }}
                   alt={product.name} 
@@ -505,7 +525,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
                 style={{ backgroundColor: data?.cardBgColor || '#f3f4f6' }}
                 className="aspect-square rounded-xl overflow-hidden mb-4"
               >
-                <img src={product.image} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt={product.name} />
+                <img src={getProductImage(product)} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt={product.name} />
               </div>
               <h3 
                 style={{ color: data?.productNameColor || '#000000' }}
@@ -572,7 +592,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
                   className="flex gap-4 items-center group cursor-pointer p-4 rounded-xl hover:opacity-80 transition-opacity"
                 >
                   <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                    <img src={product.image} className="w-full h-full object-cover" alt={product.name} />
+                    <img src={getProductImage(product)} className="w-full h-full object-cover" alt={product.name} />
                   </div>
                   <div className="flex-1">
                     <h4 
@@ -585,7 +605,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
                       style={{ color: data?.priceColor || '#6b7280' }}
                       className="mb-2"
                     >
-                      {product.price}
+                      {formatPrice(product.price)}
                     </p>
                     <button 
                       style={{ color: data?.accentColor || '#3b82f6' }}
@@ -659,7 +679,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
                 style={{ backgroundColor: data?.cardBgColor || '#f3f4f6' }}
                 className="aspect-[3/4] rounded-xl overflow-hidden mb-3"
               >
-                <img src={product.image} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt={product.name} />
+                <img src={getProductImage(product)} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt={product.name} />
               </div>
               <h3 
                 style={{ color: data?.productNameColor || '#000000' }}
@@ -671,7 +691,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
                 style={{ color: data?.priceColor || '#737373' }}
                 className="text-sm"
               >
-                {product.price}
+                {formatPrice(product.price)}
               </p>
             </div>
           ))}
