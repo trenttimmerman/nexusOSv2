@@ -33,7 +33,6 @@ export const CollectionManager: React.FC = () => {
     slug: '',
     description: '',
     image_url: '',
-    category_id: undefined,
     type: 'manual',
     is_featured: false,
     is_visible: true,
@@ -69,7 +68,6 @@ export const CollectionManager: React.FC = () => {
       slug: '',
       description: '',
       image_url: '',
-      category_id: undefined,
       type: 'manual',
       is_featured: false,
       is_visible: true,
@@ -92,7 +90,6 @@ export const CollectionManager: React.FC = () => {
       slug: formData.slug!,
       description: formData.description || '',
       image_url: formData.image_url,
-      category_id: formData.category_id,
       type: formData.type || 'manual',
       is_featured: formData.is_featured ?? false,
       is_visible: formData.is_visible ?? true,
@@ -112,7 +109,6 @@ export const CollectionManager: React.FC = () => {
       slug: '',
       description: '',
       image_url: '',
-      category_id: undefined,
       type: 'manual',
       is_featured: false,
       is_visible: true,
@@ -387,29 +383,6 @@ export const CollectionManager: React.FC = () => {
             onChange={e => setFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
             className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-neutral-400 mb-2">
-            <FolderTree className="inline w-4 h-4 mr-1" />
-            Category
-          </label>
-          <select
-            value={formData.category_id || ''}
-            onChange={e => setFormData(prev => ({ ...prev, category_id: e.target.value || undefined }))}
-            className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            style={{ color: '#ffffff' }}
-          >
-            <option value="">None (Uncategorized)</option>
-            {categories
-              .filter(c => c.is_visible)
-              .sort((a, b) => a.display_order - b.display_order)
-              .map(category => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-          </select>
         </div>
         
         <div>

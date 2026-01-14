@@ -5420,7 +5420,59 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
                 </div>
 
-                {/* 4. Colors */}
+                {/* 4. Assigned Collections */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Layers size={12} /> Assigned Collections
+                  </h4>
+                  <div className="space-y-2">
+                    {collections
+                      .filter(col => col.category_id === activeBlock.id || col.category_id === activeBlock.data?.categoryId)
+                      .map(collection => (
+                        <div key={collection.id} className="flex items-center justify-between px-3 py-2 bg-black border border-neutral-700 rounded-lg text-sm">
+                          <span className="text-white">{collection.name}</span>
+                          <button
+                            onClick={() => {
+                              const updatedCollection = { ...collection, category_id: undefined };
+                              saveCollection(updatedCollection);
+                            }}
+                            className="text-red-400 hover:text-red-300 text-xs"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    {collections.filter(col => col.category_id === activeBlock.id || col.category_id === activeBlock.data?.categoryId).length === 0 && (
+                      <div className="text-xs text-neutral-500 italic px-3 py-2">No collections assigned</div>
+                    )}
+                    <select
+                      value=""
+                      onChange={e => {
+                        if (e.target.value) {
+                          const collection = collections.find(c => c.id === e.target.value);
+                          if (collection) {
+                            const updatedCollection = { ...collection, category_id: activeBlock.id };
+                            saveCollection(updatedCollection);
+                          }
+                        }
+                      }}
+                      className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      style={{ color: '#ffffff' }}
+                    >
+                      <option value="">+ Assign Collection</option>
+                      {collections
+                        .filter(col => !col.category_id || col.category_id !== activeBlock.id)
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map(collection => (
+                          <option key={collection.id} value={collection.id}>
+                            {collection.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* 5. Colors */}
                 <div className="mb-6">
                   <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                     <Palette size={12} /> Colors
