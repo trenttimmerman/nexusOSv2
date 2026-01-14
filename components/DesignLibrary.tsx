@@ -6,13 +6,12 @@ import { Palette, Copy, Trash2, Check, Plus, Eye, Edit2, X } from 'lucide-react'
 interface DesignLibraryProps {
   storeId: string;
   onDesignActivated?: (design: StoreDesign) => void;
+  onNavigateToDesignStudio?: () => void;
 }
 
-export const DesignLibrary: React.FC<DesignLibraryProps> = ({ storeId, onDesignActivated }) => {
+export const DesignLibrary: React.FC<DesignLibraryProps> = ({ storeId, onDesignActivated, onNavigateToDesignStudio }) => {
   const [designs, setDesigns] = useState<StoreDesign[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingDesign, setEditingDesign] = useState<StoreDesign | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     loadDesigns();
@@ -41,7 +40,7 @@ export const DesignLibrary: React.FC<DesignLibraryProps> = ({ storeId, onDesignA
     const newDesign: Partial<StoreDesign> = {
       store_id: storeId,
       name: `New Design ${new Date().toLocaleDateString()}`,
-      is_active: false,
+      is_active: true, // Make it active so user can edit it immediately
       header_style: 'canvas',
       hero_style: 'impact',
       product_card_style: 'classic',
@@ -72,8 +71,11 @@ export const DesignLibrary: React.FC<DesignLibraryProps> = ({ storeId, onDesignA
         .single();
 
       if (error) throw error;
-      await loadDesigns();
-      setEditingDesign(data);
+      
+      // Navigate to Design Studio to customize the new design
+      if (onNavigateToDesignStudio) {
+        onNavigateToDesignStudio();
+      }
     } catch (error) {
       console.error('Error creating design:', error);
       alert('Failed to create design');
@@ -197,7 +199,14 @@ export const DesignLibrary: React.FC<DesignLibraryProps> = ({ storeId, onDesignA
             onActivate={() => activateDesign(design)}
             onDuplicate={() => duplicateDesign(design)}
             onDelete={() => deleteDesign(design)}
-            onEdit={() => setEditingDesign(design)}
+            onEdit={() => {
+              // Activate the design and navigate to Design Studio
+              if (!design.is_active) {
+                activateDesign(design);
+              } else if (onNavigateToDesignStudio) {
+                onNavigateToDesignStudio();
+              }
+            }}
             onUpdateName={(newName) => updateDesignName(design, newName)}
           />
         ))}
@@ -213,36 +222,6 @@ export const DesignLibrary: React.FC<DesignLibraryProps> = ({ storeId, onDesignA
           >
             Create Your First Design
           </button>
-        </div>
-      )}
-
-      {/* Design Editor Modal - Placeholder for now */}
-      {editingDesign && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b flex items-center justify-between sticky top-0 bg-white z-10">
-              <h3 className="text-xl font-bold">Edit Design</h3>
-              <button
-                onClick={() => setEditingDesign(null)}
-                className="p-2 hover:bg-neutral-100 rounded-lg"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-6">
-              <p className="text-neutral-500">
-                Design editor coming soon. For now, use the DESIGN tab to customize your active design.
-              </p>
-            </div>
-            <div className="p-6 border-t flex justify-end">
-              <button
-                onClick={() => setEditingDesign(null)}
-                className="px-4 py-2 bg-neutral-200 hover:bg-neutral-300 rounded-lg transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>

@@ -12741,10 +12741,17 @@ Return ONLY the JSON object, no markdown.`;
         return <CollectionManager />;
 
       case AdminTab.DESIGN_LIBRARY:
-        return <DesignLibrary storeId={storeId || ''} onDesignActivated={(design) => {
-          // Reload store config after activating a new design
-          window.location.reload();
-        }} />;
+        return <DesignLibrary 
+          storeId={storeId || ''} 
+          onDesignActivated={(design) => {
+            // Reload store config after activating a new design
+            window.location.reload();
+          }}
+          onNavigateToDesignStudio={() => {
+            // Switch to Design Studio tab to customize the new design
+            onTabChange(AdminTab.DESIGN);
+          }}
+        />;
 
       case AdminTab.DESIGN:
         const isAnyModalOpen = isHeaderModalOpen || isHeroModalOpen || isGridModalOpen || isCollectionModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
