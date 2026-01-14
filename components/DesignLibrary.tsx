@@ -118,6 +118,8 @@ export const DesignLibrary: React.FC<DesignLibraryProps> = ({ storeId, onDesignA
       if (onDesignActivated) {
         onDesignActivated(design);
       }
+      // Reload the page to apply the new design
+      window.location.reload();
     } catch (error) {
       console.error('Error activating design:', error);
       alert('Failed to activate design');

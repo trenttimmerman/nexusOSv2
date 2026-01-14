@@ -527,6 +527,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Current Active Page Data
   const activePage = localPages.find(p => p.id === activePageId) || localPages[0];
 
+  // Load active design name
+  useEffect(() => {
+    const loadActiveDesign = async () => {
+      if (!storeId) return;
+      const { data } = await supabase
+        .from('store_designs')
+        .select('name')
+        .eq('store_id', storeId)
+        .eq('is_active', true)
+        .single();
+      if (data) {
+        setActiveDesignName(data.name);
+      }
+    };
+    loadActiveDesign();
+  }, [storeId]);
+
   // Sync from props only when not editing
   useEffect(() => {
       if (!hasUnsavedChanges && !isSaving) {
@@ -858,6 +875,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isGeneratingEmail, setIsGeneratingEmail] = useState(false);
 
   // Design Studio State
+  const [activeDesignName, setActiveDesignName] = useState<string>('Design Studio');
   const [designSections, setDesignSections] = useState({
     pages: true,
     pageSections: true,
@@ -12744,8 +12762,8 @@ Return ONLY the JSON object, no markdown.`;
         return <DesignLibrary 
           storeId={storeId || ''} 
           onDesignActivated={(design) => {
-            // Reload store config after activating a new design
-            window.location.reload();
+            // Update active design name when design is activated
+            setActiveDesignName(design.name);
           }}
           onNavigateToDesignStudio={() => {
             // Switch to Design Studio tab to customize the new design
@@ -12766,7 +12784,10 @@ Return ONLY the JSON object, no markdown.`;
               
               {/* Undo/Redo Toolbar */}
               <div className="flex items-center justify-between p-3 border-b border-neutral-800 bg-neutral-900/50">
-                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Design Studio</span>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Design Studio</span>
+                  <span className="text-xs text-neutral-500 mt-0.5">{activeDesignName}</span>
+                </div>
                 <div className="flex items-center gap-1">
                   <button 
                     onClick={handleUndo}
