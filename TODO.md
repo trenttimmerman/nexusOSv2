@@ -59,20 +59,41 @@
 
 ---
 
-### 5. Website Crawler Enhancements
-**File:** [api/crawl-website.ts](api/crawl-website.ts)  
-**Current Status:** ✅ Working (RLS fixed Jan 13, 6:58 PM MST)  
-**Potential Improvements:**
-- [ ] Add rate limiting to respect server load
-- [ ] Implement robots.txt parsing and compliance
-- [ ] Add image optimization during import
-- [ ] Automatic category/tag mapping from content
-- [ ] Better handling of blocked/protected sites
-- [ ] Retry logic for failed page fetches
-- [ ] Progress streaming for large sites
-- [ ] Sitemap.xml parsing for better discovery
+### 5. Website Crawler Enhancements - ✅ COMPLETE (Jan 14, 2026)
+**Status:** DONE  
+**Commit:** `3ba6cb3`
 
-**Source:** Analysis of current implementation
+**Completed Features:**
+- ✅ robots.txt parsing and compliance
+  - Checks `/robots.txt` for User-Agent rules
+  - Respects Disallow paths
+  - Uses Crawl-delay directive
+  - Returns 403 if crawling blocked
+- ✅ Rate limiting
+  - Configurable delay between requests (default 100ms)
+  - Respects crawl-delay from robots.txt
+  - Prevents server overload
+- ✅ Retry logic for failed requests
+  - Max retries configurable (default 2)
+  - Exponential backoff (1s, 2s, etc.)
+  - Handles transient network errors
+- ✅ Sitemap.xml parsing for better discovery
+  - Automatically fetches `/sitemap.xml`
+  - Extracts URLs for crawling
+  - Adds to queue with low priority
+  - Returns discovered URLs in result
+
+**New Options:**
+```typescript
+interface CrawlOptions {
+  rateLimitMs?: number;        // Delay between requests (default: 100ms)
+  respectRobotsTxt?: boolean;  // Check robots.txt (default: true)
+  maxRetries?: number;          // Retry failed requests (default: 2)
+}
+```
+
+**Files Modified:**
+- [api/crawl-website.ts](api/crawl-website.ts) - Enhanced with all features
 
 ---
 
