@@ -27,3 +27,10 @@ Before outputting code, you must silently ask:
 ## 4. ERROR HANDLING
 - If your proposed change breaks existing patterns in the file (e.g., switching from `require` to `import`), **STOP** and ask the user.
 - Maintain existing coding styles even if they are "wrong" by modern standards. Consistency > "Correctness".
+
+## 5. TEXT INPUT COLOR RULE - CRITICAL
+- **EVERY** text input, textarea, and select element MUST have inline style={{ color: '#000000' }}
+- This is NON-NEGOTIABLE due to CSS specificity issues with inherited text-white classes
+- When creating or editing ANY input/textarea/select, ALWAYS add: style={{ color: '#000000' }}
+- Do NOT use className="text-black" - it gets overridden by parent text-white
+- Check EVERY input field in the component you're working on

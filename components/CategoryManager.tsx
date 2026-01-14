@@ -214,6 +214,7 @@ export const CategoryManager: React.FC = () => {
                   value={formData.parent_id || ''}
                   onChange={e => setFormData(prev => ({ ...prev, parent_id: e.target.value || null }))}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{ color: '#000000' }}
                 >
                   <option value="">None (Top Level)</option>
                   {categories
@@ -411,7 +412,8 @@ export const CategoryManager: React.FC = () => {
             <textarea
               value={formData.description}
               onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              style={{ color: '#000000' }}
               rows={2}
               placeholder="Optional description"
             />
@@ -424,6 +426,7 @@ export const CategoryManager: React.FC = () => {
                 value={formData.parent_id || ''}
                 onChange={e => setFormData(prev => ({ ...prev, parent_id: e.target.value || null }))}
                 className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={{ color: '#000000' }}
               >
                 <option value="">None (Top Level)</option>
                 {categories.map(c => (
@@ -438,7 +441,8 @@ export const CategoryManager: React.FC = () => {
                 type="number"
                 value={formData.display_order}
                 onChange={e => setFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={{ color: '#000000' }}
               />
             </div>
             
