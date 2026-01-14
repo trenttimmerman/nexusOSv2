@@ -50,9 +50,18 @@ export const CollectionManager: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState<'description' | 'seo' | null>(null);
 
-  // Access Gemini AI
+  // Check if AI is available
+  const hasAI = !!import.meta.env.VITE_GEMINI_API_KEY;
+  
+  // Create AI instance only when needed
   const getGenAI = () => {
-    return import.meta.env.VITE_GEMINI_API_KEY ? new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY) : null;
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return null;
+    try {
+      return new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY);
+    } catch (error) {
+      console.error('Failed to initialize AI:', error);
+      return null;
+    }
   };
 
   // Auto-generate slug from name
@@ -402,7 +411,7 @@ Return ONLY those two lines, nothing else.`;
             rows={3}
             placeholder="A curated selection of summer essentials"
           />
-          {getGenAI() && (
+          {hasAI && (
             <button
               onClick={generateDescription}
               disabled={!formData.name || isGenerating === 'description'}
@@ -554,7 +563,7 @@ Return ONLY those two lines, nothing else.`;
       <div className="mb-4 p-4 bg-blue-950/20 border border-blue-800/30 rounded-lg">
         <div className="flex items-center justify-between mb-3">
           <label className="block text-sm font-medium text-neutral-300">SEO Metadata</label>
-          {getGenAI() && (
+          {hasAI && (
             <button
               onClick={generateSEO}
               disabled={!formData.name || isGenerating === 'seo'}
