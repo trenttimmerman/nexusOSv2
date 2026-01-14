@@ -22,6 +22,7 @@ import {
   Loader
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import { GoogleGenAI } from '@google/genai';
 
 export const CategoryManager: React.FC = () => {
   const { categories, saveCategory, deleteCategory, reorderCategories } = useDataContext();
@@ -42,15 +43,9 @@ export const CategoryManager: React.FC = () => {
     seo_description: ''
   });
 
-  // Access Gemini AI from window (loaded in AdminPanel)
+  // Access Gemini AI
   const getGenAI = () => {
-    if (typeof window !== 'undefined' && (window as any).__GEMINI_API_KEY) {
-      const GoogleGenerativeAI = (window as any).GoogleGenerativeAI;
-      if (GoogleGenerativeAI) {
-        return new GoogleGenerativeAI((window as any).__GEMINI_API_KEY);
-      }
-    }
-    return null;
+    return import.meta.env.VITE_GEMINI_API_KEY ? new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY) : null;
   };
 
   // Auto-generate slug from name
