@@ -5478,6 +5478,56 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <span className="text-xs text-neutral-300">Order: {selectedCategory.display_order || 0}</span>
                           </div>
                         </div>
+                        
+                        {/* Assigned Collections for this specific category */}
+                        <div className="mt-4 pt-4 border-t border-purple-600/30">
+                          <label className="text-xs text-neutral-400 mb-2 block">Assigned Collections</label>
+                          <div className="space-y-2">
+                            {collections
+                              .filter(col => col.category_id === selectedCategory.id)
+                              .map(collection => (
+                                <div key={collection.id} className="flex items-center justify-between px-3 py-2 bg-black border border-neutral-700 rounded-lg text-xs">
+                                  <span className="text-white">{collection.name}</span>
+                                  <button
+                                    onClick={() => {
+                                      const updatedCollection = { ...collection, category_id: undefined };
+                                      saveCollection(updatedCollection);
+                                    }}
+                                    className="text-red-400 hover:text-red-300"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              ))}
+                            {collections.filter(col => col.category_id === selectedCategory.id).length === 0 && (
+                              <div className="text-xs text-neutral-500 italic px-2 py-1">No collections assigned</div>
+                            )}
+                            <select
+                              value=""
+                              onChange={e => {
+                                if (e.target.value) {
+                                  const collection = collections.find(c => c.id === e.target.value);
+                                  if (collection) {
+                                    const updatedCollection = { ...collection, category_id: selectedCategory.id };
+                                    saveCollection(updatedCollection);
+                                  }
+                                }
+                              }}
+                              className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              style={{ color: '#ffffff' }}
+                            >
+                              <option value="">+ Assign Collection</option>
+                              {collections
+                                .filter(col => !col.category_id || col.category_id !== selectedCategory.id)
+                                .sort((a, b) => a.name.localeCompare(b.name))
+                                .map(collection => (
+                                  <option key={collection.id} value={collection.id}>
+                                    {collection.name}
+                                  </option>
+                                ))}
+                            </select>
+                          </div>
+                        </div>
                       </div>
                       <div className="border-t border-purple-600/30 my-4"></div>
                     </div>
@@ -5573,55 +5623,53 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
                 </div>
 
-                {/* 4. Assigned Collections */}
+                {/* 4. Select Categories to Display */}
                 <div className="mb-6">
                   <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <Layers size={12} /> Assigned Collections
+                    <FolderTree size={12} /> Categories to Display
                   </h4>
                   <div className="space-y-2">
-                    {collections
-                      .filter(col => col.category_id === activeBlock.id || col.category_id === activeBlock.data?.categoryId)
-                      .map(collection => (
-                        <div key={collection.id} className="flex items-center justify-between px-3 py-2 bg-black border border-neutral-700 rounded-lg text-sm">
-                          <span className="text-white">{collection.name}</span>
-                          <button
-                            onClick={() => {
-                              const updatedCollection = { ...collection, category_id: undefined };
-                              saveCollection(updatedCollection);
-                            }}
-                            className="text-red-400 hover:text-red-300 text-xs"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ))}
-                    {collections.filter(col => col.category_id === activeBlock.id || col.category_id === activeBlock.data?.categoryId).length === 0 && (
-                      <div className="text-xs text-neutral-500 italic px-3 py-2">No collections assigned</div>
-                    )}
-                    <select
-                      value=""
-                      onChange={e => {
-                        if (e.target.value) {
-                          const collection = collections.find(c => c.id === e.target.value);
-                          if (collection) {
-                            const updatedCollection = { ...collection, category_id: activeBlock.id };
-                            saveCollection(updatedCollection);
-                          }
-                        }
-                      }}
-                      className="w-full px-3 py-2 bg-black border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      style={{ color: '#ffffff' }}
-                    >
-                      <option value="">+ Assign Collection</option>
-                      {collections
-                        .filter(col => !col.category_id || col.category_id !== activeBlock.id)
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map(collection => (
-                          <option key={collection.id} value={collection.id}>
-                            {collection.name}
-                          </option>
-                        ))}
-                    </select>
+                    <div className="text-xs text-neutral-500 mb-2">Choose which categories appear in this block</div>
+                    <div className="max-h-64 overflow-y-auto custom-scrollbar space-y-1 border border-neutral-800 rounded-lg p-2 bg-black/20">
+                      {categories
+                        .filter(cat => cat.is_visible)
+                        .sort((a, b) => a.display_order - b.display_order)
+                        .map(category => {
+                          const isSelected = (categoryData.selectedCategories || []).includes(category.id);
+                          return (
+                            <label
+                              key={category.id}
+                              className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
+                                isSelected
+                                  ? 'bg-purple-600/20 border border-purple-500/30'
+                                  : 'hover:bg-neutral-800 border border-transparent'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={e => {
+                                    const currentIds = categoryData.selectedCategories || [];
+                                    const nextIds = e.target.checked
+                                      ? [...currentIds, category.id]
+                                      : currentIds.filter(id => id !== category.id);
+                                    updateCategoryData({ selectedCategories: nextIds });
+                                  }}
+                                  className="rounded"
+                                />
+                                <span className="text-xs text-white">{category.name}</span>
+                              </div>
+                              <span className="text-[10px] text-neutral-500">
+                                {collections.filter(col => col.category_id === category.id).length} collections
+                              </span>
+                            </label>
+                          );
+                        })}
+                    </div>
+                    <div className="text-[10px] text-neutral-500 mt-2">
+                      {(categoryData.selectedCategories || []).length === 0 ? 'All categories will be shown' : `${(categoryData.selectedCategories || []).length} selected`}
+                    </div>
                   </div>
                 </div>
 
