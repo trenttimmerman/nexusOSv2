@@ -354,6 +354,7 @@ export interface Collection {
   slug: string;
   description?: string;
   image_url?: string;
+  category_id?: string; // NEW: Assign collection to a category
   type: 'manual' | 'auto-category' | 'auto-tag' | 'auto-newest' | 'auto-bestsellers';
   is_featured: boolean;
   is_visible: boolean;
