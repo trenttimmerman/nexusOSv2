@@ -130,8 +130,8 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   } = props;
   
   const { addToCart, cartCount, setIsCartOpen } = useCart();
-  // Get collections from context (avoids prop drilling TDZ issues)
-  const { collections } = useData();
+  // Get collections and categories from context (avoids prop drilling TDZ issues)
+  const { collections, categories } = useData();
 
   // Ensure pages is always an array - must be before activePage usage
   const safePages = pages || [];
