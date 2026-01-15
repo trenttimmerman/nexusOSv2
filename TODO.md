@@ -159,13 +159,38 @@ CREATE TABLE store_designs (
 
 ## 🟡 LOW PRIORITY / FUTURE
 
-### 7. Email Campaign Features
-**Status:** Rich text editor complete ✅  
+### 7. Email Campaign Features - ✅ PARTIALLY COMPLETE (Jan 15, 2026)
+**Status:** Templates + Scheduling implemented ✅  
+**Commit:** `5de3505`
+
+**Completed:**
+- ✅ Email template library (6 professional templates)
+  - Welcome Email
+  - Promotional Sale
+  - Abandoned Cart
+  - Newsletter
+  - Product Launch
+  - VIP Exclusive
+- ✅ Template variables/personalization
+- ✅ Visual template selector in campaign editor
+- ✅ Rich HTML/CSS with inline styles for email compatibility
+- ✅ Campaign scheduling (date/time picker)
+- ✅ Scheduled status management (draft → scheduled → sent)
+- ✅ Cancel/reschedule functionality
+- ✅ Send now override for scheduled campaigns
+
 **Remaining:**
-- [ ] Email template library expansion
-- [ ] A/B testing support
-- [ ] Advanced segmentation
-- [ ] Scheduled send improvements
+- [ ] Backend cron job to auto-send scheduled campaigns
+- [ ] A/B testing support (subject lines, content variations)
+- [ ] Advanced segmentation (tags, purchase history, behavior)
+- [ ] Email analytics (open rates, click tracking)
+- [ ] Template customization editor
+
+**Files Added/Modified:**
+- `components/EmailTemplates.tsx` (NEW) - 6 HTML email templates
+- `components/CampaignManager.tsx` - Template selector + scheduling UI
+- `types.ts` - Added templateId, templateVariables fields
+- `supabase/migrations/20250115000001_campaign_templates_scheduling.sql` (NEW)
 
 ---
 
