@@ -50,20 +50,18 @@ export const CollectionManager: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState<'description' | 'seo' | null>(null);
 
-  // Check if AI is available
-  const hasAI = !!(import.meta.env.VITE_GEMINI_API_KEY && import.meta.env.VITE_GEMINI_API_KEY.trim());
-  
-  // Create AI instance only when needed
-  const getGenAI = () => {
+  // Check if AI is available and create instance
+  let genAI: any = null;
+  let hasAI = false;
+  try {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey || !apiKey.trim()) return null;
-    try {
-      return new GoogleGenAI(apiKey);
-    } catch (error) {
-      console.error('Failed to initialize AI:', error);
-      return null;
+    if (apiKey && typeof apiKey === 'string' && apiKey.trim().length > 10) {
+      genAI = new GoogleGenAI(apiKey.trim());
+      hasAI = true;
     }
-  };
+  } catch (error) {
+    console.warn('AI features disabled:', error);
+  }
 
   // Auto-generate slug from name
   useEffect(() => {
@@ -168,7 +166,6 @@ export const CollectionManager: React.FC = () => {
 
   // AI Generate Description
   const generateDescription = async () => {
-    const genAI = getGenAI();
     if (!genAI || !formData.name) return;
     
     setIsGenerating('description');
@@ -189,7 +186,6 @@ export const CollectionManager: React.FC = () => {
 
   // AI Generate SEO Meta
   const generateSEO = async () => {
-    const genAI = getGenAI();
     if (!genAI || !formData.name) return;
     
     setIsGenerating('seo');
@@ -259,6 +255,19 @@ Return ONLY those two lines, nothing else.`;
         ? prev.filter(id => id !== productId)
         : [...prev, productId]
     );
+  };
+
+  const selectAllProducts = () => {
+    setSelectedProducts(filteredProducts.map(p => p.id));
+  };
+
+  const deselectAllProducts = () => {
+    setSelectedProducts([]);
+  };
+
+  const selectAllFromCategory = (categoryId: string) => {
+    const categoryProducts = products.filter(p => p.category_id === categoryId).map(p => p.id);
+    setSelectedProducts(prev => [...new Set([...prev, ...categoryProducts])]);
   };
 
   const moveProduct = (index: number, direction: 'up' | 'down') => {
@@ -617,6 +626,46 @@ Return ONLY those two lines, nothing else.`;
       {formData.type === 'manual' && (
         <div className="mb-4">
           <label className="block text-sm font-medium text-neutral-400 mb-2">Products ({selectedProducts.length})</label>
+          {/* Bulk Actions */}
+          <div className="flex items-center justify-between mb-4 p-3 bg-neutral-900 border border-neutral-800 rounded-lg">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm text-neutral-500">Quick Select:</span>
+              <button
+                onClick={selectAllProducts}
+                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors"
+              >
+                All Visible ({filteredProducts.length})
+              </button>
+              <button
+                onClick={deselectAllProducts}
+                className="px-3 py-1.5 bg-neutral-700 hover:bg-neutral-600 text-white text-xs font-bold rounded-lg transition-colors"
+              >
+                Clear
+              </button>
+              {categories && categories.length > 0 && (
+                <>
+                  <span className="text-xs text-neutral-600">|</span>
+                  <select
+                    onChange={(e) => e.target.value && selectAllFromCategory(e.target.value)}
+                    value=""
+                    className="px-3 py-1.5 bg-neutral-800 border border-neutral-700 text-white text-xs rounded-lg hover:bg-neutral-700 transition-colors cursor-pointer"
+                    style={{ color: '#000000' }}
+                  >
+                    <option value="">+ Add by Category</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name} ({products.filter(p => p.category_id === cat.id).length})
+                      </option>
+                    ))}
+                  </select>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-neutral-500">Selected: <strong className="text-white">{selectedProducts.length}</strong></span>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             {/* Available Products */}
             <div className="bg-black border border-neutral-700 rounded-lg p-4">
@@ -628,35 +677,47 @@ Return ONLY those two lines, nothing else.`;
                   onChange={e => setProductSearch(e.target.value)}
                   placeholder="Search products..."
                   className="flex-1 bg-neutral-900 border-0 text-white text-sm focus:outline-none"
+                  style={{ color: '#000000' }}
                 />
               </div>
+              <p className="text-xs text-neutral-500 mb-2">Showing {filteredProducts.length} products</p>
               <div className="space-y-2 max-h-96 overflow-y-auto">
-                {filteredProducts.map(product => (
-                  <label
-                    key={product.id}
-                    className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
-                      selectedProducts.includes(product.id)
-                        ? 'bg-blue-600/20 border border-blue-600'
-                        : 'hover:bg-neutral-800 border border-transparent'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedProducts.includes(product.id)}
-                      onChange={() => toggleProductSelection(product.id)}
-                      className="rounded"
-                    />
-                    <img 
-                      src={product.images?.[0]?.url || product.image} 
-                      alt={product.name}
-                      className="w-10 h-10 object-cover rounded"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white truncate">{product.name}</p>
-                      <p className="text-xs text-neutral-500">${product.price}</p>
-                    </div>
-                  </label>
-                ))}
+                {filteredProducts.map(product => {
+                  const productCategory = categories.find(c => c.id === product.category_id);
+                  return (
+                    <label
+                      key={product.id}
+                      className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                        selectedProducts.includes(product.id)
+                          ? 'bg-blue-600/20 border border-blue-600'
+                          : 'hover:bg-neutral-800 border border-transparent'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.includes(product.id)}
+                        onChange={() => toggleProductSelection(product.id)}
+                        className="w-4 h-4 rounded border-neutral-600 text-blue-600 focus:ring-blue-600 focus:ring-offset-0"
+                      />
+                      <img 
+                        src={product.images?.[0]?.url || product.image} 
+                        alt={product.name}
+                        className="w-10 h-10 object-cover rounded"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-white truncate">{product.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-neutral-500">${product.price}</p>
+                          {productCategory && (
+                            <span className="text-xs px-1.5 py-0.5 bg-neutral-800 text-neutral-400 rounded">
+                              {productCategory.name}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
             </div>
             
