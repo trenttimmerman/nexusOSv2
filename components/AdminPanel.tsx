@@ -4991,6 +4991,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         value={collectionData.heading || ''}
                         onChange={(e) => updateCollectionData({ heading: e.target.value })}
                         className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                        style={{ color: '#000000' }}
                         placeholder="e.g., Summer Lookbook"
                       />
                     </div>
@@ -5009,6 +5010,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         value={collectionData.subheading || ''}
                         onChange={(e) => updateCollectionData({ subheading: e.target.value })}
                         className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none resize-none"
+                        style={{ color: '#000000' }}
                         rows={2}
                         placeholder="Optional subtitle..."
                       />
