@@ -5027,10 +5027,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div className="space-y-4">
                       <div className="space-y-1.5">
                         <label className="text-xs text-neutral-400">Source Selection</label>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-3 gap-2">
                           {[
                             { id: 'all', label: 'All Store', icon: Package },
-                            { id: 'category', label: 'By Category', icon: Tag },
                             { id: 'collection', label: 'Collection', icon: Layers },
                             { id: 'manual', label: 'Manual Pick', icon: MousePointerClick }
                           ].map(s => (
@@ -5049,23 +5048,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           ))}
                         </div>
                       </div>
-
-                      {collectionData.productSource === 'category' && (
-                        <div className="space-y-1.5">
-                          <label className="text-xs text-neutral-400">Select Category</label>
-                          <select
-                            value={collectionData.productCategory || ''}
-                            onChange={(e) => updateCollectionData({ productCategory: e.target.value })}
-                            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
-                            style={{ color: '#000000' }}
-                          >
-                            <option value="">Choose Category...</option>
-                            {categories.map(cat => (
-                              <option key={cat.id} value={cat.id}>{cat.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
 
                       {collectionData.productSource === 'collection' && (
                         <div className="space-y-1.5">
