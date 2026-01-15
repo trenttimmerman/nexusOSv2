@@ -4513,10 +4513,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           value={gridData.productCategory || ''}
                           onChange={(e) => updateGridData({ productCategory: e.target.value })}
                           className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                          style={{ color: '#000000' }}
                         >
                           <option value="">Choose Category...</option>
-                          {[...new Set(products.map(p => p.category))].filter(Boolean).map(cat => (
-                            <option key={cat} value={cat}>{cat}</option>
+                          {categories.map(cat => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>
                           ))}
                         </select>
                       </div>
@@ -5056,10 +5057,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             value={collectionData.productCategory || ''}
                             onChange={(e) => updateCollectionData({ productCategory: e.target.value })}
                             className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                            style={{ color: '#000000' }}
                           >
                             <option value="">Choose Category...</option>
-                            {[...new Set(products.map(p => p.category))].filter(Boolean).map(cat => (
-                              <option key={cat} value={cat}>{cat}</option>
+                            {categories.map(cat => (
+                              <option key={cat.id} value={cat.id}>{cat.name}</option>
                             ))}
                           </select>
                         </div>
