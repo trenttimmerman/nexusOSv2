@@ -26,6 +26,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
     mode: import.meta.env.MODE,
     allEnvKeys: Object.keys(import.meta.env)
   });
+  
+  // Provide clearer error message
+  throw new Error(
+    'Supabase configuration missing. Please ensure .env file has VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY set. ' +
+    'If you just added them, restart the dev server with: npm run dev'
+  );
 }
 
 export const supabase = createClient(
