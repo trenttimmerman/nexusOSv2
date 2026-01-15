@@ -38,8 +38,8 @@ import { DashboardHome } from './Dashboard';
 import { GoogleGenAI } from '@google/genai';
 
 // Initialize Gemini AI - only if key is set and not empty
-const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
-const genAI = geminiApiKey ? new GoogleGenAI(geminiApiKey) : null;
+const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim() || '';
+const genAI = geminiApiKey && geminiApiKey.length > 0 ? new GoogleGenAI(geminiApiKey) : null;
 
 const SCROLLBAR_OPTIONS = [
   { id: 'native', name: 'Native', description: 'Default browser scrollbar' },
