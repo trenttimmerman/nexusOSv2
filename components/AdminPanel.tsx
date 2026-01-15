@@ -38,8 +38,19 @@ import { DashboardHome } from './Dashboard';
 import { GoogleGenAI } from '@google/genai';
 
 // Initialize Gemini AI - only if key is set and not empty
-const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim() || '';
-const genAI = geminiApiKey && geminiApiKey.length > 0 ? new GoogleGenAI(geminiApiKey) : null;
+let genAI: any = null;
+try {
+  const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (geminiApiKey && typeof geminiApiKey === 'string' && geminiApiKey.trim().length > 10) {
+    genAI = new GoogleGenAI(geminiApiKey.trim());
+    console.log('✅ Gemini AI initialized successfully');
+  } else {
+    console.warn('⚠️ VITE_GEMINI_API_KEY not set - AI features will be disabled');
+  }
+} catch (error) {
+  console.warn('⚠️ Failed to initialize Gemini AI:', error);
+  genAI = null;
+}
 
 const SCROLLBAR_OPTIONS = [
   { id: 'native', name: 'Native', description: 'Default browser scrollbar' },
