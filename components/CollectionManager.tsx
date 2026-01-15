@@ -22,7 +22,8 @@ import {
   Image as ImageIcon,
   Upload,
   Wand2,
-  Loader
+  Loader,
+  CheckSquare
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { GoogleGenAI } from '@google/genai';
@@ -30,6 +31,7 @@ import { GoogleGenAI } from '@google/genai';
 export const CollectionManager: React.FC = () => {
   const { collections, products, categories, saveCollection, deleteCollection } = useDataContext();
   const [searchTerm, setSearchTerm] = useState('');
+  const [bulkSelected, setBulkSelected] = useState<string[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Collection>>({
     name: '',
@@ -143,6 +145,68 @@ export const CollectionManager: React.FC = () => {
       return;
     }
     await deleteCollection(id);
+  };
+
+  const handleDuplicate = (collection: Collection) => {
+    const duplicated = {
+      ...collection,
+      id: undefined,
+      name: `${collection.name} (Copy)`,
+      slug: `${collection.slug}-copy-${Date.now()}`,
+      created_at: undefined,
+      updated_at: undefined
+    };
+    setEditingId('new');
+    setFormData(duplicated);
+    setSelectedProducts(collection.product_ids || []);
+  };
+
+  const handleBulkDelete = async () => {
+    if (bulkSelected.length === 0) return;
+    if (!confirm(`Delete ${bulkSelected.length} collection(s)?`)) return;
+    
+    for (const id of bulkSelected) {
+      await deleteCollection(id);
+    }
+    setBulkSelected([]);
+  };
+
+  const handleBulkToggleVisibility = async () => {
+    if (bulkSelected.length === 0) return;
+    
+    for (const id of bulkSelected) {
+      const collection = collections.find(c => c.id === id);
+      if (collection) {
+        await saveCollection({ ...collection, is_visible: !collection.is_visible });
+      }
+    }
+    setBulkSelected([]);
+  };
+
+  const handleBulkToggleFeatured = async () => {
+    if (bulkSelected.length === 0) return;
+    
+    for (const id of bulkSelected) {
+      const collection = collections.find(c => c.id === id);
+      if (collection) {
+        await saveCollection({ ...collection, is_featured: !collection.is_featured });
+      }
+    }
+    setBulkSelected([]);
+  };
+
+  const toggleBulkSelect = (id: string) => {
+    setBulkSelected(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const selectAllCollections = () => {
+    setBulkSelected(filteredCollections.map(c => c.id));
+  };
+
+  const deselectAllCollections = () => {
+    setBulkSelected([]);
   };
 
   const handleCancel = () => {
@@ -291,29 +355,59 @@ Return ONLY those two lines, nothing else.`;
     return product.name.toLowerCase().includes(productSearch.toLowerCase());
   });
 
-  const getCollectionProductCount = (collection: Collection) => {
+  const getCollectionProducts = (collection: Collection): Product[] => {
     if (collection.type === 'manual') {
-      return collection.product_ids?.length || 0;
+      return (collection.product_ids || [])
+        .map(id => products.find(p => p.id === id))
+        .filter((p): p is Product => p !== undefined);
     }
-    // For auto collections, count based on conditions
-    return products.filter(p => {
-      if (collection.type === 'auto-category' && collection.conditions?.category_id) {
-        return p.category_id === collection.conditions.category_id;
-      }
-      if (collection.type === 'auto-tag' && collection.conditions?.tags) {
-        return collection.conditions.tags.some(tag => p.tags.includes(tag));
-      }
-      return false;
-    }).length;
+    
+    let filtered = [...products];
+    
+    if (collection.type === 'auto-category' && collection.conditions?.category_id) {
+      filtered = filtered.filter(p => p.category_id === collection.conditions.category_id);
+    }
+    
+    if (collection.type === 'auto-tag' && collection.conditions?.tags) {
+      filtered = filtered.filter(p => 
+        collection.conditions.tags.some(tag => p.tags?.includes(tag))
+      );
+    }
+    
+    if (collection.type === 'auto-newest') {
+      filtered = filtered.sort((a, b) => 
+        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+      );
+      const limit = collection.conditions?.limit || 12;
+      filtered = filtered.slice(0, limit);
+    }
+    
+    if (collection.type === 'auto-bestsellers') {
+      // Sort by total_sales if available, otherwise by id
+      filtered = filtered.sort((a, b) => 
+        (b.total_sales || 0) - (a.total_sales || 0)
+      );
+      const limit = collection.conditions?.limit || 12;
+      filtered = filtered.slice(0, limit);
+    }
+    
+    return filtered;
+  };
+
+  const getCollectionProductCount = (collection: Collection) => {
+    return getCollectionProducts(collection).length;
   };
 
   const renderCollectionCard = (collection: Collection) => {
     const productCount = getCollectionProductCount(collection);
+    const isSelected = bulkSelected.includes(collection.id);
     
     return (
       <div
         key={collection.id}
-        className="group bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden hover:border-neutral-600 transition-all"
+        className={`group bg-neutral-900 border rounded-xl overflow-hidden hover:border-neutral-600 transition-all ${
+          isSelected ? 'border-blue-500 ring-2 ring-blue-500/50' : 'border-neutral-800'
+        }`}
       >
         <div className="aspect-[16/9] relative overflow-hidden bg-neutral-800">
           {collection.image_url ? (
@@ -327,6 +421,15 @@ Return ONLY those two lines, nothing else.`;
               <Layers className="w-12 h-12 text-neutral-600" />
             </div>
           )}
+          <div className="absolute top-2 left-2">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => toggleBulkSelect(collection.id)}
+              className="w-5 h-5 rounded border-neutral-600 text-blue-600 focus:ring-blue-600 focus:ring-offset-0 cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
           <div className="absolute top-2 right-2 flex gap-1">
             {collection.is_featured && (
               <span className="px-2 py-1 bg-yellow-500 text-black text-xs font-bold rounded">
@@ -368,6 +471,13 @@ Return ONLY those two lines, nothing else.`;
             >
               <Edit2 className="w-4 h-4" />
               Edit
+            </button>
+            <button
+              onClick={() => handleDuplicate(collection)}
+              className="px-3 py-2 bg-neutral-700 text-neutral-300 rounded-lg hover:bg-neutral-600 transition-colors"
+              title="Duplicate"
+            >
+              <Plus className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleDelete(collection.id)}
@@ -829,6 +939,56 @@ Return ONLY those two lines, nothing else.`;
           />
         </div>
       </div>
+
+      {/* Bulk Operations Bar */}
+      {bulkSelected.length > 0 && (
+        <div className="mb-6 p-4 bg-blue-600/10 border border-blue-600/30 rounded-xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <CheckSquare className="w-5 h-5 text-blue-400" />
+            <span className="text-blue-300 font-medium">{bulkSelected.length} selected</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleBulkToggleVisibility}
+              className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white text-sm rounded-lg transition-colors flex items-center gap-2"
+            >
+              <Eye className="w-4 h-4" />
+              Toggle Visibility
+            </button>
+            <button
+              onClick={handleBulkToggleFeatured}
+              className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white text-sm rounded-lg transition-colors flex items-center gap-2"
+            >
+              <Star className="w-4 h-4" />
+              Toggle Featured
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 text-sm rounded-lg transition-colors flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete
+            </button>
+            <button
+              onClick={deselectAllCollections}
+              className="px-3 py-1.5 bg-neutral-700 hover:bg-neutral-600 text-neutral-300 text-sm rounded-lg transition-colors"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!editingId && filteredCollections.length > 0 && (
+        <div className="mb-4 flex items-center justify-between">
+          <button
+            onClick={bulkSelected.length === filteredCollections.length ? deselectAllCollections : selectAllCollections}
+            className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            {bulkSelected.length === filteredCollections.length ? 'Deselect All' : 'Select All'}
+          </button>
+        </div>
+      )}
 
       {editingId && renderEditor()}
 

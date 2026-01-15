@@ -5070,14 +5070,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <label className="text-xs text-neutral-400">Select Collection</label>
                           <select
                             value={collectionData.productCollection || ''}
-                            onChange={(e) => updateCollectionData({ productCollection: e.target.value })}
+                            onChange={(e) => {
+                              const selectedId = e.target.value;
+                              updateCollectionData({ 
+                                productCollection: selectedId,
+                                collectionId: selectedId  // Link collection data for editing
+                              });
+                            }}
                             className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                            style={{ color: '#000000' }}
                           >
                             <option value="">Choose Collection...</option>
                             {collections.map(col => (
                               <option key={col.id} value={col.id}>{col.name}</option>
                             ))}
                           </select>
+                          {collectionData.productCollection && (
+                            <p className="text-[10px] text-blue-400 mt-1">
+                              ✓ Collection linked - edit settings in panel above
+                            </p>
+                          )}
                         </div>
                       )}
 
@@ -5100,8 +5112,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               </button>
                             </div>
                           </div>
+                          <div className="relative mb-2">
+                            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-neutral-500" />
+                            <input
+                              type="text"
+                              value={collectionData.productSearchTerm || ''}
+                              onChange={(e) => updateCollectionData({ productSearchTerm: e.target.value })}
+                              placeholder="Search products..."
+                              className="w-full pl-7 pr-2 py-1.5 bg-neutral-900 border border-neutral-700 rounded text-white text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              style={{ color: '#000000' }}
+                            />
+                          </div>
                           <div className="max-h-48 overflow-y-auto custom-scrollbar border border-neutral-800 rounded-lg p-2 space-y-1 bg-black/20">
-                            {products.map(p => {
+                            {products.filter(p => {
+                              const searchTerm = (collectionData.productSearchTerm || '').toLowerCase();
+                              if (!searchTerm) return true;
+                              return p.name.toLowerCase().includes(searchTerm);
+                            }).map(p => {
                               const isSelected = (collectionData.manualProductIds || []).includes(p.id);
                               const productCategory = categories.find(c => c.id === p.category_id);
                               return (
@@ -5264,6 +5291,44 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         checked={collectionData.darkMode || false}
                         onChange={(e) => updateCollectionData({ darkMode: e.target.checked })}
                         className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5 pt-2">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs text-neutral-400">Grid Columns</label>
+                        <span className="text-xs text-blue-400 font-bold">{collectionData.gridColumns || 4}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="2"
+                        max="6"
+                        value={collectionData.gridColumns || 4}
+                        onChange={(e) => updateCollectionData({ gridColumns: parseInt(e.target.value) })}
+                        className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                      />
+                      <div className="flex justify-between text-[9px] text-neutral-600">
+                        <span>2</span>
+                        <span>3</span>
+                        <span>4</span>
+                        <span>5</span>
+                        <span>6</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 pt-2">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs text-neutral-400">Product Gap</label>
+                        <span className="text-xs text-blue-400 font-bold">{collectionData.productGap || 16}px</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="48"
+                        step="4"
+                        value={collectionData.productGap || 16}
+                        onChange={(e) => updateCollectionData({ productGap: parseInt(e.target.value) })}
+                        className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
                       />
                     </div>
 
