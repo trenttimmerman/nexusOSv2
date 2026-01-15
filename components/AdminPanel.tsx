@@ -5082,29 +5082,60 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       )}
 
                       {collectionData.productSource === 'manual' && (
-                        <div className="space-y-1.5">
-                          <label className="text-xs text-neutral-400">Select Products ({ (collectionData.manualProductIds || []).length })</label>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs text-neutral-400">Select Products ({(collectionData.manualProductIds || []).length})</label>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => updateCollectionData({ manualProductIds: products.map(p => p.id) })}
+                                className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded transition-colors"
+                              >
+                                Select All ({products.length})
+                              </button>
+                              <button
+                                onClick={() => updateCollectionData({ manualProductIds: [] })}
+                                className="px-2 py-1 bg-neutral-700 hover:bg-neutral-600 text-white text-[10px] font-bold rounded transition-colors"
+                              >
+                                Clear
+                              </button>
+                            </div>
+                          </div>
                           <div className="max-h-48 overflow-y-auto custom-scrollbar border border-neutral-800 rounded-lg p-2 space-y-1 bg-black/20">
                             {products.map(p => {
                               const isSelected = (collectionData.manualProductIds || []).includes(p.id);
+                              const productCategory = categories.find(c => c.id === p.category_id);
                               return (
-                                <button
+                                <label
                                   key={p.id}
-                                  onClick={() => {
-                                    const currentIds = collectionData.manualProductIds || [];
-                                    const nextIds = isSelected 
-                                      ? currentIds.filter(id => id !== p.id)
-                                      : [...currentIds, p.id];
-                                    updateCollectionData({ manualProductIds: nextIds });
-                                  }}
-                                  className={`w-full flex items-center justify-between p-2 rounded transition-colors ${isSelected ? 'bg-blue-600/20 text-blue-400' : 'hover:bg-neutral-800 text-neutral-400'}`}
+                                  className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
+                                    isSelected ? 'bg-blue-600/20 border border-blue-500' : 'hover:bg-neutral-800 border border-transparent'
+                                  }`}
                                 >
-                                  <div className="flex items-center gap-2">
-                                    <img src={p.image} className="w-6 h-6 rounded object-cover" alt="" />
-                                    <span className="text-[10px] truncate max-w-[120px]">{p.name}</span>
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => {
+                                      const currentIds = collectionData.manualProductIds || [];
+                                      const nextIds = isSelected 
+                                        ? currentIds.filter(id => id !== p.id)
+                                        : [...currentIds, p.id];
+                                      updateCollectionData({ manualProductIds: nextIds });
+                                    }}
+                                    className="w-3 h-3 rounded border-neutral-600 text-blue-600 focus:ring-blue-600 focus:ring-offset-0"
+                                  />
+                                  <img src={p.image} className="w-8 h-8 rounded object-cover" alt="" />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[11px] text-white truncate">{p.name}</p>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] text-neutral-500">${p.price}</span>
+                                      {productCategory && (
+                                        <span className="text-[9px] px-1 py-0.5 bg-neutral-800 text-neutral-400 rounded">
+                                          {productCategory.name}
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
-                                  {isSelected && <Check size={10} />}
-                                </button>
+                                </label>
                               );
                             })}
                           </div>
