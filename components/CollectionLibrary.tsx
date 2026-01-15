@@ -367,7 +367,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
     );
   },
 
-  'collection-masonry': ({ data, isEditable, onUpdate, products }) => {
+  'collection-masonry': ({ data, isEditable, onUpdate, products, onEditBlock, blockId }) => {
     const displayProducts = products && products.length > 0 ? products : [];
     return (
     <div 
@@ -382,7 +382,7 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
             isEditable={isEditable}
             style={{ color: data?.headingColor || '#000000' }}
             className="text-3xl font-bold mb-2"
-            onSelect={() => onUpdate?.({ ...data })}
+            onSelect={() => onEditBlock?.(blockId || '')}
           />
           {data?.subheading && (
             <p style={{ color: data?.subheadingColor || '#6b7280' }}>
