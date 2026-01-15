@@ -30,6 +30,18 @@ export const getFilteredProducts = (data: any, products: Product[], collections:
             filteredProducts = filteredProducts.filter(p => 
               p.tags?.some((tag: string) => collection.conditions?.tags?.includes(tag))
             );
+          } else if (collection.type === 'auto-newest') {
+            filteredProducts = [...filteredProducts].sort((a, b) => 
+              new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+            );
+            const limit = collection.conditions?.limit || 12;
+            filteredProducts = filteredProducts.slice(0, limit);
+          } else if (collection.type === 'auto-bestsellers') {
+            filteredProducts = [...filteredProducts].sort((a, b) => 
+              (b.total_sales || 0) - (a.total_sales || 0)
+            );
+            const limit = collection.conditions?.limit || 12;
+            filteredProducts = filteredProducts.slice(0, limit);
           }
         }
       }
