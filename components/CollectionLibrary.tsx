@@ -58,9 +58,14 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
             style={{ color: data?.headingColor || '#000000' }}
-            className="text-3xl font-bold"
+            className="text-3xl font-bold mb-2"
             onSelect={() => onEditBlock?.(blockId || '')}
           />
+          {data?.subheading && (
+            <p style={{ color: data?.subheadingColor || '#6b7280' }}>
+              {data.subheading}
+            </p>
+          )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {['New Arrivals', 'Best Sellers', 'Sale'].map((title, i) => (
@@ -370,6 +375,21 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
       className="py-20 px-6"
     >
       <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <EditableText
+            value={data?.heading || 'Shop the Collection'}
+            onChange={(val) => onUpdate?.({ ...data, heading: val })}
+            isEditable={isEditable}
+            style={{ color: data?.headingColor || '#000000' }}
+            className="text-3xl font-bold mb-2"
+            onSelect={() => onUpdate?.({ ...data })}
+          />
+          {data?.subheading && (
+            <p style={{ color: data?.subheadingColor || '#6b7280' }}>
+              {data.subheading}
+            </p>
+          )}
+        </div>
         {displayProducts.length === 0 ? (
           <div className="text-center py-12 text-neutral-400">
             <ShoppingBag size={48} className="mx-auto mb-4 opacity-50" />
@@ -416,14 +436,21 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
       className="py-20 overflow-hidden"
     >
       <div className="px-6 max-w-7xl mx-auto mb-8 flex justify-between items-end">
-        <EditableText
-          value={data?.heading || 'New Arrivals'}
-          onChange={(val) => onUpdate?.({ ...data, heading: val })}
-          isEditable={isEditable}
-          style={{ color: data?.headingColor || '#000000' }}
-          className="text-3xl font-bold"
-          onSelect={() => onEditBlock?.(blockId || '')}
-        />
+        <div>
+          <EditableText
+            value={data?.heading || 'New Arrivals'}
+            onChange={(val) => onUpdate?.({ ...data, heading: val })}
+            isEditable={isEditable}
+            style={{ color: data?.headingColor || '#000000' }}
+            className="text-3xl font-bold mb-2"
+            onSelect={() => onEditBlock?.(blockId || '')}
+          />
+          {data?.subheading && (
+            <p style={{ color: data?.subheadingColor || '#6b7280' }}>
+              {data.subheading}
+            </p>
+          )}
+        </div>
         <div className="flex gap-2">
           <button 
             style={{ borderColor: data?.buttonBgColor || '#d1d5db' }}
@@ -494,9 +521,14 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
             style={{ color: data?.headingColor || '#000000' }}
-            className="text-3xl font-bold mb-8"
+            className="text-3xl font-bold mb-2"
             onSelect={() => onEditBlock?.(blockId || '')}
           />
+          {data?.subheading && (
+            <p style={{ color: data?.subheadingColor || '#6b7280' }} className="mb-6">
+              {data.subheading}
+            </p>
+          )}
           <div className="flex justify-center gap-4 flex-wrap">
             {['All', 'Clothing', 'Accessories', 'Shoes', 'Sale'].map((tab, i) => (
               <button 
@@ -575,9 +607,14 @@ export const COLLECTION_COMPONENTS: Record<string, React.FC<any>> = {
               onChange={(val) => onUpdate?.({ ...data, heading: val })}
               isEditable={isEditable}
               style={{ color: data?.headingColor || '#000000' }}
-              className="text-4xl font-bold mb-8"
+              className="text-4xl font-bold mb-2"
               onSelect={() => onEditBlock?.(blockId || '')}
             />
+            {data?.subheading && (
+              <p style={{ color: data?.subheadingColor || '#6b7280' }} className="mb-6">
+                {data.subheading}
+              </p>
+            )}
             {displayProducts.length === 0 ? (
               <div className="text-center py-12 text-neutral-400">
                 <ShoppingBag size={48} className="mx-auto mb-4 opacity-50" />
