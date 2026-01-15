@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Campaign } from '../types';
+import { EMAIL_TEMPLATES, renderEmailTemplate } from './EmailTemplates';
 import { 
   Megaphone, 
   Mail, 
@@ -18,7 +19,8 @@ import {
   Loader2,
   Users,
   Calendar,
-  X
+  X,
+  Layout
 } from 'lucide-react';
 
 interface CampaignManagerProps {
@@ -38,8 +40,15 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => 
     type: 'email',
     audience: 'All Users',
     subject: '',
-    content: ''
+    content: '',
+    templateId: '',
+    templateVariables: {}
   });
+  
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledTime, setScheduledTime] = useState('');
 
   useEffect(() => {
     if (storeId) {
@@ -72,14 +81,32 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => 
       type: 'email',
       audience: 'All Users',
       subject: '',
-      content: ''
+      content: '',
+      templateId: '',
+      templateVariables: {}
     });
+    setScheduledDate('');
+    setScheduledTime('');
+    setShowScheduler(false);
     setIsEditorOpen(true);
   };
 
   const handleEdit = (campaign: Campaign) => {
     setEditingCampaign(campaign);
     setEditorState(campaign);
+    
+    // Set scheduled date/time if exists
+    if (campaign.scheduledFor) {
+      const date = new Date(campaign.scheduledFor);
+      setScheduledDate(date.toISOString().split('T')[0]);
+      setScheduledTime(date.toTimeString().slice(0, 5));
+      setShowScheduler(true);
+    } else {
+      setScheduledDate('');
+      setScheduledTime('');
+      setShowScheduler(false);
+    }
+    
     setIsEditorOpen(true);
   };
 
@@ -87,32 +114,39 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => 
     if (!storeId || !editorState.name) return;
 
     try {
+      // Prepare scheduled_for timestamp
+      let scheduledFor = null;
+      if (showScheduler && scheduledDate && scheduledTime) {
+        scheduledFor = new Date(`${scheduledDate}T${scheduledTime}`).toISOString();
+      }
+      
+      const campaignData = {
+        name: editorState.name,
+        type: editorState.type,
+        audience: editorState.audience,
+        subject: editorState.subject,
+        content: editorState.content,
+        template_id: editorState.templateId || null,
+        template_variables: editorState.templateVariables || {},
+        scheduled_for: scheduledFor,
+        status: scheduledFor ? 'scheduled' : 'draft'
+      };
+
       if (editingCampaign) {
         const { error } = await supabase
           .from('campaigns')
-          .update({
-            name: editorState.name,
-            type: editorState.type,
-            audience: editorState.audience,
-            subject: editorState.subject,
-            content: editorState.content
-          })
+          .update(campaignData)
           .eq('id', editingCampaign.id);
 
         if (error) throw error;
         
-        setCampaigns(prev => prev.map(c => c.id === editingCampaign.id ? { ...c, ...editorState } : c));
+        setCampaigns(prev => prev.map(c => c.id === editingCampaign.id ? { ...c, ...campaignData, scheduledFor } : c));
       } else {
         const { data, error } = await supabase
           .from('campaigns')
           .insert({
             store_id: storeId,
-            name: editorState.name,
-            type: editorState.type,
-            status: 'draft',
-            audience: editorState.audience,
-            subject: editorState.subject,
-            content: editorState.content,
+            ...campaignData,
             stats: { sent: 0, opened: 0, clicked: 0 }
           })
           .select()
@@ -166,6 +200,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => 
       const updates = { 
         status: 'sent', 
         sent_at: new Date().toISOString(),
+        scheduled_for: null,
         stats: {
           sent: Math.floor(Math.random() * 1000) + 500, // Mock stats
           opened: 0,
@@ -180,9 +215,40 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => 
 
       if (error) throw error;
 
-      setCampaigns(prev => prev.map(c => c.id === id ? { ...c, ...updates, sentAt: updates.sent_at } : c));
+      setCampaigns(prev => prev.map(c => c.id === id ? { ...c, ...updates, sentAt: updates.sent_at, scheduledFor: null } : c));
     } catch (error) {
       console.error('Error sending campaign:', error);
+    }
+  };
+  
+  const handleCancelScheduled = async (id: string) => {
+    if (!confirm('Cancel this scheduled campaign?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('campaigns')
+        .update({ status: 'draft', scheduled_for: null })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setCampaigns(prev => prev.map(c => c.id === id ? { ...c, status: 'draft', scheduledFor: null } : c));
+    } catch (error) {
+      console.error('Error canceling campaign:', error);
+    }
+  };
+  
+  const handleSelectTemplate = (templateId: string) => {
+    const template = EMAIL_TEMPLATES.find(t => t.id === templateId);
+    if (template) {
+      setEditorState(prev => ({
+        ...prev,
+        templateId: templateId,
+        subject: prev.subject || `${template.name} - ${prev.name}`,
+        content: 'Using template: ' + template.name,
+        templateVariables: prev.templateVariables || {}
+      }));
+      setShowTemplateSelector(false);
     }
   };
 
@@ -232,15 +298,34 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => 
                         <span className="capitalize">{campaign.type}</span>
                         <span>•</span>
                         <span>{campaign.audience}</span>
+                        {campaign.templateId && (
+                          <>
+                            <span>•</span>
+                            <span className="flex items-center gap-1"><Layout size={12} /> Template</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                    campaign.status === 'sent' ? 'bg-green-900/30 text-green-400 border border-green-500/20' :
-                    campaign.status === 'scheduled' ? 'bg-yellow-900/30 text-yellow-400 border border-yellow-500/20' :
-                    'bg-neutral-800 text-neutral-400 border border-neutral-700'
-                  }`}>
-                    {campaign.status}
+                  <div className="flex flex-col items-end gap-2">
+                    <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                      campaign.status === 'sent' ? 'bg-green-900/30 text-green-400 border border-green-500/20' :
+                      campaign.status === 'scheduled' ? 'bg-yellow-900/30 text-yellow-400 border border-yellow-500/20' :
+                      'bg-neutral-800 text-neutral-400 border border-neutral-700'
+                    }`}>
+                      {campaign.status}
+                    </div>
+                    {campaign.status === 'scheduled' && campaign.scheduledFor && (
+                      <div className="text-xs text-neutral-500 flex items-center gap-1">
+                        <Clock size={12} />
+                        {new Date(campaign.scheduledFor).toLocaleString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          hour: 'numeric', 
+                          minute: '2-digit'
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -269,6 +354,22 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => 
                     >
                       <Send size={14} /> Send Now
                     </button>
+                  )}
+                  {campaign.status === 'scheduled' && (
+                    <>
+                      <button 
+                        onClick={() => handleSend(campaign.id)}
+                        className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                      >
+                        <Send size={14} /> Send Now
+                      </button>
+                      <button 
+                        onClick={() => handleCancelScheduled(campaign.id)}
+                        className="px-4 py-2 bg-neutral-800 text-neutral-300 text-sm font-bold rounded-lg hover:bg-neutral-700 flex items-center gap-2"
+                      >
+                        <X size={14} /> Cancel
+                      </button>
+                    </>
                   )}
                   <button 
                     onClick={() => handleEdit(campaign)}
@@ -329,6 +430,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => 
                     value={editorState.name}
                     onChange={(e) => setEditorState(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white focus:border-blue-500 outline-none"
+                    style={{ color: '#000000' }}
                     placeholder="e.g. Summer Sale"
                   />
                 </div>
@@ -338,6 +440,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => 
                     value={editorState.type}
                     onChange={(e) => setEditorState(prev => ({ ...prev, type: e.target.value as any }))}
                     className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white focus:border-blue-500 outline-none"
+                    style={{ color: '#000000' }}
                   >
                     <option value="email">Email Blast</option>
                     <option value="sms">SMS Notification</option>
@@ -352,6 +455,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => 
                   value={editorState.audience}
                   onChange={(e) => setEditorState(prev => ({ ...prev, audience: e.target.value }))}
                   className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white focus:border-blue-500 outline-none"
+                  style={{ color: '#000000' }}
                 >
                   <option value="All Users">All Users</option>
                   <option value="VIPs">VIP Customers (Spent $500+)</option>
@@ -361,15 +465,67 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => 
               </div>
 
               {editorState.type === 'email' && (
-                <div>
-                  <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Subject Line</label>
-                  <input 
-                    value={editorState.subject}
-                    onChange={(e) => setEditorState(prev => ({ ...prev, subject: e.target.value }))}
-                    className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white focus:border-blue-500 outline-none"
-                    placeholder="Subject..."
-                  />
-                </div>
+                <>
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Subject Line</label>
+                    <input 
+                      value={editorState.subject}
+                      onChange={(e) => setEditorState(prev => ({ ...prev, subject: e.target.value }))}
+                      className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white focus:border-blue-500 outline-none"
+                      style={{ color: '#000000' }}
+                      placeholder="Subject..."
+                    />
+                  </div>
+
+                  {/* Email Template Selector */}
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-xs font-bold text-neutral-500 uppercase">Email Template</label>
+                      <button 
+                        onClick={() => setShowTemplateSelector(!showTemplateSelector)}
+                        className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                      >
+                        <Layout size={12} />
+                        {editorState.templateId ? 'Change Template' : 'Use Template'}
+                      </button>
+                    </div>
+                    
+                    {editorState.templateId && (
+                      <div className="bg-black border border-neutral-800 rounded-lg p-3 text-sm text-neutral-400 flex items-center justify-between">
+                        <span className="flex items-center gap-2">
+                          <span className="text-2xl">{EMAIL_TEMPLATES.find(t => t.id === editorState.templateId)?.thumbnail}</span>
+                          <span className="text-white">{EMAIL_TEMPLATES.find(t => t.id === editorState.templateId)?.name}</span>
+                        </span>
+                        <button 
+                          onClick={() => setEditorState(prev => ({ ...prev, templateId: '', templateVariables: {} }))}
+                          className="text-red-400 hover:text-red-300 text-xs"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                    
+                    {showTemplateSelector && (
+                      <div className="mt-2 grid grid-cols-2 gap-2 bg-black border border-neutral-800 rounded-lg p-3 max-h-64 overflow-y-auto">
+                        {EMAIL_TEMPLATES.map(template => (
+                          <button
+                            key={template.id}
+                            onClick={() => handleSelectTemplate(template.id)}
+                            className={`p-3 rounded-lg border text-left hover:border-blue-500 transition-all ${
+                              editorState.templateId === template.id 
+                                ? 'bg-blue-600/20 border-blue-500' 
+                                : 'bg-neutral-900 border-neutral-800'
+                            }`}
+                          >
+                            <div className="text-2xl mb-1">{template.thumbnail}</div>
+                            <div className="font-bold text-white text-sm">{template.name}</div>
+                            <div className="text-xs text-neutral-500">{template.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
 
               <div>
@@ -388,8 +544,63 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => 
                   value={editorState.content}
                   onChange={(e) => setEditorState(prev => ({ ...prev, content: e.target.value }))}
                   className="w-full h-48 bg-black border border-neutral-800 rounded-lg p-3 text-white focus:border-blue-500 outline-none resize-none font-mono text-sm"
+                  style={{ color: '#000000' }}
                   placeholder="Write your message here..."
                 />
+              </div>
+
+              {/* Scheduler Section */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-xs font-bold text-neutral-500 uppercase">Schedule Send</label>
+                  <button 
+                    onClick={() => setShowScheduler(!showScheduler)}
+                    className={`text-xs font-bold flex items-center gap-1 ${showScheduler ? 'text-yellow-400' : 'text-neutral-500 hover:text-neutral-300'}`}
+                  >
+                    <Clock size={12} />
+                    {showScheduler ? 'Scheduled' : 'Send Later'}
+                  </button>
+                </div>
+                
+                {showScheduler && (
+                  <div className="grid grid-cols-2 gap-3 bg-black border border-neutral-800 rounded-lg p-4">
+                    <div>
+                      <label className="block text-xs text-neutral-500 mb-2">Date</label>
+                      <input 
+                        type="date"
+                        value={scheduledDate}
+                        onChange={(e) => setScheduledDate(e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg p-2 text-white focus:border-blue-500 outline-none text-sm"
+                        style={{ color: '#000000' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-neutral-500 mb-2">Time</label>
+                      <input 
+                        type="time"
+                        value={scheduledTime}
+                        onChange={(e) => setScheduledTime(e.target.value)}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg p-2 text-white focus:border-blue-500 outline-none text-sm"
+                        style={{ color: '#000000' }}
+                      />
+                    </div>
+                    <div className="col-span-2 text-xs text-neutral-500 flex items-center gap-1">
+                      <Calendar size={12} />
+                      {scheduledDate && scheduledTime ? (
+                        <span>Will send on {new Date(`${scheduledDate}T${scheduledTime}`).toLocaleString('en-US', { 
+                          month: 'long', 
+                          day: 'numeric', 
+                          year: 'numeric',
+                          hour: 'numeric', 
+                          minute: '2-digit'
+                        })}</span>
+                      ) : (
+                        <span>Select date and time to schedule</span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -402,9 +613,17 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ storeId }) => 
               </button>
               <button 
                 onClick={handleSave}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold"
+                className={`px-6 py-2 rounded-lg font-bold flex items-center gap-2 ${
+                  showScheduler && scheduledDate && scheduledTime
+                    ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
               >
-                Save Campaign
+                {showScheduler && scheduledDate && scheduledTime ? (
+                  <><Clock size={16} /> Schedule Campaign</>
+                ) : (
+                  <>Save Campaign</>
+                )}
               </button>
             </div>
           </div>

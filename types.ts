@@ -520,6 +520,8 @@ export interface Campaign {
   audience: string; // e.g., "All Users", "VIPs", "Cart Abandoners"
   scheduledFor?: string;
   sentAt?: string;
+  templateId?: string;
+  templateVariables?: Record<string, string>;
   stats?: {
     sent: number;
     opened: number;
