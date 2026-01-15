@@ -4991,7 +4991,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         value={collectionData.heading || ''}
                         onChange={(e) => updateCollectionData({ heading: e.target.value })}
                         className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
-                        style={{ color: '#ffffff' }}
+                        style={{ color: '#000000' }}
                         placeholder="e.g., Summer Lookbook"
                       />
                     </div>
@@ -5010,7 +5010,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         value={collectionData.subheading || ''}
                         onChange={(e) => updateCollectionData({ subheading: e.target.value })}
                         className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none resize-none"
-                        style={{ color: '#ffffff' }}
+                        style={{ color: '#000000' }}
                         rows={2}
                         placeholder="Optional subtitle..."
                       />
@@ -5064,7 +5064,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               });
                             }}
                             className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
-                            style={{ color: '#ffffff' }}
+                            style={{ color: '#000000' }}
                           >
                             <option value="">Choose Collection...</option>
                             {collections.map(col => (
@@ -5106,7 +5106,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               onChange={(e) => updateCollectionData({ productSearchTerm: e.target.value })}
                               placeholder="Search products..."
                               className="w-full pl-7 pr-2 py-1.5 bg-neutral-900 border border-neutral-700 rounded text-white text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
-                              style={{ color: '#ffffff' }}
+                              style={{ color: '#000000' }}
                             />
                           </div>
                           <div className="max-h-48 overflow-y-auto custom-scrollbar border border-neutral-800 rounded-lg p-2 space-y-1 bg-black/20">
