@@ -971,12 +971,14 @@ const HORIZON_DEFAULTS: HeaderData = {
   showCart: true,
   searchPlaceholder: "Search products...",
   searchBackgroundColor: '#f9fafb',
+  searchBorderColor: '#e5e7eb',
   searchFocusBackgroundColor: '#ffffff',
   searchFocusBorderColor: '#3b82f6',
   searchInputTextColor: '#111827',
   searchPlaceholderColor: '#9ca3af',
   backgroundColor: '#ffffff',
   borderColor: '#e5e7eb',
+  borderWidth: '1px',
   textColor: '#000000',
   textHoverColor: '#6b7280',
   accentColor: '#000000',
@@ -984,6 +986,8 @@ const HORIZON_DEFAULTS: HeaderData = {
   utilityBarTextColor: '#ffffff',
   cartBadgeColor: '#000000',
   cartBadgeTextColor: '#ffffff',
+  iconSize: 20,
+  iconHoverBackgroundColor: '#f3f4f6',
   sticky: true,
   maxWidth: 'full',
 };
@@ -1627,7 +1631,11 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({
       </div>
       <div 
         className="border-b py-6 px-8 flex items-center justify-between relative"
-        style={{ backgroundColor: settings.backgroundColor, borderColor: settings.borderColor }}
+        style={{ 
+          backgroundColor: settings.backgroundColor, 
+          borderColor: settings.borderColor,
+          borderBottomWidth: settings.borderWidth
+        }}
       >
          <Menu size={24} className="md:hidden" style={{ color: settings.textColor }} />
          <nav className="hidden md:flex gap-8">
@@ -1679,33 +1687,54 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({
                 onSubmit={onSearchSubmit} 
                 placeholder={settings.searchPlaceholder}
                 inputClassName="border-b px-2 py-1" 
-                style={{ borderColor: settings.borderColor }}
+                style={{ 
+                  borderColor: settings.searchBorderColor,
+                  backgroundColor: settings.searchBackgroundColor
+                }}
                 iconColor={settings.textColor} 
                />
                {!isSearchOpen && (
                  <Search 
-                  size={20} 
+                  size={settings.iconSize || HORIZON_DEFAULTS.iconSize} 
                   onClick={onSearchClick} 
-                  className="cursor-pointer transition-colors" 
+                  className="cursor-pointer transition-all rounded p-1" 
                   style={{ color: settings.textColor }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = settings.textHoverColor!;
+                    e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = settings.textColor!;
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
                  />
                )}
              </div>
            )}
            {settings.showAccount && (
              <User 
-              size={20} 
-              className="cursor-pointer transition-colors" 
+              size={settings.iconSize || HORIZON_DEFAULTS.iconSize} 
+              className="cursor-pointer transition-all rounded p-1" 
               style={{ color: settings.textColor }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
-             />
-           )}
-           {settings.showCart && (
-             <div 
-               onClick={onOpenCart} 
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = settings.textHoverColor!;
+                e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = settings.textColor!;
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}all rounded p-1"
+               style={{ color: settings.textColor }}
+               onMouseEnter={(e) => {
+                 e.currentTarget.style.color = settings.textHoverColor!;
+                 e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+               }}
+               onMouseLeave={(e) => {
+                 e.currentTarget.style.color = settings.textColor!;
+                 e.currentTarget.style.backgroundColor = 'transparent';
+               }}
+             >
+               <ShoppingBag size={settings.iconSize || HORIZON_DEFAULTS.iconSize
                className="flex items-center gap-1 font-bold text-sm cursor-pointer transition-colors"
                style={{ color: settings.textColor }}
                onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
@@ -3586,8 +3615,10 @@ export const HEADER_FIELDS: Record<string, string[]> = {
   ],
   horizon: [
     'showSearch', 'showAccount', 'showCart', 'showSocial',
-    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'backgroundColor', 'borderColor', 'borderWidth', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'iconSize', 'iconHoverBackgroundColor',
+    'searchBorderColor', 'searchBackgroundColor', 'searchFocusBackgroundColor', 'searchFocusBorderColor',
     'sticky', 'maxWidth', 'utilityBarBackgroundColor', 'utilityBarTextColor', 'navActiveStyle'
   ],
   terminal: [
