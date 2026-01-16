@@ -1089,6 +1089,7 @@ const MODUL_DEFAULTS: HeaderData = {
   searchFocusBorderColor: '#10b981',
   searchInputTextColor: '#111827',
   searchPlaceholderColor: '#9ca3af',
+  searchBorderColor: '#e5e7eb',
   backgroundColor: '#ffffff',
   borderColor: '#e5e7eb',
   textColor: '#374151',
@@ -1096,6 +1097,7 @@ const MODUL_DEFAULTS: HeaderData = {
   accentColor: '#10b981',
   cartBadgeColor: '#10b981',
   cartBadgeTextColor: '#ffffff',
+  iconSize: 18,
   sticky: true,
   maxWidth: 'full',
 };
@@ -2169,17 +2171,22 @@ export const HeaderModul: React.FC<HeaderProps> = ({
                 onSubmit={onSearchSubmit} 
                 placeholder={settings.searchPlaceholder}
                 inputClassName="border-b px-2 py-1" 
-                iconColor={settings.textColor} 
+                iconColor={settings.textColor}
+                inputStyle={{
+                  backgroundColor: settings.searchBackgroundColor,
+                  borderColor: settings.searchBorderColor,
+                  color: settings.searchInputTextColor
+                }}
                />
-               {!isSearchOpen && <Search size={18} onClick={onSearchClick} className="cursor-pointer" style={{ color: settings.textColor }} />}
+               {!isSearchOpen && <Search size={settings.iconSize || MODUL_DEFAULTS.iconSize} onClick={onSearchClick} className="cursor-pointer" style={{ color: settings.textColor }} />}
              </div>
            )}
         </div>
         <div className="w-14 border-r flex items-center justify-center hover:bg-neutral-100 cursor-pointer py-2" style={{ borderColor: settings.borderColor }}>
-           {settings.showAccount && <User size={18} style={{ color: settings.textColor }} />}
+           {settings.showAccount && <User size={settings.iconSize || MODUL_DEFAULTS.iconSize} style={{ color: settings.textColor }} />}
         </div>
         <div onClick={onOpenCart} className="w-20 flex items-center justify-center hover:bg-neutral-100 cursor-pointer gap-1 py-2">
-           <ShoppingBag size={18} style={{ color: settings.textColor }} />
+           <ShoppingBag size={settings.iconSize || MODUL_DEFAULTS.iconSize} style={{ color: settings.textColor }} />
            <span className="text-xs font-bold" style={{ color: settings.textColor }}>({cartCount})</span>
         </div>
       </div>
@@ -3762,6 +3769,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'iconSize', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'navActiveStyle'
   ],
   gullwing: [
