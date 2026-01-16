@@ -765,7 +765,7 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
               logoHeight={logoHeight} 
               className="font-serif text-3xl italic tracking-wide"
             />
-            {settings.showTagline && !logoUrl && (
+            {settings.showTagline && (
               <span 
                 className="text-[10px] uppercase tracking-[0.3em] mt-1 block"
                 style={{ color: settings.taglineColor }}
