@@ -934,8 +934,12 @@ const PROTOCOL_DEFAULTS: HeaderData = {
   searchPlaceholderColor: '#9ca3af',
   backgroundColor: '#facc15', // Yellow-400
   borderColor: '#000000',
+  borderWidth: '4px',
+  iconBorderWidth: '2px',
   textColor: '#000000',
   textHoverColor: '#000000',
+  iconSize: 20,
+  iconHoverBackgroundColor: '#000000',
   cartBadgeColor: '#000000',
   cartBadgeTextColor: '#ffffff',
   sticky: true,
@@ -1445,8 +1449,11 @@ export const HeaderProtocol: React.FC<HeaderProps> = ({
   
   return (
     <header 
-      className={`${settings.sticky ? 'sticky top-0' : ''} z-50 border-b-4 font-mono`}
-      style={{ backgroundColor: settings.backgroundColor, borderColor: settings.borderColor }}
+      className={`${settings.sticky ? 'sticky top-0' : ''} z-50 font-mono`}
+      style={{ 
+        backgroundColor: settings.backgroundColor, 
+        borderBottom: `${settings.borderWidth} solid ${settings.borderColor}`
+      }}
     >
       <div className="max-w-7xl mx-auto px-4 min-h-[5.5rem] py-2 flex items-center justify-between">
         <div className="flex items-center gap-8">
@@ -1486,33 +1493,73 @@ export const HeaderProtocol: React.FC<HeaderProps> = ({
               {!isSearchOpen && (
                 <button 
                   onClick={onSearchClick} 
-                  className="p-1 hover:bg-black transition-colors border-2 border-black"
-                  style={{ color: settings.textColor, borderColor: settings.borderColor }}
+                  className="p-1 transition-colors"
+                  style={{ 
+                    color: settings.textColor, 
+                    border: `${settings.iconBorderWidth} solid ${settings.borderColor}`,
+                    backgroundColor: 'transparent'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+                    e.currentTarget.style.color = settings.backgroundColor!;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = settings.textColor!;
+                  }}
                 >
-                  <Search size={20} />
+                  <Search size={settings.iconSize} />
                 </button>
               )}
             </div>
           )}
           {settings.showAccount && (
             <button 
-              className="p-1 hover:bg-black transition-colors border-2 border-black"
-              style={{ color: settings.textColor, borderColor: settings.borderColor }}
+              className="p-1 transition-colors"
+              style={{ 
+                color: settings.textColor, 
+                border: `${settings.iconBorderWidth} solid ${settings.borderColor}`,
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+                e.currentTarget.style.color = settings.backgroundColor!;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = settings.textColor!;
+              }}
             >
-              <User size={20} />
+              <User size={settings.iconSize} />
             </button>
           )}
           {settings.showCart && (
             <div 
               onClick={onOpenCart} 
-              className="relative cursor-pointer border-2 p-1 hover:bg-black transition-colors"
-              style={{ color: settings.textColor, borderColor: settings.borderColor }}
+              className="relative cursor-pointer p-1 transition-colors"
+              style={{ 
+                color: settings.textColor, 
+                border: `${settings.iconBorderWidth} solid ${settings.borderColor}`,
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+                e.currentTarget.style.color = settings.backgroundColor!;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = settings.textColor!;
+              }}
             >
-              <ShoppingBag size={20} />
+              <ShoppingBag size={settings.iconSize} />
               {cartCount > 0 && (
                 <span 
-                  className="absolute -top-2 -right-2 text-[10px] font-bold w-5 h-5 flex items-center justify-center border-2"
-                  style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor, borderColor: settings.borderColor }}
+                  className="absolute -top-2 -right-2 text-[10px] font-bold w-5 h-5 flex items-center justify-center"
+                  style={{ 
+                    backgroundColor: settings.cartBadgeColor, 
+                    color: settings.cartBadgeTextColor, 
+                    border: `${settings.iconBorderWidth} solid ${settings.borderColor}`
+                  }}
                 >
                   {cartCount}
                 </span>
@@ -3482,7 +3529,8 @@ export const HEADER_FIELDS: Record<string, string[]> = {
   ],
   protocol: [
     'showSearch', 'showAccount', 'showCart',
-    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'backgroundColor', 'borderColor', 'borderWidth', 'iconBorderWidth',
+    'textColor', 'textHoverColor', 'iconSize', 'iconHoverBackgroundColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth', 'scanlineColor', 'navActiveStyle'
   ],
