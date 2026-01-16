@@ -443,10 +443,29 @@ For each customizable element, verify:
 - ~~Nebula - Missing `showAccount`~~ ✅ Fixed
 - ~~Orbit - Missing `showSearch` and `showAccount`~~ ✅ Fixed
 
-### Pattern 2: Hardcoded Values
-_To be documented as patterns emerge_
+### Pattern 2: Incorrect Logo Conditionals (CRITICAL)
+**Problem:** Controls wrapped in `!logoUrl` conditionals only work when NO custom logo is uploaded.  
+**Impact:** When users upload a logo image, these controls stop working entirely.
 
-### Pattern 3: Broken Property Names
+**Affected Headers & Fixes:**
+- ~~**Luxe** - `taglineText` only showed when `!logoUrl`~~ ✅ Fixed (removed condition)
+- ~~**Pilot** - `showLogoBadge` only showed when `!logoUrl`~~ ✅ Fixed (removed condition)
+- ~~**Metro** - Initial decoration only showed when `!logoUrl`~~ ✅ Fixed (removed decoration)
+
+**Rule:** Controls should work based on their toggle state, NOT on whether a logo is uploaded.
+
+### Pattern 3: Unused Properties in HEADER_FIELDS
+**Problem:** Properties defined in HEADER_FIELDS but never actually used in component code.  
+**Impact:** Users see controls in Design Studio that do nothing.
+
+**Known Issues:**
+- ❌ **Protocol** - `scanlineColor` in HEADER_FIELDS but NOT used in component
+- ❌ **Terminal** - `terminalPromptColor` in HEADER_FIELDS but NOT used in component
+
+### Pattern 4: Hardcoded Values
+_Ongoing - found in first 5 headers, likely present in remaining 16_
+
+### Pattern 5: Broken Property Names
 _To be documented as patterns emerge_
 
 ---
