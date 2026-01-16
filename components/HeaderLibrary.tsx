@@ -841,8 +841,13 @@ const BUNKER_DEFAULTS: HeaderData = {
   searchPlaceholderColor: '#9ca3af',
   backgroundColor: '#facc15', // yellow-400
   borderColor: '#000000',
+  borderWidth: '4px',
+  tickerBorderWidth: '4px',
+  gridDividerWidth: '4px',
   textColor: '#000000',
   textHoverColor: '#facc15',
+  iconSize: 24,
+  iconHoverBackgroundColor: 'transparent',
   cartBadgeColor: '#000000',
   cartBadgeTextColor: '#facc15',
   tickerBackgroundColor: '#000000',
@@ -1287,23 +1292,26 @@ export const HeaderBunker: React.FC<HeaderProps> = ({
   
   return (
     <header 
-      className={`w-full border-b-4 ${settings.sticky ? 'sticky top-0' : ''} z-50 font-mono`}
-      style={{ backgroundColor: settings.backgroundColor, borderColor: settings.borderColor }}
+      className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50 font-mono`}
+      style={{ 
+        backgroundColor: settings.backgroundColor, 
+        borderBottom: `${settings.borderWidth} solid ${settings.borderColor}`
+      }}
     >
       <div 
-        className="w-full text-xs py-4 px-2 overflow-hidden whitespace-nowrap border-b-4"
+        className="w-full text-xs py-4 px-2 overflow-hidden whitespace-nowrap"
         style={{ 
           backgroundColor: settings.tickerBackgroundColor, 
           color: settings.tickerTextColor,
-          borderColor: settings.tickerBorderColor
+          borderBottom: `${settings.tickerBorderWidth} solid ${settings.tickerBorderColor}`
         }}
       >
         <div className="animate-marquee inline-block">
           {settings.tickerText} — {settings.tickerText} —
         </div>
       </div>
-      <div className="grid grid-cols-[auto_1fr_auto] min-h-[5.5rem] divide-x-4 divide-black" style={{ borderColor: settings.borderColor }}>
-        <div className="px-6 py-2 flex items-center bg-white">
+      <div className="grid grid-cols-[auto_1fr_auto] min-h-[5.5rem]" style={{ borderRight: `${settings.gridDividerWidth} solid ${settings.borderColor}` }}>
+        <div className="px-6 py-2 flex items-center bg-white" style={{ borderRight: `${settings.gridDividerWidth} solid ${settings.borderColor}` }}>
           <Logo 
             storeName={storeName} 
             logoUrl={logoUrl} 
@@ -1313,18 +1321,19 @@ export const HeaderBunker: React.FC<HeaderProps> = ({
           />
         </div>
         <nav className="hidden md:flex items-stretch justify-center" style={{ backgroundColor: settings.backgroundColor }}>
-          <div className="flex w-full h-full divide-x-4 border-l-0" style={{ borderColor: settings.borderColor }}>
-            {(links || []).map(l => (
-              <NavItem 
-                key={l.href} 
-                link={l} 
-                onClick={onLinkClick} 
-                className="flex-1 flex items-center justify-center text-sm font-bold uppercase transition-colors px-4 py-2"
-                style={{ color: settings.textColor }}
-                hoverColor={settings.textHoverColor}
-                activeColor={settings.textHoverColor}
-                activeStyle={settings.navActiveStyle}
-              />
+          <div className="flex w-full h-full border-l-0">
+            {(links || []).map((l, idx) => (
+              <div key={l.href} style={{ borderRight: idx < (links || []).length - 1 ? `${settings.gridDividerWidth} solid ${settings.borderColor}` : 'none' }} className="flex-1">
+                <NavItem 
+                  link={l} 
+                  onClick={onLinkClick} 
+                  className="w-full h-full flex items-center justify-center text-sm font-bold uppercase transition-colors px-4 py-2"
+                  style={{ color: settings.textColor }}
+                  hoverColor={settings.textHoverColor}
+                  activeColor={settings.textHoverColor}
+                  activeStyle={settings.navActiveStyle}
+                />
+              </div>
             ))}
           </div>
         </nav>
@@ -1340,20 +1349,64 @@ export const HeaderBunker: React.FC<HeaderProps> = ({
                 iconColor="#000" 
               />
               {!isSearchOpen && (
-                <button onClick={onSearchClick} className="hover:opacity-70 transition-opacity">
-                  <Search size={24} className="stroke-[3]" style={{ color: settings.textColor }} />
+                <button 
+                  onClick={onSearchClick} 
+                  className="transition-all rounded p-1"
+                  style={{ 
+                    backgroundColor: 'transparent',
+                    opacity: 1
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '0.7';
+                    e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '1';
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <Search size={settings.iconSize} className="stroke-[3]" style={{ color: settings.textColor }} />
                 </button>
               )}
             </div>
           )}
           {settings.showAccount && (
-            <button className="hover:opacity-70 transition-opacity">
-              <User size={24} className="stroke-[3]" style={{ color: settings.textColor }} />
+            <button 
+              className="transition-all rounded p-1"
+              style={{ 
+                backgroundColor: 'transparent',
+                opacity: 1
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.7';
+                e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              <User size={settings.iconSize} className="stroke-[3]" style={{ color: settings.textColor }} />
             </button>
           )}
           {settings.showCart && (
-            <div onClick={onOpenCart} className="relative cursor-pointer hover:opacity-70 transition-opacity">
-               <ShoppingBag size={24} className="stroke-[3]" style={{ color: settings.textColor }} />
+            <div 
+              onClick={onOpenCart} 
+              className="relative cursor-pointer transition-all rounded p-1"
+              style={{ 
+                backgroundColor: 'transparent',
+                opacity: 1
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.7';
+                e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+               <ShoppingBag size={settings.iconSize} className="stroke-[3]" style={{ color: settings.textColor }} />
                <span 
                  className="absolute -top-2 -right-2 text-xs font-bold px-1 border-2"
                  style={{ 
@@ -3401,7 +3454,8 @@ export const HEADER_FIELDS: Record<string, string[]> = {
   ],
   bunker: [
     'showSearch', 'showAccount', 'showCart',
-    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'backgroundColor', 'borderColor', 'borderWidth', 'tickerBorderWidth', 'gridDividerWidth',
+    'textColor', 'textHoverColor', 'iconSize', 'iconHoverBackgroundColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
     'tickerText', 'tickerBackgroundColor', 'tickerTextColor', 'tickerBorderColor',
     'sticky', 'maxWidth', 'navActiveStyle'
