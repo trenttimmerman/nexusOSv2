@@ -868,6 +868,7 @@ const PILOT_DEFAULTS: HeaderData = {
   ctaText: 'Sign In',
   cartBadgeColor: '#4f46e5',
   cartBadgeTextColor: '#ffffff',
+  iconSize: 20,
   sticky: true,
   maxWidth: '7xl',
   navActiveStyle: 'capsule',
@@ -1261,7 +1262,7 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
                 className="w-8 h-8 rounded-lg flex items-center justify-center"
                 style={{ backgroundColor: settings.accentColor, color: '#ffffff' }}
               >
-                <Hexagon size={20} />
+                <Hexagon size={settings.iconSize || PILOT_DEFAULTS.iconSize} />
               </div>
             )}
             <Logo 
@@ -1298,7 +1299,7 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
                 onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
                 onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
               >
-                <ShoppingBag size={20} />
+                <ShoppingBag size={settings.iconSize || PILOT_DEFAULTS.iconSize} />
                 {cartCount > 0 && (
                   <span 
                     className="absolute -top-2 -right-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
@@ -1326,7 +1327,7 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
           <div className="md:hidden flex items-center gap-4">
             {settings.showCart && (
               <button onClick={onOpenCart} className="relative cursor-pointer" style={{ color: settings.textColor }}>
-                <ShoppingBag size={20} />
+                <ShoppingBag size={settings.iconSize || PILOT_DEFAULTS.iconSize} />
                 {cartCount > 0 && (
                   <span 
                     className="absolute -top-2 -right-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
@@ -3768,7 +3769,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showCart', 'showCTA', 'showLogoBadge',
     'backgroundColor', 'textColor', 'textHoverColor', 'accentColor',
     'ctaBackgroundColor', 'ctaHoverColor', 'ctaTextColor', 'ctaText',
-    'cartBadgeColor', 'cartBadgeTextColor',
+    'cartBadgeColor', 'cartBadgeTextColor', 'iconSize',
     'sticky', 'maxWidth', 'navActiveStyle'
   ],
   bunker: [
