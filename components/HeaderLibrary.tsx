@@ -1196,6 +1196,7 @@ const NOIR_DEFAULTS: HeaderData = {
   searchFocusBorderColor: '#f5f5f5',
   searchInputTextColor: '#f5f5f5',
   searchPlaceholderColor: '#737373',
+  searchBorderColor: '#262626',
   backgroundColor: '#0a0a0a',
   borderColor: '#262626',
   textColor: '#f5f5f5',
@@ -2682,7 +2683,12 @@ export const HeaderNoir: React.FC<HeaderProps> = ({
                   onSubmit={onSearchSubmit} 
                   placeholder={settings.searchPlaceholder}
                   inputClassName="border-b px-2 py-1 italic" 
-                  iconColor={settings.textColor} 
+                  iconColor={settings.textColor}
+                  inputStyle={{
+                    backgroundColor: settings.searchBackgroundColor,
+                    borderColor: settings.searchBorderColor,
+                    color: settings.searchInputTextColor
+                  }}
                  />
                  {!isSearchOpen && <button onClick={onSearchClick} className="hover:opacity-70 transition-opacity" style={{ color: settings.textColor }}>Search</button>}
                </div>
@@ -3855,6 +3861,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'searchPlaceholder', 'navActiveStyle'
   ],
   ghost: [
