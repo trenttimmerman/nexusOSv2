@@ -177,6 +177,7 @@ export const DEFAULTS: HeaderData = {
   textHoverColor: '#000000',
   cartBadgeColor: '#000000',
   cartBadgeTextColor: '#ffffff',
+  iconSize: 18,
   sticky: true,
   maxWidth: '7xl',
   navActiveStyle: 'dot',
@@ -1987,7 +1988,7 @@ export const HeaderVenture: React.FC<HeaderProps> = ({
                   borderColor: settings.searchBorderColor
                 }}
               >
-                <Search size={18} style={{ color: settings.textColor, opacity: 0.4 }} />
+                <Search size={settings.iconSize || VENTURE_DEFAULTS.iconSize} style={{ color: settings.textColor, opacity: 0.4 }} />
                 <InlineSearch
                   isOpen={isSearchOpen || false}
                   onClose={onSearchClose || (() => {})}
@@ -3525,7 +3526,7 @@ export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
              />
              {!isSearchOpen && (
                <button onClick={onSearchClick} className="p-2 transition-opacity hover:opacity-70">
-                 <Search size={18} style={{ color: settings.textColor }} />
+                 <Search size={settings.iconSize || DEFAULTS.iconSize} style={{ color: settings.textColor }} />
                </button>
              )}
            </div>
@@ -3533,7 +3534,7 @@ export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
          
          {settings.showAccount && (
            <button className="flex items-center gap-2 transition-colors hover:opacity-70" style={{ color: settings.textColor }}>
-             <User size={18} />
+             <User size={settings.iconSize || DEFAULTS.iconSize} />
              <span className="text-sm">Account</span>
            </button>
          )}
@@ -3844,7 +3845,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'searchPlaceholder', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
+    'iconSize', 'searchPlaceholder', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'navActiveStyle'
   ],
   flow: [

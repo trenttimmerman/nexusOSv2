@@ -64,7 +64,7 @@ For each customizable element, verify:
 
 | Component Type | Total Variants | Audited | Issues Found | Fixed |
 |---------------|----------------|---------|--------------|-------|
-| Headers       | 21             | 10      | 49           | 49    |
+| Headers       | 21             | 10      | 52           | 52    |
 | Heroes        | TBD            | 0       | 0            | 0     |
 | Footers       | TBD            | 0       | 0            | 0     |
 | Sections      | TBD            | 0       | 0            | 0     |
