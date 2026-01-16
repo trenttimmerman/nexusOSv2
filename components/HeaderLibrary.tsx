@@ -3442,7 +3442,7 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({
 };
 
 // 27. The Studio (Sidebar Navigation)
-export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 48, links, cartCount, onOpenCart, onLinkClick, data }) => {
+export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 48, links, cartCount, onOpenCart, onLinkClick, onSearchClick, isSearchOpen, onSearchClose, onSearchSubmit, data }) => {
   const settings = { ...DEFAULTS, ...data };
   
   return (
@@ -3469,10 +3469,33 @@ export const HeaderStudio: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
 
       <div className="mt-auto space-y-6">
          {settings.showSearch && (
-           <div className="relative w-full">
-             <input type="text" placeholder="Search..." className="w-full bg-white/5 border border-gray-200 px-3 py-2 text-sm rounded-md focus:outline-none" style={{ color: settings.textColor }} />
-             <Search size={14} className="absolute right-3 top-3 opacity-40" style={{ color: settings.textColor }} />
+           <div className="flex items-center">
+             <InlineSearch
+               isOpen={isSearchOpen || false}
+               onClose={onSearchClose || (() => {})}
+               onSubmit={onSearchSubmit}
+               placeholder={settings.searchPlaceholder}
+               inputClassName="border px-3 py-2 text-sm rounded-md"
+               inputStyle={{
+                 backgroundColor: settings.searchBackgroundColor,
+                 borderColor: settings.searchBorderColor,
+                 color: settings.searchInputTextColor,
+               }}
+               iconColor={settings.textColor}
+             />
+             {!isSearchOpen && (
+               <button onClick={onSearchClick} className="p-2 transition-opacity hover:opacity-70">
+                 <Search size={18} style={{ color: settings.textColor }} />
+               </button>
+             )}
            </div>
+         )}
+         
+         {settings.showAccount && (
+           <button className="flex items-center gap-2 transition-colors hover:opacity-70" style={{ color: settings.textColor }}>
+             <User size={18} />
+             <span className="text-sm">Account</span>
+           </button>
          )}
          
          <div className="flex justify-between items-center border-t pt-6" style={{ borderColor: settings.borderColor }}>
@@ -3775,8 +3798,10 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'sticky', 'maxWidth', 'navActiveStyle'
   ],
   studio: [
-    'showSearch', 'showCart',
+    'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'navActiveStyle'
   ],
   flow: [
