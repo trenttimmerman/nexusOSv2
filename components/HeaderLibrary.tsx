@@ -23,6 +23,9 @@ export interface HeaderData {
   cartBadgeColor?: string;
   cartBadgeTextColor?: string;
   taglineColor?: string;
+  iconSize?: number;
+  iconHoverBackgroundColor?: string;
+  borderWidth?: string;
   // CTA/Button
   ctaBackgroundColor?: string;
   ctaHoverColor?: string;
@@ -43,6 +46,7 @@ export interface HeaderData {
   searchFocusBorderColor?: string;
   searchInputTextColor?: string;
   searchPlaceholderColor?: string;
+  searchBorderColor?: string;
   // Glass effect (for Nebula header)
   blurIntensity?: string;
   // Expandable menu (for Orbit header)
@@ -1339,7 +1343,7 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
               </button>
             )}
             <button style={{ color: settings.textColor }}>
-              <Menu size={24} />
+              <Menu size={settings.iconSize || PILOT_DEFAULTS.iconSize} />
             </button>
           </div>
         </div>
@@ -1696,7 +1700,7 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({
           borderBottomWidth: settings.borderWidth
         }}
       >
-         <Menu size={24} className="md:hidden" style={{ color: settings.textColor }} />
+         <Menu size={settings.iconSize || HORIZON_DEFAULTS.iconSize} className="md:hidden" style={{ color: settings.textColor }} />
          <nav className="hidden md:flex gap-8">
             {(links || []).slice(0, 2).map(l => (
               <NavItem 
@@ -1783,24 +1787,18 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({
               onMouseLeave={(e) => {
                 e.currentTarget.style.color = settings.textColor!;
                 e.currentTarget.style.backgroundColor = 'transparent';
-              }}all rounded p-1"
-               style={{ color: settings.textColor }}
-               onMouseEnter={(e) => {
-                 e.currentTarget.style.color = settings.textHoverColor!;
-                 e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
-               }}
-               onMouseLeave={(e) => {
-                 e.currentTarget.style.color = settings.textColor!;
-                 e.currentTarget.style.backgroundColor = 'transparent';
-               }}
-             >
-               <ShoppingBag size={settings.iconSize || HORIZON_DEFAULTS.iconSize
+              }}
+             />
+           )}
+           {settings.showCart && (
+             <div 
+               onClick={onOpenCart}
                className="flex items-center gap-1 font-bold text-sm cursor-pointer transition-colors"
                style={{ color: settings.textColor }}
                onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
                onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
              >
-               <ShoppingBag size={20} />
+               <ShoppingBag size={settings.iconSize || HORIZON_DEFAULTS.iconSize} />
                <span>({cartCount})</span>
              </div>
            )}
