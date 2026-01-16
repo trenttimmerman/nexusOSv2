@@ -57,7 +57,7 @@ For each customizable element, verify:
 
 | Component Type | Total Variants | Audited | Issues Found | Fixed |
 |---------------|----------------|---------|--------------|-------|
-| Headers       | 21             | 5       | 19           | 19    |
+| Headers       | 21             | 5       | 22           | 22    |
 | Heroes        | TBD            | 0       | 0            | 0     |
 | Footers       | TBD            | 0       | 0            | 0     |
 | Sections      | TBD            | 0       | 0            | 0     |
@@ -148,6 +148,7 @@ For each customizable element, verify:
 - `accentColor` → Indicator dot, active nav ✓
 - `cartBadgeColor` → Cart badge background ✓
 - `showSearch` → Toggle search icon ✓
+- `showAccount` → Toggle account icon ✓ **ADDED**
 - `showCart` → Toggle cart icon ✓
 - `showIndicatorDot` → Toggle animated dot ✓
 - `sticky` → Sticky positioning ✓
@@ -156,10 +157,11 @@ For each customizable element, verify:
 - `navActiveStyle` → Active nav indicator style ✓
 
 ### ⚠️ MISSING CONTROLS
-1. **iconSize** - Search and cart icons hardcoded to size={18} (Line 602, 621)
-2. **iconHoverBackgroundColor** - Icon hover only changes color, no background control
-3. **borderWidth** - Border hardcoded to '1px' (Line 549)
-4. **cartBadgeTextColor** - Badge is dot-only (no text), but control could be useful if design changes
+1. **~~iconSize~~** - ✅ Fixed
+2. **~~iconHoverBackgroundColor~~** - ✅ Fixed
+3. **~~borderWidth~~** - ✅ Fixed
+4. **~~cartBadgeTextColor~~** - ✅ Fixed
+5. **~~showAccount~~** - ✅ Fixed (Standard Control)
 
 ### ❌ BROKEN CONNECTIONS
 **None found** - All defined HEADER_FIELDS properties are properly connected
@@ -169,6 +171,8 @@ For each customizable element, verify:
 ✅ Add `iconHoverBackgroundColor` control (default: 'transparent')  
 ✅ Add `borderWidth` control (default: '1px')  
 ✅ Add `cartBadgeTextColor` control for consistency (even though badge is dot-only)  
+✅ Add `showAccount` control (Standard Control)  
+✅ Implement account icon button in component  
 ✅ Update search icon button to use iconSize property  
 ✅ Update cart icon button to use iconSize property  
 ✅ Update header border to use borderWidth property  
@@ -256,15 +260,19 @@ For each customizable element, verify:
 - `textHoverColor` → Nav links hover ✓
 - `cartBadgeColor` → Not used (no badge in this design) ✓
 - `cartBadgeTextColor` → Not used (no badge in this design) ✓
-- `showCart` → Assumed toggle for cart display ✓
+- `showSearch` → Toggle search display ✓ **ADDED**
+- `showAccount` → Toggle account button ✓ **ADDED**
+- `showCart` → Toggle cart display ✓
 - `sticky` → Sticky positioning ✓
 - `maxWidth` → Container max width ✓
 - `navActiveStyle` → Active nav indicator style ✓
 
 ### ⚠️ MISSING CONTROLS
-1. **iconSize** - Cart icon hardcoded to size={14} (Line 3220)
-2. **borderWidth** - Border hardcoded to '1px' (Line 3205)
-3. **accentColor** - Used for active nav but not in HEADER_FIELDS ✓ (already in component)
+1. **~~iconSize~~** - ✅ Fixed
+2. **~~borderWidth~~** - ✅ Fixed
+3. **~~accentColor~~** - ✅ Fixed
+4. **~~showSearch~~** - ✅ Fixed (Standard Control)
+5. **~~showAccount~~** - ✅ Fixed (Standard Control)
 
 ### ❌ BROKEN CONNECTIONS
 **None found** - All defined HEADER_FIELDS properties are properly connected
@@ -273,6 +281,10 @@ For each customizable element, verify:
 ✅ Add `iconSize` control (default: 14)  
 ✅ Add `borderWidth` control (default: '1px')  
 ✅ Add `accentColor` to HEADER_FIELDS (already used in component)  
+✅ Add `showSearch` control (Standard Control)  
+✅ Add `showAccount` control (Standard Control)  
+✅ Implement search functionality in expanded state  
+✅ Implement account button in expanded state  
 ✅ Update cart icon to use iconSize property  
 ✅ Update container border to use borderWidth property
 
@@ -413,8 +425,16 @@ For each customizable element, verify:
 
 ## 🔧 Common Issues Found
 
-### Pattern 1: Missing Color Controls
-_To be documented as patterns emerge_
+### Pattern 1: Missing Standard Controls
+**ALL headers must have these 4 standard controls:**
+- `showSearch` - Toggle search icon/functionality
+- `showAccount` - Toggle account icon/button
+- `showCart` - Toggle cart icon/button
+- `sticky` - Toggle sticky header positioning
+
+**Headers Missing Standard Controls:**
+- ~~Nebula - Missing `showAccount`~~ ✅ Fixed
+- ~~Orbit - Missing `showSearch` and `showAccount`~~ ✅ Fixed
 
 ### Pattern 2: Hardcoded Values
 _To be documented as patterns emerge_
@@ -482,6 +502,9 @@ For each header variant:
 | 2026-01-16 | Orbit | Applied fixes | Added iconSize, borderWidth, accentColor controls; created ORBIT_DEFAULTS |
 | 2026-01-16 | Protocol | Completed audit | Found 4 missing controls (iconSize, borderWidth, iconBorderWidth, iconHoverBackgroundColor) |
 | 2026-01-16 | Protocol | Applied fixes | Added iconSize, borderWidth, iconBorderWidth, iconHoverBackgroundColor controls |
+| 2026-01-16 | ALL | Standard controls audit | Found missing standard controls (showSearch, showAccount, showCart, sticky) |
+| 2026-01-16 | Nebula | Re-audit & fix | Added missing showAccount standard control |
+| 2026-01-16 | Orbit | Re-audit & fix | Added missing showSearch and showAccount standard controls |
 
 ---
 

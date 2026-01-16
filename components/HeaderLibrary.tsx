@@ -618,6 +618,25 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
               )}
             </div>
           )}
+          {settings.showAccount && (
+            <button 
+              className="cursor-pointer transition-colors rounded-full p-1.5"
+              style={{ 
+                color: settings.textColor,
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = settings.textHoverColor!;
+                e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = settings.textColor!;
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              <User size={settings.iconSize} />
+            </button>
+          )}
           {settings.showCart && (
             <button 
               onClick={onOpenCart} 
@@ -3241,6 +3260,8 @@ export const HeaderRefined: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 
 // 26. The Orbit (Dynamic Island style)
 const ORBIT_DEFAULTS: HeaderData = {
+  showSearch: false,
+  showAccount: false,
   showCart: true,
   backgroundColor: '#000000',
   borderColor: '#333333',
@@ -3256,7 +3277,20 @@ const ORBIT_DEFAULTS: HeaderData = {
   navActiveStyle: 'underline',
 };
 
-export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
+export const HeaderOrbit: React.FC<HeaderProps> = ({ 
+  storeName, 
+  logoUrl, 
+  logoHeight = 32, 
+  links, 
+  cartCount, 
+  onOpenCart, 
+  onLinkClick, 
+  onSearchClick,
+  isSearchOpen,
+  onSearchClose,
+  onSearchSubmit,
+  data 
+}) => {
   const [expanded, setExpanded] = React.useState(false);
   const settings = { ...ORBIT_DEFAULTS, ...data };
   const maxWidthClass = settings.maxWidth === 'full' ? 'max-w-full' : `max-w-${settings.maxWidth}`;
@@ -3308,6 +3342,27 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
              </div>
              <div className="flex flex-col gap-3">
                 <span className="text-xs font-bold uppercase tracking-wider opacity-50" style={{ color: settings.textColor }}>Store</span>
+                {settings.showSearch && (
+                  <div className="flex items-center">
+                    <InlineSearch
+                      isOpen={isSearchOpen || false}
+                      onClose={onSearchClose || (() => {})}
+                      onSubmit={onSearchSubmit}
+                      inputClassName="border-b border-neutral-300 px-2 py-1 text-sm"
+                      iconColor={settings.textColor}
+                    />
+                    {!isSearchOpen && (
+                      <button onClick={onSearchClick} className="text-sm hover:underline text-left" style={{ color: settings.textColor }}>
+                        Search
+                      </button>
+                    )}
+                  </div>
+                )}
+                {settings.showAccount && (
+                  <button className="text-sm hover:underline text-left" style={{ color: settings.textColor }}>
+                    Account
+                  </button>
+                )}
                 <button onClick={onOpenCart} className="text-sm hover:underline text-left" style={{ color: settings.textColor }}>View Cart ({cartCount})</button>
                 <div className="mt-auto pt-4 border-t flex justify-between items-center" style={{ borderColor: settings.borderColor }}>
                   <span className="text-sm opacity-70" style={{ color: settings.textColor }}>Ready to checkout?</span>
@@ -3501,7 +3556,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'sticky', 'maxWidth', 'paddingX', 'paddingY', 'navActiveStyle'
   ],
   nebula: [
-    'showSearch', 'showCart', 'showIndicatorDot',
+    'showSearch', 'showAccount', 'showCart', 'showIndicatorDot',
     'backgroundColor', 'borderColor', 'borderWidth', 'textColor', 'textHoverColor',
     'accentColor', 'iconSize', 'iconHoverBackgroundColor', 'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth', 'blurIntensity', 'navActiveStyle'
@@ -3650,7 +3705,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'sticky', 'maxWidth', 'navActiveStyle'
   ],
   orbit: [
-    'showCart',
+    'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'borderWidth', 'textColor', 'textHoverColor',
     'accentColor', 'iconSize', 'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth', 'navActiveStyle'
