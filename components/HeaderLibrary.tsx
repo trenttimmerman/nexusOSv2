@@ -1125,6 +1125,7 @@ const STARK_DEFAULTS: HeaderData = {
   searchFocusBorderColor: '#000000',
   searchInputTextColor: '#000000',
   searchPlaceholderColor: '#666666',
+  searchBorderColor: '#000000',
   backgroundColor: '#ffffff',
   borderColor: '#000000',
   textColor: '#000000',
@@ -2441,7 +2442,12 @@ export const HeaderStark: React.FC<HeaderProps> = ({
                         onSubmit={onSearchSubmit} 
                         placeholder={settings.searchPlaceholder}
                         inputClassName="bg-black border-b border-white px-2 py-1 text-white" 
-                        iconColor={settings.textColor} 
+                        iconColor={settings.textColor}
+                        inputStyle={{
+                          backgroundColor: settings.searchBackgroundColor,
+                          borderColor: settings.searchBorderColor,
+                          color: settings.searchInputTextColor
+                        }}
                       />
                       {!isSearchOpen && <span onClick={onSearchClick} className="cursor-pointer hover:text-white transition-colors">SEARCH</span>}
                     </div>
@@ -3814,6 +3820,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'searchPlaceholder', 'navActiveStyle'
   ],
   offset: [
