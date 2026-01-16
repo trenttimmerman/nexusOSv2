@@ -19,6 +19,13 @@ Verify that EVERY customizable element in EVERY design component has:
 
 For each customizable element, verify:
 
+### ⚠️ **MANDATORY: Standard Visibility Controls**
+**ALL header variants MUST have these 4 standard controls:**
+- [ ] `showSearch` - Toggle search icon/functionality
+- [ ] `showAccount` - Toggle account icon/button
+- [ ] `showCart` - Toggle cart icon/button
+- [ ] `sticky` - Toggle sticky header positioning
+
 ### ✅ **Link/URL Assignment**
 - [ ] URL input field exists
 - [ ] Links to correct config property
@@ -446,6 +453,18 @@ _To be documented as patterns emerge_
 
 ## 📝 Audit Methodology
 
+### Step 0: Verify Standard Controls (REQUIRED)
+**Before auditing custom elements, verify these 4 standard controls exist:**
+1. `showSearch` in HEADER_FIELDS ✓
+2. `showAccount` in HEADER_FIELDS ✓
+3. `showCart` in HEADER_FIELDS ✓
+4. `sticky` in HEADER_FIELDS ✓
+
+**If ANY are missing:**
+- Add to component DEFAULTS object
+- Add to HEADER_FIELDS array
+- Implement functionality in component UI
+
 ### Step 1: Identify Elements
 Read through component code and list every customizable element
 
@@ -479,6 +498,7 @@ Renders on storefront
 ## 🎯 Success Criteria
 
 For each header variant:
+- [ ] **ALL 4 standard controls present** (`showSearch`, `showAccount`, `showCart`, `sticky`)
 - [ ] 100% of customizable elements have controls
 - [ ] All controls properly connected
 - [ ] Real-time preview works
