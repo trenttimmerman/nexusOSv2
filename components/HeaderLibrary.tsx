@@ -1012,10 +1012,11 @@ const TERMINAL_DEFAULTS: HeaderData = {
   showAccount: false,
   showCart: true,
   searchPlaceholder: "Search products...",
-  searchBackgroundColor: '#f9fafb',
+  searchBackgroundColor: '#3c3c3c',
+  searchBorderColor: '#569cd6',
   searchFocusBackgroundColor: '#ffffff',
   searchFocusBorderColor: '#3b82f6',
-  searchInputTextColor: '#111827',
+  searchInputTextColor: '#ffffff',
   searchPlaceholderColor: '#9ca3af',
   backgroundColor: '#1e1e1e',
   borderColor: '#3c3c3c',
@@ -1023,6 +1024,7 @@ const TERMINAL_DEFAULTS: HeaderData = {
   textHoverColor: '#ffffff',
   cartBadgeColor: '#569cd6',
   cartBadgeTextColor: '#ffffff',
+  iconSize: 16,
   sticky: true,
   maxWidth: 'full',
 };
@@ -1843,13 +1845,18 @@ export const HeaderTerminal: React.FC<HeaderProps> = ({
                   onClose={onSearchClose || (() => {})} 
                   onSubmit={onSearchSubmit} 
                   placeholder={settings.searchPlaceholder}
-                  inputClassName="bg-[#3c3c3c] border-b border-[#569cd6] px-2 py-1 text-white" 
+                  inputClassName="border-b px-2 py-1" 
+                  inputStyle={{
+                    backgroundColor: settings.searchBackgroundColor,
+                    borderColor: settings.searchBorderColor,
+                    color: settings.searchInputTextColor,
+                  }}
                   iconColor={settings.textColor} 
                 />
                 {!isSearchOpen && (
                   <button onClick={onSearchClick} className="hover:text-white transition-colors flex items-center gap-1">
                     <span className="text-[#569cd6]">fn</span>
-                    <Search size={16} />
+                    <Search size={settings.iconSize || TERMINAL_DEFAULTS.iconSize} />
                   </button>
                 )}
               </div>
@@ -1857,13 +1864,13 @@ export const HeaderTerminal: React.FC<HeaderProps> = ({
             {settings.showAccount && (
               <button className="hover:text-white transition-colors flex items-center gap-1">
                 <span className="text-[#569cd6]">fn</span>
-                <User size={16} />
+                <User size={settings.iconSize || TERMINAL_DEFAULTS.iconSize} />
               </button>
             )}
             {settings.showCart && (
               <div onClick={onOpenCart} className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
                 <span className="text-[#6a9955]">// Cart: {cartCount}</span>
-                <ShoppingBag size={16} />
+                <ShoppingBag size={settings.iconSize || TERMINAL_DEFAULTS.iconSize} />
               </div>
             )}
          </div>
@@ -3686,7 +3693,8 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
-    'sticky', 'maxWidth', 'terminalPromptColor', 'navActiveStyle'
+    'iconSize', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
+    'sticky', 'maxWidth', 'navActiveStyle'
   ],
   portfolio: [
     'showSearch', 'showAccount', 'showCart',
