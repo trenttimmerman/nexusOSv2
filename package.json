@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/generate-env.js && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify-categories": "node scripts/verify-category-migration.js",
+    "migrate-categories": "npx supabase db execute --file supabase/migrations/20250116000001_migrate_product_categories.sql"
   },
   "dependencies": {
     "@google/genai": "^1.31.0",
