@@ -1170,6 +1170,7 @@ const TICKER_DEFAULTS: HeaderData = {
   searchFocusBorderColor: '#dc2626',
   searchInputTextColor: '#111827',
   searchPlaceholderColor: '#9ca3af',
+  searchBorderColor: '#dc2626',
   backgroundColor: '#ffffff',
   borderColor: '#e5e7eb',
   textColor: '#111827',
@@ -1177,6 +1178,7 @@ const TICKER_DEFAULTS: HeaderData = {
   accentColor: '#dc2626',
   cartBadgeColor: '#dc2626',
   cartBadgeTextColor: '#ffffff',
+  iconSize: 18,
   tickerBackgroundColor: '#dc2626',
   tickerTextColor: '#ffffff',
   tickerText: 'BREAKING NEWS • LATEST UPDATES • TRENDING NOW',
@@ -2603,15 +2605,20 @@ export const HeaderTicker: React.FC<HeaderProps> = ({
                   placeholder={settings.searchPlaceholder}
                   inputClassName="border-b px-2 py-1" 
                   style={{ borderColor: settings.accentColor }}
-                  iconColor={settings.accentColor} 
+                  iconColor={settings.accentColor}
+                  inputStyle={{
+                    backgroundColor: settings.searchBackgroundColor,
+                    borderColor: settings.searchBorderColor,
+                    color: settings.searchInputTextColor
+                  }}
                  />
-                 {!isSearchOpen && <button onClick={onSearchClick} className="p-2 rounded transition-colors" style={{ backgroundColor: `${settings.accentColor}20`, color: settings.accentColor }}><Search size={18} /></button>}
+                 {!isSearchOpen && <button onClick={onSearchClick} className="p-2 rounded transition-colors" style={{ backgroundColor: `${settings.accentColor}20`, color: settings.accentColor }}><Search size={settings.iconSize || TICKER_DEFAULTS.iconSize} /></button>}
                </div>
              )}
-             {settings.showAccount && <button className="p-2 rounded transition-colors" style={{ backgroundColor: `${settings.accentColor}20`, color: settings.accentColor }}><User size={18} /></button>}
+             {settings.showAccount && <button className="p-2 rounded transition-colors" style={{ backgroundColor: `${settings.accentColor}20`, color: settings.accentColor }}><User size={settings.iconSize || TICKER_DEFAULTS.iconSize} /></button>}
              {settings.showCart && (
                <button onClick={onOpenCart} className="px-3 py-1 rounded text-xs font-bold flex items-center gap-1 transition-colors" style={{ backgroundColor: `${settings.accentColor}20`, color: settings.accentColor }}>
-                  <ShoppingBag size={16} /> CART: {cartCount}
+                  <ShoppingBag size={settings.iconSize || TICKER_DEFAULTS.iconSize} /> CART: {cartCount}
                </button>
              )}
           </div>
@@ -3841,6 +3848,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'iconSize', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'tickerText', 'tickerBackgroundColor', 'tickerTextColor', 'navActiveStyle'
   ],
   noir: [
