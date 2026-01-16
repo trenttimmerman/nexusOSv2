@@ -508,10 +508,53 @@ For each customizable element, verify:
 - ❌ **Protocol** - `scanlineColor` in HEADER_FIELDS but NOT used in component
 - ❌ **Terminal** - `terminalPromptColor` in HEADER_FIELDS but NOT used in component
 
-### Pattern 4: Hardcoded Values
+### Pattern 4: InlineSearch Component Styling Bug ⚠️ CRITICAL
+**Problem:** InlineSearch component didn't accept style props, only hardcoded className strings  
+**Impact:** Search box NOT VISIBLE or WORKING when opened - no way to edit search styling  
+**Headers Affected:** ALL headers using InlineSearch
+
+**Root Cause:**
+- InlineSearch only accepted `inputClassName` with hardcoded Tailwind classes
+- Search properties exist in DEFAULTS (searchBackgroundColor, searchBorderColor, searchInputTextColor)
+- Headers passed classes like "border-gray-300 bg-transparent" baked into code
+- Settings couldn't override hardcoded colors
+
+**Fix Applied (All 6 Audited Headers):**
+1. Updated InlineSearch component to accept `style` and `inputStyle` React.CSSProperties props
+2. Removed hardcoded "bg-transparent" from InlineSearch base component
+3. Updated Canvas, Nebula, Bunker, Orbit, Protocol, Horizon to pass proper style props:
+   - `searchBackgroundColor` → inputStyle.backgroundColor
+   - `searchBorderColor` → inputStyle.borderColor
+   - `searchInputTextColor` → inputStyle.color
+4. Removed hardcoded color classes from inputClassName (kept only layout: "border-b px-2 py-1")
+
+**Before:**
+```tsx
+<InlineSearch 
+  inputClassName="border-b border-gray-300 px-2 py-1"  // Hardcoded colors ❌
+  iconColor={settings.textColor}
+/>
+```
+
+**After:**
+```tsx
+<InlineSearch 
+  inputClassName="border-b px-2 py-1"  // Layout only ✅
+  inputStyle={{
+    backgroundColor: settings.searchBackgroundColor,
+    borderColor: settings.searchBorderColor,
+    color: settings.searchInputTextColor,
+  }}
+  iconColor={settings.textColor}
+/>
+```
+
+**Remaining Work:** Need to apply this fix to all other headers (15 remaining)
+
+### Pattern 5: Hardcoded Values
 _Ongoing - found in first 5 headers, likely present in remaining 16_
 
-### Pattern 5: Broken Property Names
+### Pattern 6: Broken Property Names
 _To be documented as patterns emerge_
 
 ---

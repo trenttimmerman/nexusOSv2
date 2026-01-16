@@ -94,7 +94,9 @@ const InlineSearch: React.FC<{
   inputClassName?: string;
   iconColor?: string;
   placeholder?: string;
-}> = ({ isOpen, onClose, onSubmit, className = '', inputClassName = '', iconColor, placeholder = 'Search...' }) => {
+  style?: React.CSSProperties;
+  inputStyle?: React.CSSProperties;
+}> = ({ isOpen, onClose, onSubmit, className = '', inputClassName = '', iconColor, placeholder = 'Search...', style = {}, inputStyle = {} }) => {
   const [query, setQuery] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
 
@@ -123,7 +125,7 @@ const InlineSearch: React.FC<{
 
   return (
     <div className={`flex items-center overflow-hidden transition-all duration-300 ease-out ${className}`}
-      style={{ width: isOpen ? '200px' : '0px', opacity: isOpen ? 1 : 0 }}
+      style={{ width: isOpen ? '200px' : '0px', opacity: isOpen ? 1 : 0, ...style }}
     >
       <form onSubmit={handleSubmit} className="flex items-center w-full">
         <input
@@ -132,7 +134,8 @@ const InlineSearch: React.FC<{
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
-          className={`w-full text-sm outline-none bg-transparent ${inputClassName}`}
+          className={`w-full text-sm outline-none ${inputClassName}`}
+          style={inputStyle}
         />
         <button type="button" onClick={onClose} className="p-1 hover:opacity-70 transition-opacity flex-shrink-0">
           <X size={14} style={{ color: iconColor }} />
@@ -419,7 +422,13 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
                 isOpen={isSearchOpen || false}
                 onClose={onSearchClose || (() => {})}
                 onSubmit={onSearchSubmit}
-                inputClassName="border-b border-neutral-300 px-2 py-1"
+                placeholder={settings.searchPlaceholder}
+                inputClassName="border-b px-2 py-1"
+                inputStyle={{
+                  backgroundColor: settings.searchBackgroundColor,
+                  borderColor: settings.searchBorderColor,
+                  color: settings.searchInputTextColor,
+                }}
                 iconColor={settings.textColor}
               />
               {!isSearchOpen && (
@@ -593,7 +602,13 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
                 isOpen={isSearchOpen || false}
                 onClose={onSearchClose || (() => {})}
                 onSubmit={onSearchSubmit}
-                inputClassName="border-b border-neutral-300 px-2 py-1"
+                placeholder={settings.searchPlaceholder}
+                inputClassName="border-b px-2 py-1"
+                inputStyle={{
+                  backgroundColor: settings.searchBackgroundColor,
+                  borderColor: settings.searchBorderColor,
+                  color: settings.searchInputTextColor,
+                }}
                 iconColor={settings.textColor}
               />
               {!isSearchOpen && (
@@ -1372,7 +1387,12 @@ export const HeaderBunker: React.FC<HeaderProps> = ({
                 onClose={onSearchClose || (() => {})} 
                 onSubmit={onSearchSubmit} 
                 placeholder={settings.searchPlaceholder}
-                inputClassName="border-b border-black px-2 py-1" 
+                inputClassName="border-b px-2 py-1" 
+                inputStyle={{
+                  backgroundColor: settings.searchBackgroundColor,
+                  borderColor: settings.searchBorderColor,
+                  color: settings.searchInputTextColor,
+                }}
                 iconColor="#000" 
               />
               {!isSearchOpen && (
@@ -1510,7 +1530,12 @@ export const HeaderProtocol: React.FC<HeaderProps> = ({
                 onClose={onSearchClose || (() => {})} 
                 onSubmit={onSearchSubmit} 
                 placeholder={settings.searchPlaceholder}
-                inputClassName="border-b-2 border-black px-2 py-1" 
+                inputClassName="border-b-2 px-2 py-1" 
+                inputStyle={{
+                  backgroundColor: settings.searchBackgroundColor,
+                  borderColor: settings.searchBorderColor,
+                  color: settings.searchInputTextColor,
+                }}
                 iconColor="#000" 
               />
               {!isSearchOpen && (
@@ -1687,9 +1712,10 @@ export const HeaderHorizon: React.FC<HeaderProps> = ({
                 onSubmit={onSearchSubmit} 
                 placeholder={settings.searchPlaceholder}
                 inputClassName="border-b px-2 py-1" 
-                style={{ 
+                inputStyle={{
+                  backgroundColor: settings.searchBackgroundColor,
                   borderColor: settings.searchBorderColor,
-                  backgroundColor: settings.searchBackgroundColor
+                  color: settings.searchInputTextColor,
                 }}
                 iconColor={settings.textColor} 
                />
@@ -3252,7 +3278,19 @@ export const HeaderRefined: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
             <div className="flex items-center gap-2">
               {settings.showSearch && (
                 <>
-                  <InlineSearch isOpen={isSearchOpen || false} onClose={onSearchClose || (() => {})} onSubmit={onSearchSubmit} inputClassName="bg-transparent border-b border-gray-300 text-gray-800 placeholder-gray-400 px-2 py-1" iconColor={settings.textColor} />
+                  <InlineSearch 
+                    isOpen={isSearchOpen || false} 
+                    onClose={onSearchClose || (() => {})} 
+                    onSubmit={onSearchSubmit} 
+                    placeholder={settings.searchPlaceholder}
+                    inputClassName="border-b px-2 py-1" 
+                    inputStyle={{
+                      backgroundColor: settings.searchBackgroundColor,
+                      borderColor: settings.searchBorderColor,
+                      color: settings.searchInputTextColor,
+                    }}
+                    iconColor={settings.textColor} 
+                  />
                   {!isSearchOpen && <button onClick={onSearchClick} className="p-2 hover:opacity-70 transition-opacity" style={{ color: settings.textColor }}>
                     <Search size={20} />
                   </button>}
