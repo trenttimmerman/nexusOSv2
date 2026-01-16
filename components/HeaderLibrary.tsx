@@ -958,12 +958,14 @@ const GULLWING_DEFAULTS: HeaderData = {
   searchFocusBorderColor: '#3b82f6',
   searchInputTextColor: '#111827',
   searchPlaceholderColor: '#9ca3af',
+  searchBorderColor: '#e5e7eb',
   backgroundColor: '#ffffff',
   borderColor: '#e5e7eb',
   textColor: '#6b7280',
   textHoverColor: '#000000',
   cartBadgeColor: '#000000',
   cartBadgeTextColor: '#ffffff',
+  iconSize: 20,
   sticky: true,
   maxWidth: '7xl',
 };
@@ -2276,15 +2278,20 @@ export const HeaderGullwing: React.FC<HeaderProps> = ({
                     onSubmit={onSearchSubmit} 
                     placeholder={settings.searchPlaceholder}
                     inputClassName="border-b px-2 py-1" 
-                    iconColor={settings.textColor} 
+                    iconColor={settings.textColor}
+                    inputStyle={{
+                      backgroundColor: settings.searchBackgroundColor,
+                      borderColor: settings.searchBorderColor,
+                      color: settings.searchInputTextColor
+                    }}
                    />
-                   {!isSearchOpen && <button onClick={onSearchClick} className="hover:opacity-70 transition-opacity"><Search size={20} style={{ color: settings.textColor }} /></button>}
+                   {!isSearchOpen && <button onClick={onSearchClick} className="hover:opacity-70 transition-opacity"><Search size={settings.iconSize || GULLWING_DEFAULTS.iconSize} style={{ color: settings.textColor }} /></button>}
                  </div>
                )}
-               {settings.showAccount && <button className="hover:opacity-70 transition-opacity"><User size={20} style={{ color: settings.textColor }} /></button>}
+               {settings.showAccount && <button className="hover:opacity-70 transition-opacity"><User size={settings.iconSize || GULLWING_DEFAULTS.iconSize} style={{ color: settings.textColor }} /></button>}
                {settings.showCart && (
                  <div onClick={onOpenCart} className="flex items-center gap-2 cursor-pointer hover:opacity-70 transition-opacity" style={{ color: settings.textColor }}>
-                    <ShoppingBag size={20} />
+                    <ShoppingBag size={settings.iconSize || GULLWING_DEFAULTS.iconSize} />
                     <span className="font-mono text-sm">[{cartCount}]</span>
                  </div>
                )}
@@ -3786,6 +3793,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'iconSize', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'navActiveStyle'
   ],
   pop: [
