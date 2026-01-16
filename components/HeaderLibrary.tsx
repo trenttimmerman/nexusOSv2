@@ -914,6 +914,7 @@ const POP_DEFAULTS: HeaderData = {
   searchFocusBorderColor: '#23A094',
   searchInputTextColor: '#111827',
   searchPlaceholderColor: '#9ca3af',
+  searchBorderColor: '#000000',
   backgroundColor: '#F3F4F6', // Light gray background
   borderColor: '#000000',
   textColor: '#000000',
@@ -921,6 +922,7 @@ const POP_DEFAULTS: HeaderData = {
   accentColor: '#23A094', // Teal hover
   cartBadgeColor: '#FFC900', // Yellow cart button
   cartBadgeTextColor: '#000000',
+  iconSize: 18,
   sticky: true,
   maxWidth: 'full',
 };
@@ -2358,19 +2360,24 @@ export const HeaderPop: React.FC<HeaderProps> = ({
                   placeholder={settings.searchPlaceholder}
                   inputClassName="border-b-2 px-2 py-1" 
                   style={{ borderColor: settings.borderColor }}
-                  iconColor={settings.textColor} 
+                  iconColor={settings.textColor}
+                  inputStyle={{
+                    backgroundColor: settings.searchBackgroundColor,
+                    borderColor: settings.searchBorderColor,
+                    color: settings.searchInputTextColor
+                  }}
                  />
-                 {!isSearchOpen && <button onClick={onSearchClick} className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center hover:bg-neutral-100" style={{ borderColor: settings.borderColor }}><Search size={18} style={{ color: settings.textColor }} /></button>}
+                 {!isSearchOpen && <button onClick={onSearchClick} className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center hover:bg-neutral-100" style={{ borderColor: settings.borderColor }}><Search size={settings.iconSize || POP_DEFAULTS.iconSize} style={{ color: settings.textColor }} /></button>}
                </div>
              )}
              {settings.showAccount && (
                <button className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center hover:bg-neutral-100" style={{ borderColor: settings.borderColor }}>
-                  <User size={18} style={{ color: settings.textColor }} />
+                  <User size={settings.iconSize || POP_DEFAULTS.iconSize} style={{ color: settings.textColor }} />
                </button>
              )}
              {settings.showCart && (
                <button onClick={onOpenCart} className="bg-[#FFC900] px-4 py-1.5 rounded-full border-2 border-black font-bold text-sm flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:shadow-none transition-all" style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor, borderColor: settings.borderColor }}>
-                  <ShoppingBag size={16} /> Cart ({cartCount})
+                  <ShoppingBag size={settings.iconSize || POP_DEFAULTS.iconSize} /> Cart ({cartCount})
                </button>
              )}
           </div>
@@ -3800,6 +3807,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'iconSize', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'searchPlaceholder', 'navActiveStyle'
   ],
   stark: [
