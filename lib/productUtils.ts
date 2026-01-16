@@ -42,6 +42,16 @@ export const getFilteredProducts = (data: any, products: Product[], collections:
             );
             const limit = collection.conditions?.limit || 12;
             filteredProducts = filteredProducts.slice(0, limit);
+          } else if (collection.type === 'auto-trending') {
+            // Trending products based on recent sales velocity
+            // Sort by sales in the last 7 days (if available), otherwise total sales
+            filteredProducts = [...filteredProducts].sort((a, b) => {
+              const aRecent = (a as any).recent_sales || a.total_sales || 0;
+              const bRecent = (b as any).recent_sales || b.total_sales || 0;
+              return bRecent - aRecent;
+            });
+            const limit = collection.conditions?.limit || 12;
+            filteredProducts = filteredProducts.slice(0, limit);
           }
         }
       }

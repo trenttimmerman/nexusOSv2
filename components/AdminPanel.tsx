@@ -28,6 +28,7 @@ import { CollectionManager } from './CollectionManager';
 import { CategoryManager } from './CategoryManager';
 import { ClientManagement } from './ClientManagement';
 import { DesignLibrary } from './DesignLibrary';
+import { CollectionAnalytics } from './CollectionAnalytics';
 import EmailSubscribers from './EmailSubscribers';
 import EmailSettings from './EmailSettings';
 import ShopifyMigration from './ShopifyMigration';
@@ -226,7 +227,8 @@ import {
   Unlock,
   Instagram,
   Twitter,
-  Play
+  Play,
+  BarChart3
 } from 'lucide-react';
 
 // Page type options for creating new pages
@@ -1697,6 +1699,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.MEDIA, icon: FolderOpen, label: 'Media Library' },
           { id: AdminTab.DESIGN, icon: Palette, label: 'Design Studio' },
           { id: AdminTab.DESIGN_LIBRARY, icon: Layers, label: 'Design Library' },
+          { id: AdminTab.COLLECTION_ANALYTICS, icon: BarChart3, label: 'Analytics' },
           { id: AdminTab.CAMPAIGNS, icon: Megaphone, label: 'Marketing' },
           { id: AdminTab.EMAIL_SUBSCRIBERS, icon: Mail, label: 'Email Subscribers' },
           { id: AdminTab.EMAIL_SETTINGS, icon: Send, label: 'Email Settings' },
@@ -13438,6 +13441,9 @@ Return ONLY the JSON object, no markdown.`;
             onTabChange(AdminTab.DESIGN);
           }}
         />;
+
+      case AdminTab.COLLECTION_ANALYTICS:
+        return <CollectionAnalytics storeId={storeId || ''} />;
 
       case AdminTab.DESIGN:
         const isAnyModalOpen = isHeaderModalOpen || isHeroModalOpen || isGridModalOpen || isCollectionModalOpen || isCategoryModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
