@@ -507,9 +507,12 @@ const NEBULA_DEFAULTS: HeaderData = {
   showCart: true,
   backgroundColor: 'rgba(255, 255, 255, 0.6)', // Glass effect
   borderColor: 'rgba(255, 255, 255, 0.2)',
+  borderWidth: '1px',
   textColor: '#4b5563', // gray-600
   textHoverColor: '#2563eb', // blue-600
   accentColor: '#3b82f6', // blue-500 for dot indicator
+  iconSize: 18,
+  iconHoverBackgroundColor: 'transparent',
   cartBadgeColor: '#3b82f6',
   cartBadgeTextColor: '#ffffff',
   sticky: true,
@@ -547,7 +550,7 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
         className={`${blurClass} shadow-lg rounded-full px-8 py-3 flex items-center gap-12 ${maxWidthClass} w-full justify-between`}
         style={{
           backgroundColor: settings.backgroundColor,
-          border: `1px solid ${settings.borderColor}`,
+          border: `${settings.borderWidth} solid ${settings.borderColor}`,
         }}
       >
         {/* Left: Logo with optional indicator dot */}
@@ -596,12 +599,21 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
               {!isSearchOpen && (
                 <button
                   onClick={onSearchClick}
-                  className="cursor-pointer transition-colors"
-                  style={{ color: settings.textColor }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+                  className="cursor-pointer transition-colors rounded-full p-1.5"
+                  style={{ 
+                    color: settings.textColor,
+                    backgroundColor: 'transparent'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = settings.textHoverColor!;
+                    e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = settings.textColor!;
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
                 >
-                  <Search size={18} />
+                  <Search size={settings.iconSize} />
                 </button>
               )}
             </div>
@@ -609,12 +621,21 @@ export const HeaderNebula: React.FC<HeaderProps> = ({
           {settings.showCart && (
             <button 
               onClick={onOpenCart} 
-              className="relative cursor-pointer transition-colors"
-              style={{ color: settings.textColor }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+              className="relative cursor-pointer transition-colors rounded-full p-1.5"
+              style={{ 
+                color: settings.textColor,
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = settings.textHoverColor!;
+                e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = settings.textColor!;
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
-              <ShoppingBag size={18} />
+              <ShoppingBag size={settings.iconSize} />
               {cartCount > 0 && (
                 <span 
                   className="absolute -top-1 -right-1 w-3 h-3 rounded-full"
@@ -3361,8 +3382,8 @@ export const HEADER_FIELDS: Record<string, string[]> = {
   ],
   nebula: [
     'showSearch', 'showCart', 'showIndicatorDot',
-    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
-    'accentColor', 'cartBadgeColor',
+    'backgroundColor', 'borderColor', 'borderWidth', 'textColor', 'textHoverColor',
+    'accentColor', 'iconSize', 'iconHoverBackgroundColor', 'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth', 'blurIntensity', 'navActiveStyle'
   ],
   luxe: [
