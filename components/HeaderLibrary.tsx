@@ -700,6 +700,10 @@ const LUXE_DEFAULTS: HeaderData = {
   taglineColor: '#a3a3a3', // neutral-400
   taglineText: 'Est. 2024 • Paris',
   cartBadgeColor: '#d4af37',
+  iconSize: 20,
+  searchBackgroundColor: '#ffffff',
+  searchBorderColor: '#e5e5e5',
+  searchInputTextColor: '#737373',
   sticky: true,
   maxWidth: '7xl',
   navActiveStyle: 'underline',
@@ -746,7 +750,7 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
                 onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
                 onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
               >
-                <Menu size={20} />
+                <Menu size={settings.iconSize || LUXE_DEFAULTS.iconSize} />
               </button>
             )}
             {settings.showSearch && (
@@ -757,6 +761,11 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
                   onSubmit={onSearchSubmit}
                   inputClassName="border-b border-neutral-300 px-2 py-1"
                   iconColor={settings.textColor}
+                  inputStyle={{
+                    backgroundColor: settings.searchBackgroundColor,
+                    borderColor: settings.searchBorderColor,
+                    color: settings.searchInputTextColor
+                  }}
                 />
                 {!isSearchOpen && (
                   <button
@@ -766,7 +775,7 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
                     onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
                     onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
                   >
-                    <Search size={20} />
+                    <Search size={settings.iconSize || LUXE_DEFAULTS.iconSize} />
                   </button>
                 )}
               </div>
@@ -809,7 +818,7 @@ export const HeaderLuxe: React.FC<HeaderProps> = ({
                 className="relative cursor-pointer"
                 style={{ color: settings.textColor }}
               >
-                <ShoppingBag size={20} />
+                <ShoppingBag size={settings.iconSize || LUXE_DEFAULTS.iconSize} />
                 {cartCount > 0 && (
                   <span 
                     className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
@@ -3705,6 +3714,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showMenu', 'showSearch', 'showAccount', 'showCart', 'showTagline',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'taglineColor', 'taglineText', 'cartBadgeColor',
+    'iconSize', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'navActiveStyle'
   ],
   pilot: [
