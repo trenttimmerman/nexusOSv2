@@ -1035,17 +1035,20 @@ const PORTFOLIO_DEFAULTS: HeaderData = {
   showCart: true,
   searchPlaceholder: "Search...",
   searchBackgroundColor: '#f9fafb',
+  searchBorderColor: '#e5e7eb',
   searchFocusBackgroundColor: '#ffffff',
   searchFocusBorderColor: '#000000',
   searchInputTextColor: '#111827',
   searchPlaceholderColor: '#9ca3af',
   backgroundColor: '#ffffff',
   borderColor: '#e5e7eb',
+  borderWidth: '1px',
   textColor: '#111827',
   textHoverColor: '#000000',
   accentColor: '#000000',
   cartBadgeColor: '#000000',
   cartBadgeTextColor: '#ffffff',
+  iconSize: 18,
   sticky: true,
   maxWidth: 'full',
 };
@@ -1899,11 +1902,11 @@ export const HeaderPortfolio: React.FC<HeaderProps> = ({
   
   return (
     <header className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-50`} style={{ backgroundColor: settings.backgroundColor }}>
-       <div className="grid grid-cols-3 md:grid-cols-5 min-h-[5.5rem] border-b" style={{ borderColor: settings.borderColor }}>
-          <div className="flex items-center px-6 py-2 border-r" style={{ borderColor: settings.borderColor }}>
+       <div className="grid grid-cols-3 md:grid-cols-5 min-h-[5.5rem] border-b" style={{ borderColor: settings.borderColor, borderBottomWidth: settings.borderWidth }}>
+          <div className="flex items-center px-6 py-2 border-r" style={{ borderColor: settings.borderColor, borderRightWidth: settings.borderWidth }}>
              <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="text-xl font-bold tracking-tight uppercase" onClick={onLogoClick} />
           </div>
-          <div className="hidden md:flex items-center border-r" style={{ borderColor: settings.borderColor }}>
+          <div className="hidden md:flex items-center border-r" style={{ borderColor: settings.borderColor, borderRightWidth: settings.borderWidth }}>
              {(links || []).slice(0, 3).map(l => (
                 <NavItem 
                   key={l.href} 
@@ -1917,7 +1920,7 @@ export const HeaderPortfolio: React.FC<HeaderProps> = ({
                 />
              ))}
           </div>
-          <div className="hidden md:flex items-center px-6 border-r justify-center gap-4" style={{ borderColor: settings.borderColor }}>
+          <div className="hidden md:flex items-center px-6 border-r justify-center gap-4" style={{ borderColor: settings.borderColor, borderRightWidth: settings.borderWidth }}>
              {settings.showSearch && (
                <div className="flex items-center">
                  <InlineSearch 
@@ -1926,16 +1929,21 @@ export const HeaderPortfolio: React.FC<HeaderProps> = ({
                   onSubmit={onSearchSubmit} 
                   placeholder={settings.searchPlaceholder}
                   inputClassName="border-b px-2 py-1" 
+                  inputStyle={{
+                    backgroundColor: settings.searchBackgroundColor,
+                    borderColor: settings.searchBorderColor,
+                    color: settings.searchInputTextColor,
+                  }}
                   iconColor={settings.textColor} 
                  />
-                 {!isSearchOpen && <button onClick={onSearchClick} className="hover:opacity-70 p-2 transition-colors"><Search size={18} style={{ color: settings.textColor }} /></button>}
+                 {!isSearchOpen && <button onClick={onSearchClick} className="hover:opacity-70 p-2 transition-colors"><Search size={settings.iconSize || PORTFOLIO_DEFAULTS.iconSize} style={{ color: settings.textColor }} /></button>}
                </div>
              )}
              {settings.showAccount && (
-               <button className="hover:opacity-70 p-2 transition-colors"><User size={18} style={{ color: settings.textColor }} /></button>
+               <button className="hover:opacity-70 p-2 transition-colors"><User size={settings.iconSize || PORTFOLIO_DEFAULTS.iconSize} style={{ color: settings.textColor }} /></button>
              )}
           </div>
-          <div onClick={onOpenCart} className="col-span-2 md:col-span-1 flex items-center justify-between px-6 py-2 cursor-pointer transition-colors" style={{ backgroundColor: settings.accentColor, color: settings.cartBadgeTextColor }}>
+          <div onClick={onOpenCart} className="col-span-2 md:col-span-1 flex items-center justify-between px-6 py-2 cursor-pointer transition-colors" style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}>
              <span className="text-xs font-bold uppercase">Cart</span>
              <span className="text-4xl font-display">{cartCount.toString().padStart(2, '0')}</span>
           </div>
@@ -3698,8 +3706,9 @@ export const HEADER_FIELDS: Record<string, string[]> = {
   ],
   portfolio: [
     'showSearch', 'showAccount', 'showCart',
-    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'backgroundColor', 'borderColor', 'borderWidth', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'iconSize', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'navActiveStyle'
   ],
   venture: [
