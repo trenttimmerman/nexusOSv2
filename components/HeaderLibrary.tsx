@@ -1218,6 +1218,7 @@ const GHOST_DEFAULTS: HeaderData = {
   searchFocusBorderColor: '#ffffff',
   searchInputTextColor: '#ffffff',
   searchPlaceholderColor: 'rgba(255, 255, 255, 0.6)',
+  searchBorderColor: 'rgba(255, 255, 255, 0.2)',
   backgroundColor: 'rgba(0, 0, 0, 0.3)',
   borderColor: 'rgba(255, 255, 255, 0.2)',
   textColor: '#ffffff',
@@ -1225,6 +1226,7 @@ const GHOST_DEFAULTS: HeaderData = {
   accentColor: '#ffffff',
   cartBadgeColor: '#ffffff',
   cartBadgeTextColor: '#000000',
+  iconSize: 18,
   sticky: true,
   maxWidth: 'full',
 };
@@ -2753,12 +2755,17 @@ export const HeaderGhost: React.FC<HeaderProps> = ({
                   onSubmit={onSearchSubmit} 
                   placeholder={settings.searchPlaceholder}
                   inputClassName="bg-transparent border-b px-2 py-1" 
-                  iconColor={settings.textColor} 
+                  iconColor={settings.textColor}
+                  inputStyle={{
+                    backgroundColor: settings.searchBackgroundColor,
+                    borderColor: settings.searchBorderColor,
+                    color: settings.searchInputTextColor
+                  }}
                  />
-                 {!isSearchOpen && <button onClick={onSearchClick} className="hover:opacity-70 transition-opacity"><Search size={18} style={{ color: settings.textColor }} /></button>}
+                 {!isSearchOpen && <button onClick={onSearchClick} className="hover:opacity-70 transition-opacity"><Search size={settings.iconSize || GHOST_DEFAULTS.iconSize} style={{ color: settings.textColor }} /></button>}
                </div>
              )}
-             {settings.showAccount && <button className="hover:opacity-70 transition-opacity"><User size={18} style={{ color: settings.textColor }} /></button>}
+             {settings.showAccount && <button className="hover:opacity-70 transition-opacity"><User size={settings.iconSize || GHOST_DEFAULTS.iconSize} style={{ color: settings.textColor }} /></button>}
              {settings.showCart && (
                <button 
                 onClick={onOpenCart} 
@@ -3868,6 +3875,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'iconSize', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'searchPlaceholder', 'navActiveStyle'
   ],
   pathfinder: [
