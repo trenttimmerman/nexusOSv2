@@ -3193,9 +3193,25 @@ export const HeaderRefined: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
 };
 
 // 26. The Orbit (Dynamic Island style)
+const ORBIT_DEFAULTS: HeaderData = {
+  showCart: true,
+  backgroundColor: '#000000',
+  borderColor: '#333333',
+  borderWidth: '1px',
+  textColor: '#ffffff',
+  textHoverColor: '#a3a3a3',
+  accentColor: '#3b82f6',
+  cartBadgeColor: '#3b82f6',
+  cartBadgeTextColor: '#ffffff',
+  iconSize: 14,
+  sticky: true,
+  maxWidth: '600px',
+  navActiveStyle: 'underline',
+};
+
 export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeight = 32, links, cartCount, onOpenCart, onLinkClick, data }) => {
   const [expanded, setExpanded] = React.useState(false);
-  const settings = { ...DEFAULTS, ...data };
+  const settings = { ...ORBIT_DEFAULTS, ...data };
   const maxWidthClass = settings.maxWidth === 'full' ? 'max-w-full' : `max-w-${settings.maxWidth}`;
 
   return (
@@ -3204,7 +3220,11 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
         className={`pointer-events-auto shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] overflow-hidden ${maxWidthClass} ${expanded ? 'h-auto rounded-3xl' : 'min-h-[3.5rem] py-2 rounded-full'}`}
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
-        style={{ backgroundColor: settings.backgroundColor, border: `1px solid ${settings.borderColor}`, width: expanded ? '600px' : '400px' }}
+        style={{ 
+          backgroundColor: settings.backgroundColor, 
+          border: `${settings.borderWidth} solid ${settings.borderColor}`, 
+          width: expanded ? '600px' : '400px' 
+        }}
       >
         <div className="w-full flex items-center justify-between px-6">
            <div className="flex items-center gap-2 py-1">
@@ -3216,7 +3236,7 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHei
                 <span className="opacity-50">Menu</span>
                 <div className="w-px h-4 bg-gray-700 opacity-20"></div>
                 <button onClick={onOpenCart} className="flex items-center gap-1 cursor-pointer">
-                  <ShoppingBag size={14}/> {cartCount}
+                  <ShoppingBag size={settings.iconSize}/> {cartCount}
                 </button>
              </div>
            )}
@@ -3583,8 +3603,8 @@ export const HEADER_FIELDS: Record<string, string[]> = {
   ],
   orbit: [
     'showCart',
-    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
-    'cartBadgeColor', 'cartBadgeTextColor',
+    'backgroundColor', 'borderColor', 'borderWidth', 'textColor', 'textHoverColor',
+    'accentColor', 'iconSize', 'cartBadgeColor', 'cartBadgeTextColor',
     'sticky', 'maxWidth', 'navActiveStyle'
   ],
   studio: [
