@@ -1204,7 +1204,7 @@ export const HeaderPilot: React.FC<HeaderProps> = ({
         <div className="flex justify-between items-center min-h-[5.5rem] py-3">
           {/* Left: Logo with optional badge */}
           <button onClick={onLogoClick} className="flex-shrink-0 flex items-center gap-2 cursor-pointer">
-            {settings.showLogoBadge && !logoUrl && (
+            {settings.showLogoBadge && (
               <div 
                 className="w-8 h-8 rounded-lg flex items-center justify-center"
                 style={{ backgroundColor: settings.accentColor, color: '#ffffff' }}
@@ -1902,12 +1902,7 @@ export const HeaderVenture: React.FC<HeaderProps> = ({
       <div className="max-w-[1600px] mx-auto p-2">
          <div className="bg-white rounded-2xl border shadow-sm p-2 flex items-center justify-between gap-4 min-h-[5.5rem]" style={{ borderColor: settings.borderColor }}>
             <div className="px-4 flex items-center gap-2">
-               {!logoUrl && (
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold" style={{ backgroundColor: settings.accentColor }}>
-                      {storeName.charAt(0)}
-                  </div>
-               )}
-               <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="font-bold text-lg tracking-tight hidden sm:block" onClick={onLogoClick} />
+               <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="font-bold text-lg tracking-tight" onClick={onLogoClick} />
             </div>
             
             <div 
