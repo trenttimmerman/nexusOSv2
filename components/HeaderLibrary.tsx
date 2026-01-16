@@ -26,6 +26,9 @@ export interface HeaderData {
   iconSize?: number;
   iconHoverBackgroundColor?: string;
   borderWidth?: string;
+  iconBorderWidth?: string;
+  tickerBorderWidth?: string;
+  gridDividerWidth?: string;
   // CTA/Button
   ctaBackgroundColor?: string;
   ctaHoverColor?: string;
