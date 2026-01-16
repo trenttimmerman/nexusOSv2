@@ -1147,6 +1147,7 @@ const OFFSET_DEFAULTS: HeaderData = {
   searchFocusBorderColor: '#f97316',
   searchInputTextColor: '#111827',
   searchPlaceholderColor: '#9ca3af',
+  searchBorderColor: '#e5e7eb',
   backgroundColor: '#fafafa',
   borderColor: '#e5e7eb',
   textColor: '#1f2937',
@@ -1154,6 +1155,7 @@ const OFFSET_DEFAULTS: HeaderData = {
   accentColor: '#f97316',
   cartBadgeColor: '#f97316',
   cartBadgeTextColor: '#ffffff',
+  iconSize: 20,
   sticky: true,
   maxWidth: 'full',
 };
@@ -2502,15 +2504,20 @@ export const HeaderOffset: React.FC<HeaderProps> = ({
                   placeholder={settings.searchPlaceholder}
                   inputClassName="border-b px-2 py-1" 
                   style={{ borderColor: settings.borderColor }}
-                  iconColor={settings.textColor} 
+                  iconColor={settings.textColor}
+                  inputStyle={{
+                    backgroundColor: settings.searchBackgroundColor,
+                    borderColor: settings.searchBorderColor,
+                    color: settings.searchInputTextColor
+                  }}
                  />
-                 {!isSearchOpen && <button onClick={onSearchClick} className="hover:opacity-70 transition-opacity"><Search size={20} style={{ color: settings.textColor }} /></button>}
+                 {!isSearchOpen && <button onClick={onSearchClick} className="hover:opacity-70 transition-opacity"><Search size={settings.iconSize || OFFSET_DEFAULTS.iconSize} style={{ color: settings.textColor }} /></button>}
                </div>
              )}
-             {settings.showAccount && <button className="hover:opacity-70 transition-opacity"><User size={20} style={{ color: settings.textColor }} /></button>}
+             {settings.showAccount && <button className="hover:opacity-70 transition-opacity"><User size={settings.iconSize || OFFSET_DEFAULTS.iconSize} style={{ color: settings.textColor }} /></button>}
              {settings.showCart && (
                <div onClick={onOpenCart} className="relative cursor-pointer hover:opacity-70 transition-opacity">
-                  <ShoppingBag size={20} style={{ color: settings.textColor }} />
+                  <ShoppingBag size={settings.iconSize || OFFSET_DEFAULTS.iconSize} style={{ color: settings.textColor }} />
                   {cartCount > 0 && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full" style={{ backgroundColor: settings.accentColor }}></span>}
                </div>
              )}
@@ -3827,6 +3834,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'iconSize', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'navActiveStyle'
   ],
   ticker: [
