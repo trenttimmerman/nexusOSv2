@@ -1062,6 +1062,7 @@ const METRO_DEFAULTS: HeaderData = {
   showCart: true,
   searchPlaceholder: "Search...",
   searchBackgroundColor: '#f9fafb',
+  searchBorderColor: '#e5e7eb',
   searchFocusBackgroundColor: '#ffffff',
   searchFocusBorderColor: '#3b82f6',
   searchInputTextColor: '#111827',
@@ -1073,6 +1074,7 @@ const METRO_DEFAULTS: HeaderData = {
   accentColor: '#3b82f6',
   cartBadgeColor: '#3b82f6',
   cartBadgeTextColor: '#ffffff',
+  iconSize: 20,
   sticky: true,
   maxWidth: 'full',
 };
@@ -2097,17 +2099,22 @@ export const HeaderMetro: React.FC<HeaderProps> = ({
                 onSubmit={onSearchSubmit} 
                 placeholder={settings.searchPlaceholder}
                 inputClassName="border-b px-2 py-1" 
+                inputStyle={{
+                  backgroundColor: settings.searchBackgroundColor,
+                  borderColor: settings.searchBorderColor,
+                  color: settings.searchInputTextColor,
+                }}
                 iconColor={settings.textColor} 
                />
-               {!isSearchOpen && <Search size={20} onClick={onSearchClick} style={{ color: settings.textColor }} className="cursor-pointer" />}
+               {!isSearchOpen && <Search size={settings.iconSize || METRO_DEFAULTS.iconSize} onClick={onSearchClick} style={{ color: settings.textColor }} className="cursor-pointer" />}
              </div>
            )}
         </div>
         <div className="col-span-2 md:col-span-1 flex items-center justify-center hover:bg-neutral-50 cursor-pointer py-2">
-           {settings.showAccount && <User size={20} style={{ color: settings.textColor }} />}
+           {settings.showAccount && <User size={settings.iconSize || METRO_DEFAULTS.iconSize} style={{ color: settings.textColor }} />}
         </div>
-        <div onClick={onOpenCart} className="col-span-2 flex items-center justify-center cursor-pointer transition-colors gap-2 py-2" style={{ backgroundColor: settings.textColor, color: settings.backgroundColor }}>
-           <ShoppingBag size={20} />
+        <div onClick={onOpenCart} className="col-span-2 flex items-center justify-center cursor-pointer transition-colors gap-2 py-2" style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}>
+           <ShoppingBag size={settings.iconSize || METRO_DEFAULTS.iconSize} />
            <span className="font-bold">{cartCount}</span>
         </div>
       </div>
@@ -3748,6 +3755,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'iconSize', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'navActiveStyle'
   ],
   modul: [
