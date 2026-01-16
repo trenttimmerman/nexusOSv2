@@ -922,6 +922,7 @@ const VENTURE_DEFAULTS: HeaderData = {
   showKeyboardShortcut: true,
   searchPlaceholder: "Search for 'Wireless Headphones' or 'Summer Collection'",
   searchBackgroundColor: '#f9fafb', // neutral-50
+  searchBorderColor: '#e5e7eb',
   searchFocusBackgroundColor: '#ffffff', // white
   searchFocusBorderColor: '#3b82f6', // blue-500
   searchInputTextColor: '#111827', // gray-900
@@ -932,6 +933,7 @@ const VENTURE_DEFAULTS: HeaderData = {
   textHoverColor: '#000000',
   cartBadgeColor: '#ef4444', // Red dot indicator
   cartBadgeTextColor: '#ffffff',
+  iconSize: 20,
   sticky: true,
   maxWidth: 'full',
 };
@@ -1963,6 +1965,9 @@ export const HeaderVenture: React.FC<HeaderProps> = ({
   onLogoClick,
   onLinkClick,
   onSearchClick,
+  isSearchOpen,
+  onSearchClose,
+  onSearchSubmit,
   data = {},
 }) => {
   const settings = { ...VENTURE_DEFAULTS, ...data };
@@ -1975,20 +1980,40 @@ export const HeaderVenture: React.FC<HeaderProps> = ({
                <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="font-bold text-lg tracking-tight" onClick={onLogoClick} />
             </div>
             
-            <div 
-              className="flex-1 max-w-2xl bg-neutral-50 rounded-xl flex items-center px-4 py-2.5 gap-3 border border-transparent focus-within:bg-white transition-all"
-              style={{ borderColor: 'transparent' }} // Logic for focus-within border color would need state
-            >
-               <Search size={18} className="text-neutral-400" />
-               <input 
-                type="text" 
-                placeholder={settings.searchPlaceholder} 
-                className="bg-transparent w-full focus:outline-none text-sm" 
-               />
-               {settings.showKeyboardShortcut && (
-                 <span className="hidden lg:block text-[10px] font-bold text-neutral-400 border border-neutral-200 px-1.5 py-0.5 rounded-md">/</span>
-               )}
-            </div>
+            {settings.showSearch && (
+              <div className="flex-1 max-w-2xl rounded-xl flex items-center px-4 py-2.5 gap-3 border transition-all"
+                style={{ 
+                  backgroundColor: settings.searchBackgroundColor,
+                  borderColor: settings.searchBorderColor
+                }}
+              >
+                <Search size={18} style={{ color: settings.textColor, opacity: 0.4 }} />
+                <InlineSearch
+                  isOpen={isSearchOpen || false}
+                  onClose={onSearchClose || (() => {})}
+                  onSubmit={onSearchSubmit}
+                  placeholder={settings.searchPlaceholder}
+                  inputClassName="text-sm"
+                  inputStyle={{
+                    backgroundColor: 'transparent',
+                    color: settings.searchInputTextColor,
+                  }}
+                  iconColor={settings.textColor}
+                />
+                {!isSearchOpen && (
+                  <button onClick={onSearchClick} className="w-full text-left">
+                    <span className="text-sm" style={{ color: settings.searchPlaceholderColor }}>
+                      {settings.searchPlaceholder}
+                    </span>
+                  </button>
+                )}
+                {settings.showKeyboardShortcut && (
+                  <span className="hidden lg:block text-[10px] font-bold border px-1.5 py-0.5 rounded-md"
+                    style={{ color: settings.textColor, borderColor: settings.borderColor, opacity: 0.4 }}
+                  >/</span>
+                )}
+              </div>
+            )}
 
             <div className="flex items-center gap-1 pr-2">
                <nav className="hidden md:flex items-center mr-4">
@@ -2007,13 +2032,13 @@ export const HeaderVenture: React.FC<HeaderProps> = ({
                </nav>
                {settings.showCart && (
                  <button onClick={onOpenCart} className="relative p-2.5 hover:bg-neutral-100 rounded-xl transition-colors">
-                    <ShoppingBag size={20} style={{ color: settings.textColor }} />
+                    <ShoppingBag size={settings.iconSize || VENTURE_DEFAULTS.iconSize} style={{ color: settings.textColor }} />
                     {cartCount > 0 && <span className="absolute top-2 right-2 w-2 h-2 rounded-full border border-white" style={{ backgroundColor: settings.cartBadgeColor }}></span>}
                  </button>
                )}
                {settings.showAccount && (
                  <button className="p-2.5 hover:bg-neutral-100 rounded-xl transition-colors">
-                    <User size={20} style={{ color: settings.textColor }} />
+                    <User size={settings.iconSize || VENTURE_DEFAULTS.iconSize} style={{ color: settings.textColor }} />
                  </button>
                )}
             </div>
@@ -3715,6 +3740,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart', 'showKeyboardShortcut',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'accentColor', 'cartBadgeColor', 'cartBadgeTextColor',
+    'iconSize', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
     'sticky', 'maxWidth', 'searchPlaceholder', 'navActiveStyle'
   ],
   metro: [
