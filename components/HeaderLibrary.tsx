@@ -153,6 +153,9 @@ const CANVAS_DEFAULTS: HeaderData = {
   textHoverColor: '#000000',
   cartBadgeColor: '#000000',
   cartBadgeTextColor: '#ffffff',
+  iconSize: 20,
+  iconHoverBackgroundColor: 'transparent',
+  borderWidth: '1px',
   sticky: true,
   maxWidth: '7xl',
   paddingX: '24px',
@@ -370,7 +373,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
       className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-[100]`}
       style={{
         backgroundColor: settings.backgroundColor,
-        borderBottom: `1px solid ${settings.borderColor}`,
+        borderBottom: `${settings.borderWidth} solid ${settings.borderColor}`,
       }}
     >
       <div
@@ -423,11 +426,20 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
                 <button
                   onClick={onSearchClick}
                   className="p-2 rounded-full transition-colors"
-                  style={{ color: settings.textColor }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+                  style={{ 
+                    color: settings.textColor,
+                    backgroundColor: 'transparent'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = settings.textHoverColor!;
+                    e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = settings.textColor!;
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
                 >
-                  <Search size={20} />
+                  <Search size={settings.iconSize} />
                 </button>
               )}
             </div>
@@ -435,22 +447,40 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
           {settings.showAccount && (
             <button
               className="p-2 rounded-full transition-colors"
-              style={{ color: settings.textColor }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+              style={{ 
+                color: settings.textColor,
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = settings.textHoverColor!;
+                e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = settings.textColor!;
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
-              <User size={20} />
+              <User size={settings.iconSize} />
             </button>
           )}
           {settings.showCart && (
             <button
               onClick={onOpenCart}
               className="relative p-2 rounded-full transition-colors"
-              style={{ color: settings.textColor }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = settings.textHoverColor!)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = settings.textColor!)}
+              style={{ 
+                color: settings.textColor,
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = settings.textHoverColor!;
+                e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = settings.textColor!;
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
-              <ShoppingBag size={20} />
+              <ShoppingBag size={settings.iconSize} />
               {cartCount > 0 && (
                 <span
                   className="absolute top-0 right-0 w-4 h-4 text-[10px] flex items-center justify-center rounded-full"
@@ -3326,6 +3356,7 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'showSearch', 'showAccount', 'showCart',
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'cartBadgeColor', 'cartBadgeTextColor',
+    'iconSize', 'iconHoverBackgroundColor', 'borderWidth',
     'sticky', 'maxWidth', 'paddingX', 'paddingY', 'navActiveStyle'
   ],
   nebula: [
