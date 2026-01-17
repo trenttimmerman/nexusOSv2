@@ -2855,20 +2855,20 @@ export const HeaderPathfinder: React.FC<HeaderProps> = ({ storeName, logoUrl, lo
           <div className="flex items-center gap-2">
             {settings.showSearch && (
               <>
-                <InlineSearch isOpen={isSearchOpen || false} onClose={onSearchClose || (() => {})} onSubmit={onSearchSubmit} inputClassName="bg-transparent border-b px-2 py-1" style={{ borderColor: settings.textColor, color: settings.textColor }} iconColor={settings.textColor} />
+                <InlineSearch isOpen={isSearchOpen || false} onClose={onSearchClose || (() => {})} onSubmit={onSearchSubmit} inputClassName="bg-transparent border-b px-2 py-1" inputStyle={{ borderColor: settings.searchBorderColor, color: settings.searchInputTextColor }} iconColor={settings.textColor} />
                 {!isSearchOpen && <button onClick={onSearchClick} className="p-2 transition-colors hover:opacity-70" style={{ color: settings.textColor }}>
-                  <Search size={20} />
+                  <Search size={settings.iconSize || DEFAULTS.iconSize} />
                 </button>}
               </>
             )}
             {settings.showAccount && (
               <button className="p-2 transition-colors hover:opacity-70" style={{ color: settings.textColor }}>
-                <User size={20} />
+                <User size={settings.iconSize || DEFAULTS.iconSize} />
               </button>
             )}
             {settings.showCart && (
               <button onClick={onOpenCart} className="relative p-2" style={{ color: settings.textColor }}>
-                <ShoppingBag size={20} />
+                <ShoppingBag size={settings.iconSize || DEFAULTS.iconSize} />
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full flex items-center justify-center"
                     style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}>
@@ -2965,20 +2965,20 @@ export const HeaderCypher: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
             <div className="flex items-center gap-2">
               {settings.showSearch && (
                 <>
-                  <InlineSearch isOpen={isSearchOpen || false} onClose={onSearchClose || (() => {})} onSubmit={onSearchSubmit} inputClassName="bg-transparent border-b border-fuchsia-500/50 text-white placeholder-gray-400 px-2 py-1" iconColor={settings.textColor} />
+                  <InlineSearch isOpen={isSearchOpen || false} onClose={onSearchClose || (() => {})} onSubmit={onSearchSubmit} inputClassName="bg-transparent border-b px-2 py-1" inputStyle={{ backgroundColor: settings.searchBackgroundColor, borderColor: settings.searchBorderColor, color: settings.searchInputTextColor }} iconColor={settings.textColor} />
                   {!isSearchOpen && <button onClick={onSearchClick} className="p-2 hover:opacity-70 transition-opacity" style={{ color: settings.textColor }}>
-                    <Search size={20} />
+                    <Search size={settings.iconSize || DEFAULTS.iconSize} />
                   </button>}
                 </>
               )}
               {settings.showAccount && (
                 <button className="p-2 hover:opacity-70 transition-opacity" style={{ color: settings.textColor }}>
-                  <User size={20} />
+                  <User size={settings.iconSize || DEFAULTS.iconSize} />
                 </button>
               )}
               {settings.showCart && (
                 <button onClick={onOpenCart} className="relative p-2" style={{ color: settings.textColor }}>
-                  <ShoppingBag size={20} />
+                  <ShoppingBag size={settings.iconSize || DEFAULTS.iconSize} />
                   {cartCount > 0 && (
                     <span className="absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full flex items-center justify-center"
                       style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}>
@@ -3119,20 +3119,20 @@ export const HeaderParticle: React.FC<HeaderProps> = ({ storeName, logoUrl, logo
             <div className="flex items-center gap-2">
               {settings.showSearch && (
                 <>
-                  <InlineSearch isOpen={isSearchOpen || false} onClose={onSearchClose || (() => {})} onSubmit={onSearchSubmit} inputClassName="bg-transparent border-b border-white/30 text-white placeholder-gray-400 px-2 py-1" iconColor={settings.textColor} />
+                  <InlineSearch isOpen={isSearchOpen || false} onClose={onSearchClose || (() => {})} onSubmit={onSearchSubmit} inputClassName="bg-transparent border-b px-2 py-1" inputStyle={{ backgroundColor: settings.searchBackgroundColor, borderColor: settings.searchBorderColor, color: settings.searchInputTextColor }} iconColor={settings.textColor} />
                   {!isSearchOpen && <button onClick={onSearchClick} className="p-2 hover:opacity-70 transition-opacity" style={{ color: settings.textColor }}>
-                    <Search size={20} />
+                    <Search size={settings.iconSize || DEFAULTS.iconSize} />
                   </button>}
                 </>
               )}
               {settings.showAccount && (
                 <button className="p-2 hover:opacity-70 transition-opacity" style={{ color: settings.textColor }}>
-                  <User size={20} />
+                  <User size={settings.iconSize || DEFAULTS.iconSize} />
                 </button>
               )}
               {settings.showCart && (
                 <button onClick={onOpenCart} className="relative p-2" style={{ color: settings.textColor }}>
-                  <ShoppingBag size={20} />
+                  <ShoppingBag size={settings.iconSize || DEFAULTS.iconSize} />
                   {cartCount > 0 && (
                     <span className="absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full flex items-center justify-center"
                       style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}>
@@ -3230,20 +3230,20 @@ export const HeaderLumina: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHe
             <div className="flex items-center gap-2">
               {settings.showSearch && (
                 <>
-                  <InlineSearch isOpen={isSearchOpen || false} onClose={onSearchClose || (() => {})} onSubmit={onSearchSubmit} inputClassName="bg-transparent border-b border-gray-600 text-white placeholder-gray-500 px-2 py-1" iconColor={settings.textColor} />
+                  <InlineSearch isOpen={isSearchOpen || false} onClose={onSearchClose || (() => {})} onSubmit={onSearchSubmit} inputClassName="bg-transparent border-b px-2 py-1" inputStyle={{ backgroundColor: settings.searchBackgroundColor, borderColor: settings.searchBorderColor, color: settings.searchInputTextColor }} iconColor={settings.textColor} />
                   {!isSearchOpen && <button onClick={onSearchClick} className="p-2 hover:text-white transition-colors" style={{ color: settings.textColor }}>
-                    <Search size={20} />
+                    <Search size={settings.iconSize || DEFAULTS.iconSize} />
                   </button>}
                 </>
               )}
               {settings.showAccount && (
                 <button className="p-2 hover:text-white transition-colors" style={{ color: settings.textColor }}>
-                  <User size={20} />
+                  <User size={settings.iconSize || DEFAULTS.iconSize} />
                 </button>
               )}
               {settings.showCart && (
                 <button onClick={onOpenCart} className="relative p-2" style={{ color: settings.textColor }}>
-                  <ShoppingBag size={20} />
+                  <ShoppingBag size={settings.iconSize || DEFAULTS.iconSize} />
                   {cartCount > 0 && (
                     <span className="absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full flex items-center justify-center"
                       style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}>
@@ -3310,20 +3310,20 @@ export const HeaderAqua: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
             <div className="flex items-center gap-2">
               {settings.showSearch && (
                 <>
-                  <InlineSearch isOpen={isSearchOpen || false} onClose={onSearchClose || (() => {})} onSubmit={onSearchSubmit} inputClassName="bg-transparent border-b border-white/30 text-white placeholder-gray-400 px-2 py-1" iconColor={settings.textColor} />
+                  <InlineSearch isOpen={isSearchOpen || false} onClose={onSearchClose || (() => {})} onSubmit={onSearchSubmit} inputClassName="bg-transparent border-b px-2 py-1" inputStyle={{ backgroundColor: settings.searchBackgroundColor, borderColor: settings.searchBorderColor, color: settings.searchInputTextColor }} iconColor={settings.textColor} />
                   {!isSearchOpen && <button onClick={onSearchClick} className="p-2 hover:opacity-70 transition-opacity" style={{ color: settings.textColor }}>
-                    <Search size={20} />
+                    <Search size={settings.iconSize || DEFAULTS.iconSize} />
                   </button>}
                 </>
               )}
               {settings.showAccount && (
                 <button className="p-2 hover:opacity-70 transition-opacity" style={{ color: settings.textColor }}>
-                  <User size={20} />
+                  <User size={settings.iconSize || DEFAULTS.iconSize} />
                 </button>
               )}
               {settings.showCart && (
                 <button onClick={onOpenCart} className="relative p-2" style={{ color: settings.textColor }}>
-                  <ShoppingBag size={20} />
+                  <ShoppingBag size={settings.iconSize || DEFAULTS.iconSize} />
                   {cartCount > 0 && (
                     <span className="absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full flex items-center justify-center"
                       style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}>
@@ -3405,18 +3405,18 @@ export const HeaderRefined: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
                     iconColor={settings.textColor} 
                   />
                   {!isSearchOpen && <button onClick={onSearchClick} className="p-2 hover:opacity-70 transition-opacity" style={{ color: settings.textColor }}>
-                    <Search size={20} />
+                    <Search size={settings.iconSize || DEFAULTS.iconSize} />
                   </button>}
                 </>
               )}
               {settings.showAccount && (
                 <button className="p-2 hover:opacity-70 transition-opacity" style={{ color: settings.textColor }}>
-                  <User size={20} />
+                  <User size={settings.iconSize || DEFAULTS.iconSize} />
                 </button>
               )}
               {settings.showCart && (
                 <button onClick={onOpenCart} className="relative p-2" style={{ color: settings.textColor }}>
-                  <ShoppingBag size={20} />
+                  <ShoppingBag size={settings.iconSize || DEFAULTS.iconSize} />
                   {cartCount > 0 && (
                     <span className="absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full flex items-center justify-center font-bold"
                       style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}>
@@ -3524,6 +3524,11 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({
                       onClose={onSearchClose || (() => {})}
                       onSubmit={onSearchSubmit}
                       inputClassName="border-b border-neutral-300 px-2 py-1 text-sm"
+                      inputStyle={{
+                        backgroundColor: settings.searchBackgroundColor,
+                        borderColor: settings.searchBorderColor,
+                        color: settings.searchInputTextColor,
+                      }}
                       iconColor={settings.textColor}
                     />
                     {!isSearchOpen && (
@@ -3668,7 +3673,7 @@ export const HeaderFlow: React.FC<HeaderProps> = ({ storeName, logoUrl, logoHeig
           {settings.showCart && (
             <button onClick={onOpenCart} className="relative p-2 rounded-full border transition-all"
               style={{ color: settings.textColor, borderColor: settings.borderColor }}>
-              <ShoppingBag size={20} />
+              <ShoppingBag size={settings.iconSize || DEFAULTS.iconSize} />
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full flex items-center justify-center font-bold"
                   style={{ backgroundColor: settings.cartBadgeColor, color: settings.cartBadgeTextColor }}>
