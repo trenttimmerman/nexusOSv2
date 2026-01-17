@@ -69,6 +69,8 @@ export interface UniversalSectionData {
   
   // Colors - Other
   borderColor?: string;
+  disclaimerColor?: string;
+  accentColor?: string;
   
   // Layout & Sizing
   textAlign?: 'left' | 'center' | 'right';

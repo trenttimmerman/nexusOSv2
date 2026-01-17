@@ -18,6 +18,7 @@ const RICH_TEXT_DEFAULTS: UniversalSectionData = {
   backgroundColor: '#ffffff',
   headingColor: '#000000',
   contentColor: '#6b7280',
+  borderColor: '#e5e5e5',
   buttonBackground: '#000000',
   buttonTextColor: '#ffffff',
   textAlign: 'center',
@@ -33,6 +34,7 @@ const EMAIL_SIGNUP_DEFAULTS: UniversalSectionData = {
   inputBorderColor: '#e5e7eb',
   buttonBgColor: '#000000',
   buttonTextColor: '#ffffff',
+  disclaimerColor: '#a3a3a3',
   iconSize: 32,
   buttonIconSize: 16,
   placeholder: 'Enter your email',
@@ -46,6 +48,7 @@ const COLLAPSIBLE_DEFAULTS: UniversalSectionData = {
   answerColor: '#6b7280',
   cardBgColor: '#ffffff',
   borderColor: '#e5e7eb',
+  accentColor: '#6366f1',
   iconSize: 20,
 };
 
@@ -176,7 +179,7 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<SectionComponentProps
           className={`${maxWidth} ${alignmentClass} p-12 rounded-2xl`}
           style={{ 
             borderWidth: '1px',
-            borderColor: data?.borderColor || '#e5e5e5',
+            borderColor: data?.borderColor || RICH_TEXT_DEFAULTS.borderColor,
             backgroundColor: data?.containerBackground || RICH_TEXT_DEFAULTS.backgroundColor
           }}
         >
@@ -243,7 +246,7 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<SectionComponentProps
             onChange={(val) => onUpdate?.({ ...data, content: val })}
             isEditable={isEditable}
             className="text-xl font-medium mb-8"
-            style={{ color: data?.contentColor || '#737373' }}
+            style={{ color: data?.contentColor || RICH_TEXT_DEFAULTS.contentColor }}
           />
           {data?.buttonText && (
             <a 
@@ -401,8 +404,8 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<SectionComponentPr
               disabled={status === 'submitting'}
               className="px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity disabled:opacity-50"
               style={{
-                backgroundColor: data?.buttonBgColor || '#ffffff',
-                color: data?.buttonTextColor || '#000000'
+                backgroundColor: data?.buttonBgColor || EMAIL_SIGNUP_DEFAULTS.buttonBgColor,
+                color: data?.buttonTextColor || EMAIL_SIGNUP_DEFAULTS.buttonTextColor
               }}
             >
               {status === 'submitting' ? 'Subscribing...' : (data?.buttonText || 'Subscribe')}
@@ -696,7 +699,7 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<SectionComponentPr
           </form>
           <p 
             className="text-xs mt-4"
-            style={{ color: data?.disclaimerColor || '#a3a3a3' }}
+            style={{ color: data?.disclaimerColor || EMAIL_SIGNUP_DEFAULTS.disclaimerColor }}
           >
             {data?.disclaimer || 'No spam, unsubscribe anytime.'}
           </p>
@@ -758,7 +761,7 @@ export const COLLAPSIBLE_COMPONENTS: Record<string, React.FC<SectionComponentPro
                   >
                     {item.title}
                   </span>
-                  <span style={{ color: data?.accentColor || '#6366f1' }}>
+                  <span style={{ color: data?.accentColor || COLLAPSIBLE_DEFAULTS.accentColor }}>
                     {openIndex === i ? <Minus size={data?.iconSize || COLLAPSIBLE_DEFAULTS.iconSize} /> : <Plus size={data?.iconSize || COLLAPSIBLE_DEFAULTS.iconSize} />}
                   </span>
                 </button>
@@ -821,7 +824,7 @@ export const COLLAPSIBLE_COMPONENTS: Record<string, React.FC<SectionComponentPro
                   >
                     {item.title}
                   </span>
-                  <span style={{ color: data?.accentColor || '#6366f1' }}>
+                  <span style={{ color: data?.accentColor || COLLAPSIBLE_DEFAULTS.accentColor }}>
                     {openIndex === i ? <ChevronUp size={data?.iconSize || COLLAPSIBLE_DEFAULTS.iconSize} /> : <ChevronDown size={data?.iconSize || COLLAPSIBLE_DEFAULTS.iconSize} />}
                   </span>
                 </button>
