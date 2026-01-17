@@ -10219,7 +10219,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <button
                         key={header.id}
                         onClick={() => {
-                          onConfigChange({ ...config, headerStyle: header.id as any, headerData: {} });
+                          // Keep existing headerData when switching headers, don't wipe it
+                          onConfigChange({ ...config, headerStyle: header.id as any });
                         }}
                         className={`p-2 rounded-lg border-2 text-center transition-all ${
                           config.headerStyle === header.id

@@ -802,6 +802,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateConfig = async (newConfig: StoreConfig) => {
     setStoreConfig(newConfig);
     if (!storeId) return;
+    
     const dbConfig = {
       store_id: storeId,
       name: newConfig.name,
@@ -836,8 +837,41 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       notification_settings: newConfig.notificationSettings,
       updated_at: new Date().toISOString()
     };
+    
     // Upsert config for this store
     await supabase.from('store_config').upsert(dbConfig, { onConflict: 'store_id' });
+    
+    // CRITICAL FIX: Also update the active design in store_designs table
+    // The multi-design system prioritizes store_designs over store_config,
+    // so we must update both to prevent header selection from reverting
+    const { data: activeDesign } = await supabase
+      .from('store_designs')
+      .select('id')
+      .eq('store_id', storeId)
+      .eq('is_active', true)
+      .single();
+    
+    if (activeDesign) {
+      await supabase
+        .from('store_designs')
+        .update({
+          header_style: newConfig.headerStyle,
+          header_data: newConfig.headerData,
+          hero_style: newConfig.heroStyle,
+          product_card_style: newConfig.productCardStyle,
+          footer_style: newConfig.footerStyle,
+          scrollbar_style: newConfig.scrollbarStyle,
+          primary_color: newConfig.primaryColor,
+          secondary_color: newConfig.secondaryColor,
+          background_color: newConfig.backgroundColor,
+          store_type: newConfig.storeType,
+          store_vibe: newConfig.storeVibe,
+          color_palette: newConfig.colorPalette,
+          typography: newConfig.typography,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', activeDesign.id);
+    }
   };
 
   const signOut = async () => {
