@@ -3756,7 +3756,8 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
     'cartBadgeColor', 'cartBadgeTextColor',
     'iconSize', 'iconHoverBackgroundColor', 'borderWidth',
-    'sticky', 'maxWidth', 'paddingX', 'paddingY', 'navActiveStyle'
+    'sticky', 'maxWidth', 'paddingX', 'paddingY', 'navActiveStyle',
+    'searchPlaceholder', 'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor'
   ],
   nebula: [
     'showSearch', 'showAccount', 'showCart', 'showIndicatorDot',
