@@ -527,6 +527,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isLoadingTenants, setIsLoadingTenants] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [mockActiveNav, setMockActiveNav] = useState('/shop');
+  const [isHeaderSearchOpen, setIsHeaderSearchOpen] = useState(false);
   const [isCreateTenantOpen, setIsCreateTenantOpen] = useState(false);
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
@@ -10203,6 +10204,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           cartCount={2}
                           onOpenCart={() => {}}
                           onLinkClick={(href) => setMockActiveNav(href)}
+                          onSearchClick={() => setIsHeaderSearchOpen(true)}
+                          isSearchOpen={isHeaderSearchOpen}
+                          onSearchClose={() => setIsHeaderSearchOpen(false)}
+                          onSearchSubmit={(query) => {
+                            console.log('Search:', query);
+                            setIsHeaderSearchOpen(false);
+                          }}
                           data={config.headerData}
                         />
                       );
