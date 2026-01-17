@@ -4,6 +4,62 @@ import { EditableText } from './HeroLibrary';
 import { Plus, Minus, ChevronDown, ChevronUp, Mail, ArrowRight, Check, Star } from 'lucide-react';
 import { subscribeEmail, getUTMParams } from '../lib/emailService';
 import ThankYouPopup from './ThankYouPopup';
+import { UniversalSectionData } from '../lib/smartMapper';
+
+// Section component props interface
+interface SectionComponentProps {
+  data?: UniversalSectionData;
+  isEditable?: boolean;
+  onUpdate?: (newData: UniversalSectionData) => void;
+}
+
+// DEFAULTS for each section type
+const RICH_TEXT_DEFAULTS: UniversalSectionData = {
+  backgroundColor: '#ffffff',
+  headingColor: '#000000',
+  contentColor: '#6b7280',
+  buttonBackground: '#000000',
+  buttonTextColor: '#ffffff',
+  textAlign: 'center',
+  maxWidth: 'max-w-3xl',
+};
+
+const EMAIL_SIGNUP_DEFAULTS: UniversalSectionData = {
+  backgroundColor: '#171717',
+  headingColor: '#ffffff',
+  subheadingColor: '#737373',
+  inputBgColor: '#fafafa',
+  inputTextColor: '#000000',
+  inputBorderColor: '#e5e7eb',
+  buttonBgColor: '#000000',
+  buttonTextColor: '#ffffff',
+  iconSize: 32,
+  buttonIconSize: 16,
+  placeholder: 'Enter your email',
+  buttonText: 'Sign Up',
+};
+
+const COLLAPSIBLE_DEFAULTS: UniversalSectionData = {
+  backgroundColor: '#ffffff',
+  headingColor: '#000000',
+  questionColor: '#000000',
+  answerColor: '#6b7280',
+  cardBgColor: '#ffffff',
+  borderColor: '#e5e7eb',
+  iconSize: 20,
+};
+
+const LOGO_LIST_DEFAULTS: UniversalSectionData = {
+  backgroundColor: '#ffffff',
+  headingColor: '#000000',
+};
+
+const PROMO_BANNER_DEFAULTS: UniversalSectionData = {
+  backgroundColor: '#000000',
+  textColor: '#ffffff',
+  linkColor: '#ffffff',
+  iconSize: 14,
+};
 
 // --- RICH TEXT ---
 export const RICH_TEXT_OPTIONS = [
@@ -13,7 +69,7 @@ export const RICH_TEXT_OPTIONS = [
   { id: 'rt-wide', name: 'Wide Display', description: 'Full width large typography' },
 ];
 
-export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
+export const RICH_TEXT_COMPONENTS: Record<string, React.FC<SectionComponentProps>> = {
   'rt-centered': ({ data, isEditable, onUpdate }) => {
     const textAlign = data?.textAlign || 'center';
     const maxWidth = data?.maxWidth || 'max-w-3xl';
@@ -22,7 +78,7 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
     return (
       <div 
         className="py-20 px-6"
-        style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
+        style={{ backgroundColor: data?.backgroundColor || RICH_TEXT_DEFAULTS.backgroundColor }}
       >
         <div className={`${maxWidth} ${alignmentClass}`}>
           <EditableText
@@ -30,10 +86,10 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
             className="text-3xl font-bold mb-6"
-            style={{ color: data?.headingColor || '#000000' }}
+            style={{ color: data?.headingColor || RICH_TEXT_DEFAULTS.headingColor }}
           />
           {data?.subheading && (
-            <div className="text-lg mb-4" style={{ color: data?.contentColor || '#6b7280' }}>
+            <div className="text-lg mb-4" style={{ color: data?.contentColor || RICH_TEXT_DEFAULTS.contentColor }}>
               {data.subheading}
             </div>
           )}
@@ -42,15 +98,15 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, content: val })}
             isEditable={isEditable}
             className="leading-relaxed mb-6"
-            style={{ color: data?.contentColor || '#6b7280' }}
+            style={{ color: data?.contentColor || RICH_TEXT_DEFAULTS.contentColor }}
           />
           {data?.buttonText && (
             <a 
               href={data?.buttonLink === 'external' ? (data?.buttonExternalUrl || '#') : (data?.buttonLink || '#')} 
               className="inline-block px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
               style={{
-                backgroundColor: data?.buttonBackground || '#000000',
-                color: data?.buttonTextColor || '#ffffff'
+                backgroundColor: data?.buttonBackground || RICH_TEXT_DEFAULTS.buttonBackground,
+                color: data?.buttonTextColor || RICH_TEXT_DEFAULTS.buttonTextColor
               }}
             >
               {data.buttonText}
@@ -68,7 +124,7 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
     return (
       <div 
         className="py-20 px-6"
-        style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
+        style={{ backgroundColor: data?.backgroundColor || RICH_TEXT_DEFAULTS.backgroundColor }}
       >
         <div className={`${maxWidth} ${alignmentClass}`}>
           <EditableText
@@ -76,10 +132,10 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
             className="text-3xl font-bold mb-6"
-            style={{ color: data?.headingColor || '#000000' }}
+            style={{ color: data?.headingColor || RICH_TEXT_DEFAULTS.headingColor }}
           />
           {data?.subheading && (
-            <div className="text-lg mb-4" style={{ color: data?.contentColor || '#6b7280' }}>
+            <div className="text-lg mb-4" style={{ color: data?.contentColor || RICH_TEXT_DEFAULTS.contentColor }}>
               {data.subheading}
             </div>
           )}
@@ -88,15 +144,15 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, content: val })}
             isEditable={isEditable}
             className="leading-relaxed mb-6"
-            style={{ color: data?.contentColor || '#6b7280' }}
+            style={{ color: data?.contentColor || RICH_TEXT_DEFAULTS.contentColor }}
           />
           {data?.buttonText && (
             <a 
               href={data?.buttonLink === 'external' ? (data?.buttonExternalUrl || '#') : (data?.buttonLink || '#')} 
               className="inline-block px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
               style={{
-                backgroundColor: data?.buttonBackground || '#000000',
-                color: data?.buttonTextColor || '#ffffff'
+                backgroundColor: data?.buttonBackground || RICH_TEXT_DEFAULTS.buttonBackground,
+                color: data?.buttonTextColor || RICH_TEXT_DEFAULTS.buttonTextColor
               }}
             >
               {data.buttonText}
@@ -114,14 +170,14 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
     return (
       <div 
         className="py-20 px-6"
-        style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
+        style={{ backgroundColor: data?.backgroundColor || RICH_TEXT_DEFAULTS.backgroundColor }}
       >
         <div 
           className={`${maxWidth} ${alignmentClass} p-12 rounded-2xl`}
           style={{ 
             borderWidth: '1px',
             borderColor: data?.borderColor || '#e5e5e5',
-            backgroundColor: data?.containerBackground || '#ffffff'
+            backgroundColor: data?.containerBackground || RICH_TEXT_DEFAULTS.backgroundColor
           }}
         >
           <EditableText
@@ -129,10 +185,10 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
             className="text-2xl font-bold mb-4"
-            style={{ color: data?.headingColor || '#000000' }}
+            style={{ color: data?.headingColor || RICH_TEXT_DEFAULTS.headingColor }}
           />
           {data?.subheading && (
-            <div className="text-lg mb-4" style={{ color: data?.contentColor || '#6b7280' }}>
+            <div className="text-lg mb-4" style={{ color: data?.contentColor || RICH_TEXT_DEFAULTS.contentColor }}>
               {data.subheading}
             </div>
           )}
@@ -141,15 +197,15 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, content: val })}
             isEditable={isEditable}
             className="mb-6"
-            style={{ color: data?.contentColor || '#6b7280' }}
+            style={{ color: data?.contentColor || RICH_TEXT_DEFAULTS.contentColor }}
           />
           {data?.buttonText && (
             <a 
               href={data?.buttonLink === 'external' ? (data?.buttonExternalUrl || '#') : (data?.buttonLink || '#')} 
               className="inline-block px-6 py-3 rounded-lg font-bold hover:opacity-80 transition-opacity"
               style={{
-                backgroundColor: data?.buttonBackground || '#000000',
-                color: data?.buttonTextColor || '#ffffff'
+                backgroundColor: data?.buttonBackground || RICH_TEXT_DEFAULTS.buttonBackground,
+                color: data?.buttonTextColor || RICH_TEXT_DEFAULTS.buttonTextColor
               }}
             >
               {data.buttonText}
@@ -175,10 +231,10 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
             className="text-5xl md:text-7xl font-black tracking-tighter mb-8 uppercase"
-            style={{ color: data?.headingColor || '#000000' }}
+            style={{ color: data?.headingColor || RICH_TEXT_DEFAULTS.headingColor }}
           />
           {data?.subheading && (
-            <div className="text-2xl mb-6" style={{ color: data?.contentColor || '#6b7280' }}>
+            <div className="text-2xl mb-6" style={{ color: data?.contentColor || RICH_TEXT_DEFAULTS.contentColor }}>
               {data.subheading}
             </div>
           )}
@@ -194,8 +250,8 @@ export const RICH_TEXT_COMPONENTS: Record<string, React.FC<any>> = {
               href={data?.buttonLink === 'external' ? (data?.buttonExternalUrl || '#') : (data?.buttonLink || '#')} 
               className="inline-block px-8 py-4 rounded-lg font-bold text-lg hover:opacity-80 transition-opacity"
               style={{
-                backgroundColor: data?.buttonBackground || '#000000',
-                color: data?.buttonTextColor || '#ffffff'
+                backgroundColor: data?.buttonBackground || RICH_TEXT_DEFAULTS.buttonBackground,
+                color: data?.buttonTextColor || RICH_TEXT_DEFAULTS.buttonTextColor
               }}
             >
               {data.buttonText}
@@ -214,7 +270,7 @@ export const EMAIL_SIGNUP_OPTIONS = [
   { id: 'email-card', name: 'Floating Card', description: 'Card style with shadow' },
 ];
 
-export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
+export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<SectionComponentProps>> = {
   'email-minimal': ({ data, isEditable, onUpdate }) => {
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
@@ -294,26 +350,26 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
       <div 
         className="py-24 px-6 text-center"
         style={{ 
-          backgroundColor: data?.backgroundColor || '#171717',
+          backgroundColor: data?.backgroundColor || EMAIL_SIGNUP_DEFAULTS.backgroundColor,
         }}
       >
         <div className="max-w-xl mx-auto">
-          <div className="mb-8 flex justify-center" style={{ color: data?.headingColor || '#ffffff' }}>
-            <Mail size={32} />
+          <div className="mb-8 flex justify-center" style={{ color: data?.headingColor || EMAIL_SIGNUP_DEFAULTS.headingColor }}>
+            <Mail size={data?.iconSize || EMAIL_SIGNUP_DEFAULTS.iconSize} />
           </div>
           <EditableText
             value={data?.heading || 'Join the Newsletter'}
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
-            className="text-3xl font-bold mb-4"
-            style={{ color: data?.headingColor || '#ffffff' }}
+            className="text-3xl font-bold mb-6"
+            style={{ color: data?.headingColor || EMAIL_SIGNUP_DEFAULTS.headingColor }}
           />
           <EditableText
             value={data?.subheading || 'Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.'}
             onChange={(val) => onUpdate?.({ ...data, subheading: val })}
             isEditable={isEditable}
             className="mb-8"
-            style={{ color: data?.subheadingColor || '#737373' }}
+            style={{ color: data?.subheadingColor || EMAIL_SIGNUP_DEFAULTS.subheadingColor }}
           />
           {status === 'success' ? (
             <div className="text-emerald-400 font-medium">
@@ -441,7 +497,7 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
         <div 
           className="flex items-center justify-center p-12 md:p-24"
           style={{ 
-            backgroundColor: data?.backgroundColor || '#ffffff',
+            backgroundColor: data?.backgroundColor || EMAIL_SIGNUP_DEFAULTS.backgroundColor,
           }}
         >
           <div className="w-full max-w-md">
@@ -450,14 +506,14 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
               onChange={(val) => onUpdate?.({ ...data, heading: val })}
               isEditable={isEditable}
               className="text-4xl font-bold mb-4"
-              style={{ color: data?.headingColor || '#000000' }}
+              style={{ color: data?.headingColor || EMAIL_SIGNUP_DEFAULTS.headingColor }}
             />
             <EditableText
               value={data?.subheading || 'Be the first to know about new collections and exclusive offers.'}
               onChange={(val) => onUpdate?.({ ...data, subheading: val })}
               isEditable={isEditable}
               className="mb-8"
-              style={{ color: data?.subheadingColor || '#737373' }}
+              style={{ color: data?.subheadingColor || EMAIL_SIGNUP_DEFAULTS.subheadingColor }}
             />
             {status === 'success' ? (
               <div className="text-emerald-600 font-medium">
@@ -473,13 +529,13 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
                 type="email" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={data?.placeholderText || 'Email address'} 
+                placeholder={data?.placeholderText || EMAIL_SIGNUP_DEFAULTS.placeholder} 
                 className="w-full rounded-lg px-4 py-3 focus:outline-none focus:ring-2"
                 style={{
-                  backgroundColor: data?.inputBgColor || '#fafafa',
+                  backgroundColor: data?.inputBgColor || EMAIL_SIGNUP_DEFAULTS.inputBgColor,
                   borderWidth: '1px',
-                  borderColor: data?.inputBorderColor || '#e5e5e5',
-                  color: data?.inputTextColor || '#000000'
+                  borderColor: data?.inputBorderColor || EMAIL_SIGNUP_DEFAULTS.inputBorderColor,
+                  color: data?.inputTextColor || EMAIL_SIGNUP_DEFAULTS.inputTextColor
                 }}
                 required
                 disabled={status === 'submitting'}
@@ -489,11 +545,11 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
                 disabled={status === 'submitting'}
                 className="w-full px-6 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
                 style={{
-                  backgroundColor: data?.buttonBgColor || '#000000',
-                  color: data?.buttonTextColor || '#ffffff'
+                  backgroundColor: data?.buttonBgColor || EMAIL_SIGNUP_DEFAULTS.buttonBgColor,
+                  color: data?.buttonTextColor || EMAIL_SIGNUP_DEFAULTS.buttonTextColor
                 }}
               >
-                {status === 'submitting' ? 'Signing Up...' : (data?.buttonText || 'Sign Up')} {status !== 'submitting' && <ArrowRight size={16} />}
+                {status === 'submitting' ? 'Signing Up...' : (data?.buttonText || EMAIL_SIGNUP_DEFAULTS.buttonText)} {status !== 'submitting' && <ArrowRight size={data?.buttonIconSize || EMAIL_SIGNUP_DEFAULTS.buttonIconSize} />}
               </button>
             </form>
             {emailSettings && (
@@ -583,7 +639,7 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
         <div 
           className="max-w-4xl mx-auto rounded-2xl shadow-xl p-12 md:p-16 text-center relative overflow-hidden"
           style={{ 
-            backgroundColor: data?.backgroundColor || '#ffffff',
+            backgroundColor: data?.backgroundColor || EMAIL_SIGNUP_DEFAULTS.backgroundColor,
           }}
         >
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
@@ -592,14 +648,14 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
             className="text-4xl font-bold mb-4"
-            style={{ color: data?.headingColor || '#000000' }}
+            style={{ color: data?.headingColor || EMAIL_SIGNUP_DEFAULTS.headingColor }}
           />
           <EditableText
             value={data?.subheading || 'Join our mailing list and get 10% off your first order.'}
             onChange={(val) => onUpdate?.({ ...data, subheading: val })}
             isEditable={isEditable}
             className="mb-8"
-            style={{ color: data?.subheadingColor || '#737373' }}
+            style={{ color: data?.subheadingColor || EMAIL_SIGNUP_DEFAULTS.subheadingColor }}
           />
           {status === 'success' ? (
             <div className="text-emerald-600 font-medium mb-4">
@@ -615,13 +671,13 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={data?.placeholderText || 'Your email'} 
+              placeholder={data?.placeholderText || EMAIL_SIGNUP_DEFAULTS.placeholder} 
               className="flex-1 rounded-lg px-4 py-3 focus:outline-none focus:ring-2"
               style={{
-                backgroundColor: data?.inputBgColor || '#fafafa',
+                backgroundColor: data?.inputBgColor || EMAIL_SIGNUP_DEFAULTS.inputBgColor,
                 borderWidth: '1px',
-                borderColor: data?.inputBorderColor || '#e5e5e5',
-                color: data?.inputTextColor || '#000000'
+                borderColor: data?.inputBorderColor || EMAIL_SIGNUP_DEFAULTS.inputBorderColor,
+                color: data?.inputTextColor || EMAIL_SIGNUP_DEFAULTS.inputTextColor
               }}
               required
               disabled={status === 'submitting'}
@@ -631,8 +687,8 @@ export const EMAIL_SIGNUP_COMPONENTS: Record<string, React.FC<any>> = {
               disabled={status === 'submitting'}
               className="px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
               style={{
-                backgroundColor: data?.buttonBgColor || '#000000',
-                color: data?.buttonTextColor || '#ffffff'
+                backgroundColor: data?.buttonBgColor || EMAIL_SIGNUP_DEFAULTS.buttonBgColor,
+                color: data?.buttonTextColor || EMAIL_SIGNUP_DEFAULTS.buttonTextColor
               }}
             >
               {status === 'submitting' ? 'Submitting...' : (data?.buttonText || 'Get Code')}
@@ -663,7 +719,7 @@ export const COLLAPSIBLE_OPTIONS = [
   { id: 'col-faq', name: 'FAQ Style', description: 'Questions and answers' },
 ];
 
-export const COLLAPSIBLE_COMPONENTS: Record<string, React.FC<any>> = {
+export const COLLAPSIBLE_COMPONENTS: Record<string, React.FC<SectionComponentProps>> = {
   'col-simple': ({ data, isEditable, onUpdate }) => {
     const [openIndex, setOpenIndex] = useState<number | null>(0);
     const items = data?.items || [
@@ -674,7 +730,7 @@ export const COLLAPSIBLE_COMPONENTS: Record<string, React.FC<any>> = {
 
     return (
       <div 
-        style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
+        style={{ backgroundColor: data?.backgroundColor || COLLAPSIBLE_DEFAULTS.backgroundColor }}
         className="py-20 px-6"
       >
         <div className="max-w-2xl mx-auto">
@@ -682,14 +738,14 @@ export const COLLAPSIBLE_COMPONENTS: Record<string, React.FC<any>> = {
             value={data?.heading || 'Details'}
             onChange={(val) => onUpdate?.({ ...data, heading: val })}
             isEditable={isEditable}
-            style={{ color: data?.headingColor || '#000000' }}
+            style={{ color: data?.headingColor || COLLAPSIBLE_DEFAULTS.headingColor }}
             className="text-2xl font-bold mb-8"
           />
           <div className="space-y-4">
             {items.map((item: any, i: number) => (
               <div 
                 key={i} 
-                style={{ borderColor: data?.borderColor || '#e5e7eb' }}
+                style={{ borderColor: data?.borderColor || COLLAPSIBLE_DEFAULTS.borderColor }}
                 className="border-b pb-4"
               >
                 <button 
@@ -697,17 +753,17 @@ export const COLLAPSIBLE_COMPONENTS: Record<string, React.FC<any>> = {
                   className="w-full flex justify-between items-center text-left py-2"
                 >
                   <span 
-                    style={{ color: data?.titleColor || '#000000' }}
+                    style={{ color: data?.questionColor || COLLAPSIBLE_DEFAULTS.questionColor }}
                     className="font-bold text-lg"
                   >
                     {item.title}
                   </span>
                   <span style={{ color: data?.accentColor || '#6366f1' }}>
-                    {openIndex === i ? <Minus size={20} /> : <Plus size={20} />}
+                    {openIndex === i ? <Minus size={data?.iconSize || COLLAPSIBLE_DEFAULTS.iconSize} /> : <Plus size={data?.iconSize || COLLAPSIBLE_DEFAULTS.iconSize} />}
                   </span>
                 </button>
                 <div className={`overflow-hidden transition-all duration-300 ${openIndex === i ? 'max-h-40 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
-                  <p style={{ color: data?.contentColor || '#6b7280' }}>
+                  <p style={{ color: data?.answerColor || COLLAPSIBLE_DEFAULTS.answerColor }}>
                     {item.content}
                   </p>
                 </div>
@@ -738,10 +794,10 @@ export const COLLAPSIBLE_COMPONENTS: Record<string, React.FC<any>> = {
               value={data?.heading || 'Frequently Asked Questions'}
               onChange={(val) => onUpdate?.({ ...data, heading: val })}
               isEditable={isEditable}
-              style={{ color: data?.headingColor || '#000000' }}
+              style={{ color: data?.headingColor || COLLAPSIBLE_DEFAULTS.headingColor }}
               className="text-3xl font-bold mb-4"
             />
-            <p style={{ color: data?.contentColor || '#6b7280' }}>
+            <p style={{ color: data?.answerColor || COLLAPSIBLE_DEFAULTS.answerColor }}>
               Everything you need to know about the product and billing.
             </p>
           </div>
@@ -750,8 +806,8 @@ export const COLLAPSIBLE_COMPONENTS: Record<string, React.FC<any>> = {
               <div 
                 key={i} 
                 style={{ 
-                  backgroundColor: data?.cardBgColor || '#ffffff',
-                  borderColor: data?.borderColor || '#e5e7eb'
+                  backgroundColor: data?.cardBgColor || COLLAPSIBLE_DEFAULTS.cardBgColor,
+                  borderColor: data?.borderColor || COLLAPSIBLE_DEFAULTS.borderColor
                 }}
                 className="rounded-xl border overflow-hidden"
               >
@@ -760,21 +816,21 @@ export const COLLAPSIBLE_COMPONENTS: Record<string, React.FC<any>> = {
                   className="w-full flex justify-between items-center text-left p-6 hover:opacity-90 transition-opacity"
                 >
                   <span 
-                    style={{ color: data?.titleColor || '#111827' }}
+                    style={{ color: data?.questionColor || COLLAPSIBLE_DEFAULTS.questionColor }}
                     className="font-bold"
                   >
                     {item.title}
                   </span>
                   <span style={{ color: data?.accentColor || '#6366f1' }}>
-                    {openIndex === i ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    {openIndex === i ? <ChevronUp size={data?.iconSize || COLLAPSIBLE_DEFAULTS.iconSize} /> : <ChevronDown size={data?.iconSize || COLLAPSIBLE_DEFAULTS.iconSize} />}
                   </span>
                 </button>
                 <div 
-                  style={{ borderColor: data?.borderColor || '#e5e7eb' }}
+                  style={{ borderColor: data?.borderColor || COLLAPSIBLE_DEFAULTS.borderColor }}
                   className={`transition-all duration-300 ${openIndex === i ? 'max-h-40 opacity-100 border-t' : 'max-h-0 opacity-0'}`}
                 >
                   <p 
-                    style={{ color: data?.contentColor || '#6b7280' }}
+                    style={{ color: data?.answerColor || COLLAPSIBLE_DEFAULTS.answerColor }}
                     className="p-6 pt-4"
                   >
                     {item.content}
@@ -795,15 +851,16 @@ export const LOGO_LIST_OPTIONS = [
   { id: 'logo-ticker', name: 'Scrolling Ticker', description: 'Animated infinite scroll' },
 ];
 
-export const LOGO_LIST_COMPONENTS: Record<string, React.FC<any>> = {
+export const LOGO_LIST_COMPONENTS: Record<string, React.FC<SectionComponentProps>> = {
   'logo-grid': ({ data, isEditable, onUpdate }) => (
-    <div className="py-20 px-6 border-y border-neutral-100">
+    <div className="py-20 px-6 border-y border-neutral-100" style={{ backgroundColor: data?.backgroundColor || LOGO_LIST_DEFAULTS.backgroundColor }}>
       <div className="max-w-7xl mx-auto text-center">
         <EditableText
           value={data?.heading || 'Trusted by industry leaders'}
           onChange={(val) => onUpdate?.({ ...data, heading: val })}
           isEditable={isEditable}
-          className="text-sm font-bold uppercase tracking-widest text-neutral-400 mb-12"
+          className="text-sm font-bold uppercase tracking-widest mb-12"
+          style={{ color: data?.headingColor || LOGO_LIST_DEFAULTS.headingColor }}
         />
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-12 items-center opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -834,16 +891,22 @@ export const PROMO_BANNER_OPTIONS = [
   { id: 'promo-hero', name: 'Hero Banner', description: 'Large promotional area' },
 ];
 
-export const PROMO_BANNER_COMPONENTS: Record<string, React.FC<any>> = {
+export const PROMO_BANNER_COMPONENTS: Record<string, React.FC<SectionComponentProps>> = {
   'promo-top': ({ data, isEditable, onUpdate }) => (
-    <div className="bg-blue-600 text-white py-3 px-4 text-center text-sm font-medium flex justify-center items-center gap-2">
+    <div 
+      className="py-3 px-4 text-center text-sm font-medium flex justify-center items-center gap-2"
+      style={{ 
+        backgroundColor: data?.backgroundColor || PROMO_BANNER_DEFAULTS.backgroundColor,
+        color: data?.textColor || PROMO_BANNER_DEFAULTS.textColor
+      }}
+    >
       <EditableText
         value={data?.text || 'Free shipping on all orders over $100'}
         onChange={(val) => onUpdate?.({ ...data, text: val })}
         isEditable={isEditable}
         tagName="span"
       />
-      <ArrowRight size={14} />
+      <ArrowRight size={data?.iconSize || PROMO_BANNER_DEFAULTS.iconSize} />
     </div>
   ),
   'promo-hero': ({ data, isEditable, onUpdate }) => (

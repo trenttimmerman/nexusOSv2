@@ -3,25 +3,78 @@ export interface UniversalSectionData {
   heading?: string;
   subheading?: string;
   text?: string;
+  content?: string;
   image?: string;
   videoUrl?: string;
   
   // Actions
   buttonText?: string;
   buttonLink?: string;
+  buttonExternalUrl?: string;
   secondaryButtonText?: string;
   secondaryButtonLink?: string;
+  linkText?: string;
+  linkUrl?: string;
   
   // Collections
   items?: Array<{
     id: string;
     title?: string;
     description?: string;
+    question?: string;
+    answer?: string;
     image?: string;
     icon?: string;
     link?: string;
     price?: string;
   }>;
+  
+  // Logo List
+  logos?: Array<{
+    url: string;
+    alt: string;
+    link?: string;
+  }>;
+  
+  // Email Signup
+  placeholder?: string;
+  privacyText?: string;
+  successMessage?: string;
+  errorMessage?: string;
+
+  // Colors - Background
+  backgroundColor?: string;
+  containerBackground?: string;
+  cardBgColor?: string;
+  inputBgColor?: string;
+  
+  // Colors - Text
+  headingColor?: string;
+  subheadingColor?: string;
+  contentColor?: string;
+  textColor?: string;
+  questionColor?: string;
+  answerColor?: string;
+  linkColor?: string;
+  
+  // Colors - Input
+  inputTextColor?: string;
+  inputBorderColor?: string;
+  placeholderColor?: string;
+  
+  // Colors - Button
+  buttonBackground?: string;
+  buttonBgColor?: string;
+  buttonTextColor?: string;
+  
+  // Colors - Other
+  borderColor?: string;
+  
+  // Layout & Sizing
+  textAlign?: 'left' | 'center' | 'right';
+  maxWidth?: string;
+  iconSize?: number;
+  buttonIconSize?: number;
 
   // Design Overrides
   style?: {
