@@ -55,6 +55,13 @@ interface HeroProps {
 }
 
 export const HERO_FIELDS: Record<string, string[]> = {
+  bento: [
+    'heading', 'subheading', 'badge', 'buttonText', 'buttonLink', 
+    'statLabel1', 'statText1', 'statLabel2', 'statText2',
+    'featureTitle', 'featureDesc', 'videoUrl', 'image1', 'image2',
+    'bgGradient', 'accentColor', 'glassOpacity', 'splineUrl',
+    'showFeaturedProduct', 'featuredProductId', 'featuredProductPosition', 'showProductPrice'
+  ],
   impact: [
     'heading', 'badge', 'buttonText', 'buttonLink', 'secondaryButtonText', 'secondaryButtonLink', 
     'image', 'overlayOpacity', 'backgroundColor', 'textColor', 'alignment', 'padding', 'animation',
@@ -1199,17 +1206,329 @@ export const HeroTypographic: React.FC<HeroProps> = ({
   );
 };
 
+// --- BENTO HERO (2026 Edition) ---
+const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEditable, onUpdate, onSelectField, products, blockId }) => {
+  const handleSelect = (field: string) => {
+    if (onSelectField) onSelectField(field);
+  };
+
+  const heading = data?.heading || 'The Future is Built in Blocks';
+  const subheading = data?.subheading || 'Modular design meets interactive storytelling';
+  const buttonText = data?.buttonText || 'Explore Features';
+  const statLabel1 = data?.statLabel1 || '10K+';
+  const statText1 = data?.statText1 || 'Active Users';
+  const statLabel2 = data?.statLabel2 || '99.9%';
+  const statText2 = data?.statText2 || 'Uptime';
+  const featureTitle = data?.featureTitle || 'AI-Powered';
+  const featureDesc = data?.featureDesc || 'Smart automation that learns from your workflow';
+  const videoUrl = data?.videoUrl || 'https://cdn.coverr.co/videos/coverr-digital-glitch-4951/1080p.mp4';
+  const image1 = data?.image1 || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop';
+  const image2 = data?.image2 || 'https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=1000&auto=format&fit=crop';
+  
+  const bgGradient = data?.bgGradient || 'from-indigo-950 via-purple-950 to-black';
+  const accentColor = data?.accentColor || primaryColor || '#6366f1';
+  const glassOpacity = data?.glassOpacity || 10;
+  const splineUrl = data?.splineUrl || '';
+
+  // Mouse spotlight effect state
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (heroRef.current) {
+        const rect = heroRef.current.getBoundingClientRect();
+        setMousePosition({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        });
+      }
+    };
+
+    const hero = heroRef.current;
+    if (hero) {
+      hero.addEventListener('mousemove', handleMouseMove);
+      return () => hero.removeEventListener('mousemove', handleMouseMove);
+    }
+  }, []);
+
+  return (
+    <section 
+      ref={heroRef}
+      className={`relative min-h-screen bg-gradient-to-br ${bgGradient} overflow-hidden`}
+    >
+      {/* Noise Texture Overlay */}
+      <div className="absolute inset-0 opacity-20 mix-blend-overlay"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
+        }}
+      />
+
+      {/* Ambient Grid Pattern */}
+      <div className="absolute inset-0 opacity-10"
+        style={{
+          backgroundImage: `linear-gradient(${accentColor} 1px, transparent 1px), linear-gradient(90deg, ${accentColor} 1px, transparent 1px)`,
+          backgroundSize: '100px 100px',
+        }}
+      />
+
+      {/* 3D Spline Background (Optional) */}
+      {splineUrl && (
+        <div className="absolute inset-0 -z-10 opacity-60">
+          <iframe 
+            src={splineUrl}
+            className="w-full h-full border-0"
+            title="3D Background"
+          />
+        </div>
+      )}
+
+      {/* Main Content Container */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 min-h-screen">
+        
+        {/* Top Section: Headline + CTA */}
+        <div className="max-w-3xl mb-12 pt-20">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 mb-6">
+            <Sparkles size={16} className="text-indigo-400" />
+            <EditableText
+              tagName="span"
+              value={data?.badge || 'New Release'}
+              onChange={(val) => onUpdate?.({ badge: val })}
+              isEditable={isEditable}
+              className="text-sm text-indigo-300 font-medium"
+              elementId={blockId ? `editable-${blockId}-badge` : undefined}
+              onSelect={() => handleSelect('badge')}
+            />
+          </div>
+
+          <EditableText
+            tagName="h1"
+            value={heading}
+            onChange={(val) => onUpdate?.({ heading: val })}
+            onStyleChange={(style) => onUpdate?.({ heading_style: style })}
+            style={data?.heading_style}
+            isEditable={isEditable}
+            className="text-7xl font-black text-white mb-6 leading-tight"
+            elementId={blockId ? `editable-${blockId}-heading` : undefined}
+            onSelect={() => handleSelect('heading')}
+          />
+
+          <EditableText
+            tagName="p"
+            value={subheading}
+            onChange={(val) => onUpdate?.({ subheading: val })}
+            isEditable={isEditable}
+            className="text-2xl text-gray-300 mb-10 leading-relaxed"
+            elementId={blockId ? `editable-${blockId}-subheading` : undefined}
+            onSelect={() => handleSelect('subheading')}
+          />
+
+          <div className="flex gap-4">
+            <button
+              onClick={() => handleSelect('buttonText')}
+              className="group px-8 py-4 rounded-xl font-bold text-white transition-all duration-300 relative overflow-hidden"
+              style={{ backgroundColor: accentColor }}
+            >
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+              <div className="relative flex items-center gap-2">
+                <EditableText
+                  tagName="span"
+                  value={buttonText}
+                  onChange={(val) => onUpdate?.({ buttonText: val })}
+                  isEditable={isEditable}
+                  elementId={blockId ? `editable-${blockId}-buttonText` : undefined}
+                  onSelect={() => handleSelect('buttonText')}
+                />
+                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              </div>
+            </button>
+
+            <button className="px-8 py-4 rounded-xl font-bold text-white border-2 border-white/20 hover:bg-white/5 backdrop-blur-md transition-all">
+              Watch Demo
+              <Play size={16} className="inline ml-2" />
+            </button>
+          </div>
+        </div>
+
+        {/* Bento Grid Layout */}
+        <div className="grid grid-cols-12 gap-4 h-[600px]">
+          
+          {/* Large Video Card - Takes 2 rows */}
+          <div 
+            className="col-span-5 row-span-2 rounded-3xl overflow-hidden relative group cursor-pointer"
+            style={{
+              background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(255,255,255,0.15), transparent 60%)`,
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent backdrop-blur-md" />
+            <div className="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none" />
+            
+            <video 
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+              className="w-full h-full object-cover"
+              onClick={() => handleSelect('videoUrl')}
+            >
+              <source src={videoUrl} type="video/mp4" />
+            </video>
+
+            {/* Overlay Play Button */}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
+                <Play size={32} className="text-white ml-1" />
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Card 1 */}
+          <div className="col-span-3 row-span-1 rounded-3xl p-8 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-transparent backdrop-blur-md" />
+            <div className="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none" />
+            <div className="relative">
+              <EditableText
+                tagName="div"
+                value={statLabel1}
+                onChange={(val) => onUpdate?.({ statLabel1: val })}
+                isEditable={isEditable}
+                className="text-6xl font-black text-emerald-400 mb-2"
+                elementId={blockId ? `editable-${blockId}-statLabel1` : undefined}
+                onSelect={() => handleSelect('statLabel1')}
+              />
+              <EditableText
+                tagName="p"
+                value={statText1}
+                onChange={(val) => onUpdate?.({ statText1: val })}
+                isEditable={isEditable}
+                className="text-gray-300 font-medium"
+                elementId={blockId ? `editable-${blockId}-statText1` : undefined}
+                onSelect={() => handleSelect('statText1')}
+              />
+            </div>
+          </div>
+
+          {/* Feature Card */}
+          <div className="col-span-4 row-span-1 rounded-3xl p-8 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-transparent backdrop-blur-md" />
+            <div className="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none" />
+            <div className="relative h-full flex flex-col justify-between">
+              <div>
+                <Wand2 size={32} className="text-purple-400 mb-4" />
+                <EditableText
+                  tagName="h3"
+                  value={featureTitle}
+                  onChange={(val) => onUpdate?.({ featureTitle: val })}
+                  isEditable={isEditable}
+                  className="text-2xl font-bold text-white mb-2"
+                  elementId={blockId ? `editable-${blockId}-featureTitle` : undefined}
+                  onSelect={() => handleSelect('featureTitle')}
+                />
+                <EditableText
+                  tagName="p"
+                  value={featureDesc}
+                  onChange={(val) => onUpdate?.({ featureDesc: val })}
+                  isEditable={isEditable}
+                  className="text-gray-400 text-sm"
+                  elementId={blockId ? `editable-${blockId}-featureDesc` : undefined}
+                  onSelect={() => handleSelect('featureDesc')}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Card 2 */}
+          <div className="col-span-3 row-span-1 rounded-3xl p-8 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-transparent backdrop-blur-md" />
+            <div className="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none" />
+            <div className="relative">
+              <EditableText
+                tagName="div"
+                value={statLabel2}
+                onChange={(val) => onUpdate?.({ statLabel2: val })}
+                isEditable={isEditable}
+                className="text-6xl font-black text-blue-400 mb-2"
+                elementId={blockId ? `editable-${blockId}-statLabel2` : undefined}
+                onSelect={() => handleSelect('statLabel2')}
+              />
+              <EditableText
+                tagName="p"
+                value={statText2}
+                onChange={(val) => onUpdate?.({ statText2: val })}
+                isEditable={isEditable}
+                className="text-gray-300 font-medium"
+                elementId={blockId ? `editable-${blockId}-statText2` : undefined}
+                onSelect={() => handleSelect('statText2')}
+              />
+            </div>
+          </div>
+
+          {/* Image Card 1 */}
+          <div className="col-span-4 row-span-1 rounded-3xl overflow-hidden relative group">
+            <div className="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none z-10" />
+            <EditableImage
+              src={image1}
+              onChange={(val) => onUpdate?.({ image1: val })}
+              isEditable={isEditable}
+              className="w-full h-full object-cover"
+              elementId={blockId ? `editable-${blockId}-image1` : undefined}
+              onSelect={() => handleSelect('image1')}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+
+        </div>
+
+        {/* Bottom Floating Badge */}
+        <div className="absolute bottom-10 right-10 px-6 py-3 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center gap-3">
+          <div className="flex -space-x-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 border-2 border-white/30" />
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-600 border-2 border-white/30" />
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-600 border-2 border-white/30" />
+          </div>
+          <div className="text-sm text-gray-200">
+            <span className="font-bold">2,500+</span> designers using this
+          </div>
+        </div>
+      </div>
+
+      {/* Ambient Glow Effect */}
+      <div 
+        className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl opacity-20 pointer-events-none"
+        style={{ backgroundColor: accentColor }}
+      />
+      <div 
+        className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl opacity-20 pointer-events-none"
+        style={{ backgroundColor: '#a855f7' }}
+      />
+
+      {/* Featured Product Overlay */}
+      {data?.showFeaturedProduct && (
+        <FeaturedProductOverlay
+          products={products}
+          productId={data.featuredProductId}
+          position={data.featuredProductPosition}
+          showPrice={data.showProductPrice !== false}
+          primaryColor={primaryColor}
+        />
+      )}
+    </section>
+  );
+};
+
 export const HERO_COMPONENTS = {
   impact: HeroImpact,
   split: HeroSplit,
   kinetik: HeroKinetik,
   grid: HeroGrid,
-  typographic: HeroTypographic
+  typographic: HeroTypographic,
+  bento: HeroBento
 };
 
 export const HERO_OPTIONS = [
-  { id: 'impact', name: 'Full Screen', description: 'Large image fills the screen - great for visual impact', date: '2024-01-10', popularity: 98, recommended: true },
-  { id: 'split', name: 'Side by Side', description: 'Image on one side, text on other - balanced and professional', date: '2024-03-20', popularity: 85, recommended: true },
+  { id: 'bento', name: 'Bento Grid 2026', description: 'Modern card-based layout with video, stats & glassmorphism', date: '2026-01-18', popularity: 100, recommended: true },
+  { id: 'impact', name: 'Full Screen', description: 'Large image fills the screen - great for visual impact', date: '2024-01-10', popularity: 98, recommended: false },
+  { id: 'split', name: 'Side by Side', description: 'Image on one side, text on other - balanced and professional', date: '2024-03-20', popularity: 85, recommended: false },
   { id: 'kinetik', name: 'Animated Banner', description: 'Eye-catching scrolling text effect', date: '2024-08-15', popularity: 90 },
   { id: 'grid', name: 'Image Collage', description: 'Multiple images in a grid layout', date: '2024-05-10', popularity: 75 },
   { id: 'typographic', name: 'Luxury Typographic', description: 'Bold text with elegant image teasers', date: '2024-11-20', popularity: 60 }
