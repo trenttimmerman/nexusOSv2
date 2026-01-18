@@ -58,6 +58,7 @@ export const HERO_FIELDS: Record<string, string[]> = {
   particleField: [
     'heading', 'subheading', 'badge', 'buttonText', 'buttonLink', 'secondaryButtonText', 'secondaryButtonLink',
     'accentColor', 'particleCount', 'particleColor', 'particleStyle', 'floatingImage', 'splineUrl', 'videoUrl', 'showParticles',
+    'stat1Number', 'stat1Label', 'stat2Number', 'stat2Label', 'stat3Number', 'stat3Label',
     'showFeaturedProduct', 'featuredProductId', 'featuredProductPosition', 'showProductPrice'
   ],
   bento: [
@@ -92,10 +93,39 @@ export const HERO_FIELDS: Record<string, string[]> = {
     'link3Label', 'link3Href', 'link3Image',
     'backgroundColor', 'textColor', 'animation',
     'showFeaturedProduct', 'featuredProductId', 'featuredProductPosition', 'showProductPrice'
+  ],
+  videoMask: [
+    'heading', 'subheading', 'buttonText', 'secondaryButtonText', 
+    'videoUrl', 'overlayOpacity', 'accentColor', 'textStroke',
+    'feature1', 'feature2', 'feature3',
+    'buttonLink', 'secondaryButtonLink',
+    'showFeaturedProduct', 'featuredProductId', 'featuredProductPosition', 'showProductPrice'
   ]
 };
 
-// --- EDITABLE HELPERS ---
+// --- DISPLAY-ONLY TEXT (No inline editing) ---
+const DisplayText: React.FC<{
+  value: string;
+  className?: string;
+  tagName?: 'h1' | 'h2' | 'h3' | 'p' | 'span' | 'div';
+  style?: React.CSSProperties;
+  children?: React.ReactNode;
+}> = ({ value, className, tagName = 'p', style, children }) => {
+  const Tag = tagName;
+  return <Tag className={className} style={style}>{children || value}</Tag>;
+};
+
+// --- DISPLAY-ONLY IMAGE (No inline editing) ---
+const DisplayImage: React.FC<{
+  src: string;
+  alt?: string;
+  className?: string;
+  style?: React.CSSProperties;
+}> = ({ src, alt = '', className, style }) => {
+  return <img src={src} alt={alt} className={className} style={style} />;
+};
+
+// --- EDITABLE HELPERS (Keep for legacy components) ---
 
 export const EditableText: React.FC<{
   value: string;
@@ -1211,6 +1241,206 @@ export const HeroTypographic: React.FC<HeroProps> = ({
   );
 };
 
+// --- VIDEO MASK HERO (2026 Edition) ---
+const HeroVideoMask: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEditable, onUpdate, onSelectField, products, blockId }) => {
+  const handleSelect = (field: string) => {
+    if (onSelectField) onSelectField(field);
+  };
+
+  const heading = data?.heading || 'Innovation Never Stops';
+  const subheading = data?.subheading || 'Experience the future through immersive storytelling';
+  const buttonText = data?.buttonText || 'Explore Now';
+  const secondaryButtonText = data?.secondaryButtonText || 'Learn More';
+  const videoUrl = data?.videoUrl || 'https://cdn.coverr.co/videos/coverr-digital-glitch-4951/1080p.mp4';
+  const overlayOpacity = data?.overlayOpacity || 60;
+  const accentColor = data?.accentColor || primaryColor || '#3b82f6';
+  const textStroke = data?.textStroke || false;
+  const feature1 = data?.feature1 || 'AI-Powered';
+  const feature2 = data?.feature2 || 'Real-time Sync';
+  const feature3 = data?.feature3 || 'Secure';
+  const buttonLink = data?.buttonLink || '#';
+  const secondaryButtonLink = data?.secondaryButtonLink || '#';
+
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+      {/* Background Video */}
+      <div className="absolute inset-0 w-full h-full">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+          key={videoUrl}
+        >
+          <source src={videoUrl} type="video/mp4" />
+        </video>
+        
+        {/* Dark Overlay */}
+        <div 
+          className="absolute inset-0 bg-black"
+          style={{ opacity: overlayOpacity / 100 }}
+        />
+      </div>
+
+      {/* Video Mask Text Effect */}
+      <div className="relative z-10 text-center px-6 max-w-7xl mx-auto">
+        
+        {/* Main Headline with Video Mask */}
+        <div className="relative mb-12">
+          {/* Background duplicate for video mask */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                clipPath: 'text',
+                WebkitClipPath: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+              key={videoUrl + '-mask'}
+            >
+              <source src={videoUrl} type="video/mp4" />
+            </video>
+          </div>
+
+          {/* Main text with video showing through */}
+          <DisplayText
+            tagName="h1"
+            value=""
+            className="relative text-9xl font-black leading-none py-8"
+            style={{
+              background: `url(${videoUrl})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              ...(textStroke ? {
+                WebkitTextStroke: `2px ${accentColor}`,
+              } : {})
+            }}
+          >
+            {heading}
+          </DisplayText>
+
+          {/* Fallback with gradient if video doesn't work */}
+          <h1 
+            className="absolute inset-0 text-9xl font-black leading-none py-8 opacity-0 hover:opacity-100 transition-opacity"
+            style={{
+              background: `linear-gradient(135deg, ${accentColor}, #8b5cf6)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            {heading}
+          </h1>
+        </div>
+
+        {/* Subheading */}
+        <DisplayText
+          tagName="p"
+          value={subheading}
+          className="text-2xl md:text-3xl text-white/90 mb-12 max-w-3xl mx-auto font-light tracking-wide"
+        />
+
+        {/* Feature Pills */}
+        <div className="flex flex-wrap gap-4 justify-center mb-12">
+          <div className="px-6 py-3 rounded-full bg-white/10 backdrop-blur-xl border border-white/20">
+            <DisplayText
+              tagName="span"
+              value={feature1}
+              className="text-white font-semibold"
+            />
+          </div>
+          <div className="px-6 py-3 rounded-full bg-white/10 backdrop-blur-xl border border-white/20">
+            <DisplayText
+              tagName="span"
+              value={feature2}
+              className="text-white font-semibold"
+            />
+          </div>
+          <div className="px-6 py-3 rounded-full bg-white/10 backdrop-blur-xl border border-white/20">
+            <DisplayText
+              tagName="span"
+              value={feature3}
+              className="text-white font-semibold"
+            />
+          </div>
+        </div>
+
+        {/* CTA Buttons */}
+        <div className="flex flex-wrap gap-6 justify-center items-center">
+          <button
+            onClick={() => !isEditable && buttonLink && (window.location.href = buttonLink)}
+            className="group relative px-12 py-5 rounded-full font-bold text-lg overflow-hidden transition-all duration-300 hover:scale-105"
+            style={{ backgroundColor: accentColor }}
+          >
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+            <div className="relative flex items-center gap-3 text-white">
+              <DisplayText
+                tagName="span"
+                value={buttonText}
+              />
+              <ArrowRight className="group-hover:translate-x-2 transition-transform" />
+            </div>
+          </button>
+
+          <button
+            onClick={() => !isEditable && secondaryButtonLink && (window.location.href = secondaryButtonLink)}
+            className="group px-12 py-5 rounded-full font-bold text-lg text-white border-2 border-white/30 hover:bg-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-105"
+          >
+            <DisplayText
+              tagName="span"
+              value={secondaryButtonText}
+            />
+          </button>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce">
+          <div className="flex flex-col items-center gap-2 text-white/60">
+            <span className="text-sm font-medium uppercase tracking-widest">Scroll</span>
+            <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
+              <div className="w-1 h-2 bg-white/50 rounded-full animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Ambient Glow */}
+      <div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-3xl opacity-20 pointer-events-none"
+        style={{ backgroundColor: accentColor }}
+      />
+
+      {/* Grain Texture Overlay */}
+      <div 
+        className="absolute inset-0 opacity-10 mix-blend-overlay pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
+        }}
+      />
+
+      {/* Featured Product Overlay */}
+      {data?.showFeaturedProduct && (
+        <FeaturedProductOverlay
+          products={products}
+          productId={data.featuredProductId}
+          position={data.featuredProductPosition}
+          showPrice={data.showProductPrice !== false}
+          primaryColor={primaryColor}
+        />
+      )}
+    </section>
+  );
+};
+
 // --- PARTICLE FIELD HERO (2026 Edition) ---
 const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEditable, onUpdate, onSelectField, products, blockId }) => {
   const handleSelect = (field: string) => {
@@ -1231,6 +1461,14 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
   const videoUrl = data?.videoUrl || '';
   const showParticles = data?.showParticles !== false; // Default to true
   const secondaryButtonLink = data?.secondaryButtonLink || '#demo';
+  
+  // Bottom stats
+  const stat1Number = data?.stat1Number || '50K+';
+  const stat1Label = data?.stat1Label || 'Active Users';
+  const stat2Number = data?.stat2Number || '99.9%';
+  const stat2Label = data?.stat2Label || 'Uptime';
+  const stat3Number = data?.stat3Number || '24/7';
+  const stat3Label = data?.stat3Label || 'Support';
 
   // Particle animation state
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -1409,13 +1647,9 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
               className="absolute inset-0 rounded-full blur-3xl opacity-30"
               style={{ backgroundColor: accentColor }}
             />
-            <EditableImage
+            <DisplayImage
               src={floatingImage}
-              onChange={(val) => onUpdate?.({ floatingImage: val })}
-              isEditable={isEditable}
               className="relative w-full h-full object-contain drop-shadow-2xl"
-              elementId={blockId ? `editable-${blockId}-floatingImage` : undefined}
-              onSelect={() => handleSelect('floatingImage')}
             />
           </div>
         </div>
@@ -1430,28 +1664,18 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
             className="w-2 h-2 rounded-full animate-pulse"
             style={{ backgroundColor: accentColor }}
           />
-          <EditableText
+          <DisplayText
             tagName="span"
             value={badge}
-            onChange={(val) => onUpdate?.({ badge: val })}
-            isEditable={isEditable}
             className="text-sm font-medium text-white"
-            elementId={blockId ? `editable-${blockId}-badge` : undefined}
-            onSelect={() => handleSelect('badge')}
           />
         </div>
 
         {/* Headline */}
-        <EditableText
+        <DisplayText
           tagName="h1"
-          value={heading}
-          onChange={(val) => onUpdate?.({ heading: val })}
-          onStyleChange={(style) => onUpdate?.({ heading_style: style })}
-          style={data?.heading_style}
-          isEditable={isEditable}
+          value=""
           className="text-8xl font-black mb-8 leading-none"
-          elementId={blockId ? `editable-${blockId}-heading` : undefined}
-          onSelect={() => handleSelect('heading')}
         >
           {heading.split('').map((char, i) => (
             <span
@@ -1471,14 +1695,10 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
         </EditableText>
 
         {/* Subheading */}
-        <EditableText
+        <DisplayText
           tagName="p"
           value={subheading}
-          onChange={(val) => onUpdate?.({ subheading: val })}
-          isEditable={isEditable}
           className="text-2xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed"
-          elementId={blockId ? `editable-${blockId}-subheading` : undefined}
-          onSelect={() => handleSelect('subheading')}
         />
 
         {/* CTA Buttons */}
@@ -1493,13 +1713,9 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
           >
             <div className="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
             <div className="relative flex items-center gap-3">
-              <EditableText
+              <DisplayText
                 tagName="span"
                 value={buttonText}
-                onChange={(val) => onUpdate?.({ buttonText: val })}
-                isEditable={isEditable}
-                elementId={blockId ? `editable-${blockId}-buttonText` : undefined}
-                onSelect={() => handleSelect('buttonText')}
               />
               <ArrowRight className="group-hover:translate-x-2 transition-transform" />
             </div>
@@ -1516,13 +1732,9 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
             className="group px-10 py-5 rounded-full font-bold text-lg text-white border-2 border-white/20 hover:bg-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-105 flex items-center gap-3"
           >
             <Play size={20} />
-            <EditableText
+            <DisplayText
               tagName="span"
               value={secondaryButtonText}
-              onChange={(val) => onUpdate?.({ secondaryButtonText: val })}
-              isEditable={isEditable}
-              elementId={blockId ? `editable-${blockId}-secondaryButtonText` : undefined}
-              onSelect={() => handleSelect('secondaryButtonText')}
             />
           </button>
         </div>
@@ -1539,16 +1751,40 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
       <div className="absolute bottom-0 left-0 right-0 backdrop-blur-xl bg-white/5 border-t border-white/10 py-6">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-3 gap-8 text-center">
           <div>
-            <div className="text-4xl font-black text-white mb-1">50K+</div>
-            <div className="text-sm text-gray-400">Active Users</div>
+            <DisplayText
+              tagName="div"
+              value={stat1Number}
+              className="text-4xl font-black text-white mb-1"
+            />
+            <DisplayText
+              tagName="div"
+              value={stat1Label}
+              className="text-sm text-gray-400"
+            />
           </div>
           <div>
-            <div className="text-4xl font-black text-white mb-1">99.9%</div>
-            <div className="text-sm text-gray-400">Uptime</div>
+            <DisplayText
+              tagName="div"
+              value={stat2Number}
+              className="text-4xl font-black text-white mb-1"
+            />
+            <DisplayText
+              tagName="div"
+              value={stat2Label}
+              className="text-sm text-gray-400"
+            />
           </div>
           <div>
-            <div className="text-4xl font-black text-white mb-1">24/7</div>
-            <div className="text-sm text-gray-400">Support</div>
+            <DisplayText
+              tagName="div"
+              value={stat3Number}
+              className="text-4xl font-black text-white mb-1"
+            />
+            <DisplayText
+              tagName="div"
+              value={stat3Label}
+              className="text-sm text-gray-400"
+            />
           </div>
         </div>
       </div>
@@ -1661,37 +1897,24 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
         <div className="max-w-3xl mb-12 pt-20">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 mb-6">
             <Sparkles size={16} className="text-indigo-400" />
-            <EditableText
+            <DisplayText
               tagName="span"
               value={data?.badge || 'New Release'}
-              onChange={(val) => onUpdate?.({ badge: val })}
-              isEditable={isEditable}
               className="text-sm text-indigo-300 font-medium"
-              elementId={blockId ? `editable-${blockId}-badge` : undefined}
-              onSelect={() => handleSelect('badge')}
+            />
             />
           </div>
 
-          <EditableText
+          <DisplayText
             tagName="h1"
             value={heading}
-            onChange={(val) => onUpdate?.({ heading: val })}
-            onStyleChange={(style) => onUpdate?.({ heading_style: style })}
-            style={data?.heading_style}
-            isEditable={isEditable}
             className="text-7xl font-black text-white mb-6 leading-tight"
-            elementId={blockId ? `editable-${blockId}-heading` : undefined}
-            onSelect={() => handleSelect('heading')}
           />
 
-          <EditableText
+          <DisplayText
             tagName="p"
             value={subheading}
-            onChange={(val) => onUpdate?.({ subheading: val })}
-            isEditable={isEditable}
             className="text-2xl text-gray-300 mb-10 leading-relaxed"
-            elementId={blockId ? `editable-${blockId}-subheading` : undefined}
-            onSelect={() => handleSelect('subheading')}
           />
 
           <div className="flex gap-4">
@@ -1702,13 +1925,9 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               <div className="relative flex items-center gap-2">
-                <EditableText
+                <DisplayText
                   tagName="span"
                   value={buttonText}
-                  onChange={(val) => onUpdate?.({ buttonText: val })}
-                  isEditable={isEditable}
-                  elementId={blockId ? `editable-${blockId}-buttonText` : undefined}
-                  onSelect={() => handleSelect('buttonText')}
                 />
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </div>
@@ -1783,23 +2002,15 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-transparent backdrop-blur-md" />
             <div className="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none" />
             <div className="relative">
-              <EditableText
+              <DisplayText
                 tagName="div"
                 value={statLabel1}
-                onChange={(val) => onUpdate?.({ statLabel1: val })}
-                isEditable={isEditable}
                 className="text-6xl font-black text-emerald-400 mb-2"
-                elementId={blockId ? `editable-${blockId}-statLabel1` : undefined}
-                onSelect={() => handleSelect('statLabel1')}
               />
-              <EditableText
+              <DisplayText
                 tagName="p"
                 value={statText1}
-                onChange={(val) => onUpdate?.({ statText1: val })}
-                isEditable={isEditable}
                 className="text-gray-300 font-medium"
-                elementId={blockId ? `editable-${blockId}-statText1` : undefined}
-                onSelect={() => handleSelect('statText1')}
               />
             </div>
           </div>
@@ -1811,23 +2022,15 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
             <div className="relative h-full flex flex-col justify-between">
               <div>
                 <Wand2 size={32} className="text-purple-400 mb-4" />
-                <EditableText
+                <DisplayText
                   tagName="h3"
                   value={featureTitle}
-                  onChange={(val) => onUpdate?.({ featureTitle: val })}
-                  isEditable={isEditable}
                   className="text-2xl font-bold text-white mb-2"
-                  elementId={blockId ? `editable-${blockId}-featureTitle` : undefined}
-                  onSelect={() => handleSelect('featureTitle')}
                 />
-                <EditableText
+                <DisplayText
                   tagName="p"
                   value={featureDesc}
-                  onChange={(val) => onUpdate?.({ featureDesc: val })}
-                  isEditable={isEditable}
                   className="text-gray-400 text-sm"
-                  elementId={blockId ? `editable-${blockId}-featureDesc` : undefined}
-                  onSelect={() => handleSelect('featureDesc')}
                 />
               </div>
             </div>
@@ -1838,23 +2041,15 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-transparent backdrop-blur-md" />
             <div className="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none" />
             <div className="relative">
-              <EditableText
+              <DisplayText
                 tagName="div"
                 value={statLabel2}
-                onChange={(val) => onUpdate?.({ statLabel2: val })}
-                isEditable={isEditable}
                 className="text-6xl font-black text-blue-400 mb-2"
-                elementId={blockId ? `editable-${blockId}-statLabel2` : undefined}
-                onSelect={() => handleSelect('statLabel2')}
               />
-              <EditableText
+              <DisplayText
                 tagName="p"
                 value={statText2}
-                onChange={(val) => onUpdate?.({ statText2: val })}
-                isEditable={isEditable}
                 className="text-gray-300 font-medium"
-                elementId={blockId ? `editable-${blockId}-statText2` : undefined}
-                onSelect={() => handleSelect('statText2')}
               />
             </div>
           </div>
@@ -1862,13 +2057,10 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
           {/* Image Card 1 */}
           <div className="col-span-4 row-span-1 rounded-3xl overflow-hidden relative group">
             <div className="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none z-10" />
-            <EditableImage
+            <DisplayImage
               src={image1}
-              onChange={(val) => onUpdate?.({ image1: val })}
-              isEditable={isEditable}
               className="w-full h-full object-cover"
-              elementId={blockId ? `editable-${blockId}-image1` : undefined}
-              onSelect={() => handleSelect('image1')}
+            />
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
@@ -1913,6 +2105,7 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
 };
 
 export const HERO_COMPONENTS = {
+  videoMask: HeroVideoMask,
   particleField: HeroParticleField,
   bento: HeroBento,
   impact: HeroImpact,
@@ -1923,6 +2116,7 @@ export const HERO_COMPONENTS = {
 };
 
 export const HERO_OPTIONS = [
+  { id: 'videoMask', name: 'Video Mask Text', description: 'Cinematic video playing through transparent headline text', date: '2026-01-18', popularity: 100, recommended: true },
   { id: 'particleField', name: 'Particle Field', description: 'Animated particle network with gradient text & floating 3D', date: '2026-01-18', popularity: 99, recommended: true },
   { id: 'bento', name: 'Bento Grid 2026', description: 'Modern card-based layout with video, stats & glassmorphism', date: '2026-01-18', popularity: 100, recommended: true },
   { id: 'impact', name: 'Full Screen', description: 'Large image fills the screen - great for visual impact', date: '2024-01-10', popularity: 98, recommended: false },
