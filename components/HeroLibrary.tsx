@@ -1692,7 +1692,7 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
               {char === ' ' ? '\u00A0' : char}
             </span>
           ))}
-        </EditableText>
+        </DisplayText>
 
         {/* Subheading */}
         <DisplayText
@@ -1901,7 +1901,6 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
               tagName="span"
               value={data?.badge || 'New Release'}
               className="text-sm text-indigo-300 font-medium"
-            />
             />
           </div>
 
