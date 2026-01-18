@@ -55,6 +55,11 @@ interface HeroProps {
 }
 
 export const HERO_FIELDS: Record<string, string[]> = {
+  particleField: [
+    'heading', 'subheading', 'badge', 'buttonText', 'buttonLink', 'secondaryButtonText', 'secondaryButtonLink',
+    'accentColor', 'particleCount', 'particleColor', 'floatingImage', 'splineUrl',
+    'showFeaturedProduct', 'featuredProductId', 'featuredProductPosition', 'showProductPrice'
+  ],
   bento: [
     'heading', 'subheading', 'badge', 'buttonText', 'buttonLink', 
     'statLabel1', 'statText1', 'statLabel2', 'statText2',
@@ -1206,6 +1211,305 @@ export const HeroTypographic: React.FC<HeroProps> = ({
   );
 };
 
+// --- PARTICLE FIELD HERO (2026 Edition) ---
+const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEditable, onUpdate, onSelectField, products, blockId }) => {
+  const handleSelect = (field: string) => {
+    if (onSelectField) onSelectField(field);
+  };
+
+  const heading = data?.heading || 'Experience the Future';
+  const subheading = data?.subheading || 'Immersive interfaces powered by AI and imagination';
+  const buttonText = data?.buttonText || 'Get Started';
+  const secondaryButtonText = data?.secondaryButtonText || 'Watch Demo';
+  const badge = data?.badge || 'Now in Beta';
+  const accentColor = data?.accentColor || primaryColor || '#8b5cf6';
+  const particleCount = data?.particleCount || 50;
+  const particleColor = data?.particleColor || '#8b5cf6';
+  const floatingImage = data?.floatingImage || 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=1000&auto=format&fit=crop';
+  const splineUrl = data?.splineUrl || '';
+
+  // Particle animation state
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [particles, setParticles] = useState<Array<{x: number, y: number, vx: number, vy: number, size: number}>>([]);
+
+  useEffect(() => {
+    // Initialize particles
+    const newParticles = Array.from({ length: particleCount }, () => ({
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      vx: (Math.random() - 0.5) * 0.2,
+      vy: (Math.random() - 0.5) * 0.2,
+      size: Math.random() * 3 + 1,
+    }));
+    setParticles(newParticles);
+  }, [particleCount]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resizeCanvas = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    let animationFrame: number;
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      particles.forEach((particle, i) => {
+        // Update position
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        // Wrap around edges
+        if (particle.x < 0) particle.x = 100;
+        if (particle.x > 100) particle.x = 0;
+        if (particle.y < 0) particle.y = 100;
+        if (particle.y > 100) particle.y = 0;
+
+        // Draw particle
+        const x = (particle.x / 100) * canvas.width;
+        const y = (particle.y / 100) * canvas.height;
+        
+        ctx.beginPath();
+        ctx.arc(x, y, particle.size, 0, Math.PI * 2);
+        ctx.fillStyle = particleColor + '80'; // Add transparency
+        ctx.fill();
+
+        // Draw connections to nearby particles
+        particles.slice(i + 1).forEach(other => {
+          const dx = other.x - particle.x;
+          const dy = other.y - particle.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < 15) {
+            const ox = (other.x / 100) * canvas.width;
+            const oy = (other.y / 100) * canvas.height;
+            
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(ox, oy);
+            ctx.strokeStyle = particleColor + Math.floor((1 - distance / 15) * 30).toString(16).padStart(2, '0');
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        });
+      });
+
+      animationFrame = requestAnimationFrame(animate);
+    };
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, [particles, particleColor]);
+
+  return (
+    <section className="relative min-h-screen bg-black overflow-hidden flex items-center justify-center">
+      {/* Particle Canvas Background */}
+      <canvas 
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full"
+        style={{ opacity: 0.6 }}
+      />
+
+      {/* Radial Gradient Overlay */}
+      <div 
+        className="absolute inset-0 opacity-40"
+        style={{
+          background: `radial-gradient(circle at 50% 50%, ${accentColor}40, transparent 70%)`,
+        }}
+      />
+
+      {/* 3D Spline Element (Optional) */}
+      {splineUrl && (
+        <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-70 pointer-events-none">
+          <iframe 
+            src={splineUrl}
+            className="w-full h-full border-0"
+            title="3D Element"
+          />
+        </div>
+      )}
+
+      {/* Floating Product Image */}
+      {!splineUrl && (
+        <div className="absolute right-20 top-1/2 -translate-y-1/2 w-[500px] h-[500px] animate-float">
+          <div className="relative w-full h-full">
+            <div 
+              className="absolute inset-0 rounded-full blur-3xl opacity-30"
+              style={{ backgroundColor: accentColor }}
+            />
+            <EditableImage
+              src={floatingImage}
+              onChange={(val) => onUpdate?.({ floatingImage: val })}
+              isEditable={isEditable}
+              className="relative w-full h-full object-contain drop-shadow-2xl"
+              elementId={blockId ? `editable-${blockId}-floatingImage` : undefined}
+              onSelect={() => handleSelect('floatingImage')}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="relative z-10 max-w-4xl px-6 text-center">
+        
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 mb-8">
+          <div 
+            className="w-2 h-2 rounded-full animate-pulse"
+            style={{ backgroundColor: accentColor }}
+          />
+          <EditableText
+            tagName="span"
+            value={badge}
+            onChange={(val) => onUpdate?.({ badge: val })}
+            isEditable={isEditable}
+            className="text-sm font-medium text-white"
+            elementId={blockId ? `editable-${blockId}-badge` : undefined}
+            onSelect={() => handleSelect('badge')}
+          />
+        </div>
+
+        {/* Headline */}
+        <EditableText
+          tagName="h1"
+          value={heading}
+          onChange={(val) => onUpdate?.({ heading: val })}
+          onStyleChange={(style) => onUpdate?.({ heading_style: style })}
+          style={data?.heading_style}
+          isEditable={isEditable}
+          className="text-8xl font-black mb-8 leading-none"
+          elementId={blockId ? `editable-${blockId}-heading` : undefined}
+          onSelect={() => handleSelect('heading')}
+        >
+          {heading.split('').map((char, i) => (
+            <span
+              key={i}
+              className="inline-block transition-all duration-300 hover:scale-110"
+              style={{
+                background: `linear-gradient(135deg, white, ${accentColor})`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                animationDelay: `${i * 0.05}s`,
+              }}
+            >
+              {char === ' ' ? '\u00A0' : char}
+            </span>
+          ))}
+        </EditableText>
+
+        {/* Subheading */}
+        <EditableText
+          tagName="p"
+          value={subheading}
+          onChange={(val) => onUpdate?.({ subheading: val })}
+          isEditable={isEditable}
+          className="text-2xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed"
+          elementId={blockId ? `editable-${blockId}-subheading` : undefined}
+          onSelect={() => handleSelect('subheading')}
+        />
+
+        {/* CTA Buttons */}
+        <div className="flex gap-6 justify-center items-center">
+          <button
+            onClick={() => handleSelect('buttonText')}
+            className="group relative px-10 py-5 rounded-full font-bold text-lg text-white overflow-hidden transition-all duration-300 hover:scale-105"
+            style={{ 
+              background: `linear-gradient(135deg, ${accentColor}, ${accentColor}dd)`,
+              boxShadow: `0 20px 60px ${accentColor}60`,
+            }}
+          >
+            <div className="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
+            <div className="relative flex items-center gap-3">
+              <EditableText
+                tagName="span"
+                value={buttonText}
+                onChange={(val) => onUpdate?.({ buttonText: val })}
+                isEditable={isEditable}
+                elementId={blockId ? `editable-${blockId}-buttonText` : undefined}
+                onSelect={() => handleSelect('buttonText')}
+              />
+              <ArrowRight className="group-hover:translate-x-2 transition-transform" />
+            </div>
+          </button>
+
+          <button 
+            onClick={() => handleSelect('secondaryButtonText')}
+            className="group px-10 py-5 rounded-full font-bold text-lg text-white border-2 border-white/20 hover:bg-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-105 flex items-center gap-3"
+          >
+            <Play size={20} />
+            <EditableText
+              tagName="span"
+              value={secondaryButtonText}
+              onChange={(val) => onUpdate?.({ secondaryButtonText: val })}
+              isEditable={isEditable}
+              elementId={blockId ? `editable-${blockId}-secondaryButtonText` : undefined}
+              onSelect={() => handleSelect('secondaryButtonText')}
+            />
+          </button>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
+            <div className="w-1 h-2 bg-white/50 rounded-full animate-pulse" />
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Stats Bar */}
+      <div className="absolute bottom-0 left-0 right-0 backdrop-blur-xl bg-white/5 border-t border-white/10 py-6">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-3 gap-8 text-center">
+          <div>
+            <div className="text-4xl font-black text-white mb-1">50K+</div>
+            <div className="text-sm text-gray-400">Active Users</div>
+          </div>
+          <div>
+            <div className="text-4xl font-black text-white mb-1">99.9%</div>
+            <div className="text-sm text-gray-400">Uptime</div>
+          </div>
+          <div>
+            <div className="text-4xl font-black text-white mb-1">24/7</div>
+            <div className="text-sm text-gray-400">Support</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Featured Product Overlay */}
+      {data?.showFeaturedProduct && (
+        <FeaturedProductOverlay
+          products={products}
+          productId={data.featuredProductId}
+          position={data.featuredProductPosition}
+          showPrice={data.showProductPrice !== false}
+          primaryColor={primaryColor}
+        />
+      )}
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(-50%) translateX(0); }
+          50% { transform: translateY(-50%) translateX(20px); }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+      `}</style>
+    </section>
+  );
+};
+
 // --- BENTO HERO (2026 Edition) ---
 const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEditable, onUpdate, onSelectField, products, blockId }) => {
   const handleSelect = (field: string) => {
@@ -1542,15 +1846,17 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
 };
 
 export const HERO_COMPONENTS = {
+  particleField: HeroParticleField,
+  bento: HeroBento,
   impact: HeroImpact,
   split: HeroSplit,
   kinetik: HeroKinetik,
   grid: HeroGrid,
-  typographic: HeroTypographic,
-  bento: HeroBento
+  typographic: HeroTypographic
 };
 
 export const HERO_OPTIONS = [
+  { id: 'particleField', name: 'Particle Field', description: 'Animated particle network with gradient text & floating 3D', date: '2026-01-18', popularity: 99, recommended: true },
   { id: 'bento', name: 'Bento Grid 2026', description: 'Modern card-based layout with video, stats & glassmorphism', date: '2026-01-18', popularity: 100, recommended: true },
   { id: 'impact', name: 'Full Screen', description: 'Large image fills the screen - great for visual impact', date: '2024-01-10', popularity: 98, recommended: false },
   { id: 'split', name: 'Side by Side', description: 'Image on one side, text on other - balanced and professional', date: '2024-03-20', popularity: 85, recommended: false },
