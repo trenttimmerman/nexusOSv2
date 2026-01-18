@@ -1279,19 +1279,15 @@ export const HeaderNexusElite: React.FC<HeaderProps> = ({
                   }, 150);
                 }}
               >
-                <a
-                  href={link.href}
-                  onClick={(e) => {
-                    if (onLinkClick) {
-                      e.preventDefault();
-                      onLinkClick(link);
-                    }
-                  }}
-                  className="text-sm font-medium hover:opacity-100 transition-all"
+                <NavLinkWithIndicator
+                  link={link}
+                  activeStyle={settings.navActiveStyle || 'dot'}
+                  onClick={onLinkClick}
                   style={navLinkStyle(link.href)}
-                >
-                  {link.label}
-                </a>
+                  className="text-sm font-medium hover:opacity-100 transition-all"
+                  activeColor={settings.accentColor}
+                  hoverColor={settings.textHoverColor}
+                />
               </div>
             ))}
           </nav>
