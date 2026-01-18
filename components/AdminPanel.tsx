@@ -9189,6 +9189,47 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </div>
                     )}
 
+                    {/* Floating Image for Particle Hero */}
+                    {availableFields.includes('floatingImage') && (
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Floating Product Image</label>
+                        <div className="flex gap-2">
+                          <label className="flex-1 flex items-center justify-center gap-2 bg-neutral-800 border border-neutral-700 py-2 rounded-lg text-xs font-bold cursor-pointer hover:bg-neutral-700 transition-colors text-neutral-300">
+                            <Upload size={14} /> Upload
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => updateHeroData({ floatingImage: reader.result as string });
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                          </label>
+                          {heroData.floatingImage && (
+                            <button
+                              onClick={() => updateHeroData({ floatingImage: undefined })}
+                              className="px-3 py-2 bg-red-900/30 text-red-400 rounded-lg text-xs font-bold hover:bg-red-900/50 transition-colors"
+                            >
+                              Clear
+                            </button>
+                          )}
+                        </div>
+                        <input
+                          id="editor-field-floatingImage"
+                          type="text"
+                          value={heroData.floatingImage || ''}
+                          onChange={(e) => updateHeroData({ floatingImage: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-300 focus:border-purple-500 outline-none"
+                          placeholder="Or paste image URL..."
+                        />
+                      </div>
+                    )}
+
                     {/* Side Image for Grid Hero */}
                     {availableFields.includes('sideImage') && (
                       <div className="space-y-1.5">
