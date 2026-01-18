@@ -1010,7 +1010,38 @@ export const HeaderNexusElite: React.FC<HeaderProps> = ({
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [mousePosition, setMousePosition] = React.useState({ x: 0, y: 0 });
   const [hoveredLink, setHoveredLink] = React.useState<string | null>(null);
+  const [megaMenuOpen, setMegaMenuOpen] = React.useState<string | null>(null);
   const headerRef = React.useRef<HTMLDivElement>(null);
+  
+  // Mock mega menu data
+  const megaMenuData = {
+    '/shop': {
+      title: 'Shop',
+      sections: [
+        {
+          title: 'Clothing',
+          items: ['T-Shirts', 'Hoodies', 'Jackets', 'Pants', 'Accessories'],
+        },
+        {
+          title: 'Footwear',
+          items: ['Sneakers', 'Boots', 'Sandals', 'Slippers'],
+        },
+        {
+          title: 'Collections',
+          items: ['New Arrivals', 'Best Sellers', 'Sale Items', 'Limited Edition'],
+        },
+        {
+          title: 'Brands',
+          items: ['Premium', 'Essential', 'Sport', 'Outdoor'],
+        },
+      ],
+      featured: {
+        title: 'Featured Collection',
+        description: 'Explore our latest arrivals',
+        image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400',
+      },
+    },
+  };
   
   // Smart scroll logic - hide on down, show on up
   React.useEffect(() => {
@@ -1224,24 +1255,36 @@ export const HeaderNexusElite: React.FC<HeaderProps> = ({
           />
           
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-8 flex-1 justify-center">
+          <nav className="hidden lg:flex items-center gap-8 flex-1 justify-center relative">
             {(links || []).map((link) => (
-              <a
+              <div
                 key={link.href}
-                href={link.href}
-                onClick={(e) => {
-                  if (onLinkClick) {
-                    e.preventDefault();
-                    onLinkClick(link);
+                className="relative"
+                onMouseEnter={() => {
+                  setHoveredLink(link.href);
+                  if (settings.enableMegaMenu && megaMenuData[link.href]) {
+                    setMegaMenuOpen(link.href);
                   }
                 }}
-                onMouseEnter={() => setHoveredLink(link.href)}
-                onMouseLeave={() => setHoveredLink(null)}
-                className="text-sm font-medium hover:opacity-100 transition-all"
-                style={navLinkStyle(link.href)}
+                onMouseLeave={() => {
+                  setHoveredLink(null);
+                  setMegaMenuOpen(null);
+                }}
               >
-                {link.label}
-              </a>
+                <a
+                  href={link.href}
+                  onClick={(e) => {
+                    if (onLinkClick) {
+                      e.preventDefault();
+                      onLinkClick(link);
+                    }
+                  }}
+                  className="text-sm font-medium hover:opacity-100 transition-all"
+                  style={navLinkStyle(link.href)}
+                >
+                  {link.label}
+                </a>
+              </div>
             ))}
           </nav>
           
@@ -1333,6 +1376,146 @@ export const HeaderNexusElite: React.FC<HeaderProps> = ({
           />
         )}
       </header>
+      
+      {/* Mega Menu Dropdown */}
+      {settings.enableMegaMenu && megaMenuOpen && megaMenuData[megaMenuOpen] && (
+        <div
+          className="absolute left-0 right-0 shadow-2xl z-40"
+          style={{
+            backgroundColor: settings.megaMenuBackgroundColor,
+            borderTop: `1px solid ${settings.megaMenuBorderColor}`,
+            borderBottom: `1px solid ${settings.megaMenuBorderColor}`,
+            maxHeight: settings.megaMenuMaxHeight,
+          }}
+          onMouseEnter={() => setMegaMenuOpen(megaMenuOpen)}
+          onMouseLeave={() => setMegaMenuOpen(null)}
+        >
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            {settings.megaMenuStyle === 'bento' ? (
+              /* Bento Grid Style */
+              <div className="grid grid-cols-4 gap-6">
+                {/* Featured Card - Takes 2 columns */}
+                <div
+                  className="col-span-2 rounded-xl overflow-hidden"
+                  style={{
+                    backgroundColor: settings.backgroundColor,
+                    border: `1px solid ${settings.megaMenuBorderColor}`,
+                  }}
+                >
+                  <div className="aspect-[2/1] bg-gradient-to-br from-blue-500 to-purple-600 relative">
+                    <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
+                      <h3 className="text-2xl font-bold mb-2">{megaMenuData[megaMenuOpen].featured.title}</h3>
+                      <p className="text-sm opacity-90">{megaMenuData[megaMenuOpen].featured.description}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Category Cards */}
+                {megaMenuData[megaMenuOpen].sections.slice(0, 2).map((section, idx) => (
+                  <div
+                    key={idx}
+                    className="p-6 rounded-xl"
+                    style={{
+                      backgroundColor: settings.backgroundColor,
+                      border: `1px solid ${settings.megaMenuBorderColor}`,
+                    }}
+                  >
+                    <h4 className="font-bold mb-3" style={{ color: settings.textHoverColor }}>{section.title}</h4>
+                    <ul className="space-y-2">
+                      {section.items.slice(0, 4).map((item, i) => (
+                        <li key={i}>
+                          <a
+                            href="#"
+                            className="text-sm hover:opacity-100 transition-opacity"
+                            style={{ color: settings.textColor }}
+                          >
+                            {item}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+                
+                {/* Bottom Row */}
+                {megaMenuData[megaMenuOpen].sections.slice(2, 4).map((section, idx) => (
+                  <div
+                    key={idx + 2}
+                    className="p-6 rounded-xl"
+                    style={{
+                      backgroundColor: settings.backgroundColor,
+                      border: `1px solid ${settings.megaMenuBorderColor}`,
+                    }}
+                  >
+                    <h4 className="font-bold mb-3" style={{ color: settings.textHoverColor }}>{section.title}</h4>
+                    <ul className="space-y-2">
+                      {section.items.slice(0, 4).map((item, i) => (
+                        <li key={i}>
+                          <a
+                            href="#"
+                            className="text-sm hover:opacity-100 transition-opacity"
+                            style={{ color: settings.textColor }}
+                          >
+                            {item}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* Traditional Grid Style */
+              <div
+                className="grid gap-8"
+                style={{
+                  gridTemplateColumns: `repeat(${settings.megaMenuColumns || 4}, 1fr)`,
+                }}
+              >
+                {megaMenuData[megaMenuOpen].sections.map((section, idx) => (
+                  <div key={idx}>
+                    <h4 className="font-bold mb-4 text-sm uppercase tracking-wider" style={{ color: settings.textHoverColor }}>
+                      {section.title}
+                    </h4>
+                    <ul className="space-y-3">
+                      {section.items.map((item, i) => (
+                        <li key={i}>
+                          <a
+                            href="#"
+                            className="text-sm hover:opacity-100 transition-all block py-1"
+                            style={{ color: settings.textColor }}
+                          >
+                            {item}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+                
+                {/* Featured Section in Traditional */}
+                <div
+                  className="rounded-lg overflow-hidden"
+                  style={{
+                    backgroundColor: settings.backgroundColor,
+                    border: `1px solid ${settings.megaMenuBorderColor}`,
+                  }}
+                >
+                  <div className="h-32 bg-gradient-to-br from-blue-500 to-purple-600"></div>
+                  <div className="p-4">
+                    <h4 className="font-bold mb-1" style={{ color: settings.textHoverColor }}>
+                      {megaMenuData[megaMenuOpen].featured.title}
+                    </h4>
+                    <p className="text-xs" style={{ color: settings.textColor }}>
+                      {megaMenuData[megaMenuOpen].featured.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       
       {/* Mobile Menu Drawer */}
       {settings.showMobileMenu && isMobileMenuOpen && (
