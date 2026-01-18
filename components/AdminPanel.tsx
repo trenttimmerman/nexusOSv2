@@ -9230,6 +9230,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </div>
                     )}
 
+                    {/* Particle Animation Style */}
+                    {availableFields.includes('particleStyle') && (
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Particle Animation</label>
+                        <select
+                          id="editor-field-particleStyle"
+                          value={heroData.particleStyle || 'network'}
+                          onChange={(e) => updateHeroData({ particleStyle: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                        >
+                          <option value="network">Network (Connected Lines)</option>
+                          <option value="dots">Dots (Floating)</option>
+                          <option value="wave">Wave (Flowing)</option>
+                          <option value="spiral">Spiral (Rotating)</option>
+                          <option value="constellation">Constellation (Stars)</option>
+                        </select>
+                      </div>
+                    )}
+
                     {/* Side Image for Grid Hero */}
                     {availableFields.includes('sideImage') && (
                       <div className="space-y-1.5">
