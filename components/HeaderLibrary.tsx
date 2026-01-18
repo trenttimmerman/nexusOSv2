@@ -1143,15 +1143,17 @@ export const HeaderNexusElite: React.FC<HeaderProps> = ({
   
   return (
     <>
-      {/* Announcement Bar */}
-      {settings.showAnnouncementBar && !isAnnouncementDismissed && (
-        <div
-          className="w-full text-center py-2 px-4 text-sm"
-          style={{
-            backgroundColor: settings.announcementBackgroundColor,
-            color: settings.announcementTextColor,
-          }}
-        >
+      {/* Wrapper with relative positioning for mega menu */}
+      <div className="relative">
+        {/* Announcement Bar */}
+        {settings.showAnnouncementBar && !isAnnouncementDismissed && (
+          <div
+            className="w-full text-center py-2 px-4 text-sm"
+            style={{
+              backgroundColor: settings.announcementBackgroundColor,
+              color: settings.announcementTextColor,
+            }}
+          >
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex-1" />
             <div className={settings.announcementMarquee ? 'animate-marquee whitespace-nowrap' : ''}>
@@ -1516,6 +1518,7 @@ export const HeaderNexusElite: React.FC<HeaderProps> = ({
           </div>
         </div>
       )}
+      </div> {/* End of relative wrapper for header + mega menu */}
       
       {/* Mobile Menu Drawer */}
       {settings.showMobileMenu && isMobileMenuOpen && (
