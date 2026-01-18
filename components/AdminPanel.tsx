@@ -10257,9 +10257,60 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   {/* Dynamic Field Controls - based on HEADER_FIELDS registry */}
                   {(() => {
                     const fields = HEADER_FIELDS[config.headerStyle || 'canvas'] || [];
-                    const toggleFields = fields.filter(f => f.startsWith('show') || f === 'sticky');
-                    const colorFields = fields.filter(f => f.toLowerCase().includes('color') || f.toLowerCase().includes('bg'));
-                    const textFields = fields.filter(f => !toggleFields.includes(f) && !colorFields.includes(f) && f !== 'navActiveStyle');
+                    
+                    // Boolean fields (toggles)
+                    const toggleFields = fields.filter(f => 
+                      f.startsWith('show') || 
+                      f.startsWith('enable') || 
+                      f === 'sticky' ||
+                      f.endsWith('Dismissible') ||
+                      f.endsWith('Marquee')
+                    );
+                    
+                    // Enum/select fields (dropdowns)
+                    const selectFields = fields.filter(f => 
+                      f === 'navActiveStyle' ||
+                      f === 'megaMenuStyle' ||
+                      f === 'mobileMenuPosition' ||
+                      f === 'blurIntensity' ||
+                      f === 'maxWidth'
+                    );
+                    
+                    // Number fields (sliders or number inputs)
+                    const numberFields = fields.filter(f =>
+                      f === 'iconSize' ||
+                      f.includes('Opacity') ||
+                      f.includes('Intensity') ||
+                      f.includes('Threshold') ||
+                      f.includes('Duration') ||
+                      f.includes('Columns') ||
+                      f === 'logoHeight' ||
+                      f === 'glowIntensity'
+                    );
+                    
+                    // Color fields
+                    const colorFields = fields.filter(f => 
+                      f.toLowerCase().includes('color') || 
+                      f.toLowerCase().includes('bg') ||
+                      f === 'backgroundColor'
+                    );
+                    
+                    // Size/dimension fields
+                    const sizeFields = fields.filter(f =>
+                      f.includes('Width') ||
+                      f.includes('Height') ||
+                      f.includes('padding') ||
+                      f.includes('MaxHeight')
+                    );
+                    
+                    // Text/content fields (everything else)
+                    const textFields = fields.filter(f => 
+                      !toggleFields.includes(f) && 
+                      !colorFields.includes(f) && 
+                      !selectFields.includes(f) &&
+                      !numberFields.includes(f) &&
+                      !sizeFields.includes(f)
+                    );
 
                     return (
                       <div className="space-y-6">
@@ -10325,6 +10376,146 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                     <div className="w-1.5 h-1.5 rounded-full bg-current" />
                                     <span className="text-xs font-bold">{Meta.label}</span>
                                   </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Select/Dropdown Fields */}
+                        {selectFields.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Options</p>
+                            <div className="space-y-3">
+                              {selectFields.map(key => {
+                                const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                                let options: { value: string; label: string }[] = [];
+                                
+                                // Define options based on field name
+                                if (key === 'megaMenuStyle') {
+                                  options = [
+                                    { value: 'traditional', label: 'Traditional Grid' },
+                                    { value: 'bento', label: 'Bento Cards' }
+                                  ];
+                                } else if (key === 'mobileMenuPosition') {
+                                  options = [
+                                    { value: 'left', label: 'Slide from Left' },
+                                    { value: 'right', label: 'Slide from Right' },
+                                    { value: 'top', label: 'Slide from Top' },
+                                    { value: 'bottom', label: 'Slide from Bottom' }
+                                  ];
+                                } else if (key === 'blurIntensity') {
+                                  options = [
+                                    { value: 'sm', label: 'Small (4px)' },
+                                    { value: 'md', label: 'Medium (8px)' },
+                                    { value: 'lg', label: 'Large (12px)' },
+                                    { value: 'xl', label: 'Extra Large (20px)' }
+                                  ];
+                                } else if (key === 'maxWidth') {
+                                  options = [
+                                    { value: 'sm', label: 'Small (640px)' },
+                                    { value: 'md', label: 'Medium (768px)' },
+                                    { value: 'lg', label: 'Large (1024px)' },
+                                    { value: 'xl', label: 'XL (1280px)' },
+                                    { value: '2xl', label: '2XL (1536px)' },
+                                    { value: '3xl', label: '3XL (1920px)' },
+                                    { value: '4xl', label: '4XL (2048px)' },
+                                    { value: '5xl', label: '5XL (2560px)' },
+                                    { value: '6xl', label: '6XL (3072px)' },
+                                    { value: '7xl', label: '7XL (3840px)' },
+                                    { value: 'full', label: 'Full Width' }
+                                  ];
+                                }
+                                
+                                return (
+                                  <div key={key} className="bg-neutral-900/50 p-3 rounded-lg border border-neutral-700">
+                                    <label className="text-[10px] uppercase font-bold text-neutral-500 mb-2 block">{Meta.label}</label>
+                                    <select
+                                      value={config.headerData?.[key] ?? options[0]?.value ?? ''}
+                                      onChange={(e) => onConfigChange({
+                                        ...config,
+                                        headerData: { ...config.headerData, [key]: e.target.value }
+                                      })}
+                                      className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-xs focus:border-blue-500 outline-none"
+                                      style={{ color: '#ffffff' }}
+                                    >
+                                      {options.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Number Fields (Sliders) */}
+                        {numberFields.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Numeric Values</p>
+                            <div className="space-y-3">
+                              {numberFields.map(key => {
+                                const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                                let min = 0, max = 100, step = 1;
+                                
+                                // Define ranges based on field name
+                                if (key === 'iconSize') { min = 12; max = 32; step = 1; }
+                                else if (key.includes('Opacity')) { min = 0; max = 100; step = 5; }
+                                else if (key.includes('Intensity')) { min = 0; max = 100; step = 5; }
+                                else if (key === 'smartScrollThreshold') { min = 0; max = 500; step = 50; }
+                                else if (key === 'smartScrollDuration') { min = 100; max = 1000; step = 100; }
+                                else if (key === 'megaMenuColumns') { min = 2; max = 6; step = 1; }
+                                
+                                const value = config.headerData?.[key] ?? min;
+                                
+                                return (
+                                  <div key={key} className="bg-neutral-900/50 p-3 rounded-lg border border-neutral-700">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <label className="text-[10px] uppercase font-bold text-neutral-500">{Meta.label}</label>
+                                      <span className="text-xs text-blue-400 font-mono">{value}{key.includes('Opacity') || key.includes('Intensity') ? '%' : ''}</span>
+                                    </div>
+                                    <input
+                                      type="range"
+                                      min={min}
+                                      max={max}
+                                      step={step}
+                                      value={value}
+                                      onChange={(e) => onConfigChange({
+                                        ...config,
+                                        headerData: { ...config.headerData, [key]: parseInt(e.target.value) }
+                                      })}
+                                      className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer slider"
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Size/Dimension Fields */}
+                        {sizeFields.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Dimensions</p>
+                            <div className="space-y-3">
+                              {sizeFields.map(key => {
+                                const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                                return (
+                                  <div key={key} className="bg-neutral-900/50 p-3 rounded-lg border border-neutral-700">
+                                    <label className="text-[10px] uppercase font-bold text-neutral-500 mb-2 block">{Meta.label}</label>
+                                    <input
+                                      type="text"
+                                      value={config.headerData?.[key] ?? ''}
+                                      onChange={(e) => onConfigChange({
+                                        ...config,
+                                        headerData: { ...config.headerData, [key]: e.target.value }
+                                      })}
+                                      className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-xs focus:border-blue-500 outline-none"
+                                      style={{ color: '#ffffff' }}
+                                      placeholder={key.includes('padding') ? '24px' : key.includes('Width') ? '320px' : '500px'}
+                                    />
+                                  </div>
                                 );
                               })}
                             </div>
