@@ -1369,13 +1369,38 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
               muted 
               playsInline
               className="w-full h-full object-cover"
-              onClick={() => handleSelect('videoUrl')}
+              key={videoUrl}
             >
               <source src={videoUrl} type="video/mp4" />
             </video>
 
+            {/* Editable Video URL Overlay */}
+            {isEditable && (
+              <div 
+                className="absolute top-4 left-4 right-4 bg-black/80 backdrop-blur-md rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Play size={16} className="text-purple-400" />
+                  <span className="text-xs font-bold text-white">Video URL</span>
+                </div>
+                <input
+                  type="text"
+                  value={videoUrl}
+                  onChange={(e) => onUpdate?.({ videoUrl: e.target.value })}
+                  onFocus={() => handleSelect('videoUrl')}
+                  placeholder="Enter video URL (.mp4)"
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-sm text-white placeholder-gray-400 focus:outline-none focus:border-purple-400"
+                  style={{ color: '#ffffff' }}
+                />
+                <div className="text-xs text-gray-400 mt-1">
+                  Tip: Use Coverr.co or Pexels for free videos
+                </div>
+              </div>
+            )}
+
             {/* Overlay Play Button */}
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
               <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
                 <Play size={32} className="text-white ml-1" />
               </div>
