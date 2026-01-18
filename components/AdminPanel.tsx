@@ -10322,12 +10322,121 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       if (systemModalType === 'hero') {
         const HeroComponent = HERO_COMPONENTS[currentSelection as HeroStyleId] || HERO_COMPONENTS['impact'];
         return HeroComponent ? (
-          <HeroComponent
-            storeName={config.name || 'Your Store'}
-            primaryColor={config.primaryColor}
-            data={activeBlock?.data || { heading: 'Hero Headline', subheading: 'Your amazing subheading goes here' }}
-            isEditable={false}
-          />
+          <>
+            {/* Hero Section */}
+            <HeroComponent
+              storeName={config.name || 'Your Store'}
+              primaryColor={config.primaryColor}
+              data={activeBlock?.data || { heading: 'Hero Headline', subheading: 'Your amazing subheading goes here' }}
+              isEditable={false}
+            />
+            
+            {/* Scrollable Content Below Hero for Full Page Context */}
+            <div className="bg-white">
+              {/* Features Section */}
+              <section className="py-20 px-6 max-w-7xl mx-auto">
+                <div className="text-center mb-16">
+                  <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose Us</h2>
+                  <p className="text-xl text-gray-600">Experience the difference with our premium features</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {[
+                    { title: 'Fast Shipping', icon: '🚀', desc: 'Get your order delivered in 2-3 business days' },
+                    { title: 'Quality Guaranteed', icon: '✨', desc: 'Premium products with satisfaction guarantee' },
+                    { title: '24/7 Support', icon: '💬', desc: 'Our team is always here to help you' }
+                  ].map((feature, i) => (
+                    <div key={i} className="text-center p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                      <div className="text-5xl mb-4">{feature.icon}</div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">{feature.title}</h3>
+                      <p className="text-gray-600">{feature.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* Products Preview Section */}
+              <section className="py-20 px-6 bg-gray-50">
+                <div className="max-w-7xl mx-auto">
+                  <div className="flex justify-between items-end mb-12">
+                    <div>
+                      <h2 className="text-4xl font-bold text-gray-900 mb-2">Featured Products</h2>
+                      <p className="text-gray-600">Discover our best sellers</p>
+                    </div>
+                    <button className="px-6 py-3 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors">
+                      View All
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {[1, 2, 3, 4].map(i => (
+                      <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+                        <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200"></div>
+                        <div className="p-4">
+                          <h3 className="font-semibold text-gray-900 mb-1">Product {i}</h3>
+                          <p className="text-sm text-gray-500 mb-3">Premium quality item</p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg font-bold text-gray-900">$99.99</span>
+                            <button className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors">
+                              Add to Cart
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* Testimonials Section */}
+              <section className="py-20 px-6 max-w-7xl mx-auto">
+                <div className="text-center mb-16">
+                  <h2 className="text-4xl font-bold text-gray-900 mb-4">What Our Customers Say</h2>
+                  <p className="text-xl text-gray-600">Join thousands of satisfied customers</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                      <div className="flex items-center gap-1 mb-4">
+                        {[...Array(5)].map((_, j) => (
+                          <span key={j} className="text-yellow-400">★</span>
+                        ))}
+                      </div>
+                      <p className="text-gray-700 mb-4 italic">
+                        "Amazing quality and fast shipping! Highly recommend this store to anyone looking for premium products."
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500"></div>
+                        <div>
+                          <div className="font-semibold text-gray-900">Customer {i}</div>
+                          <div className="text-sm text-gray-500">Verified Buyer</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* CTA Section */}
+              <section className="py-20 px-6 bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+                <div className="max-w-4xl mx-auto text-center">
+                  <h2 className="text-5xl font-bold mb-6">Ready to Get Started?</h2>
+                  <p className="text-xl mb-8 text-blue-100">Join thousands of customers who trust us for quality and service</p>
+                  <div className="flex gap-4 justify-center">
+                    <button className="px-8 py-4 bg-white text-blue-600 rounded-lg font-bold text-lg hover:bg-blue-50 transition-colors">
+                      Shop Now
+                    </button>
+                    <button className="px-8 py-4 bg-blue-500 text-white rounded-lg font-bold text-lg hover:bg-blue-400 transition-colors">
+                      Learn More
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              {/* Footer Spacer */}
+              <div className="py-12 bg-gray-900 text-center">
+                <p className="text-gray-400 text-sm">End of preview - Scroll up to see hero animations and effects</p>
+              </div>
+            </div>
+          </>
         ) : null;
       }
       if (systemModalType === 'grid') {
