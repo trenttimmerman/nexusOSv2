@@ -10160,7 +10160,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
               <div className="flex-1 overflow-auto bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px]">
-                <div className="bg-white min-h-full">
+                <div className="bg-white">
                   <HeaderComponent
                     storeName={config.name || 'Your Store'}
                     logoUrl={config.logoUrl}
@@ -10182,6 +10182,43 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     }}
                     data={config.headerData}
                   />
+                  
+                  {/* Scrollable Content for Testing Header Behavior */}
+                  <div className="max-w-7xl mx-auto px-6 py-16 space-y-16">
+                    {/* Hero Section */}
+                    <section className="text-center py-20 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl">
+                      <h1 className="text-5xl font-bold text-gray-900 mb-4">Test Your Header</h1>
+                      <p className="text-xl text-gray-600 mb-8">Scroll down to see smart scroll, sticky behavior, and glassmorphism in action</p>
+                      <div className="flex gap-4 justify-center">
+                        <div className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold">Primary CTA</div>
+                        <div className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold">Secondary</div>
+                      </div>
+                    </section>
+                    
+                    {/* Content Sections */}
+                    {[1, 2, 3, 4].map((section) => (
+                      <section key={section} className="py-12">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-6">Section {section}</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          {[1, 2, 3].map((card) => (
+                            <div key={card} className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                              <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4"></div>
+                              <h3 className="text-lg font-semibold text-gray-900 mb-2">Card Title {card}</h3>
+                              <p className="text-gray-600 text-sm mb-4">
+                                This is sample content to provide enough scroll height for testing header features like smart scroll and sticky positioning.
+                              </p>
+                              <button className="text-blue-600 font-medium text-sm hover:underline">Learn More →</button>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+                    ))}
+                    
+                    {/* Footer Spacer */}
+                    <div className="py-20 text-center text-gray-400 border-t border-gray-200">
+                      <p className="text-sm">End of preview content - Scroll back up to test header behavior</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
