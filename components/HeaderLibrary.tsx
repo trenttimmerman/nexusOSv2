@@ -579,6 +579,76 @@ const NavItem: React.FC<{
   );
 };
 
+// NavLinkWithIndicator - Wrapper for NavItem with same API
+const NavLinkWithIndicator = NavItem;
+
+// SearchOverlay component
+const SearchOverlay: React.FC<{
+  onClose?: () => void;
+  onSubmit?: (query: string) => void;
+  placeholder?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  borderColor?: string;
+  iconColor?: string;
+}> = ({ onClose, onSubmit, placeholder = 'Search products...', backgroundColor = '#ffffff', textColor = '#000000', borderColor = '#e5e7eb', iconColor = '#6b7280' }) => {
+  const [query, setQuery] = React.useState('');
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose?.();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      onSubmit?.(query.trim());
+      onClose?.();
+    }
+  };
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-20"
+      onClick={onClose}
+    >
+      <div 
+        className="w-full max-w-2xl mx-4 rounded-2xl shadow-2xl p-6"
+        style={{ backgroundColor }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <form onSubmit={handleSubmit} className="flex items-center gap-4">
+          <Search size={24} style={{ color: iconColor }} />
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={placeholder}
+            className="flex-1 text-2xl outline-none bg-transparent"
+            style={{ color: textColor }}
+          />
+          <button 
+            type="button" 
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <X size={24} style={{ color: iconColor }} />
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 // 1. HeaderCanvas - "2026 Edition" (Modern, Feature-Complete)
 export const HeaderCanvas: React.FC<HeaderProps> = ({
   storeName,

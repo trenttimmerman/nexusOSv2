@@ -1,5 +1,233 @@
 // THIS IS THE NEW 2026 CANVAS HEADER - TO BE MERGED INTO HeaderLibrary.tsx
 
+import React from 'react';
+import { ShoppingBag, Search, User, Menu, X } from 'lucide-react';
+import { NavLink } from '../types';
+
+// Header customization data structure
+interface HeaderData {
+  showSearch?: boolean;
+  showAccount?: boolean;
+  showCart?: boolean;
+  showCTA?: boolean;
+  showMobileMenu?: boolean;
+  showAnnouncementBar?: boolean;
+  showUtilityBar?: boolean;
+  showCommandPalette?: boolean;
+  enableSmartScroll?: boolean;
+  enableMegaMenu?: boolean;
+  megaMenuStyle?: 'traditional' | 'bento';
+  enableSpotlightBorders?: boolean;
+  enableGlassmorphism?: boolean;
+  navActiveStyle?: 'none' | 'dot' | 'underline' | 'capsule' | 'glow' | 'brutalist' | 'minimal' | 'overline' | 'double' | 'bracket' | 'highlight' | 'skewed';
+  backgroundColor?: string;
+  borderColor?: string;
+  textColor?: string;
+  textHoverColor?: string;
+  accentColor?: string;
+  cartBadgeColor?: string;
+  cartBadgeTextColor?: string;
+  iconSize?: number;
+  iconHoverBackgroundColor?: string;
+  borderWidth?: string;
+  sticky?: boolean;
+  maxWidth?: string;
+  paddingX?: string;
+  paddingY?: string;
+  announcementText?: string;
+  announcementBackgroundColor?: string;
+  announcementTextColor?: string;
+  announcementDismissible?: boolean;
+  announcementMarquee?: boolean;
+  utilityBarBackgroundColor?: string;
+  utilityBarTextColor?: string;
+  showCurrencySelector?: boolean;
+  showLanguageSelector?: boolean;
+  mobileMenuBackgroundColor?: string;
+  mobileMenuTextColor?: string;
+  mobileMenuOverlayOpacity?: number;
+  mobileMenuPosition?: 'left' | 'right';
+  mobileMenuWidth?: string;
+  blurIntensity?: 'sm' | 'md' | 'lg' | 'xl';
+  glassBackgroundOpacity?: number;
+  smartScrollThreshold?: number;
+  smartScrollDuration?: number;
+  searchPlaceholder?: string;
+  searchBackgroundColor?: string;
+  searchBorderColor?: string;
+  searchInputTextColor?: string;
+  utilityBarLinks?: Array<{ label: string; href: string }>;
+  ctaText?: string;
+  ctaBackgroundColor?: string;
+  ctaHoverColor?: string;
+  [key: string]: any;
+}
+
+interface HeaderProps {
+  storeName: string;
+  logoUrl?: string;
+  logoHeight?: number;
+  links: NavLink[];
+  cartCount: number;
+  onOpenCart?: () => void;
+  onLogoClick?: () => void;
+  onLinkClick?: (href: string) => void;
+  onSearchClick?: () => void;
+  isSearchOpen?: boolean;
+  onSearchClose?: () => void;
+  onSearchSubmit?: (query: string) => void;
+  primaryColor?: string;
+  secondaryColor?: string;
+  data?: HeaderData;
+}
+
+const CANVAS_DEFAULTS: HeaderData = {
+  showSearch: true,
+  showAccount: true,
+  showCart: true,
+  showMobileMenu: true,
+  showAnnouncementBar: false,
+  showUtilityBar: false,
+  showCommandPalette: false,
+  enableSmartScroll: false,
+  enableMegaMenu: false,
+  megaMenuStyle: 'traditional',
+  enableSpotlightBorders: false,
+  enableGlassmorphism: false,
+  backgroundColor: '#ffffff',
+  borderColor: '#f3f4f6',
+  textColor: '#6b7280',
+  textHoverColor: '#000000',
+  cartBadgeColor: '#000000',
+  cartBadgeTextColor: '#ffffff',
+  accentColor: '#3b82f6',
+  iconSize: 20,
+  iconHoverBackgroundColor: 'transparent',
+  borderWidth: '1px',
+  sticky: true,
+  maxWidth: '7xl',
+  paddingX: '24px',
+  paddingY: '16px',
+  navActiveStyle: 'dot',
+  announcementText: 'Free shipping on orders over $100',
+  announcementBackgroundColor: '#000000',
+  announcementTextColor: '#ffffff',
+  announcementDismissible: true,
+  announcementMarquee: false,
+  utilityBarBackgroundColor: '#f9fafb',
+  utilityBarTextColor: '#6b7280',
+  showCurrencySelector: true,
+  showLanguageSelector: true,
+  mobileMenuBackgroundColor: '#ffffff',
+  mobileMenuTextColor: '#000000',
+  mobileMenuOverlayOpacity: 50,
+  mobileMenuPosition: 'left',
+  mobileMenuWidth: '320px',
+  blurIntensity: 'xl',
+  glassBackgroundOpacity: 60,
+  smartScrollThreshold: 100,
+  searchPlaceholder: 'Search products...',
+};
+
+const Logo: React.FC<{
+  storeName: string;
+  logoUrl?: string;
+  logoHeight?: number;
+  className?: string;
+  onClick?: () => void;
+}> = ({ storeName, logoUrl, logoHeight = 32, className, onClick }) => {
+  const content = logoUrl ? (
+    <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight}px`, width: 'auto' }} className="object-contain" />
+  ) : (
+    <span className={className}>{storeName}</span>
+  );
+
+  if (onClick) {
+    return <button onClick={onClick} className="cursor-pointer">{content}</button>;
+  }
+  return <>{content}</>;
+};
+
+const NavItem: React.FC<{
+  link: NavLink;
+  className?: string;
+  style?: React.CSSProperties;
+  onClick?: (href: string) => void;
+  children?: React.ReactNode;
+}> = ({ link, className, style, onClick, children }) => {
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      e.preventDefault();
+      onClick(link.href);
+    }
+  };
+
+  return (
+    <a href={link.href} onClick={handleClick} className={className} style={style}>
+      {children || link.label}
+    </a>
+  );
+};
+
+const InlineSearch: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit?: (query: string) => void;
+  className?: string;
+  inputClassName?: string;
+  iconColor?: string;
+  placeholder?: string;
+  style?: React.CSSProperties;
+  inputStyle?: React.CSSProperties;
+}> = ({ isOpen, onClose, onSubmit, className = '', inputClassName = '', iconColor, placeholder = 'Search...', style = {}, inputStyle = {} }) => {
+  const [query, setQuery] = React.useState('');
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (isOpen && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+    if (!isOpen) setQuery('');
+  }, [isOpen]);
+
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      onSubmit?.(query.trim());
+      onClose();
+    }
+  };
+
+  return (
+    <div className={`flex items-center overflow-hidden transition-all duration-300 ease-out ${className}`}
+      style={{ width: isOpen ? '200px' : '0px', opacity: isOpen ? 1 : 0, ...style }}
+    >
+      <form onSubmit={handleSubmit} className="flex items-center w-full">
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={placeholder}
+          className={`w-full text-sm outline-none ${inputClassName}`}
+          style={inputStyle}
+        />
+        <button type="button" onClick={onClose} className="p-1 hover:opacity-70 transition-opacity flex-shrink-0">
+          <X size={14} style={{ color: iconColor }} />
+        </button>
+      </form>
+    </div>
+  );
+};
+
 // 1. HeaderCanvas - "2026 Edition" (Modern, Feature-Complete)
 export const HeaderCanvas: React.FC<HeaderProps> = ({
   storeName,
