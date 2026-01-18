@@ -57,7 +57,7 @@ interface HeroProps {
 export const HERO_FIELDS: Record<string, string[]> = {
   particleField: [
     'heading', 'subheading', 'badge', 'buttonText', 'buttonLink', 'secondaryButtonText', 'secondaryButtonLink',
-    'accentColor', 'particleCount', 'particleColor', 'floatingImage', 'splineUrl',
+    'accentColor', 'particleCount', 'particleColor', 'particleStyle', 'floatingImage', 'splineUrl', 'videoUrl', 'showParticles',
     'showFeaturedProduct', 'featuredProductId', 'featuredProductPosition', 'showProductPrice'
   ],
   bento: [
@@ -1225,8 +1225,12 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
   const accentColor = data?.accentColor || primaryColor || '#8b5cf6';
   const particleCount = data?.particleCount || 50;
   const particleColor = data?.particleColor || '#8b5cf6';
+  const particleStyle = data?.particleStyle || 'network'; // network, dots, wave, spiral, constellation
   const floatingImage = data?.floatingImage || 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=1000&auto=format&fit=crop';
   const splineUrl = data?.splineUrl || '';
+  const videoUrl = data?.videoUrl || '';
+  const showParticles = data?.showParticles !== false; // Default to true
+  const secondaryButtonLink = data?.secondaryButtonLink || '#demo';
 
   // Particle animation state
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -1246,7 +1250,7 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !showParticles || videoUrl) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -1263,9 +1267,20 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       particles.forEach((particle, i) => {
-        // Update position
-        particle.x += particle.vx;
-        particle.y += particle.vy;
+        // Update position based on style
+        if (particleStyle === 'wave') {
+          particle.x += particle.vx;
+          particle.y = 50 + Math.sin((particle.x + Date.now() * 0.001) * 0.1) * 20;
+        } else if (particleStyle === 'spiral') {
+          const angle = (Date.now() * 0.0005 + i * 0.1) % (Math.PI * 2);
+          const radius = 20 + i * 0.5;
+          particle.x = 50 + Math.cos(angle) * radius;
+          particle.y = 50 + Math.sin(angle) * radius;
+        } else {
+          // Default network/dots/constellation behavior
+          particle.x += particle.vx;
+          particle.y += particle.vy;
+        }
 
         // Wrap around edges
         if (particle.x < 0) particle.x = 100;
@@ -1282,24 +1297,27 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
         ctx.fillStyle = particleColor + '80'; // Add transparency
         ctx.fill();
 
-        // Draw connections to nearby particles
-        particles.slice(i + 1).forEach(other => {
-          const dx = other.x - particle.x;
-          const dy = other.y - particle.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance < 15) {
-            const ox = (other.x / 100) * canvas.width;
-            const oy = (other.y / 100) * canvas.height;
+        // Draw connections for network/constellation styles
+        if (particleStyle === 'network' || particleStyle === 'constellation') {
+          particles.slice(i + 1).forEach(other => {
+            const dx = other.x - particle.x;
+            const dy = other.y - particle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
             
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(ox, oy);
-            ctx.strokeStyle = particleColor + Math.floor((1 - distance / 15) * 30).toString(16).padStart(2, '0');
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
-        });
+            const maxDistance = particleStyle === 'constellation' ? 20 : 15;
+            if (distance < maxDistance) {
+              const ox = (other.x / 100) * canvas.width;
+              const oy = (other.y / 100) * canvas.height;
+              
+              ctx.beginPath();
+              ctx.moveTo(x, y);
+              ctx.lineTo(ox, oy);
+              ctx.strokeStyle = particleColor + Math.floor((1 - distance / maxDistance) * 30).toString(16).padStart(2, '0');
+              ctx.lineWidth = particleStyle === 'constellation' ? 1 : 0.5;
+              ctx.stroke();
+            }
+          });
+        }
       });
 
       animationFrame = requestAnimationFrame(animate);
@@ -1310,16 +1328,59 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
       cancelAnimationFrame(animationFrame);
       window.removeEventListener('resize', resizeCanvas);
     };
-  }, [particles, particleColor]);
+  }, [particles, particleColor, particleStyle, showParticles, videoUrl]);
 
   return (
     <section className="relative min-h-screen bg-black overflow-hidden flex items-center justify-center">
+      {/* Video Background (Optional) */}
+      {videoUrl && (
+        <div className="absolute inset-0 group">
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            className="w-full h-full object-cover opacity-40"
+            key={videoUrl}
+          >
+            <source src={videoUrl} type="video/mp4" />
+          </video>
+
+          {/* Editable Video URL Overlay */}
+          {isEditable && (
+            <div 
+              className="absolute top-4 left-4 right-4 max-w-md bg-black/80 backdrop-blur-md rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity z-30"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Play size={16} className="text-purple-400" />
+                <span className="text-xs font-bold text-white">Background Video URL</span>
+              </div>
+              <input
+                type="text"
+                value={videoUrl}
+                onChange={(e) => onUpdate?.({ videoUrl: e.target.value })}
+                onFocus={() => handleSelect('videoUrl')}
+                placeholder="Enter video URL (.mp4)"
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-sm text-white placeholder-gray-400 focus:outline-none focus:border-purple-400"
+                style={{ color: '#ffffff' }}
+              />
+              <div className="text-xs text-gray-400 mt-1">
+                Tip: Use Coverr.co or Pexels for free videos
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Particle Canvas Background */}
-      <canvas 
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
-        style={{ opacity: 0.6 }}
-      />
+      {showParticles && !videoUrl && (
+        <canvas 
+          ref={canvasRef}
+          className="absolute inset-0 w-full h-full"
+          style={{ opacity: 0.6 }}
+        />
+      )}
 
       {/* Radial Gradient Overlay */}
       <div 
@@ -1445,7 +1506,13 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
           </button>
 
           <button 
-            onClick={() => handleSelect('secondaryButtonText')}
+            onClick={() => {
+              if (isEditable) {
+                handleSelect('secondaryButtonText');
+              } else if (secondaryButtonLink) {
+                window.location.href = secondaryButtonLink;
+              }
+            }}
             className="group px-10 py-5 rounded-full font-bold text-lg text-white border-2 border-white/20 hover:bg-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-105 flex items-center gap-3"
           >
             <Play size={20} />
