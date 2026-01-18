@@ -1401,16 +1401,6 @@ const HeroVideoMask: React.FC<HeroProps> = ({ storeName, primaryColor, data, isE
             />
           </button>
         </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="flex flex-col items-center gap-2 text-white/60">
-            <span className="text-sm font-medium uppercase tracking-widest">Scroll</span>
-            <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
-              <div className="w-1 h-2 bg-white/50 rounded-full animate-pulse" />
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Ambient Glow */}
@@ -1641,15 +1631,15 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
 
       {/* Floating Product Image */}
       {!splineUrl && (
-        <div className="absolute right-20 top-1/2 -translate-y-1/2 w-[500px] h-[500px] animate-float">
-          <div className="relative w-full h-full">
+        <div className="absolute right-20 top-1/2 -translate-y-1/2 w-[450px] h-[450px] animate-float">
+          <div className="relative w-full h-full p-4">
             <div 
               className="absolute inset-0 rounded-full blur-3xl opacity-30"
               style={{ backgroundColor: accentColor }}
             />
             <DisplayImage
               src={floatingImage}
-              className="relative w-full h-full object-contain drop-shadow-2xl"
+              className="relative w-full h-full object-cover rounded-2xl drop-shadow-2xl"
             />
           </div>
         </div>
@@ -1737,13 +1727,6 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
               value={secondaryButtonText}
             />
           </button>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
-            <div className="w-1 h-2 bg-white/50 rounded-full animate-pulse" />
-          </div>
         </div>
       </div>
 
