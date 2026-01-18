@@ -4305,7 +4305,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               onClick={() => setIsFooterModalOpen(false)}
               className="px-6 py-2 bg-orange-600 hover:bg-orange-500 rounded-lg font-bold text-sm transition-colors text-white"
             >
-              Done
+              Apply
             </button>
           </div>
         </div>
@@ -4377,8 +4377,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 shadow-2xl w-full h-full flex flex-col overflow-hidden">
           {/* Modal Header */}
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
             <div className="flex items-center gap-3">
@@ -4696,13 +4696,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
 
-              {/* Footer with Done button */}
+              {/* Footer with Apply button */}
               <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0">
                 <button 
                   onClick={() => setIsGridModalOpen(false)}
                   className="w-full px-6 py-2.5 bg-green-600 hover:bg-green-500 rounded-lg font-bold text-sm transition-colors text-white"
                 >
-                  Done
+                  Apply
                 </button>
               </div>
             </div>
@@ -4840,8 +4840,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           {/* Modal Header */}
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
             <div className="flex items-center gap-3">
@@ -5383,7 +5383,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   onClick={() => setIsCollectionModalOpen(false)}
                   className="w-full px-6 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold text-sm transition-colors text-white"
                 >
-                  Done
+                  Apply
                 </button>
               </div>
             </div>
@@ -5484,8 +5484,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           {/* Modal Header */}
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
             <div className="flex items-center gap-3">
@@ -5850,7 +5850,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   onClick={() => setIsCategoryModalOpen(false)}
                   className="w-full px-6 py-2.5 bg-purple-600 hover:bg-purple-500 rounded-lg font-bold text-sm transition-colors text-white"
                 >
-                  Done
+                  Apply
                 </button>
               </div>
             </div>
@@ -5972,8 +5972,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-cyan-600/20 rounded-lg"><Repeat size={20} className="text-cyan-400" /></div>
@@ -6200,8 +6200,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-pink-600/20 rounded-lg"><Share2 size={20} className="text-pink-400" /></div>
@@ -6541,8 +6541,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const RichTextComponent = RICH_TEXT_COMPONENTS[currentVariant];
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-600/20 rounded-lg"><Type size={20} className="text-blue-400" /></div>
@@ -6833,8 +6833,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-emerald-600/20 rounded-lg"><Mail size={20} className="text-emerald-400" /></div>
@@ -7141,8 +7141,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-indigo-600/20 rounded-lg"><List size={20} className="text-indigo-400" /></div>
@@ -7321,7 +7321,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   onClick={() => setIsCollapsibleModalOpen(false)}
                   className="w-full px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-bold text-sm transition-colors text-white"
                 >
-                  Done
+                  Apply
                 </button>
               </div>
             </div>
@@ -7354,8 +7354,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const LogoComponent = LOGO_LIST_COMPONENTS[currentVariant];
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-violet-600/20 rounded-lg"><Grid size={20} className="text-violet-400" /></div>
@@ -7396,8 +7396,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const PromoComponent = PROMO_BANNER_COMPONENTS[currentVariant];
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-amber-600/20 rounded-lg"><Zap size={20} className="text-amber-400" /></div>
@@ -7524,8 +7524,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const GalleryComponent = GALLERY_COMPONENTS[currentVariant];
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-rose-600/20 rounded-lg"><ImageIcon size={20} className="text-rose-400" /></div>
@@ -7588,8 +7588,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-teal-600/20 rounded-lg"><BookOpen size={20} className="text-teal-400" /></div>
@@ -7933,8 +7933,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-red-600/20 rounded-lg"><Play size={20} className="text-red-400" /></div>
@@ -8206,8 +8206,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const ContactComponent = CONTACT_COMPONENTS[currentVariant];
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-sky-600/20 rounded-lg"><Phone size={20} className="text-sky-400" /></div>
@@ -8259,8 +8259,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-fuchsia-600/20 rounded-lg"><LayoutTemplate size={20} className="text-fuchsia-400" /></div>
@@ -8800,8 +8800,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     return (
-      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
           {/* Modal Header */}
           <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
             <div className="flex items-center gap-3">
@@ -9717,13 +9717,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 )}
               </div>
 
-              {/* Footer with Done button */}
+              {/* Footer with Apply button */}
               <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0">
                 <button 
                   onClick={() => { setIsHeroModalOpen(false); setWarningFields([]); setPendingVariant(null); }}
                   className="w-full px-6 py-2.5 bg-purple-600 hover:bg-purple-500 rounded-lg font-bold text-sm transition-colors text-white"
                 >
-                  Done
+                  Apply
                 </button>
               </div>
             </div>
@@ -10093,7 +10093,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 'bg-orange-600 hover:bg-orange-500'
               }`}
             >
-              Done
+              Apply
             </button>
           </div>
         </div>
@@ -11482,7 +11482,7 @@ Return ONLY the JSON object, no markdown.`;
               onClick={() => setIsInterfaceModalOpen(false)}
               className="px-8 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-colors"
             >
-              Done
+              Apply
             </button>
           </div>
         </div>
@@ -12829,7 +12829,7 @@ Return ONLY the JSON object, no markdown.`;
               onClick={() => setShowBrandSettings(false)}
               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold"
             >
-              Done
+              Apply
             </button>
           </div>
         </div>
