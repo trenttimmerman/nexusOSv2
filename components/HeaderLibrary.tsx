@@ -1012,6 +1012,7 @@ export const HeaderNexusElite: React.FC<HeaderProps> = ({
   const [hoveredLink, setHoveredLink] = React.useState<string | null>(null);
   const [megaMenuOpen, setMegaMenuOpen] = React.useState<string | null>(null);
   const headerRef = React.useRef<HTMLDivElement>(null);
+  const megaMenuTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   
   // Mock mega menu data
   const megaMenuData = {
@@ -1143,79 +1144,79 @@ export const HeaderNexusElite: React.FC<HeaderProps> = ({
   
   return (
     <>
-      {/* Wrapper with relative positioning for mega menu */}
-      <div className="relative">
-        {/* Announcement Bar */}
-        {settings.showAnnouncementBar && !isAnnouncementDismissed && (
-          <div
-            className="w-full text-center py-2 px-4 text-sm"
-            style={{
-              backgroundColor: settings.announcementBackgroundColor,
-              color: settings.announcementTextColor,
-            }}
-          >
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            <div className="flex-1" />
-            <div className={settings.announcementMarquee ? 'animate-marquee whitespace-nowrap' : ''}>
-              {settings.announcementText}
-            </div>
-            {settings.announcementDismissible && (
-              <button
-                onClick={() => setIsAnnouncementDismissed(true)}
-                className="text-current opacity-70 hover:opacity-100 transition-opacity"
-                aria-label="Dismiss announcement"
+      {/* Announcement Bar */}
+      {settings.showAnnouncementBar && !isAnnouncementDismissed && (
+        <div
+          className="w-full text-center py-2 px-4 text-sm"
+          style={{
+            backgroundColor: settings.announcementBackgroundColor,
+            color: settings.announcementTextColor,
+          }}
+        >
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex-1" />
+          <div className={settings.announcementMarquee ? 'animate-marquee whitespace-nowrap' : ''}>
+            {settings.announcementText}
+          </div>
+          {settings.announcementDismissible && (
+            <button
+              onClick={() => setIsAnnouncementDismissed(true)}
+              className="text-current opacity-70 hover:opacity-100 transition-opacity"
+              aria-label="Dismiss announcement"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      </div>
+    )}
+    
+    {/* Utility Bar */}
+    {settings.showUtilityBar && (
+      <div
+        className="w-full border-b text-xs"
+        style={{
+          backgroundColor: settings.utilityBarBackgroundColor,
+          color: settings.utilityBarTextColor,
+          borderColor: settings.borderColor,
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <span className="opacity-70">Welcome to {storeName}</span>
+          </div>
+          <div className="flex items-center gap-4">
+            {settings.showCurrencySelector && (
+              <select
+                className="bg-transparent border-none text-current text-xs cursor-pointer"
+                style={{ color: settings.utilityBarTextColor }}
               >
-                <X size={16} />
-              </button>
+                <option>USD</option>
+                <option>EUR</option>
+                <option>GBP</option>
+              </select>
+            )}
+            {settings.showLanguageSelector && (
+              <select
+                className="bg-transparent border-none text-current text-xs cursor-pointer"
+                style={{ color: settings.utilityBarTextColor }}
+              >
+                <option>EN</option>
+                <option>FR</option>
+                <option>ES</option>
+              </select>
             )}
           </div>
         </div>
-      )}
-      
-      {/* Utility Bar */}
-      {settings.showUtilityBar && (
-        <div
-          className="w-full border-b text-xs"
-          style={{
-            backgroundColor: settings.utilityBarBackgroundColor,
-            color: settings.utilityBarTextColor,
-            borderColor: settings.borderColor,
-          }}
-        >
-          <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span className="opacity-70">Welcome to {storeName}</span>
-            </div>
-            <div className="flex items-center gap-4">
-              {settings.showCurrencySelector && (
-                <select
-                  className="bg-transparent border-none text-current text-xs cursor-pointer"
-                  style={{ color: settings.utilityBarTextColor }}
-                >
-                  <option>USD</option>
-                  <option>EUR</option>
-                  <option>GBP</option>
-                </select>
-              )}
-              {settings.showLanguageSelector && (
-                <select
-                  className="bg-transparent border-none text-current text-xs cursor-pointer"
-                  style={{ color: settings.utilityBarTextColor }}
-                >
-                  <option>EN</option>
-                  <option>FR</option>
-                  <option>ES</option>
-                </select>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-      
+      </div>
+    )}
+    
+    {/* Wrapper with sticky positioning for header + mega menu */}
+    <div className={`relative ${settings.sticky ? 'sticky top-0' : ''} z-50`}>
       {/* Main Header */}
       <header
         ref={headerRef}
-        className={`w-full transition-all duration-${settings.smartScrollDuration || 250} ${settings.sticky ? 'sticky top-0' : ''} z-50`}
+        className={`w-full transition-all duration-${settings.smartScrollDuration || 250}`}
         style={{
           ...glassStyles,
           borderBottom: `${settings.borderWidth} solid ${settings.borderColor}`,
@@ -1261,8 +1262,11 @@ export const HeaderNexusElite: React.FC<HeaderProps> = ({
             {(links || []).map((link) => (
               <div
                 key={link.href}
-                className="relative"
+                className="relative py-2"
                 onMouseEnter={() => {
+                  if (megaMenuTimeoutRef.current) {
+                    clearTimeout(megaMenuTimeoutRef.current);
+                  }
                   setHoveredLink(link.href);
                   if (settings.enableMegaMenu && megaMenuData[link.href]) {
                     setMegaMenuOpen(link.href);
@@ -1270,7 +1274,9 @@ export const HeaderNexusElite: React.FC<HeaderProps> = ({
                 }}
                 onMouseLeave={() => {
                   setHoveredLink(null);
-                  setMegaMenuOpen(null);
+                  megaMenuTimeoutRef.current = setTimeout(() => {
+                    setMegaMenuOpen(null);
+                  }, 150);
                 }}
               >
                 <a
@@ -1389,8 +1395,17 @@ export const HeaderNexusElite: React.FC<HeaderProps> = ({
             borderBottom: `1px solid ${settings.megaMenuBorderColor}`,
             maxHeight: settings.megaMenuMaxHeight,
           }}
-          onMouseEnter={() => setMegaMenuOpen(megaMenuOpen)}
-          onMouseLeave={() => setMegaMenuOpen(null)}
+          onMouseEnter={() => {
+            if (megaMenuTimeoutRef.current) {
+              clearTimeout(megaMenuTimeoutRef.current);
+            }
+            setMegaMenuOpen(megaMenuOpen);
+          }}
+          onMouseLeave={() => {
+            megaMenuTimeoutRef.current = setTimeout(() => {
+              setMegaMenuOpen(null);
+            }, 150);
+          }}
         >
           <div className="max-w-7xl mx-auto px-6 py-8">
             {settings.megaMenuStyle === 'bento' ? (
