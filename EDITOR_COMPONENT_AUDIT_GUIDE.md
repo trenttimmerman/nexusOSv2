@@ -624,6 +624,120 @@ This same process applies to:
 6. Build admin controls (Step 5)
 7. Verify completeness (Step 6)
 
+### 🚨 CRITICAL: UniversalEditor Configuration (NEW)
+**When creating new section variants (especially Heroes, Product Grids, etc.):**
+
+⚠️ **YOU MUST UPDATE 3 LOCATIONS OR EDITING TOOLS WILL NOT APPEAR:**
+
+#### 1. Component Library File (e.g., HeroLibrary.tsx)
+```typescript
+// Export field list for each variant
+export const HERO_FIELDS: Record<string, string[]> = {
+  yourNewVariant: [
+    'heading', 'subheading', 'image', 'buttonText', 
+    'accentColor', 'overlayOpacity', // etc...
+  ],
+};
+
+// Register component
+export const HERO_COMPONENTS = {
+  yourNewVariant: HeroYourNewVariant,
+  // ... other variants
+};
+
+// Add to options list
+export const HERO_OPTIONS = [
+  { id: 'yourNewVariant', name: 'Display Name', description: '...', popularity: 100, recommended: true },
+  // ... other options
+];
+```
+
+#### 2. UniversalEditor.tsx - Variant Field Visibility
+```typescript
+// Around line 45 - Add your variant to field visibility mapping
+const HERO_VARIANT_FIELDS: Record<string, string[]> = {
+  yourNewVariant: ['heading', 'subheading', 'image', 'buttonText', 'accentColor', 'overlayOpacity'],
+  impact: ['heading', 'badge', 'buttonText', 'image', 'overlayOpacity'],
+  // ... other variants
+};
+```
+
+#### 3. UniversalEditor.tsx - Field Definitions
+```typescript
+// Around line 70-200 - Add field configuration for new fields
+const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
+  'system-hero': {
+    fields: [
+      // Add any NEW fields your variant uses that don't exist yet:
+      { key: 'yourNewField', label: 'Your New Field', type: 'image', group: 'media',
+        tip: 'Description of what this field does.',
+        defaultValue: 'https://default-value.com' },
+      // Common fields should already exist (heading, subheading, etc.)
+    ]
+  }
+};
+```
+
+**Real Example from Particle Field Hero (Jan 18, 2026):**
+
+1. **HeroLibrary.tsx** - Added field export:
+```typescript
+export const HERO_FIELDS = {
+  particleField: [
+    'heading', 'subheading', 'badge', 'buttonText', 'secondaryButtonText',
+    'floatingImage', 'splineUrl', 'videoUrl', 'accentColor', 
+    'particleCount', 'particleColor', 'particleStyle', 'showParticles',
+    'stat1Number', 'stat1Label', 'stat2Number', 'stat2Label', // etc...
+  ],
+};
+```
+
+2. **UniversalEditor.tsx** - Added to HERO_VARIANT_FIELDS:
+```typescript
+const HERO_VARIANT_FIELDS: Record<string, string[]> = {
+  particleField: ['heading', 'subheading', 'badge', 'buttonText', 'secondaryButtonText', 
+                  'floatingImage', 'splineUrl', 'videoUrl', 'accentColor', 
+                  'particleCount', 'particleColor', 'particleStyle', 'showParticles',
+                  'stat1Number', 'stat1Label', /* ... */],
+  // ... other variants
+};
+```
+
+3. **UniversalEditor.tsx** - Added new field definitions:
+```typescript
+fields: [
+  { key: 'floatingImage', label: 'Floating Product Image', type: 'image', group: 'media',
+    tip: 'Animated floating image for particle field hero (450x450px recommended).' },
+  { key: 'particleStyle', label: 'Particle Animation', type: 'select', group: 'extras',
+    options: [
+      { value: 'network', label: 'Network (Connected Lines)' },
+      { value: 'dots', label: 'Dots (Floating)' },
+      { value: 'wave', label: 'Wave (Flowing)' },
+      // ...
+    ],
+    defaultValue: 'network' },
+  // ... other new fields
+]
+```
+
+**What Happens If You Skip This:**
+- ❌ Component renders but has NO editing controls in sidebar
+- ❌ Fields show as "undefined" or don't appear at all
+- ❌ Image upload buttons missing for new image fields
+- ❌ User can't customize anything about the new variant
+- ❌ Build succeeds but editing experience is broken
+
+**Verification Checklist:**
+- [ ] HERO_FIELDS exported with all field names
+- [ ] HERO_COMPONENTS includes new variant component
+- [ ] HERO_OPTIONS includes new variant metadata
+- [ ] HERO_VARIANT_FIELDS includes field list for new variant
+- [ ] All NEW fields have type definitions in SECTION_FIELD_CONFIGS
+- [ ] Image fields are type: 'image' (not 'text' or 'url')
+- [ ] Test in UI: Hero Studio sidebar shows all controls
+- [ ] Test in UI: Image upload buttons work
+- [ ] Test in UI: Changes reflect in preview immediately
+
 ---
 
 ## Red Flags & Warning Signs
