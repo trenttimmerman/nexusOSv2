@@ -808,7 +808,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
       
       {/* Main Header */}
       <header
-        className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-[100] transition-transform duration-${settings.smartScrollDuration || 300}`}
+        className={`w-full ${settings.sticky ? 'fixed top-0 left-0 right-0' : ''} z-[100] transition-transform duration-${settings.smartScrollDuration || 300}`}
         style={{
           ...glassStyles,
           backgroundColor: settings.enableGlassmorphism ? glassStyles.backgroundColor : settings.backgroundColor,

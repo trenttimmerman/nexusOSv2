@@ -1262,7 +1262,7 @@ const HeroVideoMask: React.FC<HeroProps> = ({ storeName, primaryColor, data, isE
   const secondaryButtonLink = data?.secondaryButtonLink || '#';
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black -mt-20 pt-20">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
       {/* Background Video */}
       <div className="absolute inset-0 w-full h-full">
         <video
@@ -1559,7 +1559,7 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
   }, [particles, particleColor, particleStyle, showParticles, videoUrl]);
 
   return (
-    <section className="relative min-h-screen bg-black overflow-hidden flex items-center justify-center -mt-20 pt-20">
+    <section className="relative min-h-screen bg-black overflow-hidden flex items-center justify-center">
       {/* Video Background (Optional) */}
       {videoUrl && (
         <div className="absolute inset-0 group">
@@ -1845,7 +1845,7 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
   return (
     <section 
       ref={heroRef}
-      className={`relative min-h-screen bg-gradient-to-br ${bgGradient} overflow-hidden -mt-20 pt-20`}
+      className={`relative min-h-screen bg-gradient-to-br ${bgGradient} overflow-hidden`}
     >
       {/* Noise Texture Overlay */}
       <div className="absolute inset-0 opacity-20 mix-blend-overlay"
