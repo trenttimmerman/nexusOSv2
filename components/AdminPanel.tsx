@@ -223,6 +223,10 @@ import {
   Filter,
   Columns as ColumnsIcon,
   Circle,
+  SeparatorHorizontal,
+  ArrowUp,
+  ArrowDown,
+  ChevronsUpDown,
   Lock,
   Unlock,
   Instagram,
@@ -929,6 +933,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
+  const [isSpacerModalOpen, setIsSpacerModalOpen] = useState(false);
   
   // Auto-focus field in Hero Studio when activeField changes
   useEffect(() => {
@@ -9815,6 +9820,194 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     );
   };
 
+  // --- SPACER STUDIO MODAL ---
+  const renderSpacerModal = () => {
+    if (!isSpacerModalOpen) return null;
+
+    const currentSpacerVariant = selectedBlockId && activeBlock?.type === 'system-spacer'
+      ? activeBlock?.variant || 'md'
+      : 'md';
+
+    const spacerData = selectedBlockId && activeBlock?.type === 'system-spacer'
+      ? activeBlock?.data || {}
+      : {};
+
+    const updateSpacerData = (updates: any) => {
+      if (selectedBlockId) {
+        setLocalPages(prev => prev.map(p => {
+          if (p.id !== activePage.id) return p;
+          return {
+            ...p,
+            blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, data: { ...b.data, ...updates } } : b)
+          };
+        }));
+        setHasUnsavedChanges(true);
+      }
+    };
+
+    const handleSpacerSizeChange = (newSize: string) => {
+      if (selectedBlockId) {
+        setLocalPages(prev => prev.map(p => {
+          if (p.id !== activePage.id) return p;
+          return {
+            ...p,
+            blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, variant: newSize } : b)
+          };
+        }));
+        setHasUnsavedChanges(true);
+      }
+    };
+
+    const SpacerComponent = SPACER_COMPONENTS[currentSpacerVariant] || SPACER_COMPONENTS['md'];
+
+    return (
+      <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full h-full flex flex-col overflow-hidden">
+          {/* Modal Header */}
+          <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-950 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-teal-600/20 rounded-lg">
+                <SeparatorHorizontal size={20} className="text-teal-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold">Spacer Studio</h3>
+                <p className="text-xs text-neutral-500">Add spacing between sections</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setIsSpacerModalOpen(false)}
+              className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Modal Content */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* LEFT PANEL - Controls (30%) */}
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col">
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                {/* Size Selection */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Maximize2 size={14} /> Spacer Height
+                  </h4>
+                  <div className="space-y-2">
+                    {SPACER_OPTIONS.map((spacer) => (
+                      <button
+                        key={spacer.id}
+                        onClick={() => handleSpacerSizeChange(spacer.id)}
+                        className={`w-full text-left p-3 rounded-lg border transition-all ${
+                          currentSpacerVariant === spacer.id
+                            ? 'border-teal-500 bg-teal-500/10 ring-2 ring-teal-500/50'
+                            : 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-sm text-white">{spacer.name}</span>
+                          {currentSpacerVariant === spacer.id && (
+                            <div className="w-2 h-2 rounded-full bg-teal-500"></div>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-neutral-400">{spacer.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Blur Edges */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3">Blur Edges</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { value: 'none', label: 'None', icon: X },
+                      { value: 'top', label: 'Top', icon: ArrowUp },
+                      { value: 'bottom', label: 'Bottom', icon: ArrowDown },
+                      { value: 'both', label: 'Both', icon: ChevronsUpDown },
+                    ].map(({ value, label, icon: Icon }) => (
+                      <button
+                        key={value}
+                        onClick={() => updateSpacerData({ blurEdge: value })}
+                        className={`p-3 rounded-lg border text-xs font-medium transition-colors flex flex-col items-center gap-2 ${
+                          (spacerData.blurEdge || 'none') === value
+                            ? 'bg-teal-500/20 border-teal-500/50 text-teal-400'
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
+                        }`}
+                      >
+                        <Icon size={16} />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Background Color */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3">Background</h4>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={spacerData.backgroundColor || '#ffffff'}
+                      onChange={(e) => updateSpacerData({ backgroundColor: e.target.value })}
+                      className="w-12 h-10 rounded-lg cursor-pointer border border-neutral-700"
+                    />
+                    <input
+                      type="text"
+                      value={spacerData.backgroundColor || '#ffffff'}
+                      onChange={(e) => updateSpacerData({ backgroundColor: e.target.value })}
+                      className="flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-300 focus:border-teal-500 outline-none"
+                      placeholder="#ffffff"
+                    />
+                  </div>
+                  <p className="text-[10px] text-neutral-500 mt-2">Match section colors for seamless blending</p>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-neutral-800 bg-neutral-950 shrink-0">
+                <button 
+                  onClick={() => setIsSpacerModalOpen(false)}
+                  className="w-full px-6 py-2.5 bg-teal-600 hover:bg-teal-500 rounded-lg font-bold text-sm transition-colors text-white"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT PANEL - Live Preview (70%) */}
+            <div className="flex-1 bg-neutral-800 flex flex-col">
+              <div className="p-3 border-b border-neutral-700 bg-neutral-900 flex items-center justify-between shrink-0">
+                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Live Preview</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                  <span className="text-[10px] text-neutral-500">Updates instantly</span>
+                </div>
+              </div>
+              <div className="flex-1 overflow-auto bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px] p-8">
+                <div className="bg-neutral-900 rounded-lg overflow-hidden">
+                  {/* Example content above */}
+                  <div className="bg-gradient-to-r from-purple-900 to-indigo-900 p-12 text-center">
+                    <h3 className="text-white font-bold text-2xl mb-2">Section Above</h3>
+                    <p className="text-gray-300">Previous content</p>
+                  </div>
+                  
+                  {/* Spacer Preview */}
+                  <SpacerComponent data={spacerData} />
+                  
+                  {/* Example content below */}
+                  <div className="bg-gradient-to-r from-cyan-900 to-blue-900 p-12 text-center">
+                    <h3 className="text-white font-bold text-2xl mb-2">Section Below</h3>
+                    <p className="text-gray-300">Next content</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // --- HEADER DESIGNER MODAL (2-Column Layout) ---
   const renderHeaderModal = () => {
     if (!isHeaderModalOpen) return null;
@@ -13935,7 +14128,7 @@ Return ONLY the JSON object, no markdown.`;
         return <CollectionAnalytics storeId={storeId || ''} />;
 
       case AdminTab.DESIGN:
-        const isAnyModalOpen = isHeaderModalOpen || isHeroModalOpen || isGridModalOpen || isCollectionModalOpen || isCategoryModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen;
+        const isAnyModalOpen = isHeaderModalOpen || isHeroModalOpen || isGridModalOpen || isCollectionModalOpen || isCategoryModalOpen || isSystemModalOpen || isFooterModalOpen || isArchitectOpen || isAddSectionOpen || isInterfaceModalOpen || isSpacerModalOpen;
         return (
           <div className="flex h-full w-full bg-neutral-950 overflow-hidden">
             {/* LEFT COLUMN: EDITOR */}
@@ -14294,6 +14487,7 @@ Return ONLY the JSON object, no markdown.`;
                                       else if (block.type === 'system-video') { setSelectedBlockId(block.id); setIsVideoModalOpen(true); }
                                       else if (block.type === 'system-contact') { setSelectedBlockId(block.id); setIsContactModalOpen(true); }
                                       else if (block.type === 'system-layout') { setSelectedBlockId(block.id); setIsLayoutModalOpen(true); }
+                                      else if (block.type === 'system-spacer') { setSelectedBlockId(block.id); setIsSpacerModalOpen(true); }
                                       else if (block.type.startsWith('system-')) { 
                                         // All other system blocks: select them
                                         setSelectedBlockId(block.id);
@@ -15920,6 +16114,7 @@ Return ONLY the JSON object, no markdown.`;
       {renderVideoModal()}
       {renderContactModal()}
       {renderLayoutModal()}
+      {renderSpacerModal()}
       {renderAddSectionLibrary()}
       {renderWelcomeWizard()}
       {renderAddPageModal()}
