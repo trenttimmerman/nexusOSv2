@@ -28,7 +28,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { GoogleGenAI } from '@google/genai';
-import { AIService } from '../services/aiService';
 
 
 export const CategoryManager: React.FC = () => {
@@ -98,24 +97,16 @@ export const CategoryManager: React.FC = () => {
 
   // AI Generate Description
   const generateDescription = async () => {
-    if (!formData.name) return;
+    if (!genAI || !formData.name) return;
     
     setIsGenerating('description');
     try {
-      // Try OpenAI first, fallback to Google AI
-      if (AIService.isConfigured()) {
-        const description = await AIService.generateCategoryDescription(formData.name, formData.description);
-        setFormData(prev => ({ ...prev, description }));
-      } else if (genAI) {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
-        const prompt = `Write a compelling 2-3 sentence description for a product category called "${formData.name}". Make it engaging and SEO-friendly. Return ONLY the description text, no quotes or extra formatting.`;
-        
-        const result = await model.generateContent(prompt);
-        const description = result.response.text().trim();
-        setFormData(prev => ({ ...prev, description }));
-      } else {
-        alert('No AI service configured. Add VITE_OPENAI_API_KEY or VITE_GOOGLE_AI_API_KEY to your .env file.');
-      }
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const prompt = `Write a compelling 2-3 sentence description for a product category called "${formData.name}". Make it engaging and SEO-friendly. Return ONLY the description text, no quotes or extra formatting.`;
+      
+      const result = await model.generateContent(prompt);
+      const description = result.response.text().trim();
+      setFormData(prev => ({ ...prev, description }));
     } catch (error) {
       console.error('AI generation failed:', error);
       alert('Failed to generate description. Please try again.');

@@ -27,7 +27,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { GoogleGenAI } from '@google/genai';
-import { AIService } from '../services/aiService';
 
 
 export const CollectionManager: React.FC = () => {
@@ -232,35 +231,16 @@ export const CollectionManager: React.FC = () => {
 
   // AI Generate Description
   const generateDescription = async () => {
-    if (!formData.name) return;
+    if (!genAI || !formData.name) return;
     
     setIsGenerating('description');
     try {
-      // Get product names for context
-      const productNames = products
-        .filter(p => formData.product_ids.includes(p.id))
-        .map(p => p.name)
-        .slice(0, 5)
-        .join(', ');
-
-      // Try OpenAI first, fallback to Google AI
-      if (AIService.isConfigured()) {
-        const description = await AIService.generateCollectionDescription(
-          formData.name, 
-          formData.description,
-          productNames
-        );
-        setFormData(prev => ({ ...prev, description }));
-      } else if (genAI) {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
-        const prompt = `Write a compelling 2-3 sentence description for a product collection called "${formData.name}". ${productNames ? `This collection features: ${productNames}. ` : ''}Make it engaging and SEO-friendly. Return ONLY the description text, no quotes or extra formatting.`;
-        
-        const result = await model.generateContent(prompt);
-        const description = result.response.text().trim();
-        setFormData(prev => ({ ...prev, description }));
-      } else {
-        alert('No AI service configured. Add VITE_OPENAI_API_KEY or VITE_GOOGLE_AI_API_KEY to your .env file.');
-      }
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const prompt = `Write a compelling 2-3 sentence description for a product collection called "${formData.name}". Make it engaging and SEO-friendly. Return ONLY the description text, no quotes or extra formatting.`;
+      
+      const result = await model.generateContent(prompt);
+      const description = result.response.text().trim();
+      setFormData(prev => ({ ...prev, description }));
     } catch (error) {
       console.error('AI generation failed:', error);
       alert('Failed to generate description. Please try again.');

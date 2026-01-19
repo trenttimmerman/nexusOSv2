@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Product, ProductImage, ProductVariantOption, ProductVariant, ProductPageStyleId } from '../types';
-import { X, Upload, Plus, Trash2, Image as ImageIcon, Sparkles, Box, Search, Save, ArrowLeft, MoreHorizontal, ShoppingBag, Star, ChevronRight, Monitor, LayoutTemplate, Loader2, Wand2, AlertCircle } from 'lucide-react';
+import { X, Upload, Plus, Trash2, Image as ImageIcon, Sparkles, Box, Search, Save, ArrowLeft, MoreHorizontal, ShoppingBag, Star, ChevronRight, Monitor, LayoutTemplate, Loader2 } from 'lucide-react';
 import { PRODUCT_PAGE_COMPONENTS, PRODUCT_PAGE_OPTIONS } from './ProductPageLibrary';
 import { supabase } from '../lib/supabaseClient';
 import { useDataContext } from '../context/DataContext';
-import { AIService } from '../services/aiService';
+import { GoogleGenAI } from '@google/genai';
+
+const genAI = import.meta.env.VITE_GOOGLE_AI_API_KEY ? new GoogleGenAI(import.meta.env.VITE_GOOGLE_AI_API_KEY) : null;
 
 interface ProductEditorProps {
     product?: Product | null;
@@ -43,12 +45,7 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
 
     // AI Generation State
     const [isGenerating, setIsGenerating] = useState(false);
-    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-    const [aiError, setAiError] = useState<string | null>(null);
-    const [showAIOptions, setShowAIOptions] = useState(false);
-    const [aiTone, setAiTone] = useState<'professional' | 'casual' | 'luxury' | 'technical'>('professional');
-    const [aiLength, setAiLength] = useState<'short' | 'medium' | 'long'>('medium');
 
     const handleInputChange = (field: keyof Product, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -58,113 +55,63 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
         setFormData(prev => ({ ...prev, seo: { ...prev.seo, [field]: value } }));
     };
 
-    const generateDescription = async () => {
-        if (!formData.name.trim()) {
-            setAiError('Please enter a product name first');
-            return;
-        }
-
+    const generateDescription = () => {
+        if (!genAI || !formData.name) return;
+        
         setIsGenerating(true);
-        setAiError(null);
-
-        try {
-            const description = await AIService.generateProductDescription({
-                productName: formData.name,
-                category: formData.category,
-                existingDescription: formData.description,
-                tone: aiTone,
-                length: aiLength
-            });
-
-            setFormData(prev => ({
-                ...prev,
-                description
-            }));
-        } catch (error) {
-            setAiError(error instanceof Error ? error.message : 'Failed to generate description');
-        } finally {
-            setIsGenerating(false);
-        }
+        setTimeout(async () => {
+            try {
+                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+                const prompt = `Write a compelling product description for "${formData.name}" in the ${formData.category || 'general'} category. Make it engaging, SEO-friendly, and 2-3 paragraphs. Format as HTML with <p> tags and <ul><li> for features. Return ONLY the HTML, no markdown code blocks.`;
+                
+                const result = await model.generateContent(prompt);
+                const description = result.response.text().trim();
+                setFormData(prev => ({
+                    ...prev,
+                    description
+                }));
+            } catch (error) {
+                console.error('AI generation failed:', error);
+                alert('Failed to generate description. Please try again.');
+            } finally {
+                setIsGenerating(false);
+            }
+        }, 100);
     };
 
-    const generateImage = async () => {
-        if (!formData.name.trim()) {
-            setAiError('Please enter a product name first');
-            return;
-        }
-
-        setIsGeneratingImage(true);
-        setAiError(null);
-
-        try {
-            const imageUrl = await AIService.generateProductImage({
-                productName: formData.name,
-                description: formData.description || `A high-quality ${formData.category || 'product'}`,
-                style: 'product-shot'
-            });
-
-            // Download and upload to Supabase
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
-            
-            const fileName = `ai_${Date.now()}_${formData.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}.png`;
-            const filePath = `products/${fileName}`;
-
-            const { error: uploadError, data } = await supabase.storage
-                .from('media')
-                .upload(filePath, blob);
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('media')
-                .getPublicUrl(filePath);
-
-            setFormData(prev => ({
-                ...prev,
-                image: publicUrl,
-                images: [
-                    {
-                        id: Math.random().toString(36).substr(2, 9),
-                        url: publicUrl,
-                        alt: formData.name,
-                        isPrimary: true
-                    },
-                    ...prev.images.filter(img => !img.isPrimary)
-                ]
-            }));
-        } catch (error) {
-            setAiError(error instanceof Error ? error.message : 'Failed to generate image');
-        } finally {
-            setIsGeneratingImage(false);
-        }
-    };
-
-    const generateSEO = async () => {
-        if (!formData.name.trim()) {
-            setAiError('Please enter a product name first');
-            return;
-        }
-
+    const generateSEO = () => {
+        if (!genAI || !formData.name) return;
+        
         setIsGenerating(true);
-        setAiError(null);
-
-        try {
-            const seoData = await AIService.generateSEO(
-                formData.name,
-                formData.description,
-                formData.category
-            );
-
-            setFormData(prev => ({
-                ...prev,
-                seo: seoData
-            }));
-        } catch (error) {
-            setAiError(error instanceof Error ? error.message : 'Failed to generate SEO');
-        } finally {
-            setIsGenerating(false);
-        }
+        setTimeout(async () => {
+            try {
+                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+                const prompt = `Generate SEO metadata for product "${formData.name}". Return in this format:
+TITLE: [60 char SEO title with brand]
+DESCRIPTION: [160 char meta description]
+SLUG: [url-friendly-slug]`;
+                
+                const result = await model.generateContent(prompt);
+                const text = result.response.text();
+                const titleMatch = text.match(/TITLE:\s*(.+)/);
+                const descMatch = text.match(/DESCRIPTION:\s*(.+)/);
+                const slugMatch = text.match(/SLUG:\s*(.+)/);
+                
+                setFormData(prev => ({
+                    ...prev,
+                    seo: {
+                        title: titleMatch ? titleMatch[1].trim() : `${formData.name} | Nexus OS`,
+                        description: descMatch ? descMatch[1].trim() : '',
+                        slug: slugMatch ? slugMatch[1].trim() : formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                    }
+                }));
+            } catch (error) {
+                console.error('AI SEO generation failed:', error);
+                alert('Failed to generate SEO. Please try again.');
+            } finally {
+                setIsGenerating(false);
+            }
+        }, 100);
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -358,75 +305,10 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                         <div>
                                             <div className="flex justify-between items-center mb-2">
                                                 <label className="text-xs font-bold text-neutral-500 uppercase">Description</label>
-                                                <div className="flex items-center gap-2">
-                                                    <button 
-                                                        onClick={() => setShowAIOptions(!showAIOptions)} 
-                                                        className="text-xs text-neutral-400 hover:text-neutral-300 flex items-center gap-1"
-                                                        title="Show AI generation options"
-                                                    >
-                                                        <Wand2 size={12} /> Options
-                                                    </button>
-                                                    <button 
-                                                        onClick={generateDescription} 
-                                                        disabled={isGenerating || !formData.name.trim()} 
-                                                        className="text-xs bg-blue-600 hover:bg-blue-700 disabled:bg-neutral-700 disabled:text-neutral-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 font-bold transition-colors"
-                                                        title="Uses AI to generate a compelling product description based on the product name and category"
-                                                    >
-                                                        <Sparkles size={12} /> {isGenerating ? 'Generating...' : 'Generate with AI'}
-                                                    </button>
-                                                </div>
+                                                <button onClick={generateDescription} disabled={isGenerating} className="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1 font-bold" title="Uses AI to generate a compelling product description based on the product name and category">
+                                                    <Sparkles size={12} /> {isGenerating ? 'Generating...' : 'Generate with AI'}
+                                                </button>
                                             </div>
-
-                                            {/* AI Options Panel */}
-                                            {showAIOptions && (
-                                                <div className="mb-3 p-3 bg-neutral-900 border border-neutral-800 rounded-lg space-y-3">
-                                                    <div className="grid grid-cols-2 gap-3">
-                                                        <div>
-                                                            <label className="text-xs text-neutral-400 mb-1 block">Tone</label>
-                                                            <div className="grid grid-cols-2 gap-1">
-                                                                {(['professional', 'casual', 'luxury', 'technical'] as const).map(tone => (
-                                                                    <button
-                                                                        key={tone}
-                                                                        onClick={() => setAiTone(tone)}
-                                                                        className={`text-xs px-2 py-1 rounded transition-colors ${
-                                                                            aiTone === tone 
-                                                                                ? 'bg-blue-600 text-white' 
-                                                                                : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                                                                        }`}
-                                                                    >
-                                                                        {tone}
-                                                                    </button>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                        <div>
-                                                            <label className="text-xs text-neutral-400 mb-1 block">Length</label>
-                                                            <div className="grid grid-cols-3 gap-1">
-                                                                {(['short', 'medium', 'long'] as const).map(length => (
-                                                                    <button
-                                                                        key={length}
-                                                                        onClick={() => setAiLength(length)}
-                                                                        className={`text-xs px-2 py-1 rounded transition-colors ${
-                                                                            aiLength === length 
-                                                                                ? 'bg-blue-600 text-white' 
-                                                                                : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                                                                        }`}
-                                                                    >
-                                                                        {length}
-                                                                    </button>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {!AIService.isConfigured() && (
-                                                        <div className="flex items-start gap-2 text-xs text-amber-400 bg-amber-500/10 p-2 rounded">
-                                                            <AlertCircle size={12} className="mt-0.5 flex-shrink-0" />
-                                                            <span>{AIService.getConfigMessage()}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-
                                             <textarea
                                                 value={formData.description}
                                                 onChange={(e) => handleInputChange('description', e.target.value)}
@@ -531,51 +413,18 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                             <h3 className="font-bold text-white">Media Gallery</h3>
                                             <p className="text-xs text-neutral-500 mt-1">JPG, PNG, WebP • Max 5MB per image</p>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={generateImage}
-                                                disabled={isGeneratingImage || !formData.name.trim()}
-                                                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-neutral-700 disabled:to-neutral-700 disabled:text-neutral-500 text-white rounded-lg font-bold text-sm flex items-center gap-2 transition-all"
-                                                title="Generate product image using AI based on product name and description"
-                                            >
-                                                {isGeneratingImage ? (
-                                                    <>
-                                                        <Loader2 size={16} className="animate-spin" />
-                                                        Generating...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Wand2 size={16} />
-                                                        AI Generate
-                                                    </>
-                                                )}
-                                            </button>
-                                            <label className={`px-4 py-2 bg-white text-black rounded-lg font-bold text-sm cursor-pointer hover:bg-neutral-200 transition-colors flex items-center gap-2 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                                                {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} 
-                                                {isUploading ? 'Uploading...' : 'Upload'}
-                                                <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={handleImageUpload} disabled={isUploading} />
-                                            </label>
-                                        </div>
+                                        <label className={`px-4 py-2 bg-white text-black rounded-lg font-bold text-sm cursor-pointer hover:bg-neutral-200 transition-colors flex items-center gap-2 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                            {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} 
+                                            {isUploading ? 'Uploading...' : 'Upload'}
+                                            <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={handleImageUpload} disabled={isUploading} />
+                                        </label>
                                     </div>
-
-                                    {/* AI Error Display */}
-                                    {aiError && (
-                                        <div className="flex items-start gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-lg">
-                                            <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
-                                            <div>
-                                                <p className="font-medium">{aiError}</p>
-                                                {!AIService.isConfigured() && (
-                                                    <p className="text-xs mt-1 text-red-300">Add VITE_OPENAI_API_KEY to your .env file</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
 
                                     {formData.images.length === 0 ? (
                                         <div className="border-2 border-dashed border-neutral-800 rounded-xl p-12 flex flex-col items-center justify-center text-center">
                                             <div className="w-16 h-16 bg-neutral-800 rounded-full flex items-center justify-center mb-4 text-neutral-500"><ImageIcon size={32} /></div>
                                             <p className="text-neutral-400 font-medium">No images uploaded yet</p>
-                                            <p className="text-xs text-neutral-600 mt-2">Upload or generate with AI</p>
+                                            <p className="text-xs text-neutral-600 mt-2">Drag & drop or click Upload above</p>
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-2 gap-4">
@@ -706,12 +555,7 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                                             <h3 className="font-bold text-white">Search Engine Settings</h3>
                                             <p className="text-xs text-neutral-500 mt-1">Help customers find you on Google</p>
                                         </div>
-                                        <button 
-                                            onClick={generateSEO} 
-                                            disabled={isGenerating || !formData.name.trim()} 
-                                            className="text-xs bg-blue-600 hover:bg-blue-700 disabled:bg-neutral-700 disabled:text-neutral-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 font-bold transition-colors" 
-                                            title="Auto-generate SEO fields from product info"
-                                        >
+                                        <button onClick={generateSEO} disabled={isGenerating} className="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1 font-bold" title="Auto-generate SEO fields from product info">
                                             <Sparkles size={12} /> {isGenerating ? 'Generating...' : 'Generate with AI'}
                                         </button>
                                     </div>
