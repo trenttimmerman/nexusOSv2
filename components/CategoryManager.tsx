@@ -49,20 +49,18 @@ export const CategoryManager: React.FC = () => {
     seo_description: ''
   });
 
-  // Check if AI is available
-  const hasAI = !!(import.meta.env.VITE_GEMINI_API_KEY && import.meta.env.VITE_GEMINI_API_KEY.trim());
-  
-  // Create AI instance only when needed
-  const getGenAI = () => {
+  // Check if AI is available and create instance safely
+  let genAI: any = null;
+  let hasAI = false;
+  try {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey || !apiKey.trim()) return null;
-    try {
-      return new GoogleGenAI(apiKey);
-    } catch (error) {
-      console.error('Failed to initialize AI:', error);
-      return null;
+    if (apiKey && typeof apiKey === 'string' && apiKey.trim().length > 10) {
+      genAI = new GoogleGenAI(apiKey.trim());
+      hasAI = true;
     }
-  };
+  } catch (error) {
+    console.warn('AI features disabled:', error);
+  }
 
   // Auto-generate slug from name
   useEffect(() => {
@@ -97,7 +95,6 @@ export const CategoryManager: React.FC = () => {
 
   // AI Generate Description
   const generateDescription = async () => {
-    const genAI = getGenAI();
     if (!genAI || !formData.name) return;
     
     setIsGenerating('description');
@@ -118,7 +115,6 @@ export const CategoryManager: React.FC = () => {
 
   // AI Generate SEO Meta
   const generateSEO = async () => {
-    const genAI = getGenAI();
     if (!genAI || !formData.name) return;
     
     setIsGenerating('seo');
@@ -161,17 +157,17 @@ Return ONLY those two lines, nothing else.`;
     setIsUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
       const filePath = `categories/${fileName}`;
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('product-images')
+      const { error: uploadError } = await supabase.storage
+        .from('media')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
+        .from('media')
         .getPublicUrl(filePath);
 
       setFormData(prev => ({ ...prev, image_url: publicUrl }));
