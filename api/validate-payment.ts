@@ -36,7 +36,7 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: 'Provider and storeId required' });
     }
 
-    let result = { valid: false, message: '', details: {} };
+    let result: { valid: boolean; message: string; details?: any } = { valid: false, message: '' };
 
     switch (provider) {
       case 'stripe':

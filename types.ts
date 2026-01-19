@@ -289,6 +289,120 @@ export interface StoreConfig {
   policyPrivacy?: string;
   policyTerms?: string;
 
+  // Company Information
+  companyName?: string;
+  taxId?: string;
+  businessType?: 'individual' | 'llc' | 'corporation' | 'partnership' | 'nonprofit' | 'other';
+  phone?: string;
+  alternatePhone?: string;
+  fax?: string;
+
+  // Social Media Links
+  socialMedia?: {
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+    threads?: string;
+    linkedin?: string;
+    tiktok?: string;
+    youtube?: string;
+    pinterest?: string;
+    snapchat?: string;
+    googleBusiness?: string;
+    whatsapp?: string;
+    telegram?: string;
+  };
+
+  // Invoice & Receipt Settings
+  invoiceSettings?: {
+    footerText?: string;
+    legalDisclaimer?: string;
+    showLogo?: boolean;
+    logoSize?: 'small' | 'medium' | 'large';
+  };
+
+  // Tax Configuration
+  taxSettings?: {
+    defaultTaxRate?: number;
+    taxInclusive?: boolean;
+    taxLabel?: string; // e.g., "VAT", "GST", "Sales Tax"
+  };
+
+  // Legal & Policies
+  returnPolicy?: string;
+  refundPolicy?: string;
+  termsOfServiceUrl?: string;
+  privacyPolicyUrl?: string;
+
+  // Multi-Location & Warehouses
+  locations?: {
+    id: string;
+    name: string;
+    type: 'warehouse' | 'store' | 'fulfillment-center' | 'office';
+    isDefault?: boolean;
+    address: {
+      street1: string;
+      street2?: string;
+      city: string;
+      state: string;
+      zip: string;
+      country: string;
+    };
+    contact?: {
+      phone?: string;
+      email?: string;
+      manager?: string;
+    };
+    operatingHours?: {
+      monday?: string;
+      tuesday?: string;
+      wednesday?: string;
+      thursday?: string;
+      friday?: string;
+      saturday?: string;
+      sunday?: string;
+    };
+    inventoryEnabled?: boolean;
+    shippingEnabled?: boolean;
+  }[];
+
+  // Localization & Regional Settings
+  localization?: {
+    defaultLanguage?: string;
+    supportedLanguages?: string[];
+    defaultCurrency?: string;
+    currencyFormat?: 'symbol-before' | 'symbol-after' | 'code-before' | 'code-after';
+    dateFormat?: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
+    timeFormat?: '12h' | '24h';
+    numberFormat?: {
+      decimalSeparator?: '.' | ',';
+      thousandsSeparator?: ',' | '.' | ' ';
+    };
+  };
+
+  // Business Hours
+  businessHours?: {
+    monday?: { open: string; close: string; closed?: boolean };
+    tuesday?: { open: string; close: string; closed?: boolean };
+    wednesday?: { open: string; close: string; closed?: boolean };
+    thursday?: { open: string; close: string; closed?: boolean };
+    friday?: { open: string; close: string; closed?: boolean };
+    saturday?: { open: string; close: string; closed?: boolean };
+    sunday?: { open: string; close: string; closed?: boolean };
+  };
+
+  // Return Address (separate from store address)
+  returnAddress?: {
+    street1?: string;
+    street2?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    country?: string;
+    phone?: string;
+    attentionTo?: string; // "ATTN: Returns Department"
+  };
+
   // Advanced Settings
   storeAddress?: {
     street1?: string;
@@ -465,7 +579,7 @@ export interface NavLink {
 
 export interface PageBlock {
   id: string;
-  type: 'section' | 'system-hero' | 'system-grid' | 'system-footer' | 'system-scroll' | 'system-social' | 'system-rich-text' | 'system-email' | 'system-collapsible' | 'system-logo-list' | 'system-promo' | 'system-gallery' | 'system-blog' | 'system-video' | 'system-contact' | 'system-layout' | 'system-collection';
+  type: 'section' | 'system-hero' | 'system-grid' | 'system-footer' | 'system-scroll' | 'system-social' | 'system-rich-text' | 'system-email' | 'system-collapsible' | 'system-logo-list' | 'system-promo' | 'system-gallery' | 'system-blog' | 'system-video' | 'system-contact' | 'system-layout' | 'system-collection' | 'system-category' | 'system-spacer';
   name: string;
   content: string; // HTML content for 'section', ignored/metadata for system blocks
   variant?: string; // Optional override for system styles (e.g. 'impact', 'minimal')

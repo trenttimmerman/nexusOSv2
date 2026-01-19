@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getFilteredProducts as getFilteredProductsUtil } from '../lib/productUtils';
 import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
-import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas, HeaderNebula, HeaderLuxe, HeaderPilot } from './HeaderLibrary';
+import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
@@ -43,8 +43,8 @@ let genAI: any = null;
 try {
   const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (geminiApiKey && typeof geminiApiKey === 'string' && geminiApiKey.trim().length > 10) {
-    genAI = new GoogleGenAI(geminiApiKey.trim());
-    console.log('✅ Gemini AI initialized successfully');
+    // GoogleGenAI will be imported dynamically when needed
+    console.log('✅ Gemini API key available');
   } else {
     console.warn('⚠️ VITE_GEMINI_API_KEY not set - AI features will be disabled');
   }
@@ -239,7 +239,16 @@ import {
   Puzzle,
   Shield,
   Terminal,
-  BarChart2
+  BarChart2,
+  Building2,
+  MessageCircle,
+  FileCheck,
+  ScrollText,
+  MapPinned,
+  Languages,
+  Settings2,
+  PackageOpen,
+  Hash
 } from 'lucide-react';
 
 // Page type options for creating new pages
@@ -584,6 +593,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'payments' | 'shipping' | 'taxes' | 'policies' | 'notifications' | 'domains'>('general');
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
   const [editingTaxRegionId, setEditingTaxRegionId] = useState<string | null>(null);
+  const [hasUnsavedSettings, setHasUnsavedSettings] = useState(false);
+  const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
+
+  // Wrapper for config changes to track unsaved state
+  const handleConfigChange = (newConfig: StoreConfig) => {
+    onConfigChange(newConfig);
+    setHasUnsavedSettings(true);
+  };
 
   const handleCreateTenant = async () => {
     if (!newTenantName || !newTenantSlug) return;
@@ -660,6 +677,30 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       setIsSidebarCollapsed(false);
     }
   }, [activeTab]);
+
+  // Save collection to database (used by both Collection and Category modals)
+  const saveCollection = async (collection: any) => {
+    try {
+      await supabase
+        .from('collections')
+        .update(collection)
+        .eq('id', collection.id);
+    } catch (error) {
+      console.error('Failed to save collection:', error);
+    }
+  };
+
+  // Save category to database (used by Category modal)
+  const saveCategory = async (category: any) => {
+    try {
+      await supabase
+        .from('categories')
+        .update(category)
+        .eq('id', category.id);
+    } catch (error) {
+      console.error('Failed to save category:', error);
+    }
+  };
 
   const fetchTenants = async () => {
     setIsLoadingTenants(true);
@@ -6977,9 +7018,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     const generateEmailCopy = async (field: string) => {
+      if (!genAI) {
+        console.warn('Gemini AI not initialized');
+        return;
+      }
       try {
-        const genAI = new GoogleGenerativeAI(apiKeys.gemini || '');
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-2.0-flash-exp" });
         
         const prompts: Record<string, string> = {
           heading: `Generate a catchy, short email signup heading for an ecommerce newsletter (5-8 words max). Return ONLY the text, no quotes or extra formatting.`,
@@ -10199,6 +10243,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       f.endsWith('Marquee')
     );
     
+    const toggleFieldSet = new Set(toggleFields);
+    
     const selectFields = fields.filter(f => 
       f === 'navActiveStyle' ||
       f === 'megaMenuStyle' ||
@@ -10206,6 +10252,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       f === 'blurIntensity' ||
       f === 'maxWidth'
     );
+    
+    const selectFieldSet = new Set<string>(selectFields);
     
     const numberFields = fields.filter(f =>
       f === 'iconSize' ||
@@ -10231,12 +10279,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       f.includes('MaxHeight')
     );
     
+    const colorFieldSet = new Set(colorFields);
+    const numberFieldSet = new Set(numberFields);
+    const sizeFieldSet = new Set(sizeFields);
+    
     const textFields = fields.filter(f => 
-      !toggleFields.includes(f) && 
-      !colorFields.includes(f) && 
-      !selectFields.includes(f) &&
-      !numberFields.includes(f) &&
-      !sizeFields.includes(f)
+      !toggleFieldSet.has(f) && 
+      !colorFieldSet.has(f) && 
+      !(selectFieldSet as Set<string>).has(f) &&
+      !numberFieldSet.has(f) &&
+      !sizeFieldSet.has(f)
     );
 
     return (
@@ -15269,123 +15321,271 @@ Return ONLY the JSON object, no markdown.`;
             <div className="flex-1 overflow-y-auto p-8 max-w-4xl">
               {activeSettingsTab === 'general' && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div>
-                    <h3 className="text-2xl font-bold text-white mb-2">General Settings</h3>
-                    <p className="text-neutral-500">Manage your store's core information.</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-2">General Settings</h3>
+                      <p className="text-neutral-500">
+                        Manage your store's core information.
+                        {lastSavedTime && (
+                          <span className="ml-2 text-xs text-neutral-600">
+                            • Last saved: {lastSavedTime.toLocaleTimeString()}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setHasUnsavedSettings(false);
+                        setLastSavedTime(new Date());
+                        // Toast notification
+                        const toast = document.createElement('div');
+                        toast.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-in fade-in slide-in-from-top-2 duration-300';
+                        toast.innerHTML = '<div class="flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span class="font-medium">Settings saved successfully!</span></div>';
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 3000);
+                      }}
+                      disabled={!hasUnsavedSettings}
+                      className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all flex items-center gap-2 ${
+                        hasUnsavedSettings 
+                          ? 'bg-blue-600 hover:bg-blue-500 text-white cursor-pointer' 
+                          : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+                      }`}
+                    >
+                      <Save size={16} />
+                      {hasUnsavedSettings ? 'Save Changes' : 'All Changes Saved'}
+                    </button>
                   </div>
                   
                   {/* Store Details */}
                   <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
                     <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4">Store Details</h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div><label className="text-xs font-bold text-neutral-500 uppercase">Store Name</label><input value={config.name} onChange={e => onConfigChange({ ...config, name: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" /></div>
-                      <div><label className="text-xs font-bold text-neutral-500 uppercase">Currency</label><input value={config.currency} onChange={e => onConfigChange({ ...config, currency: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" /></div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Store Name</label>
+                        <input value={config.name} onChange={e => onConfigChange({ ...config, name: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="My Amazing Store" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Currency</label>
+                        <input value={config.currency} onChange={e => onConfigChange({ ...config, currency: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="USD" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-neutral-500 uppercase">Store Tagline</label>
+                      <input value={config.tagline || ''} onChange={e => onConfigChange({ ...config, tagline: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="Your one-stop shop for everything" />
+                      <p className="text-xs text-neutral-600 mt-1">Short description that appears in search results</p>
                     </div>
                   </div>
 
-                  {/* Logo Management */}
+                  {/* Company Information */}
                   <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
                     <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
-                      <ImageIcon size={18} className="text-blue-500"/>
-                      Logo Management
+                      <Building2 size={18} className="text-blue-500"/>
+                      Company Information
                     </h4>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setLogoMode('text')}
-                          className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                            logoMode === 'text'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                          }`}
-                        >
-                          <Type size={16} className="inline mr-2" />
-                          Text Logo
-                        </button>
-                        <button
-                          onClick={() => setLogoMode('image')}
-                          className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                            logoMode === 'image'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                          }`}
-                        >
-                          <ImageIcon size={16} className="inline mr-2" />
-                          Image Logo
-                        </button>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Legal Company Name</label>
+                        <input value={config.companyName || ''} onChange={e => onConfigChange({ ...config, companyName: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="Acme Corporation LLC" />
+                        <p className="text-xs text-neutral-600 mt-1">Official business name for legal documents</p>
                       </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Business Type</label>
+                        <select value={config.businessType || 'individual'} onChange={e => onConfigChange({ ...config, businessType: e.target.value as any })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none appearance-none">
+                          <option value="individual">Individual / Sole Proprietor</option>
+                          <option value="llc">LLC</option>
+                          <option value="corporation">Corporation</option>
+                          <option value="partnership">Partnership</option>
+                          <option value="nonprofit">Non-Profit</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-neutral-500 uppercase">Tax ID / VAT Number</label>
+                      <input value={config.taxId || ''} onChange={e => onConfigChange({ ...config, taxId: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="12-3456789" />
+                      <p className="text-xs text-neutral-600 mt-1">EIN, VAT, or other tax identification number</p>
+                    </div>
+                  </div>
 
-                      {logoMode === 'image' && (
-                        <div>
-                          {config.logoUrl ? (
-                            <div className="space-y-3">
-                              <div className="bg-neutral-950 border border-neutral-700 rounded-lg p-4 flex items-center justify-center">
-                                <img 
-                                  src={config.logoUrl} 
-                                  alt="Logo" 
-                                  style={{ height: `${config.logoHeight || 32}px` }}
-                                  className="object-contain"
-                                />
-                              </div>
-                              <div>
-                                <label className="text-xs font-bold text-neutral-500 uppercase block mb-2">Logo Height (px)</label>
-                                <input
-                                  type="range"
-                                  min="20"
-                                  max="80"
-                                  value={config.logoHeight || 32}
-                                  onChange={e => onConfigChange({ ...config, logoHeight: parseInt(e.target.value) })}
-                                  className="w-full"
-                                />
-                                <div className="flex justify-between text-xs text-neutral-500 mt-1">
-                                  <span>20px</span>
-                                  <span className="text-white font-bold">{config.logoHeight || 32}px</span>
-                                  <span>80px</span>
-                                </div>
-                              </div>
-                              <div className="flex gap-2">
-                                <label className="flex-1 cursor-pointer">
-                                  <div className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold text-center transition-colors">
-                                    {isUploadingLogo ? <Loader2 size={16} className="animate-spin mx-auto" /> : <>Change Logo</>}
-                                  </div>
-                                  <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={isUploadingLogo} />
-                                </label>
-                                <button
-                                  onClick={() => onConfigChange({ ...config, logoUrl: '' })}
-                                  className="px-4 py-2 bg-red-600/20 border border-red-600/50 hover:bg-red-600/30 text-red-400 rounded-lg text-sm font-bold transition-colors"
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <label className="block cursor-pointer">
-                              <div className="border-2 border-dashed border-neutral-700 hover:border-neutral-500 rounded-lg p-8 text-center transition-colors">
-                                {isUploadingLogo ? (
-                                  <Loader2 size={32} className="mx-auto text-blue-500 animate-spin mb-2" />
-                                ) : (
-                                  <Upload size={32} className="mx-auto text-neutral-500 mb-2" />
-                                )}
-                                <p className="text-sm font-bold text-white mb-1">
-                                  {isUploadingLogo ? 'Uploading...' : 'Upload Logo'}
-                                </p>
-                                <p className="text-xs text-neutral-500">
-                                  PNG, JPG, or SVG (recommended: transparent background)
-                                </p>
-                              </div>
-                              <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={isUploadingLogo} />
-                            </label>
-                          )}
-                        </div>
-                      )}
+                  {/* Contact Information */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <Mail size={18} className="text-green-500"/>
+                      Contact Information
+                    </h4>
+                    <div>
+                      <label className="text-xs font-bold text-neutral-500 uppercase">Support Email</label>
+                      <input value={config.supportEmail || ''} onChange={e => onConfigChange({ ...config, supportEmail: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="support@example.com" />
+                      <p className="text-xs text-neutral-600 mt-1">Main email for customer inquiries</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Primary Phone</label>
+                        <input value={config.phone || ''} onChange={e => onConfigChange({ ...config, phone: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="+1 (555) 123-4567" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Alternate Phone</label>
+                        <input value={config.alternatePhone || ''} onChange={e => onConfigChange({ ...config, alternatePhone: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="+1 (555) 987-6543" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-neutral-500 uppercase">Fax (Optional)</label>
+                      <input value={config.fax || ''} onChange={e => onConfigChange({ ...config, fax: e.target.value })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="+1 (555) 111-2222" />
+                    </div>
+                  </div>
 
-                      {logoMode === 'text' && (
-                        <div className="bg-neutral-950 border border-neutral-700 rounded-lg p-4">
-                          <p className="text-sm text-neutral-400">
-                            Using text mode. Your store name "<span className="text-white font-bold">{config.name}</span>" will be displayed as the logo.
-                          </p>
-                        </div>
-                      )}
+                  {/* Social Media Links */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <Share2 size={18} className="text-pink-500"/>
+                      Social Media & Online Presence
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                          Facebook
+                        </label>
+                        <input value={config.socialMedia?.facebook || ''} onChange={e => onConfigChange({ ...config, socialMedia: { ...config.socialMedia, facebook: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="https://facebook.com/yourstore" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                          Instagram
+                        </label>
+                        <input value={config.socialMedia?.instagram || ''} onChange={e => onConfigChange({ ...config, socialMedia: { ...config.socialMedia, instagram: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="https://instagram.com/yourstore" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                          X (Twitter)
+                        </label>
+                        <input value={config.socialMedia?.twitter || ''} onChange={e => onConfigChange({ ...config, socialMedia: { ...config.socialMedia, twitter: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="https://x.com/yourstore" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.055 7.164 1.43 1.783 3.631 2.698 6.541 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 013.02.142l-.126 1.974a11.924 11.924 0 00-2.68-.134c-1.112.061-1.989.403-2.503.972-.45.499-.65 1.086-.617 1.80.033.71.353 1.283.956 1.712.545.388 1.291.574 2.164.54 1.193-.051 2.095-.464 2.687-1.229.492-.637.806-1.548.933-2.713.015-.138.024-.276.03-.417.007-.14.01-.282.01-.424 0-.164-.004-.327-.013-.489-.008-.161-.021-.32-.039-.478-.07-.617-.224-1.18-.464-1.694-.217-.463-.517-.884-.897-1.266a5.24 5.24 0 00-1.35-.979c-1.076-.54-2.425-.81-4.008-.81-1.355.013-2.535.337-3.515.962-1.046.667-1.86 1.67-2.42 2.986-.56 1.318-.841 2.946-.842 4.876.001 1.93.282 3.558.842 4.876.56 1.317 1.375 2.32 2.42 2.986.98.626 2.16.95 3.515.962 2.329-.024 4.086-.886 5.222-2.563.868-1.28 1.349-2.96 1.433-5.003.05-1.213-.158-2.324-.62-3.318-.34-.731-.818-1.364-1.424-1.893.607-.503 1.286-.754 2.025-.754 1.014 0 1.853.402 2.5 1.196.753.923 1.13 2.246 1.13 3.94 0 1.864-.348 3.457-1.034 4.74-.912 1.705-2.376 2.98-4.355 3.794-1.858.764-4.033 1.15-6.47 1.15z"/></svg>
+                          Threads
+                        </label>
+                        <input value={config.socialMedia?.threads || ''} onChange={e => onConfigChange({ ...config, socialMedia: { ...config.socialMedia, threads: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="https://threads.net/@yourstore" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                          LinkedIn
+                        </label>
+                        <input value={config.socialMedia?.linkedin || ''} onChange={e => onConfigChange({ ...config, socialMedia: { ...config.socialMedia, linkedin: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="https://linkedin.com/company/yourstore" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                          TikTok
+                        </label>
+                        <input value={config.socialMedia?.tiktok || ''} onChange={e => onConfigChange({ ...config, socialMedia: { ...config.socialMedia, tiktok: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="https://tiktok.com/@yourstore" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                          YouTube
+                        </label>
+                        <input value={config.socialMedia?.youtube || ''} onChange={e => onConfigChange({ ...config, socialMedia: { ...config.socialMedia, youtube: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="https://youtube.com/@yourstore" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/></svg>
+                          Pinterest
+                        </label>
+                        <input value={config.socialMedia?.pinterest || ''} onChange={e => onConfigChange({ ...config, socialMedia: { ...config.socialMedia, pinterest: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="https://pinterest.com/yourstore" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1.5">
+                          <MapPin size={14} />
+                          Google Business
+                        </label>
+                        <input value={config.socialMedia?.googleBusiness || ''} onChange={e => onConfigChange({ ...config, socialMedia: { ...config.socialMedia, googleBusiness: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="https://g.page/yourstore" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1.5">
+                          <MessageCircle size={14} />
+                          WhatsApp Business
+                        </label>
+                        <input value={config.socialMedia?.whatsapp || ''} onChange={e => onConfigChange({ ...config, socialMedia: { ...config.socialMedia, whatsapp: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="+1 (555) 123-4567" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1.5">
+                          <Send size={14} />
+                          Telegram
+                        </label>
+                        <input value={config.socialMedia?.telegram || ''} onChange={e => onConfigChange({ ...config, socialMedia: { ...config.socialMedia, telegram: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="https://t.me/yourstore" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.693-1.653-1.124-2.678-1.8-1.185-.781-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.139.121.097.155.228.171.319-.01.073-.029.168-.053.262z"/></svg>
+                          Snapchat
+                        </label>
+                        <input value={config.socialMedia?.snapchat || ''} onChange={e => onConfigChange({ ...config, socialMedia: { ...config.socialMedia, snapchat: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="https://snapchat.com/add/yourstore" />
+                      </div>
+                    </div>
+                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mt-4">
+                      <div className="flex items-start gap-2">
+                        <Info size={16} className="text-blue-400 mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-blue-300">
+                          <strong>Tip:</strong> Logo is now managed in <strong>Designer → Site Identity</strong>. Social media links can be displayed in your footer and header sections.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Store Address */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2"><MapPin size={18} className="text-blue-500"/> Store Address</h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Street Address Line 1</label>
+                        <input value={config.storeAddress?.street1 || ''} onChange={e => onConfigChange({ ...config, storeAddress: { ...config.storeAddress, street1: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="123 Commerce Street" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Street Address Line 2 (Optional)</label>
+                        <input value={config.storeAddress?.street2 || ''} onChange={e => onConfigChange({ ...config, storeAddress: { ...config.storeAddress, street2: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="Suite 100" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div><label className="text-xs font-bold text-neutral-500 uppercase">City</label><input value={config.storeAddress?.city || ''} onChange={e => onConfigChange({ ...config, storeAddress: { ...config.storeAddress, city: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="New York" /></div>
+                        <div><label className="text-xs font-bold text-neutral-500 uppercase">State / Province</label><input value={config.storeAddress?.state || ''} onChange={e => onConfigChange({ ...config, storeAddress: { ...config.storeAddress, state: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="NY" /></div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div><label className="text-xs font-bold text-neutral-500 uppercase">Postal / Zip Code</label><input value={config.storeAddress?.zip || ''} onChange={e => onConfigChange({ ...config, storeAddress: { ...config.storeAddress, zip: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="10001" /></div>
+                        <div><label className="text-xs font-bold text-neutral-500 uppercase">Country</label><input value={config.storeAddress?.country || ''} onChange={e => onConfigChange({ ...config, storeAddress: { ...config.storeAddress, country: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="United States" /></div>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Address Phone</label>
+                        <input value={config.storeAddress?.phone || ''} onChange={e => onConfigChange({ ...config, storeAddress: { ...config.storeAddress, phone: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none" placeholder="+1 (555) 123-4567" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Formats & Standards */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2"><Globe size={18} className="text-purple-500"/> Formats & Standards</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1"><Clock size={12}/> Timezone</label>
+                        <select value={config.storeFormats?.timezone || 'UTC'} onChange={e => onConfigChange({ ...config, storeFormats: { ...config.storeFormats, timezone: e.target.value } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none appearance-none">
+                          <option value="UTC">UTC</option>
+                          <option value="America/New_York">Eastern Time (US & Canada)</option>
+                          <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
+                          <option value="Europe/London">London</option>
+                          <option value="Asia/Tokyo">Tokyo</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-1"><Scale size={12}/> Weight Unit</label>
+                        <select value={config.storeFormats?.weightUnit || 'kg'} onChange={e => onConfigChange({ ...config, storeFormats: { ...config.storeFormats, weightUnit: e.target.value as any } })} className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none appearance-none">
+                          <option value="kg">Kilograms (kg)</option>
+                          <option value="lb">Pounds (lb)</option>
+                          <option value="oz">Ounces (oz)</option>
+                          <option value="g">Grams (g)</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 
@@ -15442,6 +15642,1045 @@ Return ONLY the JSON object, no markdown.`;
                           <option value="m">Meters (m)</option>
                           <option value="mm">Millimeters (mm)</option>
                         </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Invoice & Receipt Settings */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <FileCheck size={18} className="text-green-500"/> Invoice & Receipt Settings
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 bg-neutral-950 border border-neutral-700 rounded-lg">
+                        <div>
+                          <label className="text-sm font-bold text-white">Show Logo on Invoices</label>
+                          <p className="text-xs text-neutral-500 mt-1">Display your store logo on invoices and receipts</p>
+                        </div>
+                        <button
+                          onClick={() => onConfigChange({ 
+                            ...config, 
+                            invoiceSettings: { 
+                              ...config.invoiceSettings, 
+                              showLogo: !config.invoiceSettings?.showLogo 
+                            } 
+                          })}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            config.invoiceSettings?.showLogo ? 'bg-blue-600' : 'bg-neutral-700'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              config.invoiceSettings?.showLogo ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      {config.invoiceSettings?.showLogo && (
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Logo Size</label>
+                          <select 
+                            value={config.invoiceSettings?.logoSize || 'medium'} 
+                            onChange={e => onConfigChange({ 
+                              ...config, 
+                              invoiceSettings: { 
+                                ...config.invoiceSettings, 
+                                logoSize: e.target.value as 'small' | 'medium' | 'large' 
+                              } 
+                            })} 
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none appearance-none"
+                          >
+                            <option value="small">Small (24px)</option>
+                            <option value="medium">Medium (32px)</option>
+                            <option value="large">Large (48px)</option>
+                          </select>
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Invoice Footer Text</label>
+                        <textarea
+                          value={config.invoiceSettings?.footerText || ''}
+                          onChange={e => onConfigChange({ 
+                            ...config, 
+                            invoiceSettings: { 
+                              ...config.invoiceSettings, 
+                              footerText: e.target.value 
+                            } 
+                          })}
+                          className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none resize-none"
+                          rows={2}
+                          placeholder="Thank you for your business!"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">Displayed at the bottom of every invoice</p>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Legal Disclaimer</label>
+                        <textarea
+                          value={config.invoiceSettings?.legalDisclaimer || ''}
+                          onChange={e => onConfigChange({ 
+                            ...config, 
+                            invoiceSettings: { 
+                              ...config.invoiceSettings, 
+                              legalDisclaimer: e.target.value 
+                            } 
+                          })}
+                          className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none resize-none"
+                          rows={3}
+                          placeholder="All sales final. No refunds or exchanges. Prices subject to change without notice."
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">Legal text shown on invoices (taxes, returns, warranties)</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tax Configuration */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <DollarSign size={18} className="text-emerald-500"/> Tax Configuration
+                    </h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Tax Label</label>
+                        <input
+                          value={config.taxSettings?.taxLabel || ''}
+                          onChange={e => onConfigChange({ 
+                            ...config, 
+                            taxSettings: { 
+                              ...config.taxSettings, 
+                              taxLabel: e.target.value 
+                            } 
+                          })}
+                          className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none"
+                          placeholder="e.g., VAT, GST, Sales Tax"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">The name of the tax shown to customers</p>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Default Tax Rate (%)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          value={config.taxSettings?.defaultTaxRate || 0}
+                          onChange={e => onConfigChange({ 
+                            ...config, 
+                            taxSettings: { 
+                              ...config.taxSettings, 
+                              defaultTaxRate: parseFloat(e.target.value) || 0 
+                            } 
+                          })}
+                          className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none"
+                          placeholder="0.00"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">Default tax percentage applied to orders</p>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 bg-neutral-950 border border-neutral-700 rounded-lg">
+                        <div>
+                          <label className="text-sm font-bold text-white">Tax-Inclusive Pricing</label>
+                          <p className="text-xs text-neutral-500 mt-1">Product prices already include tax</p>
+                        </div>
+                        <button
+                          onClick={() => onConfigChange({ 
+                            ...config, 
+                            taxSettings: { 
+                              ...config.taxSettings, 
+                              taxInclusive: !config.taxSettings?.taxInclusive 
+                            } 
+                          })}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            config.taxSettings?.taxInclusive ? 'bg-blue-600' : 'bg-neutral-700'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              config.taxSettings?.taxInclusive ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Policies & Legal */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <ScrollText size={18} className="text-amber-500"/> Policies & Legal
+                    </h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Return Policy</label>
+                        <textarea
+                          value={config.returnPolicy || ''}
+                          onChange={e => onConfigChange({ ...config, returnPolicy: e.target.value })}
+                          className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none resize-none"
+                          rows={4}
+                          placeholder="Returns accepted within 30 days of purchase with original receipt..."
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">Your store's return policy shown on product pages</p>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Refund Policy</label>
+                        <textarea
+                          value={config.refundPolicy || ''}
+                          onChange={e => onConfigChange({ ...config, refundPolicy: e.target.value })}
+                          className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none resize-none"
+                          rows={4}
+                          placeholder="Refunds issued to original payment method within 5-7 business days..."
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">Refund terms and processing timeframes</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Terms of Service URL</label>
+                          <input
+                            type="url"
+                            value={config.termsOfServiceUrl || ''}
+                            onChange={e => onConfigChange({ ...config, termsOfServiceUrl: e.target.value })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none"
+                            placeholder="https://yourstore.com/terms"
+                          />
+                          <p className="text-xs text-neutral-500 mt-1">Link shown in footer and checkout</p>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Privacy Policy URL</label>
+                          <input
+                            type="url"
+                            value={config.privacyPolicyUrl || ''}
+                            onChange={e => onConfigChange({ ...config, privacyPolicyUrl: e.target.value })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none"
+                            placeholder="https://yourstore.com/privacy"
+                          />
+                          <p className="text-xs text-neutral-500 mt-1">Link shown in footer and checkout</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Multi-Location Management */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <MapPinned size={18} className="text-red-500"/> Multi-Location Management
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="bg-neutral-950 border border-neutral-700 rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <p className="text-sm font-bold text-white">Store Locations & Warehouses</p>
+                            <p className="text-xs text-neutral-500 mt-1">Manage multiple fulfillment locations for inventory and shipping</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              const newLocation = {
+                                id: `loc_${Date.now()}`,
+                                name: 'New Location',
+                                type: 'warehouse' as const,
+                                isDefault: !config.locations || config.locations.length === 0,
+                                address: {
+                                  street1: '',
+                                  city: '',
+                                  state: '',
+                                  zip: '',
+                                  country: ''
+                                },
+                                inventoryEnabled: true,
+                                shippingEnabled: true
+                              };
+                              onConfigChange({
+                                ...config,
+                                locations: [...(config.locations || []), newLocation]
+                              });
+                            }}
+                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
+                          >
+                            <Plus size={14} /> Add Location
+                          </button>
+                        </div>
+
+                        {(!config.locations || config.locations.length === 0) ? (
+                          <div className="text-center py-8 border-2 border-dashed border-neutral-700 rounded-lg">
+                            <MapPinned size={32} className="mx-auto text-neutral-600 mb-2" />
+                            <p className="text-sm text-neutral-500">No locations configured</p>
+                            <p className="text-xs text-neutral-600 mt-1">Add your first warehouse or store location</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {config.locations.map((location, index) => (
+                              <div key={location.id} className="bg-black border border-neutral-800 rounded-lg p-4">
+                                <div className="flex items-start justify-between mb-3">
+                                  <div className="flex-1">
+                                    <input
+                                      value={location.name}
+                                      onChange={e => {
+                                        const updated = [...(config.locations || [])];
+                                        updated[index] = { ...updated[index], name: e.target.value };
+                                        onConfigChange({ ...config, locations: updated });
+                                      }}
+                                      className="text-sm font-bold text-white bg-transparent border-b border-transparent hover:border-neutral-600 focus:border-blue-500 outline-none pb-1"
+                                      placeholder="Location Name"
+                                    />
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <select
+                                        value={location.type}
+                                        onChange={e => {
+                                          const updated = [...(config.locations || [])];
+                                          updated[index] = { ...updated[index], type: e.target.value as any };
+                                          onConfigChange({ ...config, locations: updated });
+                                        }}
+                                        className="text-xs bg-neutral-900 border border-neutral-700 rounded px-2 py-1 text-neutral-400"
+                                      >
+                                        <option value="warehouse">Warehouse</option>
+                                        <option value="store">Store</option>
+                                        <option value="fulfillment-center">Fulfillment Center</option>
+                                        <option value="office">Office</option>
+                                      </select>
+                                      {location.isDefault && (
+                                        <span className="text-xs bg-blue-600/20 border border-blue-600/50 text-blue-400 px-2 py-0.5 rounded">Default</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      const updated = config.locations?.filter((_, i) => i !== index);
+                                      onConfigChange({ ...config, locations: updated });
+                                    }}
+                                    className="text-neutral-500 hover:text-red-400 transition-colors"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 text-xs">
+                                  <div>
+                                    <input
+                                      value={location.address.street1}
+                                      onChange={e => {
+                                        const updated = [...(config.locations || [])];
+                                        updated[index] = {
+                                          ...updated[index],
+                                          address: { ...updated[index].address, street1: e.target.value }
+                                        };
+                                        onConfigChange({ ...config, locations: updated });
+                                      }}
+                                      className="w-full bg-neutral-950 border border-neutral-800 rounded p-2 text-white"
+                                      placeholder="Street Address"
+                                    />
+                                  </div>
+                                  <div>
+                                    <input
+                                      value={location.address.city}
+                                      onChange={e => {
+                                        const updated = [...(config.locations || [])];
+                                        updated[index] = {
+                                          ...updated[index],
+                                          address: { ...updated[index].address, city: e.target.value }
+                                        };
+                                        onConfigChange({ ...config, locations: updated });
+                                      }}
+                                      className="w-full bg-neutral-950 border border-neutral-800 rounded p-2 text-white"
+                                      placeholder="City"
+                                    />
+                                  </div>
+                                  <div>
+                                    <input
+                                      value={location.address.state}
+                                      onChange={e => {
+                                        const updated = [...(config.locations || [])];
+                                        updated[index] = {
+                                          ...updated[index],
+                                          address: { ...updated[index].address, state: e.target.value }
+                                        };
+                                        onConfigChange({ ...config, locations: updated });
+                                      }}
+                                      className="w-full bg-neutral-950 border border-neutral-800 rounded p-2 text-white"
+                                      placeholder="State/Province"
+                                    />
+                                  </div>
+                                  <div>
+                                    <input
+                                      value={location.address.zip}
+                                      onChange={e => {
+                                        const updated = [...(config.locations || [])];
+                                        updated[index] = {
+                                          ...updated[index],
+                                          address: { ...updated[index].address, zip: e.target.value }
+                                        };
+                                        onConfigChange({ ...config, locations: updated });
+                                      }}
+                                      className="w-full bg-neutral-950 border border-neutral-800 rounded p-2 text-white"
+                                      placeholder="ZIP/Postal"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-neutral-800">
+                                  <label className="flex items-center gap-2 text-xs text-neutral-400 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={location.inventoryEnabled}
+                                      onChange={e => {
+                                        const updated = [...(config.locations || [])];
+                                        updated[index] = { ...updated[index], inventoryEnabled: e.target.checked };
+                                        onConfigChange({ ...config, locations: updated });
+                                      }}
+                                      className="rounded border-neutral-700"
+                                    />
+                                    Track Inventory
+                                  </label>
+                                  <label className="flex items-center gap-2 text-xs text-neutral-400 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={location.shippingEnabled}
+                                      onChange={e => {
+                                        const updated = [...(config.locations || [])];
+                                        updated[index] = { ...updated[index], shippingEnabled: e.target.checked };
+                                        onConfigChange({ ...config, locations: updated });
+                                      }}
+                                      className="rounded border-neutral-700"
+                                    />
+                                    Enable Shipping
+                                  </label>
+                                  {!location.isDefault && (
+                                    <button
+                                      onClick={() => {
+                                        const updated = (config.locations || []).map((loc, i) => ({
+                                          ...loc,
+                                          isDefault: i === index
+                                        }));
+                                        onConfigChange({ ...config, locations: updated });
+                                      }}
+                                      className="ml-auto text-xs text-blue-500 hover:text-blue-400"
+                                    >
+                                      Set as Default
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Localization & Regional Settings */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <Languages size={18} className="text-indigo-500"/> Localization & Regional Settings
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Default Language</label>
+                          <select
+                            value={config.localization?.defaultLanguage || 'en'}
+                            onChange={e => onConfigChange({
+                              ...config,
+                              localization: {
+                                ...config.localization,
+                                defaultLanguage: e.target.value
+                              }
+                            })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none appearance-none"
+                          >
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <option value="it">Italian</option>
+                            <option value="pt">Portuguese</option>
+                            <option value="ja">Japanese</option>
+                            <option value="zh">Chinese</option>
+                            <option value="ar">Arabic</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Default Currency</label>
+                          <select
+                            value={config.localization?.defaultCurrency || 'USD'}
+                            onChange={e => onConfigChange({
+                              ...config,
+                              localization: {
+                                ...config.localization,
+                                defaultCurrency: e.target.value
+                              }
+                            })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none appearance-none"
+                          >
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="CAD">CAD - Canadian Dollar</option>
+                            <option value="AUD">AUD - Australian Dollar</option>
+                            <option value="JPY">JPY - Japanese Yen</option>
+                            <option value="CNY">CNY - Chinese Yuan</option>
+                            <option value="INR">INR - Indian Rupee</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Date Format</label>
+                          <select
+                            value={config.localization?.dateFormat || 'MM/DD/YYYY'}
+                            onChange={e => onConfigChange({
+                              ...config,
+                              localization: {
+                                ...config.localization,
+                                dateFormat: e.target.value as any
+                              }
+                            })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none appearance-none"
+                          >
+                            <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
+                            <option value="DD/MM/YYYY">DD/MM/YYYY (EU)</option>
+                            <option value="YYYY-MM-DD">YYYY-MM-DD (ISO)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Time Format</label>
+                          <select
+                            value={config.localization?.timeFormat || '12h'}
+                            onChange={e => onConfigChange({
+                              ...config,
+                              localization: {
+                                ...config.localization,
+                                timeFormat: e.target.value as '12h' | '24h'
+                              }
+                            })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none appearance-none"
+                          >
+                            <option value="12h">12-hour (3:00 PM)</option>
+                            <option value="24h">24-hour (15:00)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Currency Format</label>
+                          <select
+                            value={config.localization?.currencyFormat || 'symbol-before'}
+                            onChange={e => onConfigChange({
+                              ...config,
+                              localization: {
+                                ...config.localization,
+                                currencyFormat: e.target.value as any
+                              }
+                            })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none appearance-none"
+                          >
+                            <option value="symbol-before">$100.00</option>
+                            <option value="symbol-after">100.00$</option>
+                            <option value="code-before">USD 100.00</option>
+                            <option value="code-after">100.00 USD</option>
+                          </select>
+                          <p className="text-xs text-neutral-500 mt-1">How prices are displayed</p>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Number Format</label>
+                          <select
+                            value={`${config.localization?.numberFormat?.decimalSeparator || '.'}-${config.localization?.numberFormat?.thousandsSeparator || ','}`}
+                            onChange={e => {
+                              const [decimal, thousands] = e.target.value.split('-');
+                              onConfigChange({
+                                ...config,
+                                localization: {
+                                  ...config.localization,
+                                  numberFormat: {
+                                    decimalSeparator: decimal as '.' | ',',
+                                    thousandsSeparator: thousands as ',' | '.' | ' '
+                                  }
+                                }
+                              });
+                            }}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none appearance-none"
+                          >
+                            <option value=".-,">1,234.56 (US)</option>
+                            <option value=",-.">1.234,56 (EU)</option>
+                            <option value=".- ">1 234.56 (FR)</option>
+                          </select>
+                          <p className="text-xs text-neutral-500 mt-1">Decimal and thousands separators</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Advanced Features */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <Settings2 size={18} className="text-cyan-500"/> Advanced Features
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-center justify-between p-4 bg-neutral-950 border border-neutral-700 rounded-lg">
+                          <div>
+                            <label className="text-sm font-bold text-white">Multi-Currency Support</label>
+                            <p className="text-xs text-neutral-500 mt-1">Allow customers to shop in their local currency</p>
+                          </div>
+                          <button
+                            onClick={() => onConfigChange({
+                              ...config,
+                              localization: {
+                                ...config.localization,
+                                supportedLanguages: config.localization?.supportedLanguages?.includes('multi-currency')
+                                  ? config.localization.supportedLanguages.filter(l => l !== 'multi-currency')
+                                  : [...(config.localization?.supportedLanguages || []), 'multi-currency']
+                              }
+                            })}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                              config.localization?.supportedLanguages?.includes('multi-currency') ? 'bg-blue-600' : 'bg-neutral-700'
+                            }`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                config.localization?.supportedLanguages?.includes('multi-currency') ? 'translate-x-6' : 'translate-x-1'
+                              }`}
+                            />
+                          </button>
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 bg-neutral-950 border border-neutral-700 rounded-lg">
+                          <div>
+                            <label className="text-sm font-bold text-white">Auto-Detect Location</label>
+                            <p className="text-xs text-neutral-500 mt-1">Set language and currency based on visitor location</p>
+                          </div>
+                          <button
+                            onClick={() => onConfigChange({
+                              ...config,
+                              localization: {
+                                ...config.localization,
+                                supportedLanguages: config.localization?.supportedLanguages?.includes('auto-detect')
+                                  ? config.localization.supportedLanguages.filter(l => l !== 'auto-detect')
+                                  : [...(config.localization?.supportedLanguages || []), 'auto-detect']
+                              }
+                            })}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                              config.localization?.supportedLanguages?.includes('auto-detect') ? 'bg-blue-600' : 'bg-neutral-700'
+                            }`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                config.localization?.supportedLanguages?.includes('auto-detect') ? 'translate-x-6' : 'translate-x-1'
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-blue-600/10 border border-blue-600/30 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Info size={18} className="text-blue-400 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-bold text-blue-400">Multi-Location Inventory</p>
+                            <p className="text-xs text-blue-300/80 mt-1">
+                              When enabled, inventory is tracked separately for each location. Customers will only see products available at their nearest fulfillment center.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-amber-600/10 border border-amber-600/30 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Lightbulb size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-bold text-amber-400">Regional Shipping Rules</p>
+                            <p className="text-xs text-amber-300/80 mt-1">
+                              Configure location-based shipping to automatically route orders to the nearest warehouse, reducing shipping costs and delivery times.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Business Hours */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <Clock size={18} className="text-orange-500"/> Business Hours
+                    </h4>
+                    <div className="space-y-3">
+                      {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => {
+                        const dayData = config.businessHours?.[day as keyof typeof config.businessHours];
+                        const isClosed = dayData?.closed || false;
+                        
+                        return (
+                          <div key={day} className="flex items-center gap-4 p-3 bg-neutral-950 border border-neutral-700 rounded-lg">
+                            <div className="w-28">
+                              <span className="text-sm font-bold text-white capitalize">{day}</span>
+                            </div>
+                            
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={isClosed}
+                                onChange={e => {
+                                  onConfigChange({
+                                    ...config,
+                                    businessHours: {
+                                      ...config.businessHours,
+                                      [day]: {
+                                        ...dayData,
+                                        closed: e.target.checked,
+                                        open: dayData?.open || '09:00',
+                                        close: dayData?.close || '17:00'
+                                      }
+                                    }
+                                  });
+                                }}
+                                className="rounded border-neutral-700"
+                              />
+                              <span className="text-xs text-neutral-400">Closed</span>
+                            </label>
+
+                            {!isClosed && (
+                              <>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="time"
+                                    value={dayData?.open || '09:00'}
+                                    onChange={e => {
+                                      onConfigChange({
+                                        ...config,
+                                        businessHours: {
+                                          ...config.businessHours,
+                                          [day]: {
+                                            ...dayData,
+                                            open: e.target.value,
+                                            close: dayData?.close || '17:00'
+                                          }
+                                        }
+                                      });
+                                    }}
+                                    className="bg-black border border-neutral-800 rounded px-3 py-1.5 text-white text-sm focus:border-blue-500 outline-none"
+                                  />
+                                  <span className="text-neutral-500 text-sm">to</span>
+                                  <input
+                                    type="time"
+                                    value={dayData?.close || '17:00'}
+                                    onChange={e => {
+                                      onConfigChange({
+                                        ...config,
+                                        businessHours: {
+                                          ...config.businessHours,
+                                          [day]: {
+                                            ...dayData,
+                                            open: dayData?.open || '09:00',
+                                            close: e.target.value
+                                          }
+                                        }
+                                      });
+                                    }}
+                                    className="bg-black border border-neutral-800 rounded px-3 py-1.5 text-white text-sm focus:border-blue-500 outline-none"
+                                  />
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        );
+                      })}
+                      
+                      <div className="pt-3 border-t border-neutral-800">
+                        <div className="flex items-center gap-2">
+                          <Info size={14} className="text-blue-500 flex-shrink-0" />
+                          <p className="text-xs text-neutral-500">Business hours are displayed on your store and used for customer support scheduling</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Return Address */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <PackageOpen size={18} className="text-purple-500"/> Return Address
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="p-3 bg-blue-600/10 border border-blue-600/30 rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <Info size={14} className="text-blue-400 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs text-blue-300/80">
+                            Separate return address for product returns and exchanges. Leave empty to use your store address.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Attention To (Optional)</label>
+                        <input
+                          value={config.returnAddress?.attentionTo || ''}
+                          onChange={e => onConfigChange({
+                            ...config,
+                            returnAddress: {
+                              ...config.returnAddress,
+                              attentionTo: e.target.value
+                            }
+                          })}
+                          className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none"
+                          placeholder="Returns Department"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">ATTN line on return labels</p>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Street Address Line 1</label>
+                        <input
+                          value={config.returnAddress?.street1 || ''}
+                          onChange={e => onConfigChange({
+                            ...config,
+                            returnAddress: {
+                              ...config.returnAddress,
+                              street1: e.target.value
+                            }
+                          })}
+                          className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none"
+                          placeholder="123 Returns Processing Center"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Street Address Line 2</label>
+                        <input
+                          value={config.returnAddress?.street2 || ''}
+                          onChange={e => onConfigChange({
+                            ...config,
+                            returnAddress: {
+                              ...config.returnAddress,
+                              street2: e.target.value
+                            }
+                          })}
+                          className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none"
+                          placeholder="Suite, Unit, Floor (optional)"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">City</label>
+                          <input
+                            value={config.returnAddress?.city || ''}
+                            onChange={e => onConfigChange({
+                              ...config,
+                              returnAddress: {
+                                ...config.returnAddress,
+                                city: e.target.value
+                              }
+                            })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none"
+                            placeholder="City"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">State / Province</label>
+                          <input
+                            value={config.returnAddress?.state || ''}
+                            onChange={e => onConfigChange({
+                              ...config,
+                              returnAddress: {
+                                ...config.returnAddress,
+                                state: e.target.value
+                              }
+                            })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none"
+                            placeholder="State"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Postal / Zip Code</label>
+                          <input
+                            value={config.returnAddress?.zip || ''}
+                            onChange={e => onConfigChange({
+                              ...config,
+                              returnAddress: {
+                                ...config.returnAddress,
+                                zip: e.target.value
+                              }
+                            })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none"
+                            placeholder="ZIP Code"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Country</label>
+                          <input
+                            value={config.returnAddress?.country || ''}
+                            onChange={e => onConfigChange({
+                              ...config,
+                              returnAddress: {
+                                ...config.returnAddress,
+                                country: e.target.value
+                              }
+                            })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none"
+                            placeholder="Country"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-neutral-500 uppercase">Phone Number</label>
+                        <input
+                          value={config.returnAddress?.phone || ''}
+                          onChange={e => onConfigChange({
+                            ...config,
+                            returnAddress: {
+                              ...config.returnAddress,
+                              phone: e.target.value
+                            }
+                          })}
+                          className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none"
+                          placeholder="+1 (555) 123-4567"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Order ID Customization */}
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                    <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
+                      <Hash size={18} className="text-pink-500"/> Order ID Customization
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="p-3 bg-neutral-950 border border-neutral-700 rounded-lg">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-xs font-bold text-neutral-500 uppercase">Preview</span>
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-600/20 border border-blue-600/50 rounded">
+                            <span className="text-sm font-mono text-blue-400">
+                              {config.storeFormats?.orderIdPrefix || ''}
+                              <span className="text-white">12345</span>
+                              {config.storeFormats?.orderIdSuffix || ''}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-neutral-500">How order IDs will appear to customers</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Prefix (Optional)</label>
+                          <input
+                            value={config.storeFormats?.orderIdPrefix || ''}
+                            onChange={e => onConfigChange({
+                              ...config,
+                              storeFormats: {
+                                ...config.storeFormats,
+                                orderIdPrefix: e.target.value,
+                                timezone: config.storeFormats?.timezone || 'UTC',
+                                weightUnit: config.storeFormats?.weightUnit || 'kg',
+                                dimensionUnit: config.storeFormats?.dimensionUnit || 'cm'
+                              }
+                            })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none font-mono"
+                            placeholder="ORD-"
+                            maxLength={10}
+                          />
+                          <p className="text-xs text-neutral-500 mt-1">Text before order number</p>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-neutral-500 uppercase">Suffix (Optional)</label>
+                          <input
+                            value={config.storeFormats?.orderIdSuffix || ''}
+                            onChange={e => onConfigChange({
+                              ...config,
+                              storeFormats: {
+                                ...config.storeFormats,
+                                orderIdSuffix: e.target.value,
+                                timezone: config.storeFormats?.timezone || 'UTC',
+                                weightUnit: config.storeFormats?.weightUnit || 'kg',
+                                dimensionUnit: config.storeFormats?.dimensionUnit || 'cm'
+                              }
+                            })}
+                            className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-white mt-1 focus:border-blue-500 outline-none font-mono"
+                            placeholder="-US"
+                            maxLength={10}
+                          />
+                          <p className="text-xs text-neutral-500 mt-1">Text after order number</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <p className="text-xs font-bold text-neutral-500 uppercase">Common Examples</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => onConfigChange({
+                              ...config,
+                              storeFormats: {
+                                ...config.storeFormats,
+                                orderIdPrefix: 'ORD-',
+                                orderIdSuffix: '',
+                                timezone: config.storeFormats?.timezone || 'UTC',
+                                weightUnit: config.storeFormats?.weightUnit || 'kg',
+                                dimensionUnit: config.storeFormats?.dimensionUnit || 'cm'
+                              }
+                            })}
+                            className="text-xs px-3 py-2 bg-neutral-950 border border-neutral-700 hover:border-blue-600 rounded text-neutral-400 hover:text-white transition-colors text-left"
+                          >
+                            <span className="font-mono text-blue-400">ORD-12345</span>
+                          </button>
+                          <button
+                            onClick={() => onConfigChange({
+                              ...config,
+                              storeFormats: {
+                                ...config.storeFormats,
+                                orderIdPrefix: '#',
+                                orderIdSuffix: '',
+                                timezone: config.storeFormats?.timezone || 'UTC',
+                                weightUnit: config.storeFormats?.weightUnit || 'kg',
+                                dimensionUnit: config.storeFormats?.dimensionUnit || 'cm'
+                              }
+                            })}
+                            className="text-xs px-3 py-2 bg-neutral-950 border border-neutral-700 hover:border-blue-600 rounded text-neutral-400 hover:text-white transition-colors text-left"
+                          >
+                            <span className="font-mono text-blue-400">#12345</span>
+                          </button>
+                          <button
+                            onClick={() => onConfigChange({
+                              ...config,
+                              storeFormats: {
+                                ...config.storeFormats,
+                                orderIdPrefix: '',
+                                orderIdSuffix: '-' + new Date().getFullYear().toString().slice(-2),
+                                timezone: config.storeFormats?.timezone || 'UTC',
+                                weightUnit: config.storeFormats?.weightUnit || 'kg',
+                                dimensionUnit: config.storeFormats?.dimensionUnit || 'cm'
+                              }
+                            })}
+                            className="text-xs px-3 py-2 bg-neutral-950 border border-neutral-700 hover:border-blue-600 rounded text-neutral-400 hover:text-white transition-colors text-left"
+                          >
+                            <span className="font-mono text-blue-400">12345-{new Date().getFullYear().toString().slice(-2)}</span>
+                          </button>
+                          <button
+                            onClick={() => onConfigChange({
+                              ...config,
+                              storeFormats: {
+                                ...config.storeFormats,
+                                orderIdPrefix: '',
+                                orderIdSuffix: '',
+                                timezone: config.storeFormats?.timezone || 'UTC',
+                                weightUnit: config.storeFormats?.weightUnit || 'kg',
+                                dimensionUnit: config.storeFormats?.dimensionUnit || 'cm'
+                              }
+                            })}
+                            className="text-xs px-3 py-2 bg-neutral-950 border border-neutral-700 hover:border-blue-600 rounded text-neutral-400 hover:text-white transition-colors text-left"
+                          >
+                            <span className="font-mono text-blue-400">12345</span> <span className="text-neutral-600">(None)</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

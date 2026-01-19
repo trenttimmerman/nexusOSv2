@@ -2,12 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Order } from '../types';
 import { Package, Clock, CheckCircle, XCircle, Search, Filter, ChevronDown, Eye } from 'lucide-react';
+import { sendShippingUpdate } from '../lib/notificationService';
+import { useData } from '../context/DataContext';
 
 interface OrderManagerProps {
   storeId: string | null;
 }
 
+// Helper function to generate tracking URL based on carrier
+const getTrackingUrl = (carrier: string, trackingNumber: string): string => {
+  const carriers: Record<string, string> = {
+    'Canada Post': `https://www.canadapost-postescanada.ca/track-reperage/en#/search?searchFor=${trackingNumber}`,
+    'FedEx': `https://www.fedex.com/fedextrack/?trknbr=${trackingNumber}`,
+    'UPS': `https://www.ups.com/track?tracknum=${trackingNumber}`,
+    'USPS': `https://tools.usps.com/go/TrackConfirmAction?tLabels=${trackingNumber}`,
+    'DHL': `https://www.dhl.com/en/express/tracking.html?AWB=${trackingNumber}`,
+    'Purolator': `https://www.purolator.com/en/ship-track/tracking-summary.page?pin=${trackingNumber}`
+  };
+  return carriers[carrier] || `https://www.google.com/search?q=${encodeURIComponent(carrier + ' tracking ' + trackingNumber)}`;
+};
+
 export const OrderManager: React.FC<OrderManagerProps> = ({ storeId }) => {
+  const { config } = useData();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -78,11 +94,24 @@ export const OrderManager: React.FC<OrderManagerProps> = ({ storeId }) => {
       setSelectedOrder({ ...selectedOrder, ...updates });
       setIsFulfillModalOpen(false);
       
-      // TODO: Trigger email notification if notifyCustomer is true
+      // Send shipping update email if customer notification is enabled
       if (fulfillmentData.notifyCustomer) {
-          await supabase.functions.invoke('send-shipping-update', {
-              body: { order_id: selectedOrder.id }
+        try {
+          await sendShippingUpdate(storeId, {
+            orderId: selectedOrder.id,
+            customerEmail: selectedOrder.customer_email || '',
+            customerName: `${selectedOrder.customer?.first_name || ''} ${selectedOrder.customer?.last_name || ''}`.trim() || 'Customer',
+            orderNumber: selectedOrder.id.substring(0, 8).toUpperCase(),
+            trackingNumber: fulfillmentData.trackingNumber,
+            carrier: fulfillmentData.carrier,
+            trackingUrl: getTrackingUrl(fulfillmentData.carrier, fulfillmentData.trackingNumber),
+            estimatedDelivery: undefined, // Could be calculated based on carrier
+            storeName: config.storeName || 'Store'
           });
+        } catch (emailError) {
+          console.warn('Failed to send shipping update email:', emailError);
+          // Don't block the fulfillment process for email failure
+        }
       }
 
     } catch (error) {

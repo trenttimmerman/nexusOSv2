@@ -9,6 +9,7 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { PaymentForm, CreditCard as SquareCreditCard, ApplePay, GooglePay } from 'react-square-web-payments-sdk';
 import { Discount, ShippingRate, ShippingZone } from '../types';
+import { sendOrderConfirmation, sendAdminAlert } from '../lib/notificationService';
 
 // Stripe Form Component
 const StripePaymentForm = ({ amount, onProcessPayment, isProcessing }: { amount: number, onProcessPayment: () => void, isProcessing: boolean }) => {
@@ -368,12 +369,45 @@ export const Checkout: React.FC = () => {
       }
 
       // 5. Send Order Confirmation Email
-      const { error: emailError } = await supabase.functions.invoke('send-order-confirmation', {
-        body: { order_id: order.id }
-      });
+      try {
+        await sendOrderConfirmation(storeId, {
+          orderId: order.id,
+          customerEmail: customerDetails.email,
+          customerName: `${customerDetails.firstName} ${customerDetails.lastName}`,
+          orderNumber: order.id.substring(0, 8).toUpperCase(),
+          orderTotal: orderTotal.toFixed(2),
+          orderDate: new Date().toLocaleDateString(),
+          items: items.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price.toFixed(2),
+            image: item.image
+          })),
+          shippingAddress: {
+            name: `${customerDetails.firstName} ${customerDetails.lastName}`,
+            street: customerDetails.address,
+            city: customerDetails.city,
+            state: customerDetails.state,
+            zip: customerDetails.postalCode,
+            country: customerDetails.country
+          },
+          storeName: config.storeName || 'Store',
+          storeUrl: window.location.origin
+        });
 
-      if (emailError) {
-        console.warn('Failed to send order confirmation email:', emailError);
+        // Send admin notification for new order
+        await sendAdminAlert(storeId, {
+          type: 'new_order',
+          adminEmail: config.supportEmail || '',
+          storeName: config.storeName || 'Store',
+          data: {
+            orderNumber: order.id.substring(0, 8).toUpperCase(),
+            orderTotal: orderTotal.toFixed(2),
+            customerName: `${customerDetails.firstName} ${customerDetails.lastName}`
+          }
+        });
+      } catch (emailError: any) {
+        console.warn('Failed to send email notifications:', emailError);
         // Don't block the user flow for email failure
       }
 
