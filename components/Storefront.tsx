@@ -29,24 +29,24 @@ const getBlockStyleClasses = (style?: { padding?: string; paddingX?: string; max
   
   const classes: string[] = [];
   
-  // Vertical Padding classes
+  // Vertical Padding classes - NO DEFAULT, must be explicitly set
   switch (style.padding) {
     case 'none': classes.push('py-0'); break;
     case 's': classes.push('py-4'); break;
     case 'm': classes.push('py-12'); break;
     case 'l': classes.push('py-20'); break;
     case 'xl': classes.push('py-32'); break;
-    // 'auto' - no override, use component defaults
+    // No default - sections are edge-to-edge unless explicitly set
   }
   
-  // Horizontal Padding classes
+  // Horizontal Padding classes - NO DEFAULT, must be explicitly set
   switch (style.paddingX) {
     case 'none': classes.push('px-0'); break;
     case 's': classes.push('px-4'); break;
     case 'm': classes.push('px-8'); break;
     case 'l': classes.push('px-16'); break;
     case 'xl': classes.push('px-24'); break;
-    // 'auto' - use component defaults
+    // No default - sections are full-width unless explicitly set
   }
   
   // Height classes - use relative container with proper overflow
@@ -622,15 +622,15 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         }}
       />
 
-      <main className="flex-1 pt-20">
+      <main className="flex-1">
         {activePage.blocks && activePage.blocks.length > 0 ? (
           // Render All Blocks (Including System Components)
-          <div className={`${activePage.type === 'custom' ? 'max-w-7xl mx-auto' : 'w-full'}`}>
+          <div className="w-full">
             {activePage.type === 'custom' ? (
-              <div className="max-w-4xl mx-auto px-6 pb-24">
+              <div className="w-full">
                 {activePage.blocks.map(renderBlock)}
                 {previewBlock && (
-                  <div className="border-2 border-blue-500 rounded-xl relative overflow-hidden animate-pulse">
+                  <div className="border-2 border-blue-500 relative overflow-hidden animate-pulse">
                     <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-bold px-2 py-1 z-50">PREVIEW</div>
                     {renderBlock(previewBlock)}
                   </div>

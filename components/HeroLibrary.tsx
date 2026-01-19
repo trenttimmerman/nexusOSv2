@@ -1262,7 +1262,7 @@ const HeroVideoMask: React.FC<HeroProps> = ({ storeName, primaryColor, data, isE
   const secondaryButtonLink = data?.secondaryButtonLink || '#';
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black -mt-20 pt-20">
       {/* Background Video */}
       <div className="absolute inset-0 w-full h-full">
         <video
@@ -1559,7 +1559,7 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
   }, [particles, particleColor, particleStyle, showParticles, videoUrl]);
 
   return (
-    <section className="relative min-h-screen bg-black overflow-hidden flex items-center justify-center">
+    <section className="relative min-h-screen bg-black overflow-hidden flex items-center justify-center -mt-20 pt-20">
       {/* Video Background (Optional) */}
       {videoUrl && (
         <div className="absolute inset-0 group">
@@ -1845,7 +1845,7 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
   return (
     <section 
       ref={heroRef}
-      className={`relative min-h-screen bg-gradient-to-br ${bgGradient} overflow-hidden`}
+      className={`relative min-h-screen bg-gradient-to-br ${bgGradient} overflow-hidden -mt-20 pt-20`}
     >
       {/* Noise Texture Overlay */}
       <div className="absolute inset-0 opacity-20 mix-blend-overlay"
@@ -1874,10 +1874,10 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
       )}
 
       {/* Main Content Container */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 min-h-screen">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 min-h-screen">
         
         {/* Top Section: Headline + CTA */}
-        <div className="max-w-3xl mb-12 pt-20">
+        <div className="max-w-3xl mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 mb-6">
             <Sparkles size={16} className="text-indigo-400" />
             <DisplayText
