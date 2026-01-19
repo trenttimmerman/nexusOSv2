@@ -463,7 +463,7 @@ Return ONLY those two lines, nothing else.`;
       <div key={category.id} className="mb-1">
         {isEditing ? (
           <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 mb-2">
-            <div className="grid grid-cols-2 gap-4 mb-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
               <div>
                 <label className="block text-sm font-medium text-neutral-400 mb-1">Name</label>
                 <input
@@ -599,7 +599,7 @@ Return ONLY those two lines, nothing else.`;
               </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-4 mb-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-3">
               <div>
                 <label className="block text-sm font-medium text-neutral-400 mb-1">Parent Category</label>
                 <select
@@ -854,7 +854,7 @@ Return ONLY those two lines, nothing else.`;
         <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 mb-4">
           <h3 className="text-lg font-semibold text-white mb-3">New Category</h3>
           
-          <div className="grid grid-cols-2 gap-4 mb-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
             <div>
               <label className="block text-sm font-medium text-neutral-400 mb-1">Name *</label>
               <input
@@ -943,7 +943,7 @@ Return ONLY those two lines, nothing else.`;
             </div>
           </div>
           
-          <div className="grid grid-cols-3 gap-4 mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-3">
             <div>
               <label className="block text-sm font-medium text-neutral-400 mb-1">Parent Category</label>
               <select

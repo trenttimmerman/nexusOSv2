@@ -295,7 +295,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({ storeId }) => {
               {selectedOrder.status === 'fulfilled' && selectedOrder.tracking_number && (
                   <div className="bg-green-900/20 border border-green-900/50 rounded-xl p-4 mt-4">
                       <h4 className="text-green-500 font-bold text-sm mb-2 flex items-center gap-2"><CheckCircle size={16}/> Fulfilled</h4>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                           <div>
                               <div className="text-neutral-500 text-xs uppercase font-bold">Carrier</div>
                               <div className="text-white">{selectedOrder.carrier}</div>

@@ -498,7 +498,7 @@ Return ONLY those two lines, nothing else.`;
       </h3>
       
       {/* Basic Info */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-neutral-400 mb-2">Name *</label>
           <input
@@ -575,7 +575,7 @@ Return ONLY those two lines, nothing else.`;
       </div>
       
       {/* Collection Type */}
-      <div className="grid grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-neutral-400 mb-2">Type</label>
           <select
@@ -776,7 +776,7 @@ Return ONLY those two lines, nothing else.`;
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Available Products */}
             <div className="bg-black border border-neutral-700 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-3">
