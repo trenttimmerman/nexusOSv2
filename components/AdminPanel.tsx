@@ -804,11 +804,43 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isTestingConnection, setIsTestingConnection] = useState<string | null>(null);
 
   const handleTestConnection = async (provider: string) => {
+    if (!storeId) {
+      showToast('Store ID not found', 'error');
+      return;
+    }
+
     setIsTestingConnection(provider);
-    // Simulate API check - in production this would call a backend function
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsTestingConnection(null);
-    alert(`Successfully connected to ${provider.charAt(0).toUpperCase() + provider.slice(1)}!`);
+    
+    try {
+      // Determine API endpoint based on provider type
+      const isShippingProvider = provider === 'shippo' || provider === 'easypost';
+      const endpoint = isShippingProvider ? '/api/validate-shipping' : '/api/validate-payment';
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider,
+          storeId,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.valid) {
+        showToast(`✓ ${provider.charAt(0).toUpperCase() + provider.slice(1)} connected successfully!`, 'success');
+        if (result.details) {
+          console.log('Connection details:', result.details);
+        }
+      } else {
+        showToast(result.message || 'Connection failed', 'error');
+      }
+    } catch (error: any) {
+      console.error('Connection test error:', error);
+      showToast('Failed to test connection: ' + error.message, 'error');
+    } finally {
+      setIsTestingConnection(null);
+    }
   };
 
   const handleSaveSecrets = async () => {
@@ -897,6 +929,42 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     
     onConfigChange({ ...config, taxRegions: [...(config.taxRegions || []), newRegion] });
     setEditingTaxRegionId(newRegion.id);
+  };
+
+  const handleSendTestNotification = async (type: 'order_confirmation' | 'shipping_update' | 'admin_order' | 'admin_low_stock') => {
+    if (!storeId) {
+      showToast('Store ID not found', 'error');
+      return;
+    }
+
+    if (!config.supportEmail) {
+      showToast('Please configure a support email in General Settings first', 'error');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/send-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: `test_${type}`,
+          storeId,
+          data: {
+            testEmail: config.supportEmail,
+            timestamp: new Date().toISOString(),
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send test email');
+      }
+
+      showToast(`✓ Test email sent to ${config.supportEmail}`, 'success');
+    } catch (error: any) {
+      console.error('Test email error:', error);
+      showToast('Failed to send test email: ' + error.message, 'error');
+    }
   };
 
   // Campaign State
@@ -16105,7 +16173,7 @@ Return ONLY the JSON object, no markdown.`;
                             <div>
                                 <div className="font-bold text-white text-sm">Order Confirmation</div>
                                 <div className="text-xs text-neutral-500">Sent automatically when a customer places an order.</div>
-                                <button onClick={() => alert('Test email sent!')} className="text-[10px] font-bold text-blue-500 hover:text-white mt-1 flex items-center gap-1"><Send size={10}/> Send Test</button>
+                                <button onClick={() => handleSendTestNotification('order_confirmation')} className="text-[10px] font-bold text-blue-500 hover:text-white mt-1 flex items-center gap-1"><Send size={10}/> Send Test</button>
                             </div>
                             <button 
                                 onClick={() => onConfigChange({ ...config, notificationSettings: { ...config.notificationSettings, orderConfirmation: !config.notificationSettings?.orderConfirmation } })}
@@ -16118,7 +16186,7 @@ Return ONLY the JSON object, no markdown.`;
                             <div>
                                 <div className="font-bold text-white text-sm">Shipping Updates</div>
                                 <div className="text-xs text-neutral-500">Sent when an order is marked as shipped.</div>
-                                <button onClick={() => alert('Test email sent!')} className="text-[10px] font-bold text-blue-500 hover:text-white mt-1 flex items-center gap-1"><Send size={10}/> Send Test</button>
+                                <button onClick={() => handleSendTestNotification('shipping_update')} className="text-[10px] font-bold text-blue-500 hover:text-white mt-1 flex items-center gap-1"><Send size={10}/> Send Test</button>
                             </div>
                             <button 
                                 onClick={() => onConfigChange({ ...config, notificationSettings: { ...config.notificationSettings, shippingUpdate: !config.notificationSettings?.shippingUpdate } })}
@@ -16139,7 +16207,7 @@ Return ONLY the JSON object, no markdown.`;
                             <div>
                                 <div className="font-bold text-white text-sm">New Order Alert</div>
                                 <div className="text-xs text-neutral-500">Receive an email when a new order is placed.</div>
-                                <button onClick={() => alert('Test email sent!')} className="text-[10px] font-bold text-blue-500 hover:text-white mt-1 flex items-center gap-1"><Send size={10}/> Send Test</button>
+                                <button onClick={() => handleSendTestNotification('admin_order')} className="text-[10px] font-bold text-blue-500 hover:text-white mt-1 flex items-center gap-1"><Send size={10}/> Send Test</button>
                             </div>
                             <button 
                                 onClick={() => onConfigChange({ ...config, notificationSettings: { ...config.notificationSettings, adminOrderAlert: !config.notificationSettings?.adminOrderAlert } })}
@@ -16152,7 +16220,7 @@ Return ONLY the JSON object, no markdown.`;
                             <div>
                                 <div className="font-bold text-white text-sm">Low Stock Alert</div>
                                 <div className="text-xs text-neutral-500">Receive an email when inventory drops below threshold.</div>
-                                <button onClick={() => alert('Test email sent!')} className="text-[10px] font-bold text-blue-500 hover:text-white mt-1 flex items-center gap-1"><Send size={10}/> Send Test</button>
+                                <button onClick={() => handleSendTestNotification('admin_low_stock')} className="text-[10px] font-bold text-blue-500 hover:text-white mt-1 flex items-center gap-1"><Send size={10}/> Send Test</button>
                             </div>
                             <button 
                                 onClick={() => onConfigChange({ ...config, notificationSettings: { ...config.notificationSettings, adminLowStockAlert: !config.notificationSettings?.adminLowStockAlert } })}
