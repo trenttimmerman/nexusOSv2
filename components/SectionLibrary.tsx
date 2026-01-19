@@ -64,6 +64,13 @@ const PROMO_BANNER_DEFAULTS: UniversalSectionData = {
   iconSize: 14,
 };
 
+const SPACER_DEFAULTS: UniversalSectionData = {
+  backgroundColor: '#ffffff',
+  height: 'md',
+  blurEdges: 'none',
+  blurIntensity: 20,
+};
+
 // --- RICH TEXT ---
 export const RICH_TEXT_OPTIONS = [
   { id: 'rt-centered', name: 'Centered Minimal', description: 'Clean centered text block' },
@@ -946,4 +953,79 @@ export const PROMO_BANNER_COMPONENTS: Record<string, React.FC<SectionComponentPr
       </div>
     </div>
   )
+};
+
+// --- SPACER ---
+export const SPACER_OPTIONS = [
+  { id: 'spacer-simple', name: 'Simple Spacer', description: 'Clean vertical spacing between sections' },
+];
+
+const getSpacerHeight = (height?: string) => {
+  switch (height) {
+    case 'xs': return '2rem';    // 32px
+    case 'sm': return '4rem';    // 64px
+    case 'md': return '6rem';    // 96px
+    case 'lg': return '10rem';   // 160px
+    case 'xl': return '16rem';   // 256px
+    case 'custom': return undefined; // Will use customHeight
+    default: return '6rem';
+  }
+};
+
+export const SPACER_COMPONENTS: Record<string, React.FC<SectionComponentProps>> = {
+  'spacer-simple': ({ data, isEditable }) => {
+    const backgroundColor = data?.backgroundColor || SPACER_DEFAULTS.backgroundColor;
+    const heightValue = data?.height === 'custom' ? data?.customHeight : getSpacerHeight(data?.height);
+    const blurEdges = data?.blurEdges || 'none';
+    const blurIntensity = data?.blurIntensity || 20;
+
+    // Calculate blur gradient based on blur edges setting
+    const getBackgroundStyle = () => {
+      if (blurEdges === 'none') {
+        return { backgroundColor };
+      }
+
+      const blurSize = `${blurSize}%`;
+      
+      if (blurEdges === 'top') {
+        return {
+          background: `linear-gradient(to bottom, transparent 0%, ${backgroundColor} ${blurSize}, ${backgroundColor} 100%)`,
+        };
+      }
+      
+      if (blurEdges === 'bottom') {
+        return {
+          background: `linear-gradient(to top, transparent 0%, ${backgroundColor} ${blurSize}, ${backgroundColor} 100%)`,
+        };
+      }
+      
+      if (blurEdges === 'both') {
+        return {
+          background: `linear-gradient(to bottom, transparent 0%, ${backgroundColor} ${blurSize}, ${backgroundColor} ${100 - parseInt(blurSize)}%, transparent 100%)`,
+        };
+      }
+      
+      return { backgroundColor };
+    };
+
+    return (
+      <div
+        className="relative w-full"
+        style={{
+          ...getBackgroundStyle(),
+          height: heightValue,
+          minHeight: heightValue,
+        }}
+      >
+        {isEditable && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="bg-black/10 backdrop-blur-sm px-4 py-2 rounded-lg text-xs font-mono text-gray-600 border border-dashed border-gray-400">
+              Spacer: {data?.height || 'md'} {data?.height === 'custom' && `(${data?.customHeight})`}
+              {blurEdges !== 'none' && ` • Blur: ${blurEdges}`}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  },
 };

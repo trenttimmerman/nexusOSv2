@@ -8,7 +8,7 @@ import { PRODUCT_PAGE_COMPONENTS } from './ProductPageLibrary';
 import { FOOTER_COMPONENTS } from './FooterLibrary';
 import { SCROLL_COMPONENTS, SCROLL_OPTIONS } from './ScrollLibrary';
 import { SOCIAL_COMPONENTS, SOCIAL_OPTIONS } from './SocialLibrary';
-import { RICH_TEXT_COMPONENTS, EMAIL_SIGNUP_COMPONENTS, COLLAPSIBLE_COMPONENTS, LOGO_LIST_COMPONENTS, PROMO_BANNER_COMPONENTS } from './SectionLibrary';
+import { RICH_TEXT_COMPONENTS, EMAIL_SIGNUP_COMPONENTS, COLLAPSIBLE_COMPONENTS, LOGO_LIST_COMPONENTS, PROMO_BANNER_COMPONENTS, SPACER_COMPONENTS } from './SectionLibrary';
 import { GALLERY_COMPONENTS } from './GalleryLibrary';
 import { BLOG_COMPONENTS } from './BlogLibrary';
 import { VIDEO_COMPONENTS } from './VideoLibrary';
@@ -457,6 +457,11 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
           const PromoComponent = PROMO_BANNER_COMPONENTS[block.variant || 'promo-top'];
           return PromoComponent ? (
             <PromoComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
+          ) : null;
+        case 'system-spacer':
+          const SpacerComponent = SPACER_COMPONENTS[block.variant || 'spacer-simple'];
+          return SpacerComponent ? (
+            <SpacerComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
           ) : null;
         case 'system-gallery':
           const GalleryComponent = GALLERY_COMPONENTS[block.variant || 'gal-grid'];

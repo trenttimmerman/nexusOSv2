@@ -21,7 +21,7 @@ import { GALLERY_OPTIONS } from './GalleryLibrary';
 import { SOCIAL_OPTIONS } from './SocialLibrary';
 import { SCROLL_OPTIONS } from './ScrollLibrary';
 import { PRODUCT_CARD_OPTIONS } from './ProductCardLibrary';
-import { RICH_TEXT_OPTIONS, EMAIL_SIGNUP_OPTIONS, COLLAPSIBLE_OPTIONS, LOGO_LIST_OPTIONS, PROMO_BANNER_OPTIONS } from './SectionLibrary';
+import { RICH_TEXT_OPTIONS, EMAIL_SIGNUP_OPTIONS, COLLAPSIBLE_OPTIONS, LOGO_LIST_OPTIONS, PROMO_BANNER_OPTIONS, SPACER_OPTIONS } from './SectionLibrary';
 
 const ALL_OPTIONS: Record<string, any[]> = {
   'system-hero': HERO_OPTIONS,
@@ -39,6 +39,7 @@ const ALL_OPTIONS: Record<string, any[]> = {
   'system-collapsible': COLLAPSIBLE_OPTIONS,
   'system-logo-list': LOGO_LIST_OPTIONS,
   'system-promo': PROMO_BANNER_OPTIONS,
+  'system-spacer': SPACER_OPTIONS,
 };
 
 // Hero variant field visibility - defines which fields appear for each hero style
@@ -711,6 +712,47 @@ const SECTION_FIELD_CONFIGS: Record<string, SectionFieldConfig> = {
         placeholder: 'Shop Now' },
       { key: 'dismissible', label: 'Can Dismiss', type: 'toggle', group: 'style', defaultValue: true,
         tip: 'Allow visitors to close the banner' },
+    ]
+  },
+
+  'system-spacer': {
+    title: 'Spacer',
+    description: 'Add vertical spacing between sections',
+    groups: [
+      { id: 'spacing', label: 'Spacing', icon: <Grid size={12} /> },
+      { id: 'style', label: 'Style', icon: <Palette size={12} /> },
+    ],
+    fields: [
+      { key: 'height', label: 'Height', type: 'select', group: 'spacing',
+        options: [
+          { value: 'xs', label: 'Extra Small (32px)' },
+          { value: 'sm', label: 'Small (64px)' },
+          { value: 'md', label: 'Medium (96px)' },
+          { value: 'lg', label: 'Large (160px)' },
+          { value: 'xl', label: 'Extra Large (256px)' },
+          { value: 'custom', label: 'Custom Height' },
+        ],
+        defaultValue: 'md',
+        tip: 'Select a preset height or choose custom' },
+      { key: 'customHeight', label: 'Custom Height', type: 'text', group: 'spacing',
+        placeholder: 'e.g., 200px, 10rem, 15vh',
+        tip: 'Only used when Height is set to Custom. Use CSS units (px, rem, vh)' },
+      { key: 'backgroundColor', label: 'Background Color', type: 'color', group: 'style',
+        defaultValue: '#ffffff',
+        tip: 'Background color for the spacer' },
+      { key: 'blurEdges', label: 'Blur Edges', type: 'select', group: 'style',
+        options: [
+          { value: 'none', label: 'None' },
+          { value: 'top', label: 'Blur Top Edge' },
+          { value: 'bottom', label: 'Blur Bottom Edge' },
+          { value: 'both', label: 'Blur Both Edges' },
+        ],
+        defaultValue: 'none',
+        tip: 'Create a gradient fade effect to blend with adjacent sections' },
+      { key: 'blurIntensity', label: 'Blur Intensity', type: 'number', group: 'style',
+        placeholder: '20',
+        defaultValue: 20,
+        tip: 'Percentage of spacer height that fades (0-50 recommended)' },
     ]
   },
 

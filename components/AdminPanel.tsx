@@ -8,7 +8,7 @@ import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } fr
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
 import { SOCIAL_OPTIONS, SOCIAL_COMPONENTS } from './SocialLibrary';
 import { SCROLL_OPTIONS, SCROLL_FIELDS, SCROLL_COMPONENTS } from './ScrollLibrary';
-import { RICH_TEXT_OPTIONS, RICH_TEXT_COMPONENTS, EMAIL_SIGNUP_OPTIONS, EMAIL_SIGNUP_COMPONENTS, COLLAPSIBLE_OPTIONS, COLLAPSIBLE_COMPONENTS, LOGO_LIST_OPTIONS, LOGO_LIST_COMPONENTS, PROMO_BANNER_OPTIONS, PROMO_BANNER_COMPONENTS } from './SectionLibrary';
+import { RICH_TEXT_OPTIONS, RICH_TEXT_COMPONENTS, EMAIL_SIGNUP_OPTIONS, EMAIL_SIGNUP_COMPONENTS, COLLAPSIBLE_OPTIONS, COLLAPSIBLE_COMPONENTS, LOGO_LIST_OPTIONS, LOGO_LIST_COMPONENTS, PROMO_BANNER_OPTIONS, PROMO_BANNER_COMPONENTS, SPACER_OPTIONS, SPACER_COMPONENTS } from './SectionLibrary';
 import { GALLERY_OPTIONS, GALLERY_COMPONENTS } from './GalleryLibrary';
 import { BLOG_OPTIONS, BLOG_COMPONENTS } from './BlogLibrary';
 import { VIDEO_OPTIONS, VIDEO_COMPONENTS } from './VideoLibrary';
@@ -13537,7 +13537,8 @@ Return ONLY the JSON object, no markdown.`;
       content: 'blue',
       marketing: 'yellow',
       media: 'indigo',
-      contact: 'teal'
+      contact: 'teal',
+      spacer: 'slate'
     };
 
     const currentColor = categoryColors[selectedCategory || 'purple'] || 'purple';
@@ -13671,6 +13672,14 @@ Return ONLY the JSON object, no markdown.`;
                     <span className="text-xs text-neutral-500">Forms and maps</span>
                   </div>
                 </button>
+
+                <button onClick={() => { setSelectedCategory('spacer'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-slate-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
+                  <div className="p-3 bg-slate-900/20 text-slate-500 rounded-lg group-hover:bg-slate-500 group-hover:text-white transition-colors"><Grid size={24} /></div>
+                  <div className="text-center">
+                    <span className="block text-sm font-bold text-white">Spacer</span>
+                    <span className="text-xs text-neutral-500">Vertical spacing</span>
+                  </div>
+                </button>
               </div>
             ) : (
               <div className="space-y-4">
@@ -13779,6 +13788,15 @@ Return ONLY the JSON object, no markdown.`;
                   {selectedCategory === 'contact' && CONTACT_OPTIONS.map(opt => (
                     <button key={opt.id} onClick={() => addBlock('system-contact', opt.name, '', opt.id)} className={`text-left rounded-xl border transition-all overflow-hidden ${previewBlock?.variant === opt.id ? 'bg-teal-600/20 border-teal-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
                       <SectionPreview category="contact" variantId={opt.id} />
+                      <div className="p-4">
+                        <div className="font-bold text-sm">{opt.name}</div>
+                        <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
+                      </div>
+                    </button>
+                  ))}
+
+                  {selectedCategory === 'spacer' && SPACER_OPTIONS.map(opt => (
+                    <button key={opt.id} onClick={() => addBlock('system-spacer', opt.name, '', opt.id)} className={`text-left rounded-xl border transition-all overflow-hidden ${previewBlock?.variant === opt.id ? 'bg-slate-600/20 border-slate-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'}`}>
                       <div className="p-4">
                         <div className="font-bold text-sm">{opt.name}</div>
                         <div className="text-[10px] opacity-60 mt-1">{opt.description}</div>
