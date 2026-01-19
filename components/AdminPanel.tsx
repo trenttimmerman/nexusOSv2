@@ -232,7 +232,14 @@ import {
   Instagram,
   Twitter,
   Play,
-  BarChart3
+  BarChart3,
+  Menu,
+  ShoppingCart,
+  Archive,
+  Puzzle,
+  Shield,
+  Terminal,
+  BarChart2
 } from 'lucide-react';
 
 // Page type options for creating new pages
@@ -934,6 +941,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
   const [isSpacerModalOpen, setIsSpacerModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Auto-focus field in Hero Studio when activeField changes
   useEffect(() => {
@@ -1678,7 +1686,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   );
 
   const renderSidebar = () => (
-    <div className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-nexus-black border-r border-nexus-gray flex flex-col h-full text-neutral-400 shrink-0 z-20 transition-all duration-300 ease-in-out`}>
+    <div className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-nexus-black border-r border-nexus-gray flex flex-col h-full text-neutral-400 shrink-0 z-20 transition-all duration-300 ease-in-out hidden md:flex`}>
       <div className={`p-6 border-b border-nexus-gray flex items-center ${isSidebarCollapsed ? 'justify-center flex-col gap-4' : 'justify-between'}`}>
         <div className={`flex items-center gap-2 text-white ${isSidebarCollapsed ? 'justify-center' : ''}`}>
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">E</div>
@@ -1765,6 +1773,89 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       </div>
     </div>
   );
+
+  // --- MOBILE MENU DRAWER ---
+  const renderMobileMenu = () => {
+    if (!isMobileMenuOpen) return null;
+
+    return (
+      <>
+        {/* Backdrop */}
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] md:hidden animate-in fade-in duration-200"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+        
+        {/* Drawer */}
+        <div className="fixed inset-y-0 left-0 w-64 bg-nexus-black border-r border-nexus-gray flex flex-col z-[101] md:hidden animate-in slide-in-from-left duration-300">
+          {/* Header */}
+          <div className="p-6 border-b border-nexus-gray flex items-center justify-between">
+            <div className="flex items-center gap-2 text-white">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">E</div>
+              <span className="font-display font-bold text-xl tracking-tight">Evolv</span>
+            </div>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-neutral-500 hover:text-white transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+            {[
+              { id: AdminTab.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
+              { id: AdminTab.DESIGN, icon: Palette, label: 'Design Studio' },
+              { id: AdminTab.PAGES, icon: FileText, label: 'Pages' },
+              { id: AdminTab.PRODUCTS, icon: Package, label: 'Products' },
+              { id: AdminTab.CATEGORIES, icon: FolderTree, label: 'Categories' },
+              { id: AdminTab.COLLECTIONS, icon: Grid, label: 'Collections' },
+              { id: AdminTab.ORDERS, icon: ShoppingCart, label: 'Orders' },
+              { id: AdminTab.CUSTOMERS, icon: Users, label: 'Customers' },
+              { id: AdminTab.CAMPAIGNS, icon: Megaphone, label: 'Campaigns' },
+              { id: AdminTab.DISCOUNTS, icon: Tag, label: 'Discounts' },
+              { id: AdminTab.SHIPPING, icon: Truck, label: 'Shipping' },
+              { id: AdminTab.EMAIL_SUBSCRIBERS, icon: Mail, label: 'Email Subscribers' },
+              { id: AdminTab.EMAIL_SETTINGS, icon: Settings, label: 'Email Settings' },
+              { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' },
+              { id: AdminTab.PLATFORM, icon: Terminal, label: 'Platform' },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  onTabChange(tab.id);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30'
+                    : 'text-neutral-400 hover:bg-neutral-800/50 hover:text-white'
+                }`}
+              >
+                <tab.icon size={18} />
+                <span className="font-medium text-sm">{tab.label}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* Sign Out */}
+          <div className="p-4 border-t border-nexus-gray">
+            <button
+              onClick={() => {
+                onLogout();
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-500/10 transition-all"
+            >
+              <div className="w-4 h-4"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></div>
+              <span className="font-medium text-sm">Sign Out</span>
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  };
 
   // --- HEADER CONFIG MODAL (Disabled - Coming Soon) ---
 
@@ -16092,7 +16183,17 @@ Return ONLY the JSON object, no markdown.`;
 
   return (
     <div className="flex h-screen bg-nexus-black text-white font-sans overflow-hidden">
+      {/* Mobile Menu Button - Only visible on mobile */}
+      <button
+        onClick={() => setIsMobileMenuOpen(true)}
+        className="fixed top-4 left-4 z-50 md:hidden p-2 bg-nexus-black border border-nexus-gray rounded-lg text-white hover:bg-neutral-800 transition-colors"
+        aria-label="Open menu"
+      >
+        <Menu size={24} />
+      </button>
+
       {renderSidebar()}
+      {renderMobileMenu()}
       {renderInterfaceModal()}
       {renderBlockArchitect()}
       {renderHeaderModal()}
