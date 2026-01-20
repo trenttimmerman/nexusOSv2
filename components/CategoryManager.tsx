@@ -55,7 +55,7 @@ export const CategoryManager: React.FC = () => {
   let genAI: any = null;
   let hasAI = false;
   try {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
     if (apiKey && typeof apiKey === 'string' && apiKey.trim().length > 10) {
       genAI = new GoogleGenAI(apiKey.trim());
       hasAI = true;
