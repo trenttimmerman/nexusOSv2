@@ -18,7 +18,7 @@ const getGenAI = () => {
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 10) {
         throw new Error('VITE_GOOGLE_AI_API_KEY not configured');
     }
-    return new GoogleGenAI(apiKey.trim());
+    return new GoogleGenAI({ apiKey: apiKey.trim() });
 };
 
 const hasAI = !!(import.meta.env.VITE_GOOGLE_AI_API_KEY?.trim());
