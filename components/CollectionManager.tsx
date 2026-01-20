@@ -53,18 +53,16 @@ export const CollectionManager: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState<'description' | 'seo' | null>(null);
 
-  // Check if AI is available and create instance
-  let genAI: any = null;
-  let hasAI = false;
-  try {
+  // Check if AI is available - initialize lazily to avoid build-time errors
+  const getGenAI = () => {
     const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
-    if (apiKey && typeof apiKey === 'string' && apiKey.trim().length > 10) {
-      genAI = new GoogleGenAI(apiKey.trim());
-      hasAI = true;
+    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 10) {
+      throw new Error('VITE_GOOGLE_AI_API_KEY not configured');
     }
-  } catch (error) {
-    console.warn('AI features disabled:', error);
-  }
+    return new GoogleGenAI(apiKey.trim());
+  };
+  
+  const hasAI = !!(import.meta.env.VITE_GOOGLE_AI_API_KEY?.trim());
 
   // Auto-generate slug from name
   useEffect(() => {
@@ -231,10 +229,11 @@ export const CollectionManager: React.FC = () => {
 
   // AI Generate Description
   const generateDescription = async () => {
-    if (!genAI || !formData.name) return;
+    if (!formData.name) return;
     
     setIsGenerating('description');
     try {
+      const genAI = getGenAI();
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
       const prompt = `Write a compelling 2-3 sentence description for a product collection called "${formData.name}". Make it engaging and SEO-friendly. Return ONLY the description text, no quotes or extra formatting.`;
       
@@ -251,10 +250,11 @@ export const CollectionManager: React.FC = () => {
 
   // AI Generate SEO Meta
   const generateSEO = async () => {
-    if (!genAI || !formData.name) return;
+    if (!formData.name) return;
     
     setIsGenerating('seo');
     try {
+      const genAI = getGenAI();
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
       const prompt = `Generate SEO metadata for a product collection called "${formData.name}".
       

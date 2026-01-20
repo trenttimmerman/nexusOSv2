@@ -6,15 +6,16 @@ import { supabase } from '../lib/supabaseClient';
 import { useDataContext } from '../context/DataContext';
 import { GoogleGenAI } from '@google/genai';
 
-let genAI: any = null;
-try {
+// Lazy AI initialization to avoid build-time errors
+const getGenAI = () => {
     const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
-    if (apiKey && typeof apiKey === 'string' && apiKey.trim().length > 10) {
-        genAI = new GoogleGenAI(apiKey.trim());
+    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 10) {
+        throw new Error('VITE_GOOGLE_AI_API_KEY not configured');
     }
-} catch (error) {
-    console.warn('Google AI not available:', error);
-}
+    return new GoogleGenAI(apiKey.trim());
+};
+
+const hasAI = !!(import.meta.env.VITE_GOOGLE_AI_API_KEY?.trim());
 
 interface ProductEditorProps {
     product?: Product | null;
@@ -64,11 +65,12 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
     };
 
     const generateDescription = () => {
-        if (!genAI || !formData.name) return;
+        if (!formData.name) return;
         
         setIsGenerating(true);
         setTimeout(async () => {
             try {
+                const genAI = getGenAI();
                 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
                 const prompt = `Write a compelling product description for "${formData.name}" in the ${formData.category || 'general'} category. Make it engaging, SEO-friendly, and 2-3 paragraphs. Format as HTML with <p> tags and <ul><li> for features. Return ONLY the HTML, no markdown code blocks.`;
                 
@@ -88,11 +90,12 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
     };
 
     const generateSEO = () => {
-        if (!genAI || !formData.name) return;
+        if (!formData.name) return;
         
         setIsGenerating(true);
         setTimeout(async () => {
             try {
+                const genAI = getGenAI();
                 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
                 const prompt = `Generate SEO metadata for product "${formData.name}". Return in this format:
 TITLE: [60 char SEO title with brand]
