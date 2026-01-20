@@ -6,8 +6,15 @@ import { supabase } from '../lib/supabaseClient';
 import { useDataContext } from '../context/DataContext';
 import { GoogleGenAI } from '@google/genai';
 
-const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
-const genAI = (apiKey && apiKey.length > 10) ? new GoogleGenAI(apiKey) : null;
+let genAI: any = null;
+try {
+    const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
+    if (apiKey && typeof apiKey === 'string' && apiKey.trim().length > 10) {
+        genAI = new GoogleGenAI(apiKey.trim());
+    }
+} catch (error) {
+    console.warn('Google AI not available:', error);
+}
 
 interface ProductEditorProps {
     product?: Product | null;
