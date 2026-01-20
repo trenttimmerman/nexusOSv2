@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, MapPin, Clock, ArrowRight } from 'lucide-react';
+import { PublicHeader } from '../PublicHeader';
 
 export const Careers: React.FC = () => {
     const positions = [
@@ -54,6 +55,7 @@ export const Careers: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-neutral-900 text-white">
+            <PublicHeader />
             {/* Header */}
             <header className="border-b border-neutral-800">
                 <div className="container mx-auto max-w-7xl px-6 py-6 flex justify-between items-center">
