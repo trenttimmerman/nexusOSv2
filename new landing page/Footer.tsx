@@ -8,10 +8,10 @@ const Footer: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
                     <div className="col-span-2 md:col-span-2">
                         <a href="#" className="text-3xl font-bold">
-                            Evolv<span className="text-cyan-400">.</span>
+                            WebPilot<span className="text-cyan-400">.</span>
                         </a>
                         <p className="text-gray-400 mt-4 max-w-xs">The operating system for the next generation of commerce.</p>
-                        <p className="text-gray-500 text-sm mt-6">&copy; 2025 Evolv, Inc. All rights reserved.</p>
+                        <p className="text-gray-500 text-sm mt-6">&copy; 2025 WebPilot, Inc. All rights reserved.</p>
                     </div>
 
                     <div>

@@ -19,6 +19,7 @@ import { CATEGORY_OPTIONS, CATEGORY_COMPONENTS } from './CategoryLibrary';
 import { Storefront } from './Storefront';
 import { CartDrawer } from './CartDrawer';
 import { MediaLibrary } from './MediaLibrary';
+import { FaviconGenerator } from './FaviconGenerator';
 import { CampaignManager } from './CampaignManager';
 import { OrderManager } from './OrderManager';
 import { DomainManager } from './DomainManager';
@@ -57,7 +58,7 @@ const SCROLLBAR_OPTIONS = [
   { id: 'native', name: 'Native', description: 'Default browser scrollbar' },
   { id: 'minimal', name: 'Minimal', description: 'Thin, subtle gray track' },
   { id: 'hidden', name: 'Invisible', description: 'Scrollable but hidden' },
-  { id: 'nexus', name: 'Evolv Dark', description: 'Brand-aligned dark theme' },
+  { id: 'nexus', name: 'WebPilot Dark', description: 'Brand-aligned dark theme' },
   { id: 'glow', name: 'Neon Glow', description: 'Cyberpunk accent glow' },
   { id: 'gradient-sunset', name: 'Sunset Drive', description: 'Warm gradient fade' },
   { id: 'gradient-ocean', name: 'Ocean Depths', description: 'Deep blue gradient' },
@@ -1115,7 +1116,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   
   // Design Studio Welcome Wizard State
   const [showWelcomeWizard, setShowWelcomeWizard] = useState(false);
-  const [hasSeenWelcome, setHasSeenWelcome] = useState(() => localStorage.getItem('evolv_seen_welcome') === 'true');
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(() => localStorage.getItem('webpilot_seen_welcome') === 'true');
   const [wizardMode, setWizardMode] = useState<'select' | 'ai-questions' | 'ai-generating' | 'templates'>('select');
   const [aiWizardStep, setAiWizardStep] = useState(0);
   const [aiWizardAnswers, setAiWizardAnswers] = useState<Record<string, string>>({});
@@ -1127,10 +1128,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Tutorial State
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
-  const [hasSeenTutorial, setHasSeenTutorial] = useState(() => localStorage.getItem('evolv_seen_tutorial') === 'true');
+  const [hasSeenTutorial, setHasSeenTutorial] = useState(() => localStorage.getItem('webpilot_seen_tutorial') === 'true');
   
   // First-Edit Hint State - Shows helpful tip on first section click
-  const [hasSeenFirstEditHint, setHasSeenFirstEditHint] = useState(() => localStorage.getItem('evolv_seen_first_edit') === 'true');
+  const [hasSeenFirstEditHint, setHasSeenFirstEditHint] = useState(() => localStorage.getItem('webpilot_seen_first_edit') === 'true');
   const [showFirstEditHint, setShowFirstEditHint] = useState(false);
   
   // Pre-Publish Checklist State
@@ -1706,7 +1707,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const lastSectionCount = React.useRef(activePage?.blocks?.length || 0);
   React.useEffect(() => {
     const currentCount = activePage?.blocks?.length || 0;
-    if (currentCount > lastSectionCount.current && currentCount <= 3 && !localStorage.getItem('evolv_hide_suggestions')) {
+    if (currentCount > lastSectionCount.current && currentCount <= 3 && !localStorage.getItem('webpilot_hide_suggestions')) {
       // Show recommendations after adding a section
       setTimeout(() => setShowSectionRecommendations(true), 500);
     }
@@ -1762,7 +1763,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const generateCampaign = () => {
     setIsGeneratingEmail(true);
     setGeneratedEmail('');
-    const fullText = `Subject: Flash Sale: The Cyber Shell Jacket is waiting for you.\n\nHey [Customer Name],\n\nWe noticed you've been eyeing the Cyber Shell Jacket. Good news—it's currently one of our most sought-after pieces this season.\n\nFor the next 24 hours, we're unlocking an exclusive 20% off just for our VIP members. \n\nUse Code: EVOLV20\n\nDon't let this slip into the void.\n\n- The Evolv Team`;
+    const fullText = `Subject: Flash Sale: The Cyber Shell Jacket is waiting for you.\n\nHey [Customer Name],\n\nWe noticed you've been eyeing the Cyber Shell Jacket. Good news—it's currently one of our most sought-after pieces this season.\n\nFor the next 24 hours, we're unlocking an exclusive 20% off just for our VIP members. \n\nUse Code: WEBPILOT20\n\nDon't let this slip into the void.\n\n- The WebPilot Team`;
 
     let i = 0;
     const interval = setInterval(() => {
@@ -1799,7 +1800,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       <div className={`p-6 border-b border-nexus-gray flex items-center ${isSidebarCollapsed ? 'justify-center flex-col gap-4' : 'justify-between'}`}>
         <div className={`flex items-center gap-2 text-white ${isSidebarCollapsed ? 'justify-center' : ''}`}>
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">E</div>
-          {!isSidebarCollapsed && <span className="font-display font-bold text-xl tracking-tight">Evolv</span>}
+          {!isSidebarCollapsed && <span className="font-display font-bold text-xl tracking-tight">WebPilot</span>}
         </div>
         <button
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
@@ -1820,6 +1821,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.SHIPPING, icon: Truck, label: 'Shipping' },
           { id: AdminTab.PAGES, icon: FileText, label: 'Pages' },
           { id: AdminTab.MEDIA, icon: FolderOpen, label: 'Media Library' },
+          { id: AdminTab.FAVICON, icon: ImageIcon, label: 'Favicon Generator' },
           { id: AdminTab.DESIGN, icon: Palette, label: 'Design Studio' },
           { id: AdminTab.DESIGN_LIBRARY, icon: Layers, label: 'Design Library' },
           { id: AdminTab.COLLECTION_ANALYTICS, icon: BarChart3, label: 'Analytics' },
@@ -1901,7 +1903,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="p-6 border-b border-nexus-gray flex items-center justify-between">
             <div className="flex items-center gap-2 text-white">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">E</div>
-              <span className="font-display font-bold text-xl tracking-tight">Evolv</span>
+              <span className="font-display font-bold text-xl tracking-tight">WebPilot</span>
             </div>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
@@ -2671,7 +2673,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         </button>
                         <input
                           type="text"
-                          value={config.footerData?.securityBadgeText || 'Secure Checkout via Evolv Pass'}
+                          value={config.footerData?.securityBadgeText || 'Secure Checkout via WebPilot Pass'}
                           onChange={(e) => onConfigChange({
                             ...config,
                             footerData: { ...config.footerData, securityBadgeText: e.target.value }
@@ -2812,7 +2814,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <p className="text-xs text-neutral-400 uppercase tracking-wide">Copyright Text</p>
                       <input
                         type="text"
-                        value={config.footerData?.copyrightText || '© 2024 Evolv Commerce Operating System. Powered by React.'}
+                        value={config.footerData?.copyrightText || '© 2024 WebPilot Commerce Operating System. Powered by React.'}
                         onChange={(e) => onConfigChange({
                           ...config,
                           footerData: { ...config.footerData, copyrightText: e.target.value }
@@ -12597,7 +12599,7 @@ Return ONLY the JSON object, no markdown.`;
     // Close wizard
     setShowWelcomeWizard(false);
     setHasSeenWelcome(true);
-    localStorage.setItem('evolv_seen_welcome', 'true');
+    localStorage.setItem('webpilot_seen_welcome', 'true');
     setWizardMode('select');
     setAiWizardStep(0);
     setAiWizardAnswers({});
@@ -12769,7 +12771,7 @@ Return ONLY the JSON object, no markdown.`;
     onUpdatePage(activePageId, { blocks: sectionsToAdd });
     setShowWelcomeWizard(false);
     setHasSeenWelcome(true);
-    localStorage.setItem('evolv_seen_welcome', 'true');
+    localStorage.setItem('webpilot_seen_welcome', 'true');
     setWizardMode('select');
     showToast(`Applied "${template.name}" template!`, 'success');
   };
@@ -12781,7 +12783,7 @@ Return ONLY the JSON object, no markdown.`;
     const dismissWizard = () => {
       setShowWelcomeWizard(false);
       setHasSeenWelcome(true);
-      localStorage.setItem('evolv_seen_welcome', 'true');
+      localStorage.setItem('webpilot_seen_welcome', 'true');
       setWizardMode('select');
       setAiWizardStep(0);
     };
@@ -13086,7 +13088,7 @@ Return ONLY the JSON object, no markdown.`;
     const dismissTutorial = () => {
       setShowTutorial(false);
       setHasSeenTutorial(true);
-      localStorage.setItem('evolv_seen_tutorial', 'true');
+      localStorage.setItem('webpilot_seen_tutorial', 'true');
       setTutorialStep(0);
     };
     
@@ -13232,7 +13234,7 @@ Return ONLY the JSON object, no markdown.`;
           <div className="p-3 border-t border-neutral-800">
             <button 
               onClick={() => {
-                localStorage.setItem('evolv_hide_suggestions', 'true');
+                localStorage.setItem('webpilot_hide_suggestions', 'true');
                 setShowSectionRecommendations(false);
               }}
               className="text-[10px] text-neutral-600 hover:text-neutral-400"
@@ -15005,7 +15007,7 @@ Return ONLY the JSON object, no markdown.`;
                         if (!hasSeenFirstEditHint) {
                           setShowFirstEditHint(true);
                           setHasSeenFirstEditHint(true);
-                          localStorage.setItem('evolv_seen_first_edit', 'true');
+                          localStorage.setItem('webpilot_seen_first_edit', 'true');
                           setTimeout(() => setShowFirstEditHint(false), 5000);
                         }
                       }}
@@ -15239,6 +15241,13 @@ Return ONLY the JSON object, no markdown.`;
             onAddAsset={onAddAsset}
             onDeleteAsset={onDeleteAsset}
           />
+        );
+
+      case AdminTab.FAVICON:
+        return (
+          <div className="p-8 max-w-4xl mx-auto">
+            <FaviconGenerator />
+          </div>
         );
 
       case AdminTab.CAMPAIGNS:

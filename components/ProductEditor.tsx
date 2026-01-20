@@ -121,7 +121,7 @@ SLUG: [url-friendly-slug]`;
                 setFormData(prev => ({
                     ...prev,
                     seo: {
-                        title: titleMatch ? titleMatch[1].trim() : `${formData.name} | Nexus OS`,
+                        title: titleMatch ? titleMatch[1].trim() : `${formData.name} | WebPilot`,
                         description: descMatch ? descMatch[1].trim() : '',
                         slug: slugMatch ? slugMatch[1].trim() : formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
                     }

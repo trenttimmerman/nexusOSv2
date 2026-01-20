@@ -6,7 +6,7 @@ const Header: React.FC = () => {
             <nav className="container mx-auto max-w-7xl px-6 py-4">
                 <div className="flex items-center justify-between glass-card rounded-xl px-6 py-3">
                     <a href="#" className="text-2xl font-bold">
-                        Evolv<span className="text-cyan-400">.</span>
+                        WebPilot<span className="text-cyan-400">.</span>
                     </a>
                     
                     <div className="hidden md:flex items-center space-x-6">

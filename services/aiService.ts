@@ -1,5 +1,5 @@
 /**
- * AI Service for NexusOS
+ * AI Service for WebPilot
  * Provides AI-powered content generation for products, categories, and collections
  * 
  * Features:

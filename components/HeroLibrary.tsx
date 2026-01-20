@@ -713,7 +713,7 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, primaryColor, data
   const heading = data?.heading || "NEXUS";
   const image = data?.image || "https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=2000&auto=format&fit=crop";
   const buttonText = data?.buttonText || "Shop Collection 01";
-  const marqueeText = data?.marqueeText || "LIMITED DROP • DO NOT SLEEP • WORLDWIDE SHIPPING • SECURE CHECKOUT • NEXUS OS • LIMITED DROP • DO NOT SLEEP •";
+  const marqueeText = data?.marqueeText || "LIMITED DROP • DO NOT SLEEP • WORLDWIDE SHIPPING • SECURE CHECKOUT • WEBPILOT • LIMITED DROP • DO NOT SLEEP •";
   const overlayOpacity = data?.overlayOpacity !== undefined ? data.overlayOpacity : 0;
   const accentColor = data?.accentColor || '#ccff00';
   const animation = data?.animation || 'none';

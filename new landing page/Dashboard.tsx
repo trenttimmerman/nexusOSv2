@@ -82,7 +82,7 @@ const DashboardHome: React.FC = () => {
                 },
             };
             
-            const prompt = `You are an expert e-commerce analyst for a platform called Evolv. Based on the following JSON data for an online store, provide a concise summary and 2-3 actionable recommendations. Use markdown for formatting (e.g., "**Summary**" for headings and "*" for bullet points). The data is: ${JSON.stringify(currentData)}. Keep your response professional, insightful, and brief.`;
+            const prompt = `You are an expert e-commerce analyst for a platform called WebPilot. Based on the following JSON data for an online store, provide a concise summary and 2-3 actionable recommendations. Use markdown for formatting (e.g., "**Summary**" for headings and "*" for bullet points). The data is: ${JSON.stringify(currentData)}. Keep your response professional, insightful, and brief.`;
 
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
@@ -313,7 +313,7 @@ const DashboardHome: React.FC = () => {
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-semibold text-white flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 mr-2 text-purple-400"><path d="M11.47 1.72a.75.75 0 0 1 1.06 0l3 3a.75.75 0 0 1-1.06 1.06l-1.72-1.72V7.5h-1.5V4.06L9.53 5.78a.75.75 0 0 1-1.06-1.06l3-3ZM11.25 7.5V11.25l2.28 2.28a.75.75 0 0 1-1.06 1.06L11.25 13.062V15a.75.75 0 0 1-1.5 0v-3.75l-2.28 2.28a.75.75 0 1 1-1.06-1.06L8.25 11.25V7.5a.75.75 0 0 1 1.5 0Zm-2.822 8.72a.75.75 0 0 1 1.06 0l1.72 1.72V20.25h1.5v-2.25l1.72-1.72a.75.75 0 1 1 1.06 1.06l-3 3a.75.75 0 0 1-1.06 0l-3-3a.75.75 0 0 1 0-1.06Z" /></svg>
-                            Evolv AI Insights
+                            WebPilot AI Insights
                         </h3>
                         <button onClick={generateInsights} disabled={isGenerating} className="text-sm text-cyan-400 hover:text-cyan-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                             Refresh
@@ -372,7 +372,7 @@ const Dashboard: React.FC<{ route: string }> = ({ route }) => {
             <div className="flex h-screen">
                 <aside className="w-64 dash-glass-card p-6 flex-col hidden md:flex z-20">
                     <a href="#/" className="text-3xl font-bold text-white mb-10">
-                        Evolv<span className="text-cyan-400">.</span>
+                        WebPilot<span className="text-cyan-400">.</span>
                     </a>
                     <nav className="flex-grow flex flex-col space-y-2">
                          <a href="#/dashboard" className={getLinkClass('#/dashboard')}>
@@ -407,7 +407,7 @@ const Dashboard: React.FC<{ route: string }> = ({ route }) => {
                                 <img src="https://placehold.co/40x40/a78bfa/ffffff?text=A" alt="User Avatar" className="w-10 h-10 rounded-full border-2 border-gray-700" />
                                 <div>
                                     <span className="font-semibold text-white">Alex Morgan</span>
-                                    <span className="block text-sm text-gray-400">alex@evolv.com</span>
+                                    <span className="block text-sm text-gray-400">alex@webpilot.com</span>
                                 </div>
                             </a>
                         </div>

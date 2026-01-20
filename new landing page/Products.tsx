@@ -26,7 +26,7 @@ const Products: React.FC = () => {
             }
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
-            const prompt = `You are an expert e-commerce copywriter for a platform called Evolv. Your task is to write a compelling, high-converting product description.
+            const prompt = `You are an expert e-commerce copywriter for a platform called WebPilot. Your task is to write a compelling, high-converting product description.
 
             Product Name: ${productName}
             Key Features/Keywords: ${features}

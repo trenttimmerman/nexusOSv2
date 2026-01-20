@@ -133,7 +133,7 @@ function parseColorSchemes(schemes: any): Record<string, ColorScheme> {
 }
 
 /**
- * Convert Shopify color schemes to nexusOS theme
+ * Convert Shopify color schemes to WebPilot theme
  */
 export function convertToNexusTheme(settings: ShopifySettings) {
   const primaryScheme = settings.colors.schemes['scheme-1'] || settings.colors.schemes[Object.keys(settings.colors.schemes)[0]];

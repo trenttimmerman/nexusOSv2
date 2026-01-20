@@ -400,7 +400,7 @@ export default function WebsiteMigration({ storeId, onComplete, onNavigateToPage
             <Globe className="w-8 h-8" />
             <div>
               <h2 className="text-2xl font-bold">Website Migration</h2>
-              <p className="text-blue-100 mt-1">Import your existing website into nexusOS</p>
+              <p className="text-blue-100 mt-1">Import your existing website into WebPilot</p>
             </div>
           </div>
         </div>
@@ -637,7 +637,7 @@ export default function WebsiteMigration({ storeId, onComplete, onNavigateToPage
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <h3 className="text-2xl font-bold mb-2">Migration Complete!</h3>
               <p className="text-gray-600 mb-6">
-                Your website has been successfully imported into nexusOS.
+                Your website has been successfully imported into WebPilot.
               </p>
 
               <div className="bg-gray-50 p-6 rounded-lg mb-6">

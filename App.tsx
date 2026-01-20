@@ -17,6 +17,20 @@ import { supabase } from './lib/supabaseClient';
 import { Loader2 } from 'lucide-react';
 import { ViewMode, AdminTab } from './types';
 
+// Import marketing pages
+import { Features } from './components/pages/Features';
+import { Pricing } from './components/pages/Pricing';
+import { Integrations } from './components/pages/Integrations';
+import { API } from './components/pages/API';
+import { Blog } from './components/pages/Blog';
+import { Docs } from './components/pages/Docs';
+import { Support } from './components/pages/Support';
+import { CaseStudies } from './components/pages/CaseStudies';
+import { AboutUs } from './components/pages/AboutUs';
+import { Careers } from './components/pages/Careers';
+import { Press } from './components/pages/Press';
+import { Contact } from './components/pages/Contact';
+
 // Wrapper to inject data into Storefront
 const StorefrontWrapper = () => {
   const { storeConfig, products, pages, loading } = useData(); 
@@ -314,7 +328,7 @@ const LoadingScreen = () => (
   <div className="w-full h-screen flex items-center justify-center bg-neutral-900 text-white">
     <div className="flex flex-col items-center gap-4">
       <Loader2 className="animate-spin" size={48} />
-      <p className="text-neutral-400 font-mono text-sm">INITIALIZING NEXUS OS...</p>
+      <p className="text-neutral-400 font-mono text-sm">INITIALIZING WEBPILOT...</p>
     </div>
   </div>
 );
@@ -330,6 +344,24 @@ export default function App() {
           <Routes>
             {/* Public Marketing Site */}
             <Route path="/" element={<MarketingLanding />} />
+
+            {/* Marketing Pages - Product */}
+            <Route path="/features" element={<Features />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/integrations" element={<Integrations />} />
+            <Route path="/api" element={<API />} />
+
+            {/* Marketing Pages - Resources */}
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/docs" element={<Docs />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/case-studies" element={<CaseStudies />} />
+
+            {/* Marketing Pages - Company */}
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/careers" element={<Careers />} />
+            <Route path="/press" element={<Press />} />
+            <Route path="/contact" element={<Contact />} />
 
             {/* Core Application (Admin Panel) */}
             <Route element={<ProtectedRoute />}>

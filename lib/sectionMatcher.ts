@@ -1,5 +1,5 @@
 /**
- * Maps Shopify theme sections to nexusOS block types
+ * Maps Shopify theme sections to WebPilot block types
  */
 
 import { ParsedSection } from './shopifyThemeParser';
@@ -7,7 +7,7 @@ import { TemplateSection } from './shopifyTemplateParser';
 
 export interface SectionMapping {
   shopifySection: string;
-  nexusOSBlock: string;
+  webpilotBlock: string;
   confidence: 'high' | 'medium' | 'low';
   dataMapping?: Record<string, string>;
   notes?: string;
@@ -338,7 +338,7 @@ export function mapSectionWithTemplateData(
 }
 
 /**
- * Map Shopify section to nexusOS block (legacy - uses schema only)
+ * Map Shopify section to WebPilot block (legacy - uses schema only)
  */
 export function mapSectionToBlock(
   filename: string,

@@ -217,8 +217,8 @@ export const DomainManager: React.FC<DomainManagerProps> = ({ storeId }) => {
                                         <div>
                                             <div className="text-xs font-bold text-neutral-500 uppercase mb-1">Value</div>
                                             <div className="font-mono text-white flex items-center gap-2">
-                                                cname.nexusos.app
-                                                <button className="text-neutral-500 hover:text-white" onClick={() => navigator.clipboard.writeText('cname.nexusos.app')}>
+                                                cname.webpilot.app
+                                                <button className="text-neutral-500 hover:text-white" onClick={() => navigator.clipboard.writeText('cname.webpilot.app')}>
                                                     <Copy size={12} />
                                                 </button>
                                             </div>

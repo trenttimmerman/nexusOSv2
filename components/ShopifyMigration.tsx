@@ -167,7 +167,7 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
     try {
       setStep('mapping');
       setProgress(0);
-      setCurrentTask('Mapping sections to nexusOS blocks...');
+      setCurrentTask('Mapping sections to WebPilot blocks...');
       
       console.log('[Migration] Sections available:', Object.keys(analysis.theme.files.sections).length);
       console.log('[Migration] Section files:', Object.keys(analysis.theme.files.sections));
@@ -513,7 +513,7 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
           <div className="text-center mb-6">
             <Package size={48} className="mx-auto mb-4 text-purple-600" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Import Shopify Theme</h2>
-            <p className="text-gray-600">Upload your Shopify theme ZIP file to migrate to nexusOS</p>
+            <p className="text-gray-600">Upload your Shopify theme ZIP file to migrate to WebPilot</p>
           </div>
 
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-purple-500 transition-colors">
@@ -699,7 +699,7 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
           <div className="text-center mb-6">
             <Sparkles size={48} className="mx-auto mb-4 text-purple-600 animate-pulse" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Mapping Sections</h2>
-            <p className="text-gray-600">Converting Shopify sections to nexusOS blocks...</p>
+            <p className="text-gray-600">Converting Shopify sections to WebPilot blocks...</p>
           </div>
 
           <div className="mb-6">
@@ -740,7 +740,7 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-6">
             <Zap size={48} className="mx-auto mb-4 text-purple-600 animate-pulse" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Importing to nexusOS</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Importing to WebPilot</h2>
             <p className="text-gray-600">{currentTask}</p>
           </div>
 
@@ -804,7 +804,7 @@ export default function ShopifyMigration({ storeId, onComplete, onNavigateToPage
           <div className="text-center mb-6">
             <CheckCircle size={64} className="mx-auto mb-4 text-green-600" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Migration Complete!</h2>
-            <p className="text-gray-600">Your Shopify theme has been successfully migrated to nexusOS</p>
+            <p className="text-gray-600">Your Shopify theme has been successfully migrated to WebPilot</p>
           </div>
 
           <div className="grid grid-cols-3 gap-4 mb-8">

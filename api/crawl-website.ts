@@ -166,7 +166,7 @@ export default async function handler(
 
             const response = await fetch(currentUrl, {
               headers: {
-                'User-Agent': 'Mozilla/5.0 (compatible; NexusOSBot/1.0; +https://nexusos.io/bot)',
+                'User-Agent': 'Mozilla/5.0 (compatible; WebPilotBot/1.0; +https://webpilot.io/bot)',
               },
               signal: AbortSignal.timeout(10000) // 10 second timeout
             });
@@ -734,7 +734,7 @@ async function checkRobotsTxt(origin: string): Promise<RobotsTxtRules> {
       // Check for our user-agent or wildcard
       if (trimmed.toLowerCase().startsWith('user-agent:')) {
         const agent = trimmed.substring(11).trim().toLowerCase();
-        isRelevantSection = agent === '*' || agent.includes('nexusosbot');
+        isRelevantSection = agent === '*' || agent.includes('webpilotbot');
       }
       
       // Parse rules for relevant section

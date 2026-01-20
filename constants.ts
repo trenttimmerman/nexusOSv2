@@ -3,7 +3,7 @@ import { Product } from './types';
 export const MOCK_PRODUCTS: Product[] = [
   {
     id: '1',
-    name: 'Evolv Core Tee // Black',
+    name: 'WebPilot Core Tee // Black',
     description: '<p>Essential streetwear component. Heavyweight cotton with minimal branding.</p>',
     price: 4500,
     image: 'https://picsum.photos/800/1000?random=1',
@@ -15,7 +15,7 @@ export const MOCK_PRODUCTS: Product[] = [
     hasVariants: true,
     variantOptions: [{ id: 'opt1', name: 'Size', values: ['S', 'M', 'L', 'XL'] }],
     variants: [],
-    seo: { title: 'Evolv Core Tee', description: 'Premium black cotton tee.', slug: 'evolv-core-tee-black' },
+    seo: { title: 'WebPilot Core Tee', description: 'Premium black cotton tee.', slug: 'webpilot-core-tee-black' },
     status: 'active',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()

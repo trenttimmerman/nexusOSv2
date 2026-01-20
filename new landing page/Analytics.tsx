@@ -109,7 +109,7 @@ const Analytics: React.FC = () => {
                 salesTrend: "slight upward trend with a peak on weekends",
             };
 
-            const prompt = `You are a senior data analyst for an e-commerce platform called Evolv. Your task is to write a detailed trend report based on the provided data.
+            const prompt = `You are a senior data analyst for an e-commerce platform called WebPilot. Your task is to write a detailed trend report based on the provided data.
             
             Data for: ${reportPeriod}
             ${JSON.stringify(mockSalesData, null, 2)}

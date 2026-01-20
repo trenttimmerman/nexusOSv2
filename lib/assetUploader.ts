@@ -253,7 +253,7 @@ export function generateOptimizedCSS(
   // Extract CSS variables
   const variables = extractCSSVariables(combinedCSS);
   
-  // Map Shopify color variables to nexusOS
+  // Map Shopify color variables to WebPilot
   const optimized = `:root {
   /* Colors from Shopify theme */
   --primary-color: ${colorMapping.primary || '#000000'};

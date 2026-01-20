@@ -72,7 +72,7 @@ export const CONTACT_COMPONENTS: Record<string, React.FC<any>> = {
               </div>
               <div>
                 <h4 className="font-bold mb-1">Email Us</h4>
-                <p className="text-gray-600">hello@nexusos.com<br/>support@nexusos.com</p>
+                <p className="text-gray-600">hello@webpilot.com<br/>support@webpilot.com</p>
               </div>
             </div>
             <div className="flex gap-4">

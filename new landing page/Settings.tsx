@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const Settings: React.FC = () => {
     const [profile, setProfile] = useState({
         name: 'Alex Morgan',
-        email: 'alex@evolv.com',
+        email: 'alex@webpilot.com',
         title: 'Founder & CEO',
         avatar: 'https://placehold.co/40x40/a78bfa/ffffff?text=A',
     });
@@ -85,7 +85,7 @@ const Settings: React.FC = () => {
                 <div className="dash-glass-card rounded-2xl">
                     <div className="p-6 border-b border-gray-800">
                         <h3 className="text-lg font-semibold text-white">Notifications</h3>
-                        <p className="text-sm text-gray-400 mt-1">Manage how you receive notifications from Evolv.</p>
+                        <p className="text-sm text-gray-400 mt-1">Manage how you receive notifications from WebPilot.</p>
                     </div>
                     <div className="p-6 space-y-4 divide-y divide-gray-800">
                         <div className="flex justify-between items-center pt-4 first:pt-0">
@@ -105,7 +105,7 @@ const Settings: React.FC = () => {
                          <div className="flex justify-between items-center pt-4">
                             <div>
                                 <p className="font-medium text-white">Promotions & Updates</p>
-                                <p className="text-sm text-gray-400">Receive updates on new features and promotional offers from Evolv.</p>
+                                <p className="text-sm text-gray-400">Receive updates on new features and promotional offers from WebPilot.</p>
                             </div>
                             <ToggleSwitch checked={notifications.promotions} onChange={() => handleNotificationToggle('promotions')} />
                         </div>
@@ -128,7 +128,7 @@ const Settings: React.FC = () => {
                     <div className="p-6">
                         <div className="bg-gray-900/50 rounded-lg p-4 flex justify-between items-center">
                             <div>
-                                <p className="text-sm text-purple-300 font-semibold">Evolv Pro Plan</p>
+                                <p className="text-sm text-purple-300 font-semibold">WebPilot Pro Plan</p>
                                 <p className="text-gray-400 text-sm">Next payment of $99 on July 31, 2025.</p>
                             </div>
                             <button className="bg-gray-700 text-white font-semibold px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors text-sm">Manage Plan</button>

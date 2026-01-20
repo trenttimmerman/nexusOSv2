@@ -9,39 +9,39 @@ const Footer: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
                     <div className="col-span-2 md:col-span-2">
                         <Link to="/" className="text-3xl font-bold">
-                            Evolv<span className="text-cyan-400">.</span>
+                            WebPilot<span className="text-cyan-400">.</span>
                         </Link>
                         <p className="text-gray-400 mt-4 max-w-xs">The operating system for the next generation of commerce.</p>
-                        <p className="text-gray-500 text-sm mt-6">&copy; 2025 Evolv, Inc. All rights reserved.</p>
+                        <p className="text-gray-500 text-sm mt-6">&copy; 2025 WebPilot, Inc. All rights reserved.</p>
                     </div>
 
                     <div>
                         <h4 className="font-semibold mb-4">Product</h4>
                         <ul className="space-y-2">
-                            <li><Link to="#" className="text-gray-400 hover:text-white">Features</Link></li>
-                            <li><Link to="#" className="text-gray-400 hover:text-white">Pricing</Link></li>
-                            <li><Link to="#" className="text-gray-400 hover:text-white">Integrations</Link></li>
-                            <li><Link to="#" className="text-gray-400 hover:text-white">API</Link></li>
+                            <li><Link to="/features" className="text-gray-400 hover:text-white">Features</Link></li>
+                            <li><Link to="/pricing" className="text-gray-400 hover:text-white">Pricing</Link></li>
+                            <li><Link to="/integrations" className="text-gray-400 hover:text-white">Integrations</Link></li>
+                            <li><Link to="/api" className="text-gray-400 hover:text-white">API</Link></li>
                         </ul>
                     </div>
 
                     <div>
                         <h4 className="font-semibold mb-4">Resources</h4>
                         <ul className="space-y-2">
-                            <li><Link to="#" className="text-gray-400 hover:text-white">Blog</Link></li>
-                            <li><Link to="#" className="text-gray-400 hover:text-white">Docs</Link></li>
-                            <li><Link to="#" className="text-gray-400 hover:text-white">Support</Link></li>
-                            <li><Link to="#" className="text-gray-400 hover:text-white">Case Studies</Link></li>
+                            <li><Link to="/blog" className="text-gray-400 hover:text-white">Blog</Link></li>
+                            <li><Link to="/docs" className="text-gray-400 hover:text-white">Docs</Link></li>
+                            <li><Link to="/support" className="text-gray-400 hover:text-white">Support</Link></li>
+                            <li><Link to="/case-studies" className="text-gray-400 hover:text-white">Case Studies</Link></li>
                         </ul>
                     </div>
 
                     <div>
                         <h4 className="font-semibold mb-4">Company</h4>
                         <ul className="space-y-2">
-                            <li><Link to="#" className="text-gray-400 hover:text-white">About Us</Link></li>
-                            <li><Link to="#" className="text-gray-400 hover:text-white">Careers</Link></li>
-                            <li><Link to="#" className="text-gray-400 hover:text-white">Press</Link></li>
-                            <li><Link to="#" className="text-gray-400 hover:text-white">Contact</Link></li>
+                            <li><Link to="/about" className="text-gray-400 hover:text-white">About Us</Link></li>
+                            <li><Link to="/careers" className="text-gray-400 hover:text-white">Careers</Link></li>
+                            <li><Link to="/press" className="text-gray-400 hover:text-white">Press</Link></li>
+                            <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
                         </ul>
                     </div>
                 </div>

@@ -7,7 +7,7 @@ const Features: React.FC = () => {
                 <div className="text-center max-w-2xl mx-auto mb-16">
                     <h2 className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-4">All the power. None of the limits.</h2>
                     <p className="text-lg text-gray-300">
-                        Evolv is more than a platform. It's an ecosystem of tools designed for hyper-growth.
+                        WebPilot is more than a platform. It's an ecosystem of tools designed for hyper-growth.
                     </p>
                 </div>
 
@@ -22,7 +22,7 @@ const Features: React.FC = () => {
                             </div>
                             <h3 className="text-2xl font-bold mb-2">AI-Powered Insights Engine</h3>
                             <p className="text-gray-300 mb-4 flex-grow">
-                                Our "Evolv AI" co-pilot analyzes trends, suggests inventory optimizations, and even generates high-converting product descriptions for you. Stop guessing, start growing.
+                                Our "WebPilot AI" co-pilot analyzes trends, suggests inventory optimizations, and even generates high-converting product descriptions for you. Stop guessing, start growing.
                             </p>
                             <a href="#" className="text-cyan-400 font-semibold hover:text-cyan-300">Learn about AI tools &rarr;</a>
                         </div>
