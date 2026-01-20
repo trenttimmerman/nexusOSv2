@@ -6,7 +6,8 @@ import { supabase } from '../lib/supabaseClient';
 import { useDataContext } from '../context/DataContext';
 import { GoogleGenAI } from '@google/genai';
 
-const genAI = import.meta.env.VITE_GOOGLE_AI_API_KEY ? new GoogleGenAI(import.meta.env.VITE_GOOGLE_AI_API_KEY) : null;
+const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
+const genAI = (apiKey && apiKey.length > 10) ? new GoogleGenAI(apiKey) : null;
 
 interface ProductEditorProps {
     product?: Product | null;
