@@ -56,6 +56,12 @@ export const CollectionManager: React.FC = () => {
   // Check if AI is available - initialize lazily to avoid build-time errors
   const getGenAI = () => {
     const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
+    console.log('[CollectionManager] API key check:', { 
+      exists: !!apiKey, 
+      type: typeof apiKey, 
+      length: apiKey?.length,
+      firstChars: apiKey?.substring(0, 10)
+    });
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 10) {
       throw new Error('VITE_GOOGLE_AI_API_KEY not configured');
     }
