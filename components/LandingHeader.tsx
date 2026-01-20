@@ -15,9 +15,11 @@ const Header: React.FC = () => {
 
     return (
         <header className="sticky top-0 z-50">
-            <nav className="container mx-auto max-w-7xl px-6 py-4">
-                <div className={`flex items-center justify-between rounded-xl px-6 py-3 transition-all duration-300 ${
-                    isScrolled ? 'glass-card backdrop-blur-md bg-neutral-900/80' : 'glass-card'
+            <nav className={`container mx-auto max-w-7xl px-6 transition-all duration-300 ${
+                isScrolled ? 'py-3' : 'py-5'
+            }`}>
+                <div className={`flex items-center justify-between rounded-xl transition-all duration-300 ${
+                    isScrolled ? 'px-6 py-2 glass-card backdrop-blur-md bg-neutral-900/80' : 'px-7 py-4 glass-card'
                 }`}>
                     <Link to="/" className="text-2xl font-bold">
                         Evolv<span className="text-cyan-400">.</span>
