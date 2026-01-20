@@ -77,11 +77,13 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
         setTimeout(async () => {
             try {
                 const genAI = getGenAI();
-                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
                 const prompt = `Write a compelling product description for "${formData.name}" in the ${formData.category || 'general'} category. Make it engaging, SEO-friendly, and 2-3 paragraphs. Format as HTML with <p> tags and <ul><li> for features. Return ONLY the HTML, no markdown code blocks.`;
                 
-                const result = await model.generateContent(prompt);
-                const description = result.response.text().trim();
+                const result = await genAI.models.generateContent({
+                    model: 'gemini-2.0-flash-exp',
+                    contents: prompt
+                });
+                const description = result.text.trim();
                 setFormData(prev => ({
                     ...prev,
                     description
@@ -102,14 +104,16 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
         setTimeout(async () => {
             try {
                 const genAI = getGenAI();
-                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
                 const prompt = `Generate SEO metadata for product "${formData.name}". Return in this format:
 TITLE: [60 char SEO title with brand]
 DESCRIPTION: [160 char meta description]
 SLUG: [url-friendly-slug]`;
                 
-                const result = await model.generateContent(prompt);
-                const text = result.response.text();
+                const result = await genAI.models.generateContent({
+                    model: 'gemini-2.0-flash-exp',
+                    contents: prompt
+                });
+                const text = result.text;
                 const titleMatch = text.match(/TITLE:\s*(.+)/);
                 const descMatch = text.match(/DESCRIPTION:\s*(.+)/);
                 const slugMatch = text.match(/SLUG:\s*(.+)/);
