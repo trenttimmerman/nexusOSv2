@@ -1,11 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
         <header className="sticky top-0 z-50">
             <nav className="container mx-auto max-w-7xl px-6 py-4">
-                <div className="flex items-center justify-between glass-card rounded-xl px-6 py-3">
+                <div className={`flex items-center justify-between rounded-xl px-6 py-3 transition-all duration-300 ${
+                    isScrolled ? 'glass-card backdrop-blur-md bg-neutral-900/80' : 'glass-card'
+                }`}>
                     <Link to="/" className="text-2xl font-bold">
                         Evolv<span className="text-cyan-400">.</span>
                     </Link>

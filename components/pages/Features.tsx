@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Zap, ShoppingCart, BarChart, Palette, Globe, Lock, Code, Users } from 'lucide-react';
-import Header from '../../new landing page/Header';
 
 export const Features: React.FC = () => {
     const features = [
@@ -49,7 +48,6 @@ export const Features: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-neutral-900 text-white">
-            <Header />
             {/* Header */}
             <header className="border-b border-neutral-800">
                 <div className="container mx-auto max-w-7xl px-6 py-6 flex justify-between items-center">
