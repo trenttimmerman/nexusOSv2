@@ -41,15 +41,15 @@ import { GoogleGenAI } from '@google/genai';
 // Initialize Gemini AI - only if key is set and not empty
 let genAI: any = null;
 try {
-  const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const geminiApiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
   if (geminiApiKey && typeof geminiApiKey === 'string' && geminiApiKey.trim().length > 10) {
     // GoogleGenAI will be imported dynamically when needed
-    console.log('✅ Gemini API key available');
+    console.log('✅ Google AI key available');
   } else {
-    console.warn('⚠️ VITE_GEMINI_API_KEY not set - AI features will be disabled');
+    console.warn('⚠️ VITE_GOOGLE_AI_API_KEY not set - AI features will be disabled');
   }
 } catch (error) {
-  console.warn('⚠️ Failed to initialize Gemini AI:', error);
+  console.warn('⚠️ Failed to initialize Google AI:', error);
   genAI = null;
 }
 
