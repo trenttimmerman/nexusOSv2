@@ -498,20 +498,18 @@ Return ONLY those two lines, nothing else.`;
                   rows={2}
                   placeholder="Optional description"
                 />  
-                {hasAI && (
-                  <button
-                    onClick={generateDescription}
-                    disabled={!formData.name || isGenerating === 'description'}
-                    className="absolute top-2 right-2 p-1.5 text-blue-400 hover:bg-blue-900/30 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Generate with AI"
-                  >
-                    {isGenerating === 'description' ? (
-                      <Loader className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Wand2 className="w-4 h-4" />
-                    )}
-                  </button>
-                )}
+                <button
+                  onClick={generateDescription}
+                  disabled={!hasAI || !formData.name || isGenerating === 'description'}
+                  className="absolute top-2 right-2 p-1.5 text-blue-400 hover:bg-blue-900/30 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={hasAI ? "Generate with AI" : "AI not available - add VITE_GOOGLE_AI_API_KEY to environment"}
+                >
+                  {isGenerating === 'description' ? (
+                    <Loader className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Wand2 className="w-4 h-4" />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -558,25 +556,24 @@ Return ONLY those two lines, nothing else.`;
             <div className="mb-3 p-3 bg-blue-950/20 border border-blue-800/30 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium text-neutral-300">SEO Metadata</label>
-                {hasAI && (
-                  <button
-                    onClick={generateSEO}
-                    disabled={!formData.name || isGenerating === 'seo'}
-                    className="flex items-center gap-1.5 px-2 py-1 text-xs text-blue-400 hover:bg-blue-900/30 rounded transition-colors disabled:opacity-50"
-                  >
-                    {isGenerating === 'seo' ? (
-                      <>
-                        <Loader className="w-3 h-3 animate-spin" />
-                        <span>Generating...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Wand2 className="w-3 h-3" />
-                        <span>Generate SEO</span>
-                      </>
-                    )}
-                  </button>
-                )}
+                <button
+                  onClick={generateSEO}
+                  disabled={!hasAI || !formData.name || isGenerating === 'seo'}
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs text-blue-400 hover:bg-blue-900/30 rounded transition-colors disabled:opacity-50"
+                  title={hasAI ? "Generate SEO with AI" : "AI not available - add VITE_GOOGLE_AI_API_KEY to environment"}
+                >
+                  {isGenerating === 'seo' ? (
+                    <>
+                      <Loader className="w-3 h-3 animate-spin" />
+                      <span>Generating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="w-3 h-3" />
+                      <span>Generate SEO</span>
+                    </>
+                  )}
+                </button>
               </div>
               <div className="space-y-2">
                 <input
@@ -889,19 +886,18 @@ Return ONLY those two lines, nothing else.`;
                 rows={2}
                 placeholder="Optional description"
               />
-              {hasAI && (
-                <button
-                  onClick={generateDescription}
-                  disabled={!formData.name || isGenerating === 'description'}
-                  className="absolute top-2 right-2 p-1.5 text-blue-400 hover:bg-blue-900/30 rounded transition-colors disabled:opacity-50"
-                >
-                  {isGenerating === 'description' ? (
-                    <Loader className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Wand2 className="w-4 h-4" />
-                  )}
-                </button>
-              )}
+              <button
+                onClick={generateDescription}
+                disabled={!hasAI || !formData.name || isGenerating === 'description'}
+                className="absolute top-2 right-2 p-1.5 text-blue-400 hover:bg-blue-900/30 rounded transition-colors disabled:opacity-50"
+                title={hasAI ? "Generate with AI" : "AI not available - add VITE_GOOGLE_AI_API_KEY to environment"}
+              >
+                {isGenerating === 'description' ? (
+                  <Loader className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Wand2 className="w-4 h-4" />
+                )}
+              </button>
             </div>
           </div>
 
