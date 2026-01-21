@@ -14,39 +14,41 @@ input[type="text"], input[type="email"], input[type="password"], input[type="sea
     cursor: text;
 }
 
-/* Global Browser Scrollbars - Match Admin Style */
+/* Admin Panel - Premium Dark Theme (Applied globally via body.scrollbar-admin) */
 
-/* Default scrollbar for all pages - use html and body for higher specificity */
-html, body {
-    scrollbar-width: thin !important;
-    scrollbar-color: rgba(59, 130, 246, 0.5) rgba(15, 23, 42, 0.5) !important;
+/* Firefox Standard */
+.scrollbar-admin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(59, 130, 246, 0.5) rgba(15, 23, 42, 0.5);
 }
 
-html::-webkit-scrollbar, body::-webkit-scrollbar {
-    width: 8px !important;
-    height: 8px !important;
+/* Webkit (Chrome, Edge, Safari) */
+.scrollbar-admin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
 }
 
-html::-webkit-scrollbar-track, body::-webkit-scrollbar-track {
-    background: rgba(15, 23, 42, 0.5) !important;
-    border-radius: 4px !important;
-    margin: 2px !important;
+.scrollbar-admin::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 4px;
+    margin: 2px;
 }
 
-html::-webkit-scrollbar-thumb, body::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(59, 130, 246, 0.4), rgba(37, 99, 235, 0.6)) !important;
-    border: 1px solid rgba(59, 130, 246, 0.2) !important;
-    border-radius: 4px !important;
-    box-shadow: 0 0 8px rgba(59, 130, 246, 0.2) !important;
+.scrollbar-admin::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.4), rgba(37, 99, 235, 0.6));
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 4px;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
 }
 
-html::-webkit-scrollbar-thumb:hover, body::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(59, 130, 246, 0.6), rgba(37, 99, 235, 0.8)) !important;
-    box-shadow: 0 0 12px rgba(59, 130, 246, 0.4) !important;
+/* Hover Effects */
+.scrollbar-admin::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.6), rgba(37, 99, 235, 0.8));
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
 }
 
-html::-webkit-scrollbar-corner, body::-webkit-scrollbar-corner {
-    background: rgba(15, 23, 42, 0.5) !important;
+.scrollbar-admin::-webkit-scrollbar-corner {
+    background: rgba(15, 23, 42, 0.5);
 }
 
 /* Custom Scrollbars */
@@ -117,34 +119,6 @@ html::-webkit-scrollbar-corner, body::-webkit-scrollbar-corner {
 .scrollbar-nexus::-webkit-scrollbar-thumb:hover {
     background: #3b82f6;
     /* Blue accent */
-}
-
-/* Admin Panel - Premium Dark Theme */
-.scrollbar-admin::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-.scrollbar-admin::-webkit-scrollbar-track {
-    background: rgba(15, 23, 42, 0.5);
-    border-radius: 4px;
-    margin: 2px;
-}
-
-.scrollbar-admin::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(59, 130, 246, 0.4), rgba(37, 99, 235, 0.6));
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: 4px;
-    box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
-}
-
-.scrollbar-admin::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(59, 130, 246, 0.6), rgba(37, 99, 235, 0.8));
-    box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
-}
-
-.scrollbar-admin::-webkit-scrollbar-corner {
-    background: rgba(15, 23, 42, 0.5);
 }
 
 /* Glow (Neon) */
