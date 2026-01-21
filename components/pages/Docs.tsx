@@ -123,16 +123,16 @@ export const Docs: React.FC = () => {
                 <div className="container mx-auto max-w-7xl">
                     <h2 className="text-3xl font-bold mb-8">Popular Guides</h2>
                     <div className="grid md:grid-cols-3 gap-6">
-                        <a href="#" className="bg-neutral-800 border border-neutral-700 rounded-xl p-6 hover:border-cyan-500 transition-colors">
-                            <h3 className="font-bold mb-2">Launch Your Store in 30 Minutes</h3>
+                        <a href="#" className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300">
+                            <h3 className="font-bold mb-2 group-hover:text-gradient-animated transition-all">Launch Your Store in 30 Minutes</h3>
                             <p className="text-gray-400 text-sm">Step-by-step guide to going live quickly</p>
                         </a>
-                        <a href="#" className="bg-neutral-800 border border-neutral-700 rounded-xl p-6 hover:border-cyan-500 transition-colors">
-                            <h3 className="font-bold mb-2">Shopify to WebPilot Migration</h3>
+                        <a href="#" className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300">
+                            <h3 className="font-bold mb-2 group-hover:text-gradient-animated transition-all">Shopify to WebPilot Migration</h3>
                             <p className="text-gray-400 text-sm">How to migrate your existing store</p>
                         </a>
-                        <a href="#" className="bg-neutral-800 border border-neutral-700 rounded-xl p-6 hover:border-cyan-500 transition-colors">
-                            <h3 className="font-bold mb-2">Optimizing for Conversions</h3>
+                        <a href="#" className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300">
+                            <h3 className="font-bold mb-2 group-hover:text-gradient-animated transition-all">Optimizing for Conversions</h3>
                             <p className="text-gray-400 text-sm">Best practices to increase sales</p>
                         </a>
                     </div>

@@ -116,7 +116,7 @@ export const Careers: React.FC = () => {
                     <h2 className="text-3xl font-bold mb-12 text-center">Open Positions</h2>
                     <div className="space-y-4">
                         {positions.map((position, index) => (
-                            <div key={index} className="bg-neutral-800 border border-neutral-700 rounded-xl p-6 hover:border-cyan-500 transition-colors">
+                            <div key={index} className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300">
                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                     <div className="flex-1">
                                         <h3 className="text-xl font-bold mb-2">{position.title}</h3>

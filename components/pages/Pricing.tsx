@@ -135,15 +135,15 @@ export const Pricing: React.FC = () => {
                 <div className="container mx-auto max-w-4xl">
                     <h2 className="text-3xl font-bold mb-12 text-center">Frequently Asked Questions</h2>
                     <div className="space-y-6">
-                        <div className="feature-card-glow bg-neutral-800 border border-neutral-700 rounded-xl p-6">
+                        <div className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300">
                             <h3 className="font-semibold mb-2">Can I change plans later?</h3>
                             <p className="text-gray-400 text-sm">Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
                         </div>
-                        <div className="feature-card-glow bg-neutral-800 border border-neutral-700 rounded-xl p-6">
+                        <div className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300">
                             <h3 className="font-semibold mb-2">Is there a setup fee?</h3>
                             <p className="text-gray-400 text-sm">No, there are no setup fees or hidden charges. You only pay the monthly subscription.</p>
                         </div>
-                        <div className="feature-card-glow bg-neutral-800 border border-neutral-700 rounded-xl p-6">
+                        <div className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300">
                             <h3 className="font-semibold mb-2">What payment methods do you accept?</h3>
                             <p className="text-gray-400 text-sm">We accept all major credit cards, PayPal, and bank transfers for Enterprise plans.</p>
                         </div>

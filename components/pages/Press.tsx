@@ -95,7 +95,7 @@ export const Press: React.FC = () => {
                     <h2 className="text-3xl font-bold mb-8">Recent Announcements</h2>
                     <div className="space-y-6">
                         {pressReleases.map((release, index) => (
-                            <div key={index} className="bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-xl p-6 hover:-translate-y-1 transition-transform">
+                            <div key={index} className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300">
                                 <div className="text-cyan-400 text-sm mb-2">{release.date}</div>
                                 <h3 className="text-xl font-bold mb-3">{release.title}</h3>
                                 <p className="text-gray-400 mb-4">{release.excerpt}</p>
@@ -112,7 +112,7 @@ export const Press: React.FC = () => {
                     <h2 className="text-3xl font-bold mb-8">In the News</h2>
                     <div className="grid md:grid-cols-3 gap-6">
                         {media.map((item, index) => (
-                            <div key={index} className="bg-neutral-800 border border-neutral-700 rounded-xl p-6">
+                            <div key={index} className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300">
                                 <div className="text-cyan-400 font-semibold mb-2">{item.publication}</div>
                                 <p className="text-gray-300">{item.headline}</p>
                             </div>

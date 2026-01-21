@@ -111,7 +111,7 @@ export const Blog: React.FC = () => {
                 <div className="container mx-auto max-w-7xl">
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {posts.slice(1).map((post, index) => (
-                            <article key={index} className="bg-neutral-800 border border-neutral-700 rounded-xl overflow-hidden hover:border-cyan-500 transition-colors">
+                            <article key={index} className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300">
                                 <div className="h-48 bg-cover bg-center" style={{backgroundImage: `url(${post.image})`}} />
                                 <div className="p-6">
                                     <div className="text-cyan-400 text-sm font-semibold mb-2">{post.category}</div>

@@ -63,30 +63,38 @@ export const API: React.FC = () => {
             <section className="py-12 px-6">
                 <div className="container mx-auto max-w-7xl">
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-                        <div className="bg-neutral-800 border border-neutral-700 rounded-xl p-6 text-center">
-                            <Code className="w-8 h-8 text-cyan-400 mx-auto mb-4" />
+                        <div className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-6 text-center hover:-translate-y-1 transition-all duration-300">
+                            <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-all duration-300">
+                                <Code className="w-7 h-7 text-white" />
+                            </div>
                             <h3 className="font-semibold mb-2">RESTful API</h3>
                             <p className="text-gray-400 text-sm">Clean, predictable endpoints</p>
                         </div>
-                        <div className="bg-neutral-800 border border-neutral-700 rounded-xl p-6 text-center">
-                            <Terminal className="w-8 h-8 text-cyan-400 mx-auto mb-4" />
+                        <div className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-6 text-center hover:-translate-y-1 transition-all duration-300">
+                            <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-all duration-300">
+                                <Terminal className="w-7 h-7 text-white" />
+                            </div>
                             <h3 className="font-semibold mb-2">Rate Limiting</h3>
                             <p className="text-gray-400 text-sm">10,000 requests per hour</p>
                         </div>
-                        <div className="bg-neutral-800 border border-neutral-700 rounded-xl p-6 text-center">
-                            <Webhook className="w-8 h-8 text-cyan-400 mx-auto mb-4" />
+                        <div className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-6 text-center hover:-translate-y-1 transition-all duration-300">
+                            <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-all duration-300">
+                                <Webhook className="w-7 h-7 text-white" />
+                            </div>
                             <h3 className="font-semibold mb-2">Webhooks</h3>
                             <p className="text-gray-400 text-sm">Real-time event notifications</p>
                         </div>
-                        <div className="bg-neutral-800 border border-neutral-700 rounded-xl p-6 text-center">
-                            <Book className="w-8 h-8 text-cyan-400 mx-auto mb-4" />
+                        <div className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-6 text-center hover:-translate-y-1 transition-all duration-300">
+                            <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-all duration-300">
+                                <Book className="w-7 h-7 text-white" />
+                            </div>
                             <h3 className="font-semibold mb-2">Full Docs</h3>
                             <p className="text-gray-400 text-sm">Complete API reference</p>
                         </div>
                     </div>
 
                     {/* Code Example */}
-                    <div className="bg-neutral-800 border border-neutral-700 rounded-xl p-8">
+                    <div className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-8">
                         <h3 className="text-xl font-bold mb-4">Quick Start</h3>
                         <div className="bg-neutral-900 rounded-lg p-6 font-mono text-sm overflow-x-auto">
                             <pre className="text-gray-300">
@@ -113,7 +121,7 @@ const product = await api.products.create({
                         <h3 className="text-2xl font-bold mb-6">Popular Endpoints</h3>
                         <div className="space-y-2">
                             {endpoints.map((endpoint, index) => (
-                                <div key={index} className="bg-neutral-800 border border-neutral-700 rounded-lg p-4 flex items-center gap-4">
+                                <div key={index} className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-lg p-4 flex items-center gap-4 hover:-translate-y-1 transition-all duration-300">
                                     <span className={`px-3 py-1 rounded text-xs font-bold ${
                                         endpoint.method === 'GET' ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'
                                     }`}>

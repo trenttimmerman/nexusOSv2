@@ -72,12 +72,14 @@ export const Integrations: React.FC = () => {
                 <div className="container mx-auto max-w-7xl">
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {integrations.map((integration, index) => (
-                            <div key={index} className="bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-xl p-6 hover:-translate-y-1 transition-transform">
-                                <div className="w-16 h-16 bg-neutral-700 rounded-lg mb-4 overflow-hidden">
-                                    <div className="w-full h-full bg-gradient-to-br from-cyan-500 to-blue-500" />
+                            <div key={index} className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300">
+                                <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-lg mb-4 overflow-hidden shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-all duration-300">
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <div className="w-8 h-8 bg-white/20 rounded" />
+                                    </div>
                                 </div>
                                 <div className="text-xs text-cyan-400 font-semibold mb-2">{integration.category}</div>
-                                <h3 className="text-xl font-bold mb-2">{integration.name}</h3>
+                                <h3 className="text-xl font-bold mb-2 group-hover:text-gradient-animated transition-all">{integration.name}</h3>
                                 <p className="text-gray-400 text-sm">{integration.description}</p>
                             </div>
                         ))}
