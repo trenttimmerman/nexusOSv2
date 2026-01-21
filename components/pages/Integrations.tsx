@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import LandingHeader from '../LandingHeader';
 import LandingFooter from '../LandingFooter';
 import FadeInSection from '../FadeInSection';
-import { Puzzle, Code2, Zap } from 'lucide-react';
+import { Puzzle, Code2, Zap, CreditCard, Mail, BarChart3, Package, Workflow } from 'lucide-react';
 
 export const Integrations: React.FC = () => {
     const integrations = [
@@ -11,37 +11,43 @@ export const Integrations: React.FC = () => {
             name: "Stripe",
             category: "Payments",
             description: "Accept payments from customers worldwide",
-            logo: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=200&q=80"
+            icon: <CreditCard className="w-8 h-8 text-white" />,
+            color: "from-purple-500 to-indigo-600"
         },
         {
             name: "PayPal",
             category: "Payments",
             description: "Give customers another payment option",
-            logo: "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=200&q=80"
+            icon: <CreditCard className="w-8 h-8 text-white" />,
+            color: "from-blue-500 to-blue-600"
         },
         {
             name: "Mailchimp",
             category: "Marketing",
             description: "Sync customers and send email campaigns",
-            logo: "https://images.unsplash.com/photo-1563986768711-b3bde3dc821e?w=200&q=80"
+            icon: <Mail className="w-8 h-8 text-white" />,
+            color: "from-yellow-500 to-yellow-600"
         },
         {
             name: "Google Analytics",
             category: "Analytics",
             description: "Track visitors and conversion events",
-            logo: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=200&q=80"
+            icon: <BarChart3 className="w-8 h-8 text-white" />,
+            color: "from-orange-500 to-red-600"
         },
         {
             name: "ShipStation",
             category: "Shipping",
             description: "Automate order fulfillment and shipping",
-            logo: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=200&q=80"
+            icon: <Package className="w-8 h-8 text-white" />,
+            color: "from-green-500 to-emerald-600"
         },
         {
             name: "Zapier",
             category: "Automation",
             description: "Connect to 5000+ apps without code",
-            logo: "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=200&q=80"
+            icon: <Workflow className="w-8 h-8 text-white" />,
+            color: "from-orange-500 to-orange-600"
         }
     ];
 
@@ -73,10 +79,8 @@ export const Integrations: React.FC = () => {
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {integrations.map((integration, index) => (
                             <div key={index} className="group feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300">
-                                <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-lg mb-4 overflow-hidden shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-all duration-300">
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <div className="w-8 h-8 bg-white/20 rounded" />
-                                    </div>
+                                <div className={`w-16 h-16 bg-gradient-to-br ${integration.color} rounded-lg mb-4 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-all duration-300`}>
+                                    {integration.icon}
                                 </div>
                                 <div className="text-xs text-cyan-400 font-semibold mb-2">{integration.category}</div>
                                 <h3 className="text-xl font-bold mb-2 group-hover:text-gradient-animated transition-all">{integration.name}</h3>
