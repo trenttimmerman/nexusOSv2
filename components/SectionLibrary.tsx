@@ -985,7 +985,7 @@ export const SPACER_COMPONENTS: Record<string, React.FC<SectionComponentProps>> 
         return { backgroundColor };
       }
 
-      const blurSize = `${blurSize}%`;
+      const blurSize = `${blurIntensity}%`;
       
       if (blurEdges === 'top') {
         return {
