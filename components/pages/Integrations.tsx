@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import LandingHeader from '../LandingHeader';
+import LandingFooter from '../LandingFooter';
 import { Puzzle, Code2, Zap } from 'lucide-react';
 
 export const Integrations: React.FC = () => {
@@ -113,11 +114,7 @@ export const Integrations: React.FC = () => {
             </section>
 
             {/* Footer */}
-            <footer className="border-t border-neutral-800 py-12 px-6">
-                <div className="container mx-auto max-w-7xl text-center text-gray-500 text-sm">
-                    <p>&copy; {new Date().getFullYear()} WebPilot, Inc. All rights reserved.</p>
-                </div>
-            </footer>
+            <LandingFooter />
         </div>
     );
 };

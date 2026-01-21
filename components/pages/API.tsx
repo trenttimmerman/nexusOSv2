@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Code, Terminal, Book, Webhook } from 'lucide-react';
 import LandingHeader from '../LandingHeader';
+import LandingFooter from '../LandingFooter';
 
 export const API: React.FC = () => {
     const endpoints = [
@@ -127,11 +128,7 @@ const product = await api.products.create({
             </section>
 
             {/* Footer */}
-            <footer className="border-t border-neutral-800 py-12 px-6 mt-24">
-                <div className="container mx-auto max-w-7xl text-center text-gray-500 text-sm">
-                    <p>&copy; {new Date().getFullYear()} WebPilot, Inc. All rights reserved.</p>
-                </div>
-            </footer>
+            <LandingFooter />
         </div>
     );
 };
