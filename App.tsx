@@ -30,6 +30,7 @@ import { AboutUs } from './components/pages/AboutUs';
 import { Careers } from './components/pages/Careers';
 import { Press } from './components/pages/Press';
 import { Contact } from './components/pages/Contact';
+import { ScrollToTop } from './components/ScrollToTop';
 
 // Wrapper to inject data into Storefront
 const StorefrontWrapper = () => {
@@ -341,6 +342,7 @@ export default function App() {
     <DataProvider>
       <CartProvider>
         <BrowserRouter basename={basename}>
+          <ScrollToTop />
           <Routes>
             {/* Public Marketing Site */}
             <Route path="/" element={<MarketingLanding />} />
