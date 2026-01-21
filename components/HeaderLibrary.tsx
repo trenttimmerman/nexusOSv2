@@ -1762,8 +1762,11 @@ export const HeaderQuantum: React.FC<HeaderProps> = ({
 
   return (
     <header 
-      className="w-full relative py-4"
-      style={{ backgroundColor: settings.backgroundColor }}
+      className={`w-full ${settings.enableFloating ? 'fixed top-0 left-0 right-0 z-50' : 'relative'}`}
+      style={{ 
+        backgroundColor: settings.backgroundColor,
+        padding: settings.enableFloating ? '1rem 0' : '1rem 0'
+      }}
     >
       <div className="max-w-7xl mx-auto px-6">
         <div 
@@ -1820,33 +1823,39 @@ export const HeaderQuantum: React.FC<HeaderProps> = ({
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={onSearchClick}
-              className="p-3 rounded-full hover:bg-white/10 transition-all"
-              style={{ color: settings.textColor }}
-            >
-              <Search size={settings.iconSize} />
-            </button>
-            <button
-              className="p-3 rounded-full hover:bg-white/10 transition-all"
-              style={{ color: settings.textColor }}
-            >
-              <User size={settings.iconSize} />
-            </button>
-            <button
-              onClick={onOpenCart}
-              className="relative p-3 rounded-full hover:bg-white/10 transition-all"
-              style={{ color: settings.textColor }}
-            >
-              <ShoppingBag size={settings.iconSize} />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
-                  style={{ backgroundColor: settings.accentColor, color: '#ffffff' }}
-                >
-                  {cartCount}
-                </span>
-              )}
-            </button>
+            {settings.showSearch !== false && (
+              <button
+                onClick={onSearchClick}
+                className="p-3 rounded-full hover:bg-white/10 transition-all"
+                style={{ color: settings.textColor }}
+              >
+                <Search size={settings.iconSize} />
+              </button>
+            )}
+            {settings.showAccount !== false && (
+              <button
+                className="p-3 rounded-full hover:bg-white/10 transition-all"
+                style={{ color: settings.textColor }}
+              >
+                <User size={settings.iconSize} />
+              </button>
+            )}
+            {settings.showCart !== false && (
+              <button
+                onClick={onOpenCart}
+                className="relative p-3 rounded-full hover:bg-white/10 transition-all"
+                style={{ color: settings.textColor }}
+              >
+                <ShoppingBag size={settings.iconSize} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
+                    style={{ backgroundColor: settings.accentColor, color: '#ffffff' }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -1900,13 +1909,15 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-between">
           {/* Left Actions */}
           <div className="flex items-center gap-4">
-            <button
-              onClick={onSearchClick}
-              className="p-3 rounded-full hover:bg-white/10 transition-all"
-              style={{ color: settings.textColor }}
-            >
-              <Search size={settings.iconSize} />
-            </button>
+            {settings.showSearch !== false && (
+              <button
+                onClick={onSearchClick}
+                className="p-3 rounded-full hover:bg-white/10 transition-all"
+                style={{ color: settings.textColor }}
+              >
+                <Search size={settings.iconSize} />
+              </button>
+            )}
           </div>
 
           {/* Center Logo Orbit */}
@@ -1970,26 +1981,30 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({
 
           {/* Right Actions */}
           <div className="flex items-center gap-4">
-            <button
-              className="p-3 rounded-full hover:bg-white/10 transition-all"
-              style={{ color: settings.textColor }}
-            >
-              <User size={settings.iconSize} />
-            </button>
-            <button
-              onClick={onOpenCart}
-              className="relative p-3 rounded-full hover:bg-white/10 transition-all"
-              style={{ color: settings.textColor }}
-            >
-              <ShoppingBag size={settings.iconSize} />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
-                  style={{ backgroundColor: settings.accentColor, color: '#ffffff' }}
-                >
-                  {cartCount}
-                </span>
-              )}
-            </button>
+            {settings.showAccount !== false && (
+              <button
+                className="p-3 rounded-full hover:bg-white/10 transition-all"
+                style={{ color: settings.textColor }}
+              >
+                <User size={settings.iconSize} />
+              </button>
+            )}
+            {settings.showCart !== false && (
+              <button
+                onClick={onOpenCart}
+                className="relative p-3 rounded-full hover:bg-white/10 transition-all"
+                style={{ color: settings.textColor }}
+              >
+                <ShoppingBag size={settings.iconSize} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
+                    style={{ backgroundColor: settings.accentColor, color: '#ffffff' }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -2147,51 +2162,57 @@ export const HeaderNeon: React.FC<HeaderProps> = ({
 
           {/* Right Actions with Neon Borders */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={onSearchClick}
-              className="p-3 border-2 transition-all duration-300 hover:scale-110"
-              style={{ 
-                borderColor: settings.neonColor,
-                color: settings.textColor,
-                boxShadow: `0 0 10px ${settings.neonColor}40`,
-              }}
-            >
-              <Search size={settings.iconSize} />
-            </button>
-            <button
-              className="p-3 border-2 transition-all duration-300 hover:scale-110"
-              style={{ 
-                borderColor: settings.secondaryNeon,
-                color: settings.textColor,
-                boxShadow: `0 0 10px ${settings.secondaryNeon}40`,
-              }}
-            >
-              <User size={settings.iconSize} />
-            </button>
-            <button
-              onClick={onOpenCart}
-              className="relative p-3 border-2 transition-all duration-300 hover:scale-110"
-              style={{ 
-                borderColor: settings.neonColor,
-                color: settings.textColor,
-                boxShadow: `0 0 10px ${settings.neonColor}40`,
-              }}
-            >
-              <ShoppingBag size={settings.iconSize} />
-              {cartCount > 0 && (
-                <span 
-                  className="absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center text-xs font-bold border-2"
-                  style={{ 
-                    backgroundColor: settings.neonColor,
-                    borderColor: settings.backgroundColor,
-                    color: settings.backgroundColor,
-                    boxShadow: `0 0 15px ${settings.neonColor}`
-                  }}
-                >
-                  {cartCount}
-                </span>
-              )}
-            </button>
+            {settings.showSearch !== false && (
+              <button
+                onClick={onSearchClick}
+                className="p-3 border-2 transition-all duration-300 hover:scale-110"
+                style={{ 
+                  borderColor: settings.neonColor,
+                  color: settings.textColor,
+                  boxShadow: `0 0 10px ${settings.neonColor}40`,
+                }}
+              >
+                <Search size={settings.iconSize} />
+              </button>
+            )}
+            {settings.showAccount !== false && (
+              <button
+                className="p-3 border-2 transition-all duration-300 hover:scale-110"
+                style={{ 
+                  borderColor: settings.secondaryNeon,
+                  color: settings.textColor,
+                  boxShadow: `0 0 10px ${settings.secondaryNeon}40`,
+                }}
+              >
+                <User size={settings.iconSize} />
+              </button>
+            )}
+            {settings.showCart !== false && (
+              <button
+                onClick={onOpenCart}
+                className="relative p-3 border-2 transition-all duration-300 hover:scale-110"
+                style={{ 
+                  borderColor: settings.neonColor,
+                  color: settings.textColor,
+                  boxShadow: `0 0 10px ${settings.neonColor}40`,
+                }}
+              >
+                <ShoppingBag size={settings.iconSize} />
+                {cartCount > 0 && (
+                  <span 
+                    className="absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center text-xs font-bold border-2"
+                    style={{ 
+                      backgroundColor: settings.neonColor,
+                      borderColor: settings.backgroundColor,
+                      color: settings.backgroundColor,
+                      boxShadow: `0 0 15px ${settings.neonColor}`
+                    }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
