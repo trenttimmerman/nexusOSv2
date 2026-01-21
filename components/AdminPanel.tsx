@@ -201,6 +201,7 @@ import {
   Clock,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   Tag,
   Share2,
   List,
@@ -549,6 +550,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [mockActiveNav, setMockActiveNav] = useState('/shop');
   const [isHeaderSearchOpen, setIsHeaderSearchOpen] = useState(false);
+  
+  // Sidebar Group Collapse State
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+    const saved = localStorage.getItem('sidebarGroupsExpanded');
+    return saved ? JSON.parse(saved) : {
+      'sales-commerce': true,
+      'catalog': true,
+      'content-design': true,
+      'marketing': true,
+      'tools': true
+    };
+  });
   const [isCreateTenantOpen, setIsCreateTenantOpen] = useState(false);
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
@@ -678,6 +691,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       setIsSidebarCollapsed(false);
     }
   }, [activeTab]);
+
+  // Save expanded groups to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebarGroupsExpanded', JSON.stringify(expandedGroups));
+  }, [expandedGroups]);
+
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupId]: !prev[groupId]
+    }));
+  };
 
   // Save collection to database (used by both Collection and Category modals)
   const saveCollection = async (collection: any) => {
@@ -1795,95 +1820,200 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     </div>
   );
 
-  const renderSidebar = () => (
-    <div className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-nexus-black border-r border-nexus-gray flex flex-col h-full text-neutral-400 shrink-0 z-20 transition-all duration-300 ease-in-out hidden md:flex`}>
-      <div className={`p-6 border-b border-nexus-gray flex items-center ${isSidebarCollapsed ? 'justify-center flex-col gap-4' : 'justify-between'}`}>
-        <div className={`flex items-center gap-2 text-white ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">E</div>
-          {!isSidebarCollapsed && <span className="font-display font-bold text-xl tracking-tight">WebPilot</span>}
-        </div>
-        <button
-          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="text-neutral-500 hover:text-white transition-colors"
-        >
-          {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-        </button>
-      </div>
-      <nav className="flex-1 p-4 space-y-2">
-        {[
-          { id: AdminTab.DASHBOARD, icon: LayoutDashboard, label: 'Command Center' },
+  const renderSidebar = () => {
+    // Define menu structure with collapsible groups
+    const menuStructure = [
+      {
+        type: 'standalone',
+        item: { id: AdminTab.DASHBOARD, icon: LayoutDashboard, label: 'Command Center' }
+      },
+      {
+        type: 'group',
+        id: 'sales-commerce',
+        label: 'Sales & Commerce',
+        icon: ShoppingBag,
+        items: [
           { id: AdminTab.ORDERS, icon: ShoppingBag, label: 'Orders' },
           { id: AdminTab.PRODUCTS, icon: Package, label: 'Products' },
           { id: AdminTab.CUSTOMERS, icon: Users, label: 'Customers' },
+          { id: AdminTab.DISCOUNTS, icon: Tag, label: 'Discounts' }
+        ]
+      },
+      {
+        type: 'group',
+        id: 'catalog',
+        label: 'Catalog Management',
+        icon: FolderTree,
+        items: [
           { id: AdminTab.CATEGORIES, icon: FolderTree, label: 'Categories' },
           { id: AdminTab.COLLECTIONS, icon: Layers, label: 'Collections' },
-          { id: AdminTab.DISCOUNTS, icon: Tag, label: 'Discounts' },
-          { id: AdminTab.SHIPPING, icon: Truck, label: 'Shipping' },
+          { id: AdminTab.SHIPPING, icon: Truck, label: 'Shipping' }
+        ]
+      },
+      {
+        type: 'group',
+        id: 'content-design',
+        label: 'Content & Design',
+        icon: Palette,
+        items: [
           { id: AdminTab.PAGES, icon: FileText, label: 'Pages' },
           { id: AdminTab.MEDIA, icon: FolderOpen, label: 'Media Library' },
           { id: AdminTab.FAVICON, icon: ImageIcon, label: 'Favicon Generator' },
           { id: AdminTab.DESIGN, icon: Palette, label: 'Design Studio' },
-          { id: AdminTab.DESIGN_LIBRARY, icon: Layers, label: 'Design Library' },
+          { id: AdminTab.DESIGN_LIBRARY, icon: Layers, label: 'Design Library' }
+        ]
+      },
+      {
+        type: 'group',
+        id: 'marketing',
+        label: 'Marketing & Analytics',
+        icon: BarChart3,
+        items: [
           { id: AdminTab.COLLECTION_ANALYTICS, icon: BarChart3, label: 'Analytics' },
           { id: AdminTab.CAMPAIGNS, icon: Megaphone, label: 'Marketing' },
           { id: AdminTab.EMAIL_SUBSCRIBERS, icon: Mail, label: 'Email Subscribers' },
-          { id: AdminTab.EMAIL_SETTINGS, icon: Send, label: 'Email Settings' },
+          { id: AdminTab.EMAIL_SETTINGS, icon: Send, label: 'Email Settings' }
+        ]
+      },
+      {
+        type: 'group',
+        id: 'tools',
+        label: 'Tools & Settings',
+        icon: Settings,
+        items: [
           { id: AdminTab.SHOPIFY_MIGRATION, icon: Upload, label: 'Shopify Import' },
           { id: AdminTab.WEBSITE_MIGRATION, icon: Globe, label: 'Website Import' },
-          { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' },
-          ...(userRole === 'superuser' ? [{ id: AdminTab.PLATFORM, icon: Users, label: 'Platform Admin' }] : [])
-        ].map((item) => (
+          { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' }
+        ]
+      }
+    ];
+
+    // Add Platform Admin if superuser
+    if (userRole === 'superuser') {
+      menuStructure.push({
+        type: 'standalone',
+        item: { id: AdminTab.PLATFORM, icon: Users, label: 'Platform Admin' }
+      } as any);
+    }
+
+    const handleItemClick = (itemId: AdminTab) => {
+      onTabChange(itemId);
+      setIsHeaderModalOpen(false);
+      setIsSystemModalOpen(false);
+      setIsInterfaceModalOpen(false);
+      setIsAddSectionOpen(false);
+      setIsArchitectOpen(false);
+      setIsProductEditorOpen(false);
+      setIsCategoryModalOpen(false);
+      setIsHeroModalOpen(false);
+      setIsGridModalOpen(false);
+      setIsCollectionModalOpen(false);
+    };
+
+    const renderMenuItem = (item: any) => (
+      <button
+        key={item.id}
+        title={isSidebarCollapsed ? item.label : ''}
+        onClick={() => handleItemClick(item.id)}
+        className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-4'} py-3 rounded-lg transition-all ${activeTab === item.id
+          ? 'bg-blue-600/10 text-blue-500 border border-blue-600/20'
+          : 'hover:bg-white/5 hover:text-white'
+        }`}
+      >
+        <item.icon size={18} />
+        {!isSidebarCollapsed && <span className="font-medium text-sm">{item.label}</span>}
+      </button>
+    );
+
+    const renderGroup = (group: any) => {
+      const isExpanded = expandedGroups[group.id];
+      const hasActiveItem = group.items.some((item: any) => item.id === activeTab);
+
+      return (
+        <div key={group.id} className="space-y-1">
+          {/* Group Header */}
           <button
-            key={item.id}
-            title={isSidebarCollapsed ? item.label : ''}
-            onClick={() => {
-              onTabChange(item.id);
-              setIsHeaderModalOpen(false);
-              setIsSystemModalOpen(false);
-              setIsInterfaceModalOpen(false);
-              setIsAddSectionOpen(false);
-              setIsArchitectOpen(false);
-              setIsProductEditorOpen(false);
-              setIsCategoryModalOpen(false);
-              setIsHeroModalOpen(false);
-              setIsGridModalOpen(false);
-              setIsCollectionModalOpen(false);
-            }}
-            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-4'} py-3 rounded-lg transition-all ${activeTab === item.id
-              ? 'bg-blue-600/10 text-blue-500 border border-blue-600/20'
-              : 'hover:bg-white/5 hover:text-white'
-              }`}
+            onClick={() => !isSidebarCollapsed && toggleGroup(group.id)}
+            title={isSidebarCollapsed ? group.label : ''}
+            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-2 px-3'} py-2 rounded-lg transition-all ${
+              hasActiveItem ? 'text-blue-400' : 'text-neutral-500 hover:text-neutral-300'
+            }`}
           >
-            <item.icon size={18} />
-            {!isSidebarCollapsed && <span className="font-medium text-sm">{item.label}</span>}
+            <group.icon size={16} className={isSidebarCollapsed ? '' : 'shrink-0'} />
+            {!isSidebarCollapsed && (
+              <>
+                <span className="flex-1 text-left text-xs font-semibold uppercase tracking-wider">
+                  {group.label}
+                </span>
+                <ChevronDown 
+                  size={14} 
+                  className={`shrink-0 transition-transform ${isExpanded ? 'rotate-0' : '-rotate-90'}`} 
+                />
+              </>
+            )}
           </button>
-        ))}
-      </nav>
-      <div className="p-4 border-t border-nexus-gray space-y-2">
-        {/* View Store Button */}
-        {config.slug && (
-          <a
-            href={`/s/${config.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={isSidebarCollapsed ? 'View Store' : ''}
-            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-4'} py-3 rounded-lg text-emerald-500 hover:bg-emerald-500/10 transition-all`}
+
+          {/* Group Items */}
+          {(!isSidebarCollapsed && isExpanded) && (
+            <div className="space-y-1 pl-2">
+              {group.items.map((item: any) => renderMenuItem(item))}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    return (
+      <div className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-nexus-black border-r border-nexus-gray flex flex-col h-full text-neutral-400 shrink-0 z-20 transition-all duration-300 ease-in-out hidden md:flex`}>
+        <div className={`p-6 border-b border-nexus-gray flex items-center ${isSidebarCollapsed ? 'justify-center flex-col gap-4' : 'justify-between'}`}>
+          <div className={`flex items-center gap-2 text-white ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">E</div>
+            {!isSidebarCollapsed && <span className="font-display font-bold text-xl tracking-tight">WebPilot</span>}
+          </div>
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="text-neutral-500 hover:text-white transition-colors"
           >
-            <ExternalLink size={18} />
-            {!isSidebarCollapsed && <span className="font-medium text-sm">View Store</span>}
-          </a>
-        )}
-        <button
-          onClick={onLogout}
-          title={isSidebarCollapsed ? 'Sign Out' : ''}
-          className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-4'} py-3 rounded-lg text-red-500 hover:bg-red-500/10 transition-all`}
-        >
-          <div className="w-4 h-4"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></div>
-          {!isSidebarCollapsed && <span className="font-medium text-sm">Sign Out</span>}
-        </button>
+            {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </button>
+        </div>
+        
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          {menuStructure.map((section: any) => {
+            if (section.type === 'standalone') {
+              return renderMenuItem(section.item);
+            } else {
+              return renderGroup(section);
+            }
+          })}
+        </nav>
+        
+        <div className="p-4 border-t border-nexus-gray space-y-2">
+          {/* View Store Button */}
+          {config.slug && (
+            <a
+              href={`/s/${config.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={isSidebarCollapsed ? 'View Store' : ''}
+              className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-4'} py-3 rounded-lg text-emerald-500 hover:bg-emerald-500/10 transition-all`}
+            >
+              <ExternalLink size={18} />
+              {!isSidebarCollapsed && <span className="font-medium text-sm">View Store</span>}
+            </a>
+          )}
+          <button
+            onClick={onLogout}
+            title={isSidebarCollapsed ? 'Sign Out' : ''}
+            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-4'} py-3 rounded-lg text-red-500 hover:bg-red-500/10 transition-all`}
+          >
+            <div className="w-4 h-4"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></div>
+            {!isSidebarCollapsed && <span className="font-medium text-sm">Sign Out</span>}
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // --- MOBILE MENU DRAWER ---
   const renderMobileMenu = () => {
