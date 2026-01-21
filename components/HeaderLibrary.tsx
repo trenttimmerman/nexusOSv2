@@ -1742,15 +1742,15 @@ export const HeaderQuantum: React.FC<HeaderProps> = ({
   data = {},
 }) => {
   const settings = {
-    backgroundColor: data.backgroundColor || '#000000',
-    textColor: data.textColor || '#ffffff',
-    textHoverColor: data.textHoverColor || '#60a5fa',
-    accentColor: data.accentColor || '#3b82f6',
-    pillBackgroundColor: data.pillBackgroundColor || 'rgba(31, 41, 55, 0.8)',
-    pillHoverColor: data.pillHoverColor || 'rgba(59, 130, 246, 0.2)',
-    magneticStrength: data.magneticStrength || 'medium',
-    enableFloating: data.enableFloating !== false,
-    iconSize: data.iconSize || 20,
+    backgroundColor: '#000000',
+    textColor: '#ffffff',
+    textHoverColor: '#60a5fa',
+    accentColor: '#3b82f6',
+    pillBackgroundColor: 'rgba(31, 41, 55, 0.8)',
+    pillHoverColor: 'rgba(59, 130, 246, 0.2)',
+    magneticStrength: 'medium' as 'low' | 'medium' | 'high',
+    enableFloating: true,
+    iconSize: 20,
     ...data
   };
 
@@ -1871,14 +1871,14 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({
   data = {},
 }) => {
   const settings = {
-    backgroundColor: data.backgroundColor || '#0a0a0a',
-    textColor: data.textColor || '#e5e5e5',
-    textHoverColor: data.textHoverColor || '#60a5fa',
-    accentColor: data.accentColor || '#3b82f6',
-    orbitRadius: data.orbitRadius || 180,
-    orbitSpeed: data.orbitSpeed || 'slow',
-    centerGlow: data.centerGlow !== false,
-    iconSize: data.iconSize || 20,
+    backgroundColor: '#0a0a0a',
+    textColor: '#e5e5e5',
+    textHoverColor: '#60a5fa',
+    accentColor: '#3b82f6',
+    orbitRadius: 180,
+    orbitSpeed: 'slow' as 'slow' | 'medium' | 'fast',
+    centerGlow: true,
+    iconSize: 20,
     ...data
   };
 
@@ -2014,15 +2014,15 @@ export const HeaderNeon: React.FC<HeaderProps> = ({
   data = {},
 }) => {
   const settings = {
-    backgroundColor: data.backgroundColor || '#0a0014',
-    textColor: data.textColor || '#ffffff',
-    neonColor: data.neonColor || '#ff00ff',
-    secondaryNeon: data.secondaryNeon || '#00ffff',
-    gridColor: data.gridColor || '#ff00ff',
-    enableGlitch: data.enableGlitch !== false,
-    glitchIntensity: data.glitchIntensity || 'medium',
-    scanlineOpacity: data.scanlineOpacity || 0.05,
-    iconSize: data.iconSize || 20,
+    backgroundColor: '#0a0014',
+    textColor: '#ffffff',
+    neonColor: '#ff00ff',
+    secondaryNeon: '#00ffff',
+    gridColor: '#ff00ff',
+    enableGlitch: true,
+    glitchIntensity: 'medium' as 'low' | 'medium' | 'high',
+    scanlineOpacity: 0.05,
+    iconSize: 20,
     ...data
   };
 
