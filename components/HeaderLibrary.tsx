@@ -1762,8 +1762,8 @@ export const HeaderQuantum: React.FC<HeaderProps> = ({
 
   return (
     <header 
-      className={`w-full ${settings.enableFloating ? 'fixed top-6' : 'relative'} left-0 right-0 z-50 transition-all duration-300`}
-      style={{ backgroundColor: settings.enableFloating ? 'transparent' : settings.backgroundColor }}
+      className="w-full relative py-4"
+      style={{ backgroundColor: settings.backgroundColor }}
     >
       <div className="max-w-7xl mx-auto px-6">
         <div 
