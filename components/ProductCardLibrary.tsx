@@ -348,10 +348,88 @@ export const PRODUCT_CARD_OPTIONS = [
 ];
 
 export const PRODUCT_GRID_FIELDS: Record<string, string[]> = {
-  classic: ['heading', 'subheading'],
-  industrial: ['heading', 'subheading'],
-  focus: ['heading', 'subheading'],
-  hype: ['heading', 'subheading'],
-  magazine: ['heading', 'subheading'],
-  glass: ['heading', 'subheading'],
+  classic: [
+    // Content
+    'heading', 'subheading',
+    // Card Features
+    'showCategory', 'showQuickAdd', 'hoverAnimation',
+    // Colors
+    'cardBgColor', 'productNameColor', 'priceColor',
+    'buttonBgColor', 'buttonTextColor', 'borderColor',
+    'categoryColor',
+    // Typography
+    'productNameSize', 'priceSize',
+    // Spacing
+    'cardPadding', 'imageBorderRadius'
+  ],
+  industrial: [
+    // Content
+    'heading', 'subheading',
+    // Card Features
+    'showProductId', 'showStock', 'showGrain', 'imageFilter',
+    // Colors
+    'cardBgColor', 'productNameColor', 'priceColor',
+    'buttonBgColor', 'buttonTextColor', 'borderColor',
+    'badgeBgColor', 'badgeTextColor',
+    // Typography
+    'fontFamily', 'textTransform',
+    // Layout
+    'borderWidth', 'gridLineColor'
+  ],
+  focus: [
+    // Content
+    'heading', 'subheading',
+    // Card Features
+    'overlayOpacity', 'showCategoryOnHover', 'hoverRevealSpeed',
+    // Colors
+    'overlayColor', 'productNameColor', 'priceColor',
+    'buttonBgColor', 'buttonTextColor', 'categoryColor',
+    // Typography
+    'productNameFont', 'productNameStyle',
+    // Animation
+    'imageZoom', 'contentTransition'
+  ],
+  hype: [
+    // Content
+    'heading', 'subheading',
+    // Card Features
+    'showNewBadge', 'showLowStockBadge', 'badgeStyle',
+    // Colors
+    'cardBgColor', 'productNameColor', 'priceColor',
+    'buttonBgColor', 'buttonTextColor', 'borderColor',
+    'newBadgeBgColor', 'newBadgeTextColor',
+    'lowStockBadgeColor',
+    // Effects
+    'shadowStyle', 'buttonIcon', 'skewAngle',
+    // Animation
+    'hoverEffect'
+  ],
+  magazine: [
+    // Content
+    'heading', 'subheading',
+    // Card Features
+    'showCategory', 'alignment', 'showDescription',
+    // Colors
+    'productNameColor', 'priceColor', 'categoryColor',
+    'buttonTextColor', 'buttonBorderColor',
+    // Typography
+    'productNameFont', 'categoryLetterSpacing',
+    'productNameSize',
+    // Layout
+    'textAlignment', 'imageAspectRatio'
+  ],
+  glass: [
+    // Content
+    'heading', 'subheading',
+    // Card Features
+    'showWishlist', 'glassOpacity', 'blurIntensity',
+    // Colors
+    'cardBgColor', 'productNameColor', 'priceColor',
+    'buttonBgColor', 'buttonTextColor', 'borderColor',
+    'wishlistColor',
+    // Effects
+    'backdropBlur', 'borderOpacity',
+    // Animation
+    'revealDirection', 'hoverScale'
+  ],
 };
