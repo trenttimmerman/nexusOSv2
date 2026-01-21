@@ -10772,8 +10772,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <span className="text-[10px] text-neutral-500">Updates instantly</span>
                 </div>
               </div>
-              <div className="flex-1 overflow-auto bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px]">
-                <div className="bg-white">
+              <div className="flex-1 overflow-auto bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px] p-6">
+                <div className="bg-white rounded-lg shadow-2xl overflow-hidden border border-neutral-600">
                   <HeaderComponent
                     storeName={config.name || 'Your Store'}
                     logoUrl={config.logoUrl}
