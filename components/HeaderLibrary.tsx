@@ -1800,24 +1800,24 @@ export const HeaderQuantum: React.FC<HeaderProps> = ({
           {/* Center Nav */}
           <nav className="flex items-center gap-2">
             {links.map((link) => (
-              <button
-                key={link.href}
-                onClick={() => { onLinkClick(link.href); setActiveLink(link.href); }}
-                className="relative px-6 py-2.5 rounded-full transition-all duration-300 group overflow-hidden"
-                style={{
-                  color: activeLink === link.href ? settings.accentColor : settings.textColor,
-                  backgroundColor: activeLink === link.href ? settings.pillHoverColor : 'transparent'
-                }}
-              >
-                <span className="relative z-10 font-medium">{link.label}</span>
+              <div key={link.href} className="relative group">
+                <NavItem
+                  link={link}
+                  activeStyle={settings.navActiveStyle || 'dot'}
+                  onClick={onLinkClick}
+                  className="px-6 py-2.5 rounded-full font-medium transition-all duration-300"
+                  style={{ color: settings.textColor }}
+                  activeColor={settings.accentColor}
+                  hoverColor={settings.textHoverColor}
+                />
                 {/* Magnetic hover effect */}
                 <div 
-                  className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                   style={{
                     background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, ${settings.accentColor}40, transparent)`,
                   }}
                 />
-              </button>
+              </div>
             ))}
           </nav>
 
@@ -1961,20 +1961,28 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({
               const y = Math.sin(angle * Math.PI / 180) * (settings.orbitRadius - 40);
 
               return (
-                <button
+                <div
                   key={link.href}
-                  onClick={() => onLinkClick(link.href)}
-                  className="absolute top-1/2 left-1/2 px-6 py-3 rounded-full backdrop-blur-xl transition-all duration-300 hover:scale-110"
+                  className="absolute top-1/2 left-1/2"
                   style={{
                     transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
-                    backgroundColor: `${settings.accentColor}20`,
-                    border: `1px solid ${settings.accentColor}40`,
-                    color: settings.textColor,
-                    whiteSpace: 'nowrap'
                   }}
                 >
-                  <span className="font-medium">{link.label}</span>
-                </button>
+                  <NavItem
+                    link={link}
+                    activeStyle={settings.navActiveStyle || 'glow'}
+                    onClick={onLinkClick}
+                    className="px-6 py-3 rounded-full backdrop-blur-xl font-medium hover:scale-110 transition-all duration-300"
+                    style={{
+                      backgroundColor: `${settings.accentColor}20`,
+                      border: `1px solid ${settings.accentColor}40`,
+                      color: settings.textColor,
+                      whiteSpace: 'nowrap'
+                    }}
+                    activeColor={settings.accentColor}
+                    hoverColor={settings.textHoverColor}
+                  />
+                </div>
               );
             })}
           </div>
@@ -2125,38 +2133,16 @@ export const HeaderNeon: React.FC<HeaderProps> = ({
           {/* Center Nav with Neon Underlines */}
           <nav className="flex items-center gap-8">
             {links.map((link) => (
-              <button
+              <NavItem
                 key={link.href}
-                onClick={() => { onLinkClick(link.href); setActiveLink(link.href); }}
-                className="relative group py-2 transition-all duration-300"
-              >
-                <span 
-                  className="font-medium uppercase tracking-widest text-sm"
-                  style={{ 
-                    color: activeLink === link.href ? settings.neonColor : settings.textColor,
-                    textShadow: activeLink === link.href ? `0 0 10px ${settings.neonColor}` : 'none'
-                  }}
-                >
-                  {link.label}
-                </span>
-                {/* Animated underline */}
-                <div 
-                  className="absolute bottom-0 left-0 h-0.5 transition-all duration-300"
-                  style={{
-                    width: activeLink === link.href ? '100%' : '0%',
-                    backgroundColor: settings.neonColor,
-                    boxShadow: `0 0 10px ${settings.neonColor}`
-                  }}
-                />
-                {/* Hover effect */}
-                <div 
-                  className="absolute bottom-0 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-300"
-                  style={{
-                    backgroundColor: settings.secondaryNeon,
-                    boxShadow: `0 0 10px ${settings.secondaryNeon}`
-                  }}
-                />
-              </button>
+                link={link}
+                activeStyle={settings.navActiveStyle || 'glow'}
+                onClick={onLinkClick}
+                className="py-2 font-medium uppercase tracking-widest text-sm transition-all duration-300"
+                style={{ color: settings.textColor }}
+                activeColor={settings.neonColor}
+                hoverColor={settings.secondaryNeon}
+              />
             ))}
           </nav>
 
@@ -2347,6 +2333,9 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     // Core toggles
     'showSearch', 'showAccount', 'showCart',
     
+    // Navigation
+    'navActiveStyle',
+    
     // Colors
     'backgroundColor', 'textColor', 'textHoverColor', 'accentColor',
     'pillBackgroundColor', 'pillHoverColor',
@@ -2366,6 +2355,9 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     // Core toggles
     'showSearch', 'showAccount', 'showCart',
     
+    // Navigation
+    'navActiveStyle',
+    
     // Colors
     'backgroundColor', 'textColor', 'textHoverColor', 'accentColor',
     
@@ -2383,6 +2375,9 @@ export const HEADER_FIELDS: Record<string, string[]> = {
   neon: [
     // Core toggles
     'showSearch', 'showAccount', 'showCart',
+    
+    // Navigation
+    'navActiveStyle',
     
     // Colors
     'backgroundColor', 'textColor', 'neonColor', 'secondaryNeon', 'gridColor',
