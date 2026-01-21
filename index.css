@@ -16,36 +16,36 @@ input[type="text"], input[type="email"], input[type="password"], input[type="sea
 
 /* Global Browser Scrollbars - Match Admin Style */
 
-/* Default scrollbar for all pages - identical to .scrollbar-admin */
-* {
+/* Default scrollbar for all pages - use html and body for higher specificity */
+html, body {
     scrollbar-width: thin;
     scrollbar-color: rgba(59, 130, 246, 0.5) rgba(15, 23, 42, 0.5);
 }
 
-*::-webkit-scrollbar {
+html::-webkit-scrollbar, body::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
-*::-webkit-scrollbar-track {
+html::-webkit-scrollbar-track, body::-webkit-scrollbar-track {
     background: rgba(15, 23, 42, 0.5);
     border-radius: 4px;
     margin: 2px;
 }
 
-*::-webkit-scrollbar-thumb {
+html::-webkit-scrollbar-thumb, body::-webkit-scrollbar-thumb {
     background: linear-gradient(180deg, rgba(59, 130, 246, 0.4), rgba(37, 99, 235, 0.6));
     border: 1px solid rgba(59, 130, 246, 0.2);
     border-radius: 4px;
     box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
 }
 
-*::-webkit-scrollbar-thumb:hover {
+html::-webkit-scrollbar-thumb:hover, body::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, rgba(59, 130, 246, 0.6), rgba(37, 99, 235, 0.8));
     box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
 }
 
-*::-webkit-scrollbar-corner {
+html::-webkit-scrollbar-corner, body::-webkit-scrollbar-corner {
     background: rgba(15, 23, 42, 0.5);
 }
 
