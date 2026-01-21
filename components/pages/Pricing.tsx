@@ -53,7 +53,12 @@ export const Pricing: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-neutral-900 text-white">
+        <div className="min-h-screen bg-gray-950 text-white">
+            {/* Background Aurora Effect */}
+            <div className="absolute inset-0 -z-10 overflow-hidden">
+                <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600 rounded-full filter blur-[150px] opacity-50 animate-breathe"></div>
+                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-500 rounded-full filter blur-[150px] opacity-50 animate-breathe animation-delay-[-4s]"></div>
+            </div>
             {/* Header */}
             <header className="border-b border-neutral-800">
                 <div className="container mx-auto max-w-7xl px-6 py-6 flex justify-between items-center">
@@ -90,8 +95,8 @@ export const Pricing: React.FC = () => {
                                 key={index} 
                                 className={`rounded-xl p-8 ${
                                     plan.featured 
-                                        ? 'bg-gradient-to-b from-cyan-500/20 to-blue-500/20 border-2 border-cyan-500 scale-105' 
-                                        : 'bg-neutral-800 border border-neutral-700'
+                                        ? 'bg-gradient-to-b from-purple-500/20 to-cyan-500/20 border-2 border-purple-500 scale-105' 
+                                        : 'bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl'
                                 }`}
                             >
                                 {plan.featured && (

@@ -37,7 +37,12 @@ export const Press: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-neutral-900 text-white">
+        <div className="min-h-screen bg-gray-950 text-white">
+            {/* Background Aurora Effect */}
+            <div className="absolute inset-0 -z-10 overflow-hidden">
+                <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600 rounded-full filter blur-[150px] opacity-50 animate-breathe"></div>
+                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-500 rounded-full filter blur-[150px] opacity-50 animate-breathe animation-delay-[-4s]"></div>
+            </div>
             {/* Header */}
             <header className="border-b border-neutral-800">
                 <div className="container mx-auto max-w-7xl px-6 py-6 flex justify-between items-center">
@@ -99,7 +104,7 @@ export const Press: React.FC = () => {
                     <h2 className="text-3xl font-bold mb-8">Recent Announcements</h2>
                     <div className="space-y-6">
                         {pressReleases.map((release, index) => (
-                            <div key={index} className="bg-neutral-800 border border-neutral-700 rounded-xl p-6 hover:border-cyan-500 transition-colors">
+                            <div key={index} className="bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-xl p-6 hover:-translate-y-1 transition-transform">
                                 <div className="text-cyan-400 text-sm mb-2">{release.date}</div>
                                 <h3 className="text-xl font-bold mb-3">{release.title}</h3>
                                 <p className="text-gray-400 mb-4">{release.excerpt}</p>

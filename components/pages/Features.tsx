@@ -47,7 +47,12 @@ export const Features: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-neutral-900 text-white">
+        <div className="min-h-screen bg-gray-950 text-white">
+            {/* Background Aurora Effect */}
+            <div className="absolute inset-0 -z-10 overflow-hidden">
+                <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600 rounded-full filter blur-[150px] opacity-50 animate-breathe"></div>
+                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-500 rounded-full filter blur-[150px] opacity-50 animate-breathe animation-delay-[-4s]"></div>
+            </div>
             {/* Header */}
             <header className="border-b border-neutral-800">
                 <div className="container mx-auto max-w-7xl px-6 py-6 flex justify-between items-center">
@@ -82,7 +87,7 @@ export const Features: React.FC = () => {
                 <div className="container mx-auto max-w-7xl">
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {features.map((feature, index) => (
-                            <div key={index} className="bg-neutral-800 border border-neutral-700 rounded-xl p-6 hover:border-cyan-500 transition-colors">
+                            <div key={index} className="bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-xl p-6 hover:-translate-y-1 transition-transform">
                                 <div className="text-cyan-400 mb-4">
                                     {feature.icon}
                                 </div>
@@ -101,7 +106,7 @@ export const Features: React.FC = () => {
                     <p className="text-xl text-gray-400 mb-8">
                         Start your free trial today. No credit card required.
                     </p>
-                    <Link to="/signup" className="inline-block bg-cyan-500 hover:bg-cyan-600 px-8 py-4 rounded-lg font-semibold text-lg">
+                    <Link to="/signup" className="inline-block bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 px-8 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg">
                         Get Started Free
                     </Link>
                 </div>
