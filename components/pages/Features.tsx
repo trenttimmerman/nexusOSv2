@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Zap, ShoppingCart, BarChart, Palette, Globe, Lock, Code, Users } from 'lucide-react';
 import LandingHeader from '../LandingHeader';
 import LandingFooter from '../LandingFooter';
+import FadeInSection from '../FadeInSection';
 
 export const Features: React.FC = () => {
     const features = [
@@ -49,7 +50,7 @@ export const Features: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-black text-white">
+        <div className="min-h-screen bg-black text-white selection:bg-cyan-500/30">
             {/* Background Aurora Effect */}
             <div className="absolute inset-0 -z-10 overflow-hidden">
                 <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600 rounded-full filter blur-[150px] opacity-50 animate-breathe"></div>
@@ -58,11 +59,12 @@ export const Features: React.FC = () => {
             <LandingHeader />
 
             {/* Hero Section */}
+            <FadeInSection>
             <section className="py-24 px-6">
                 <div className="container mx-auto max-w-7xl text-center">
                     <h1 className="text-5xl md:text-7xl font-bold mb-6">
                         Everything You Need to<br />
-                        <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                        <span className="text-gradient-animated">
                             Build & Scale
                         </span>
                     </h1>
@@ -71,13 +73,15 @@ export const Features: React.FC = () => {
                     </p>
                 </div>
             </section>
+            </FadeInSection>
 
             {/* Features Grid */}
+            <FadeInSection>
             <section className="py-12 px-6">
                 <div className="container mx-auto max-w-7xl">
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {features.map((feature, index) => (
-                            <div key={index} className="bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-xl p-6 hover:-translate-y-1 transition-transform">
+                            <div key={index} className="feature-card-glow bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-white/5 backdrop-blur-xl rounded-xl p-6 hover:-translate-y-1 transition-transform">
                                 <div className="text-cyan-400 mb-4">
                                     {feature.icon}
                                 </div>
@@ -88,19 +92,22 @@ export const Features: React.FC = () => {
                     </div>
                 </div>
             </section>
+            </FadeInSection>
 
             {/* CTA Section */}
+            <FadeInSection>
             <section className="py-24 px-6">
                 <div className="container mx-auto max-w-4xl text-center">
                     <h2 className="text-4xl font-bold mb-6">Ready to Experience WebPilot?</h2>
                     <p className="text-xl text-gray-400 mb-8">
                         Start your free trial today. No credit card required.
                     </p>
-                    <Link to="/signup" className="inline-block bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 px-8 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg">
+                    <Link to="/signup" className="inline-block bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 px-8 py-4 rounded-lg font-semibold text-lg transition-all shadow-glow hover:shadow-glow">
                         Get Started Free
                     </Link>
                 </div>
             </section>
+            </FadeInSection>
 
             {/* Footer */}
             <LandingFooter />

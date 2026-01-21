@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import LandingHeader from '../LandingHeader';
 import LandingFooter from '../LandingFooter';
+import FadeInSection from '../FadeInSection';
 import { TrendingUp, DollarSign, Users, Star } from 'lucide-react';
 
 export const CaseStudies: React.FC = () => {
@@ -33,7 +34,7 @@ export const CaseStudies: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-black text-white">
+        <div className="min-h-screen bg-black text-white selection:bg-cyan-500/30">
             {/* Background Aurora Effect */}
             <div className="absolute inset-0 -z-10 overflow-hidden">
                 <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600 rounded-full filter blur-[150px] opacity-50 animate-breathe"></div>
