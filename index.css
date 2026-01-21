@@ -1,6 +1,19 @@
 @import "tailwindcss";
 @config "./tailwind.config.js";
 
+/* Prevent text cursor on body */
+* {
+    cursor: default;
+}
+
+a, button, input, textarea, select, [role="button"] {
+    cursor: pointer;
+}
+
+input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="number"], textarea {
+    cursor: text;
+}
+
 /* Custom Scrollbars */
 
 /* Custom Scrollbar (Alias for Nexus) */
