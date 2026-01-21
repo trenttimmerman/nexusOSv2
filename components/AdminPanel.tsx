@@ -1832,6 +1832,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         id: 'sales-commerce',
         label: 'Sales & Commerce',
         icon: ShoppingBag,
+        color: 'from-emerald-500/20 to-green-500/20',
+        borderColor: 'border-emerald-500/30',
+        textColor: 'text-emerald-400',
         items: [
           { id: AdminTab.ORDERS, icon: ShoppingBag, label: 'Orders' },
           { id: AdminTab.PRODUCTS, icon: Package, label: 'Products' },
@@ -1844,6 +1847,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         id: 'catalog',
         label: 'Catalog Management',
         icon: FolderTree,
+        color: 'from-amber-500/20 to-orange-500/20',
+        borderColor: 'border-amber-500/30',
+        textColor: 'text-amber-400',
         items: [
           { id: AdminTab.CATEGORIES, icon: FolderTree, label: 'Categories' },
           { id: AdminTab.COLLECTIONS, icon: Layers, label: 'Collections' },
@@ -1855,6 +1861,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         id: 'content-design',
         label: 'Content & Design',
         icon: Palette,
+        color: 'from-purple-500/20 to-pink-500/20',
+        borderColor: 'border-purple-500/30',
+        textColor: 'text-purple-400',
         items: [
           { id: AdminTab.PAGES, icon: FileText, label: 'Pages' },
           { id: AdminTab.MEDIA, icon: FolderOpen, label: 'Media Library' },
@@ -1868,6 +1877,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         id: 'marketing',
         label: 'Marketing & Analytics',
         icon: BarChart3,
+        color: 'from-blue-500/20 to-cyan-500/20',
+        borderColor: 'border-blue-500/30',
+        textColor: 'text-blue-400',
         items: [
           { id: AdminTab.COLLECTION_ANALYTICS, icon: BarChart3, label: 'Analytics' },
           { id: AdminTab.CAMPAIGNS, icon: Megaphone, label: 'Marketing' },
@@ -1880,6 +1892,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         id: 'tools',
         label: 'Tools & Settings',
         icon: Settings,
+        color: 'from-slate-500/20 to-gray-500/20',
+        borderColor: 'border-slate-500/30',
+        textColor: 'text-slate-400',
         items: [
           { id: AdminTab.SHOPIFY_MIGRATION, icon: Upload, label: 'Shopify Import' },
           { id: AdminTab.WEBSITE_MIGRATION, icon: Globe, label: 'Website Import' },
@@ -1935,8 +1950,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <button
             onClick={() => !isSidebarCollapsed && toggleGroup(group.id)}
             title={isSidebarCollapsed ? group.label : ''}
-            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-2 px-3'} py-2 rounded-lg transition-all ${
-              hasActiveItem ? 'text-blue-400' : 'text-neutral-500 hover:text-neutral-300'
+            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-2 px-3'} py-2.5 rounded-lg transition-all border ${
+              hasActiveItem 
+                ? `bg-gradient-to-r ${group.color} ${group.borderColor} ${group.textColor}` 
+                : `bg-white/5 border-white/10 text-neutral-500 hover:${group.textColor} hover:bg-gradient-to-r hover:${group.color} hover:${group.borderColor}`
             }`}
           >
             <group.icon size={16} className={isSidebarCollapsed ? '' : 'shrink-0'} />
