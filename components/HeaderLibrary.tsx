@@ -111,6 +111,25 @@ export interface HeaderData {
   smartScrollThreshold?: number; // Pixels to scroll before hiding
   smartScrollDuration?: number; // Animation duration in ms
   
+  // === QUANTUM HEADER FEATURES ===
+  pillBackgroundColor?: string;
+  pillHoverColor?: string;
+  enableFloating?: boolean;
+  magneticStrength?: 'low' | 'medium' | 'high';
+  
+  // === ORBIT HEADER FEATURES ===
+  orbitRadius?: number; // Pixels for orbit circle radius
+  orbitSpeed?: 'slow' | 'medium' | 'fast';
+  centerGlow?: boolean;
+  
+  // === NEON HEADER FEATURES ===
+  neonColor?: string;
+  secondaryNeon?: string;
+  gridColor?: string;
+  enableGlitch?: boolean;
+  glitchIntensity?: 'low' | 'medium' | 'high';
+  scanlineOpacity?: number; // 0-1
+  
   // === LEGACY FEATURES ===
   expandedMenuEnabled?: boolean;
   checkoutButtonText?: string;
@@ -1706,14 +1725,503 @@ export const HeaderNexusElite: React.FC<HeaderProps> = ({
   );
 };
 
+// 3. HeaderQuantum - Floating Pill Navigation with Magnetic Hover
+export const HeaderQuantum: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  onSearchClick,
+  isSearchOpen,
+  onSearchClose,
+  onSearchSubmit,
+  data = {},
+}) => {
+  const settings = {
+    backgroundColor: data.backgroundColor || '#000000',
+    textColor: data.textColor || '#ffffff',
+    textHoverColor: data.textHoverColor || '#60a5fa',
+    accentColor: data.accentColor || '#3b82f6',
+    pillBackgroundColor: data.pillBackgroundColor || 'rgba(31, 41, 55, 0.8)',
+    pillHoverColor: data.pillHoverColor || 'rgba(59, 130, 246, 0.2)',
+    magneticStrength: data.magneticStrength || 'medium',
+    enableFloating: data.enableFloating !== false,
+    iconSize: data.iconSize || 20,
+    ...data
+  };
+
+  const [activeLink, setActiveLink] = React.useState('/');
+  const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
+  const navRef = React.useRef<HTMLDivElement>(null);
+
+  const magneticOffset = settings.magneticStrength === 'low' ? 5 : settings.magneticStrength === 'high' ? 15 : 10;
+
+  return (
+    <header 
+      className={`w-full ${settings.enableFloating ? 'fixed top-6' : 'relative'} left-0 right-0 z-50 transition-all duration-300`}
+      style={{ backgroundColor: settings.enableFloating ? 'transparent' : settings.backgroundColor }}
+    >
+      <div className="max-w-7xl mx-auto px-6">
+        <div 
+          ref={navRef}
+          className="flex items-center justify-between rounded-full px-8 py-4 backdrop-blur-xl shadow-2xl"
+          style={{ 
+            backgroundColor: settings.pillBackgroundColor,
+            border: `1px solid ${settings.accentColor}33`
+          }}
+          onMouseMove={(e) => {
+            if (!navRef.current) return;
+            const rect = navRef.current.getBoundingClientRect();
+            setMousePos({
+              x: e.clientX - rect.left,
+              y: e.clientY - rect.top
+            });
+          }}
+        >
+          {/* Logo */}
+          <button onClick={onLogoClick} className="flex items-center gap-3 group">
+            {logoUrl ? (
+              <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight || 40}px` }} />
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full" />
+                <span className="font-bold text-xl" style={{ color: settings.textColor }}>{storeName}</span>
+              </div>
+            )}
+          </button>
+
+          {/* Center Nav */}
+          <nav className="flex items-center gap-2">
+            {links.map((link) => (
+              <button
+                key={link.href}
+                onClick={() => { onLinkClick(link.href); setActiveLink(link.href); }}
+                className="relative px-6 py-2.5 rounded-full transition-all duration-300 group overflow-hidden"
+                style={{
+                  color: activeLink === link.href ? settings.accentColor : settings.textColor,
+                  backgroundColor: activeLink === link.href ? settings.pillHoverColor : 'transparent'
+                }}
+              >
+                <span className="relative z-10 font-medium">{link.label}</span>
+                {/* Magnetic hover effect */}
+                <div 
+                  className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{
+                    background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, ${settings.accentColor}40, transparent)`,
+                  }}
+                />
+              </button>
+            ))}
+          </nav>
+
+          {/* Right Actions */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onSearchClick}
+              className="p-3 rounded-full hover:bg-white/10 transition-all"
+              style={{ color: settings.textColor }}
+            >
+              <Search size={settings.iconSize} />
+            </button>
+            <button
+              className="p-3 rounded-full hover:bg-white/10 transition-all"
+              style={{ color: settings.textColor }}
+            >
+              <User size={settings.iconSize} />
+            </button>
+            <button
+              onClick={onOpenCart}
+              className="relative p-3 rounded-full hover:bg-white/10 transition-all"
+              style={{ color: settings.textColor }}
+            >
+              <ShoppingBag size={settings.iconSize} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
+                  style={{ backgroundColor: settings.accentColor, color: '#ffffff' }}
+                >
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// 4. HeaderOrbit - Circular Logo with Orbiting Menu Items
+export const HeaderOrbit: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  onSearchClick,
+  isSearchOpen,
+  onSearchClose,
+  onSearchSubmit,
+  data = {},
+}) => {
+  const settings = {
+    backgroundColor: data.backgroundColor || '#0a0a0a',
+    textColor: data.textColor || '#e5e5e5',
+    textHoverColor: data.textHoverColor || '#60a5fa',
+    accentColor: data.accentColor || '#3b82f6',
+    orbitRadius: data.orbitRadius || 180,
+    orbitSpeed: data.orbitSpeed || 'slow',
+    centerGlow: data.centerGlow !== false,
+    iconSize: data.iconSize || 20,
+    ...data
+  };
+
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const [rotation, setRotation] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!isExpanded) return;
+    const speed = settings.orbitSpeed === 'slow' ? 30 : settings.orbitSpeed === 'fast' ? 10 : 20;
+    const interval = setInterval(() => {
+      setRotation(prev => (prev + 1) % 360);
+    }, speed);
+    return () => clearInterval(interval);
+  }, [isExpanded, settings.orbitSpeed]);
+
+  return (
+    <header className="w-full relative" style={{ backgroundColor: settings.backgroundColor, padding: '2rem 0' }}>
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex items-center justify-between">
+          {/* Left Actions */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onSearchClick}
+              className="p-3 rounded-full hover:bg-white/10 transition-all"
+              style={{ color: settings.textColor }}
+            >
+              <Search size={settings.iconSize} />
+            </button>
+          </div>
+
+          {/* Center Logo Orbit */}
+          <div className="relative" style={{ width: `${settings.orbitRadius * 2}px`, height: `${settings.orbitRadius * 2}px` }}>
+            {/* Orbit Ring */}
+            {isExpanded && (
+              <div 
+                className="absolute inset-0 rounded-full border-2 transition-all duration-500"
+                style={{ 
+                  borderColor: `${settings.accentColor}30`,
+                  boxShadow: `0 0 40px ${settings.accentColor}40`
+                }}
+              />
+            )}
+
+            {/* Center Logo */}
+            <button
+              onClick={() => { setIsExpanded(!isExpanded); onLogoClick(); }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
+            >
+              <div 
+                className="w-24 h-24 rounded-full flex items-center justify-center transition-all duration-500"
+                style={{ 
+                  backgroundColor: settings.accentColor,
+                  boxShadow: settings.centerGlow ? `0 0 60px ${settings.accentColor}80` : 'none',
+                  transform: isExpanded ? 'scale(1.1)' : 'scale(1)'
+                }}
+              >
+                {logoUrl ? (
+                  <img src={logoUrl} alt={storeName} className="w-16 h-16 object-contain" />
+                ) : (
+                  <span className="text-2xl font-bold text-white">{storeName.charAt(0)}</span>
+                )}
+              </div>
+            </button>
+
+            {/* Orbiting Menu Items */}
+            {isExpanded && links.map((link, index) => {
+              const angle = (360 / links.length) * index + rotation;
+              const x = Math.cos(angle * Math.PI / 180) * (settings.orbitRadius - 40);
+              const y = Math.sin(angle * Math.PI / 180) * (settings.orbitRadius - 40);
+
+              return (
+                <button
+                  key={link.href}
+                  onClick={() => onLinkClick(link.href)}
+                  className="absolute top-1/2 left-1/2 px-6 py-3 rounded-full backdrop-blur-xl transition-all duration-300 hover:scale-110"
+                  style={{
+                    transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
+                    backgroundColor: `${settings.accentColor}20`,
+                    border: `1px solid ${settings.accentColor}40`,
+                    color: settings.textColor,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  <span className="font-medium">{link.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Right Actions */}
+          <div className="flex items-center gap-4">
+            <button
+              className="p-3 rounded-full hover:bg-white/10 transition-all"
+              style={{ color: settings.textColor }}
+            >
+              <User size={settings.iconSize} />
+            </button>
+            <button
+              onClick={onOpenCart}
+              className="relative p-3 rounded-full hover:bg-white/10 transition-all"
+              style={{ color: settings.textColor }}
+            >
+              <ShoppingBag size={settings.iconSize} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
+                  style={{ backgroundColor: settings.accentColor, color: '#ffffff' }}
+                >
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// 5. HeaderNeon - Cyberpunk Grid with Glitch Effects
+export const HeaderNeon: React.FC<HeaderProps> = ({
+  storeName,
+  logoUrl,
+  logoHeight,
+  links,
+  cartCount,
+  onOpenCart,
+  onLogoClick,
+  onLinkClick,
+  onSearchClick,
+  isSearchOpen,
+  onSearchClose,
+  onSearchSubmit,
+  data = {},
+}) => {
+  const settings = {
+    backgroundColor: data.backgroundColor || '#0a0014',
+    textColor: data.textColor || '#ffffff',
+    neonColor: data.neonColor || '#ff00ff',
+    secondaryNeon: data.secondaryNeon || '#00ffff',
+    gridColor: data.gridColor || '#ff00ff',
+    enableGlitch: data.enableGlitch !== false,
+    glitchIntensity: data.glitchIntensity || 'medium',
+    scanlineOpacity: data.scanlineOpacity || 0.05,
+    iconSize: data.iconSize || 20,
+    ...data
+  };
+
+  const [glitch, setGlitch] = React.useState(false);
+  const [activeLink, setActiveLink] = React.useState('/');
+
+  React.useEffect(() => {
+    if (!settings.enableGlitch) return;
+    const interval = setInterval(() => {
+      setGlitch(true);
+      setTimeout(() => setGlitch(false), 150);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [settings.enableGlitch]);
+
+  return (
+    <header 
+      className="w-full relative overflow-hidden"
+      style={{ backgroundColor: settings.backgroundColor }}
+    >
+      {/* Cyberpunk Grid Background */}
+      <div 
+        className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage: `
+            linear-gradient(${settings.gridColor}50 1px, transparent 1px),
+            linear-gradient(90deg, ${settings.gridColor}50 1px, transparent 1px)
+          `,
+          backgroundSize: '50px 50px',
+          transform: 'perspective(500px) rotateX(60deg)',
+          transformOrigin: 'top'
+        }}
+      />
+
+      {/* Scanlines */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0,0,0,${settings.scanlineOpacity}) 2px,
+            rgba(0,0,0,${settings.scanlineOpacity}) 4px
+          )`
+        }}
+      />
+
+      {/* Main Header Content */}
+      <div className="max-w-7xl mx-auto px-6 py-4 relative z-10">
+        <div className="flex items-center justify-between">
+          {/* Logo with Neon Glow */}
+          <button 
+            onClick={onLogoClick}
+            className={`group ${glitch ? 'animate-pulse' : ''}`}
+            style={{
+              filter: `drop-shadow(0 0 10px ${settings.neonColor})`,
+              transition: 'all 0.3s'
+            }}
+          >
+            {logoUrl ? (
+              <img src={logoUrl} alt={storeName} style={{ height: `${logoHeight || 40}px` }} />
+            ) : (
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-10 h-10 border-4 rotate-45"
+                  style={{ 
+                    borderColor: settings.neonColor,
+                    boxShadow: `0 0 20px ${settings.neonColor}`
+                  }}
+                />
+                <span 
+                  className="font-bold text-2xl tracking-wider uppercase"
+                  style={{ 
+                    color: settings.textColor,
+                    textShadow: `0 0 10px ${settings.neonColor}, 0 0 20px ${settings.neonColor}`
+                  }}
+                >
+                  {storeName}
+                </span>
+              </div>
+            )}
+          </button>
+
+          {/* Center Nav with Neon Underlines */}
+          <nav className="flex items-center gap-8">
+            {links.map((link) => (
+              <button
+                key={link.href}
+                onClick={() => { onLinkClick(link.href); setActiveLink(link.href); }}
+                className="relative group py-2 transition-all duration-300"
+              >
+                <span 
+                  className="font-medium uppercase tracking-widest text-sm"
+                  style={{ 
+                    color: activeLink === link.href ? settings.neonColor : settings.textColor,
+                    textShadow: activeLink === link.href ? `0 0 10px ${settings.neonColor}` : 'none'
+                  }}
+                >
+                  {link.label}
+                </span>
+                {/* Animated underline */}
+                <div 
+                  className="absolute bottom-0 left-0 h-0.5 transition-all duration-300"
+                  style={{
+                    width: activeLink === link.href ? '100%' : '0%',
+                    backgroundColor: settings.neonColor,
+                    boxShadow: `0 0 10px ${settings.neonColor}`
+                  }}
+                />
+                {/* Hover effect */}
+                <div 
+                  className="absolute bottom-0 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-300"
+                  style={{
+                    backgroundColor: settings.secondaryNeon,
+                    boxShadow: `0 0 10px ${settings.secondaryNeon}`
+                  }}
+                />
+              </button>
+            ))}
+          </nav>
+
+          {/* Right Actions with Neon Borders */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onSearchClick}
+              className="p-3 border-2 transition-all duration-300 hover:scale-110"
+              style={{ 
+                borderColor: settings.neonColor,
+                color: settings.textColor,
+                boxShadow: `0 0 10px ${settings.neonColor}40`,
+              }}
+            >
+              <Search size={settings.iconSize} />
+            </button>
+            <button
+              className="p-3 border-2 transition-all duration-300 hover:scale-110"
+              style={{ 
+                borderColor: settings.secondaryNeon,
+                color: settings.textColor,
+                boxShadow: `0 0 10px ${settings.secondaryNeon}40`,
+              }}
+            >
+              <User size={settings.iconSize} />
+            </button>
+            <button
+              onClick={onOpenCart}
+              className="relative p-3 border-2 transition-all duration-300 hover:scale-110"
+              style={{ 
+                borderColor: settings.neonColor,
+                color: settings.textColor,
+                boxShadow: `0 0 10px ${settings.neonColor}40`,
+              }}
+            >
+              <ShoppingBag size={settings.iconSize} />
+              {cartCount > 0 && (
+                <span 
+                  className="absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center text-xs font-bold border-2"
+                  style={{ 
+                    backgroundColor: settings.neonColor,
+                    borderColor: settings.backgroundColor,
+                    color: settings.backgroundColor,
+                    boxShadow: `0 0 15px ${settings.neonColor}`
+                  }}
+                >
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Neon Line */}
+      <div 
+        className="h-1 w-full"
+        style={{
+          background: `linear-gradient(90deg, ${settings.neonColor}, ${settings.secondaryNeon}, ${settings.neonColor})`,
+          boxShadow: `0 0 20px ${settings.neonColor}`
+        }}
+      />
+    </header>
+  );
+};
+
 export const HEADER_COMPONENTS: Record<string, React.FC<HeaderProps>> = {
   canvas: HeaderCanvas,
   'nexus-elite': HeaderNexusElite,
+  quantum: HeaderQuantum,
+  orbit: HeaderOrbit,
+  neon: HeaderNeon,
 };
 
 export const HEADER_OPTIONS = [
   { id: 'canvas', name: 'Canvas', description: '2026 Modern Foundation', date: '2026-01-15', popularity: 95, recommended: false },
   { id: 'nexus-elite', name: 'Nexus Elite', description: 'Professional 2026 - ALL Features', date: '2026-01-18', popularity: 100, recommended: true },
+  { id: 'quantum', name: 'Quantum', description: 'Floating Pill with Magnetic Hover', date: '2026-01-21', popularity: 92, recommended: false },
+  { id: 'orbit', name: 'Orbit', description: 'Circular Logo with Orbiting Menu', date: '2026-01-21', popularity: 88, recommended: false },
+  { id: 'neon', name: 'Neon', description: 'Cyberpunk Grid with Glitch Effects', date: '2026-01-21', popularity: 90, recommended: false },
 ];
 
 export const HEADER_FIELDS: Record<string, string[]> = {
@@ -1811,5 +2319,60 @@ export const HEADER_FIELDS: Record<string, string[]> = {
     
     // Smart scroll
     'smartScrollThreshold', 'smartScrollDuration'
+  ],
+  
+  // QUANTUM - Floating Pill Navigation with Magnetic Hover
+  quantum: [
+    // Core toggles
+    'showSearch', 'showAccount', 'showCart',
+    
+    // Colors
+    'backgroundColor', 'textColor', 'textHoverColor', 'accentColor',
+    'pillBackgroundColor', 'pillHoverColor',
+    
+    // Quantum-specific features
+    'enableFloating', 'magneticStrength',
+    
+    // Sizing
+    'iconSize',
+    
+    // Layout
+    'maxWidth', 'paddingX', 'paddingY'
+  ],
+  
+  // ORBIT - Circular Logo with Orbiting Menu Items
+  orbit: [
+    // Core toggles
+    'showSearch', 'showAccount', 'showCart',
+    
+    // Colors
+    'backgroundColor', 'textColor', 'textHoverColor', 'accentColor',
+    
+    // Orbit-specific features
+    'orbitRadius', 'orbitSpeed', 'centerGlow',
+    
+    // Sizing
+    'iconSize',
+    
+    // Layout
+    'maxWidth', 'paddingX', 'paddingY'
+  ],
+  
+  // NEON - Cyberpunk Grid with Glitch Effects
+  neon: [
+    // Core toggles
+    'showSearch', 'showAccount', 'showCart',
+    
+    // Colors
+    'backgroundColor', 'textColor', 'neonColor', 'secondaryNeon', 'gridColor',
+    
+    // Neon-specific features
+    'enableGlitch', 'glitchIntensity', 'scanlineOpacity',
+    
+    // Sizing
+    'iconSize',
+    
+    // Layout
+    'maxWidth', 'paddingX', 'paddingY'
   ],
 };
