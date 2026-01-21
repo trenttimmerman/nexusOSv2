@@ -1995,7 +1995,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </button>
         </div>
         
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-admin">
           {menuStructure.map((section: any) => {
             if (section.type === 'standalone') {
               return renderMenuItem(section.item);
@@ -2061,7 +2061,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          <nav className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-admin">
             {[
               { id: AdminTab.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
               { id: AdminTab.DESIGN, icon: Palette, label: 'Design Studio' },
@@ -2147,7 +2147,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
 
           {/* Modal Content - Scrollable */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+          <div className="flex-1 overflow-y-auto scrollbar-admin p-6">
             <div className="max-w-3xl mx-auto">
               {/* Live Preview - Sticky */}
               <div className="sticky top-0 z-10 bg-neutral-900 pb-4 -mx-6 px-6 pt-2 -mt-2">
@@ -4757,7 +4757,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             {/* LEFT PANEL - Editing Tools (30%) */}
             <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative">
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+              <div className="flex-1 overflow-y-auto scrollbar-admin p-4">
                 {/* 1. Card Style Selection */}
                 <div className="mb-6">
                   <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -5219,7 +5219,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="flex-1 flex overflow-hidden">
             {/* LEFT PANEL - Editing Tools (30%) */}
             <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative">
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+              <div className="flex-1 overflow-y-auto scrollbar-admin p-4">
                 {/* 0. Collection Data (if specific collection selected) */}
                 {collectionData.collectionId && (() => {
                   const selectedCollection = collections.find(c => c.id === collectionData.collectionId);
@@ -5467,7 +5467,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               style={{ color: '#000000' }}
                             />
                           </div>
-                          <div className="max-h-48 overflow-y-auto custom-scrollbar border border-neutral-800 rounded-lg p-2 space-y-1 bg-black/20">
+                          <div className="max-h-48 overflow-y-auto scrollbar-admin border border-neutral-800 rounded-lg p-2 space-y-1 bg-black/20">
                             {products.filter(p => {
                               const searchTerm = (collectionData.productSearchTerm || '').toLowerCase();
                               if (!searchTerm) return true;
@@ -5761,7 +5761,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
 
-              <div className="flex-1 overflow-auto p-12 custom-scrollbar relative z-10 flex items-center justify-center">
+              <div className="flex-1 overflow-auto p-12 scrollbar-admin relative z-10 flex items-center justify-center">
                 {/* Floating Layout Selector */}
                 <div className="absolute top-6 right-6 z-20 flex flex-col gap-2">
                   <div className="bg-neutral-900/90 backdrop-blur-md border border-neutral-700 p-1.5 rounded-xl shadow-2xl flex flex-col gap-1 ring-1 ring-white/10">
@@ -5863,7 +5863,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="flex-1 flex overflow-hidden">
             {/* LEFT PANEL - Editing Tools (30%) */}
             <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative">
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+              <div className="flex-1 overflow-y-auto scrollbar-admin p-4">
                 {/* 0. Category Data (if specific category selected) */}
                 {categoryData.categoryId && (() => {
                   const selectedCategory = categories.find(c => c.id === categoryData.categoryId);
@@ -6082,7 +6082,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </h4>
                   <div className="space-y-2">
                     <div className="text-xs text-neutral-500 mb-2">Choose which categories appear in this block</div>
-                    <div className="max-h-64 overflow-y-auto custom-scrollbar space-y-1 border border-neutral-800 rounded-lg p-2 bg-black/20">
+                    <div className="max-h-64 overflow-y-auto scrollbar-admin space-y-1 border border-neutral-800 rounded-lg p-2 bg-black/20">
                       {categories
                         .filter(cat => cat.is_visible)
                         .sort((a, b) => a.display_order - b.display_order)
@@ -6228,7 +6228,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
 
-              <div className="flex-1 overflow-auto p-12 custom-scrollbar relative z-10 flex items-center justify-center">
+              <div className="flex-1 overflow-auto p-12 scrollbar-admin relative z-10 flex items-center justify-center">
                 {/* Floating Layout Selector */}
                 <div className="absolute top-6 right-6 z-20 flex flex-col gap-2">
                   <div className="bg-neutral-900/90 backdrop-blur-md border border-neutral-700 p-1.5 rounded-xl shadow-2xl flex flex-col gap-1 ring-1 ring-white/10">
@@ -6340,7 +6340,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
           <div className="flex-1 flex overflow-hidden">
             {/* Left Panel - Controls */}
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto scrollbar-admin">
               {/* Scroll Styles */}
               <div className="p-4 border-b border-neutral-800">
                 <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
@@ -6567,7 +6567,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsSocialModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4 space-y-6">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto scrollbar-admin p-4 space-y-6">
               <div>
                 <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Social Layouts</h4>
                 <div className="grid grid-cols-1 gap-2">
@@ -6627,7 +6627,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                 <div>
                   <label className="text-xs text-neutral-400 mb-2 block">Posts ({(socialData.posts || []).length || 6} images)</label>
-                  <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+                  <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-admin">
                     {(socialData.posts || []).map((post: any, index: number) => (
                       <div key={index} className="bg-neutral-900 border border-neutral-700 rounded-lg p-3 space-y-2">
                         <div className="flex items-center justify-between">
@@ -6908,7 +6908,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsRichTextModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4 space-y-6">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto scrollbar-admin p-4 space-y-6">
               <div>
                 <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Text Styles</h4>
                 <div className="grid grid-cols-1 gap-2">
@@ -7203,7 +7203,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsEmailModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto scrollbar-admin p-4">
               <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Email Styles</h4>
               <div className="grid grid-cols-1 gap-2">
                 {EMAIL_SIGNUP_OPTIONS.map(opt => (
@@ -7513,7 +7513,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="flex-1 flex overflow-hidden">
             {/* LEFT PANEL */}
             <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0">
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+              <div className="flex-1 overflow-y-auto scrollbar-admin p-4">
                 {/* Accordion Styles */}
                 <div className="mb-6">
                   <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
@@ -7724,7 +7724,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsLogoListModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto scrollbar-admin p-4">
               <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Logo Layouts</h4>
               <div className="grid grid-cols-1 gap-2">
                 {LOGO_LIST_OPTIONS.map(opt => (
@@ -7766,7 +7766,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsPromoModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto scrollbar-admin p-4">
               <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
                 <Palette size={14} /> Banner Styles
               </h4>
@@ -7894,7 +7894,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsGalleryModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto scrollbar-admin p-4">
               <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Gallery Layouts</h4>
               <div className="grid grid-cols-1 gap-2">
                 {GALLERY_OPTIONS.map(opt => (
@@ -7958,7 +7958,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsBlogModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4 space-y-6">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto scrollbar-admin p-4 space-y-6">
               <div>
                 <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Blog Layouts</h4>
                 <div className="grid grid-cols-1 gap-2">
@@ -8003,7 +8003,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                 <div>
                   <label className="text-xs text-neutral-400 mb-2 block">Blog Posts ({(blogData.posts || []).length || 4} articles)</label>
-                  <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+                  <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-admin">
                     {(blogData.posts || []).map((post: any, index: number) => (
                       <div key={index} className="bg-neutral-900 border border-neutral-700 rounded-lg p-3 space-y-2">
                         <div className="flex items-center justify-between">
@@ -8303,7 +8303,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsVideoModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4 space-y-6">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto scrollbar-admin p-4 space-y-6">
               <div>
                 <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Video Layouts</h4>
                 <div className="grid grid-cols-1 gap-2">
@@ -8576,7 +8576,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button onClick={() => setIsContactModalOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg"><X size={20} /></button>
           </div>
           <div className="flex-1 flex overflow-hidden">
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto scrollbar-admin p-4">
               <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3">Form Styles</h4>
               <div className="grid grid-cols-1 gap-2">
                 {CONTACT_OPTIONS.map(opt => (
@@ -8630,7 +8630,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
           <div className="flex-1 flex overflow-hidden">
             {/* LEFT PANEL - Editing Tools (30%) */}
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto custom-scrollbar p-4">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 overflow-y-auto scrollbar-admin p-4">
               <h4 className="text-xs font-bold text-neutral-500 uppercase mb-3 flex items-center gap-2">
                 <Palette size={14} /> Layout Templates
               </h4>
@@ -9205,7 +9205,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               )}
 
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+              <div className="flex-1 overflow-y-auto scrollbar-admin p-4">
                 {/* Hero Design Selection */}
                 <div className="mb-6">
                   <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -10238,7 +10238,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="flex-1 flex overflow-hidden">
             {/* LEFT PANEL - Controls (30%) */}
             <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col">
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+              <div className="flex-1 overflow-y-auto scrollbar-admin p-4">
                 {/* Size Selection */}
                 <div className="mb-6">
                   <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -10467,7 +10467,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             {/* LEFT PANEL - Editing Tools (30%) */}
             <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0">
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+              <div className="flex-1 overflow-y-auto scrollbar-admin p-4">
                 {/* Header Design Selection */}
                 <div className="mb-6">
                   <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -11146,7 +11146,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               )}
               
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+              <div className="flex-1 overflow-y-auto scrollbar-admin p-4">
                 <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                   <LayoutTemplate size={14} /> Available Styles
                 </h4>
@@ -11363,7 +11363,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
           
           {/* Modal Content */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+          <div className="flex-1 overflow-y-auto scrollbar-admin p-6">
             {/* Header Tab */}
             {settingsTab === 'header' && (
               <div className="max-w-4xl mx-auto">
@@ -12344,7 +12344,7 @@ Return ONLY the JSON object, no markdown.`;
           {/* Modal Content - Split View */}
           <div className="flex-1 flex overflow-hidden">
             {/* Left Panel - Controls (30%) */}
-            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 overflow-y-auto custom-scrollbar p-4 space-y-6">
+            <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 overflow-y-auto scrollbar-admin p-4 space-y-6">
               {/* Layout Matrix */}
               <div>
                 <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -13056,7 +13056,7 @@ Return ONLY the JSON object, no markdown.`;
               </button>
             </div>
             
-            <div className="p-6 grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+            <div className="p-6 grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto scrollbar-admin">
               {PAGE_TEMPLATES.map((template) => (
                 <button
                   key={template.id}
@@ -13559,7 +13559,7 @@ Return ONLY the JSON object, no markdown.`;
             </button>
           </div>
           
-          <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+          <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto scrollbar-admin">
             {/* Primary Color */}
             <div>
               <label className="block text-sm font-bold text-neutral-300 mb-3">Primary Color</label>
@@ -13787,7 +13787,7 @@ Return ONLY the JSON object, no markdown.`;
             </button>
           </div>
           
-          <div className="p-4 space-y-2 max-h-[50vh] overflow-y-auto custom-scrollbar">
+          <div className="p-4 space-y-2 max-h-[50vh] overflow-y-auto scrollbar-admin">
             <p className="text-xs text-neutral-500 mb-3">Drag to reorder. Click Edit to rename pages.</p>
             {sortedPages.map((page, index) => (
               <div 
@@ -14031,7 +14031,7 @@ Return ONLY the JSON object, no markdown.`;
             </div>
           </div>
           
-          <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+          <div className="p-6 max-h-[60vh] overflow-y-auto scrollbar-admin">
             {pageVersions.length === 0 ? (
               <div className="text-center py-12">
                 <Clock size={48} className="mx-auto text-neutral-700 mb-4" />
@@ -14119,7 +14119,7 @@ Return ONLY the JSON object, no markdown.`;
           </div>
           
           {/* Modal Content */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+          <div className="flex-1 overflow-y-auto scrollbar-admin p-6">
             {addSectionStep === 'categories' ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <button onClick={() => { setSelectedCategory('hero'); setAddSectionStep('options'); }} className="p-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-purple-500 rounded-xl flex flex-col items-center gap-3 group transition-all">
@@ -14524,7 +14524,7 @@ Return ONLY the JSON object, no markdown.`;
                 </div>
               </div>
               
-              <div className="flex-1 overflow-y-auto custom-scrollbar">
+              <div className="flex-1 overflow-y-auto scrollbar-admin">
                 <div className="p-4 space-y-3">
 
                   {/* 1. GLOBAL SETTINGS - Global site settings */}
