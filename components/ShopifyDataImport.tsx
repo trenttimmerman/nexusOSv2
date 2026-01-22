@@ -1,458 +1,375 @@
 /**
- * Shopify Data Import Component
- * Complete data migration wizard with OAuth, progress tracking, and verification
+ * Shopify Theme Import Component
+ * Theme migration wizard with upload, preview, and conversion
  */
 
-import React, { useState, useEffect } from 'react';
-import { Store, CheckCircle, AlertCircle, Package, Users, ShoppingCart, FileText, Loader, ExternalLink } from 'lucide-react';
-import { ShopifyClient, createShopifyOAuthUrl } from '../lib/shopify/client';
-import { runShopifyImport, verifyImport, ImportProgress, ImportResult } from '../lib/shopify/masterImporter';
-import { runAssetMigration } from '../lib/shopify/assetMigrator';
+import React, { useState, useCallback } from 'react';
+import { Upload, CheckCircle, AlertCircle, Loader, FileArchive, Folder } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import { processThemeUpload, getThemeMetadata } from '../lib/shopify/themeUploadHandler';
+import { parseShopifyTheme, calculateCompatibilityScore } from '../lib/shopify/themeParser';
+import { convertAllTemplates, generateThemePreview, importPagesToSupabase } from '../lib/shopify/templateConverter';
+import ShopifyThemePreview from './ShopifyThemePreview';
 
 interface ShopifyDataImportProps {
   storeId: string;
   onComplete?: () => void;
 }
 
-type Step = 'connect' | 'select' | 'preview' | 'importing' | 'complete';
-type ImportType = 'products' | 'collections' | 'customers' | 'orders' | 'all';
+type Step = 'upload' | 'preview' | 'importing' | 'complete';
 
 export default function ShopifyDataImport({ storeId, onComplete }: ShopifyDataImportProps) {
-  const [step, setStep] = useState<Step>('connect');
-  const [shopDomain, setShopDomain] = useState('');
-  const [accessToken, setAccessToken] = useState('');
-  const [connected, setConnected] = useState(false);
-  const [shopInfo, setShopInfo] = useState<any>(null);
-  const [selectedTypes, setSelectedTypes] = useState<Set<ImportType>>(new Set(['all']));
+  const [step, setStep] = useState<Step>('upload');
+  const [themeFiles, setThemeFiles] = useState<any>(null);
+  const [themePreview, setThemePreview] = useState<any>(null);
   const [importing, setImporting] = useState(false);
-  const [progress, setProgress] = useState<ImportProgress | null>(null);
-  const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [assetProgress, setAssetProgress] = useState<any>(null);
+  const [importProgress, setImportProgress] = useState(0);
+  const [importResult, setImportResult] = useState<any>(null);
+  const [dragActive, setDragActive] = useState(false);
 
-  // Check for existing Shopify credentials
-  useEffect(() => {
-    checkExistingConnection();
-  }, [storeId]);
-
-  async function checkExistingConnection() {
-    try {
-      const { data, error } = await supabase
-        .from('shopify_credentials')
-        .select('shop_domain, access_token')
-        .eq('store_id', storeId)
-        .single();
-
-      if (data && !error) {
-        setShopDomain(data.shop_domain);
-        setAccessToken(data.access_token);
-        
-        // Test connection
-        const client = new ShopifyClient({
-          shopDomain: data.shop_domain,
-          accessToken: data.access_token,
-        });
-
-        const testResult = await client.testConnection();
-        if (testResult.connected) {
-          setConnected(true);
-          setShopInfo(testResult.shop);
-          setStep('select');
-        }
-      }
-    } catch (err) {
-      console.error('Failed to check existing connection:', err);
+  const handleDrag = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
     }
-  }
+  }, []);
 
-  async function handleConnect() {
-    if (!shopDomain || !accessToken) {
-      setError('Please enter both shop domain and access token');
-      return;
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    await processFiles(files);
+  }, []);
+
+  const handleFileInput = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      await processFiles(files);
     }
+  }, []);
 
+  async function processFiles(files: File[]) {
     setError(null);
     setImporting(true);
 
     try {
-      const client = new ShopifyClient({
-        shopDomain,
-        accessToken,
-      });
+      // Handle ZIP file or folder upload
+      const source = files.length === 1 && files[0].name.endsWith('.zip') ? files[0] : files;
+      
+      const { files: extractedFiles, validation } = await processThemeUpload(source);
 
-      const testResult = await client.testConnection();
-
-      if (!testResult.connected) {
-        throw new Error('Failed to connect to Shopify. Please check your credentials.');
+      if (!validation.valid) {
+        setError(`Invalid theme structure: ${validation.errors.join(', ')}`);
+        setImporting(false);
+        return;
       }
 
-      // Save credentials
-      await supabase.from('shopify_credentials').upsert({
-        store_id: storeId,
-        shop_domain: shopDomain,
-        access_token: accessToken,
-        scopes: testResult.scopes || [],
-        connected_at: new Date().toISOString(),
-      });
+      // Show warnings if any
+      if (validation.warnings.length > 0) {
+        console.warn('Theme warnings:', validation.warnings);
+      }
 
-      setConnected(true);
-      setShopInfo(testResult.shop);
-      setStep('select');
+      // Parse theme
+      const parsed = await parseShopifyTheme(extractedFiles);
+      const compatibility = calculateCompatibilityScore(parsed.sections);
+      const preview = generateThemePreview(
+        parsed.design,
+        parsed.assets,
+        parsed.templates,
+        compatibility.score
+      );
+
+      setThemeFiles({ extractedFiles, parsed });
+      setThemePreview(preview);
+      setStep('preview');
+      setImporting(false);
     } catch (err: any) {
-      setError(err.message || 'Connection failed');
-    } finally {
+      setError(err.message || 'Failed to process theme files');
       setImporting(false);
     }
   }
 
-  function toggleImportType(type: ImportType) {
-    const newSelected = new Set(selectedTypes);
-    
-    if (type === 'all') {
-      if (newSelected.has('all')) {
-        newSelected.clear();
-      } else {
-        newSelected.clear();
-        newSelected.add('all');
-      }
-    } else {
-      newSelected.delete('all');
-      if (newSelected.has(type)) {
-        newSelected.delete(type);
-      } else {
-        newSelected.add(type);
-      }
-    }
+  async function handleImport() {
+    if (!themeFiles || !themePreview) return;
 
-    setSelectedTypes(newSelected);
-  }
-
-  async function handleStartImport() {
-    if (selectedTypes.size === 0) {
-      setError('Please select at least one data type to import');
-      return;
-    }
-
-    setError(null);
-    setStep('importing');
     setImporting(true);
+    setImportProgress(0);
+    setStep('importing');
 
     try {
-      const client = new ShopifyClient({
-        shopDomain,
-        accessToken,
-      });
+      const { parsed } = themeFiles;
 
-      // Run data import
-      const importResult = await runShopifyImport(client, {
-        storeId,
-        types: Array.from(selectedTypes),
-        onProgress: (prog) => {
-          setProgress(prog);
-        },
-      });
+      // Step 1: Create store_design (20%)
+      setImportProgress(20);
+      const { data: designData, error: designError } = await supabase
+        .from('store_designs')
+        .insert({
+          store_id: storeId,
+          ...parsed.design,
+        })
+        .select()
+        .single();
 
-      setResult(importResult);
+      if (designError) throw designError;
 
-      // Run asset migration
-      setProgress({
-        currentType: 'all',
-        currentCount: 0,
-        overallProgress: 95,
-        message: 'Migrating assets from Shopify CDN...',
-      });
+      // Step 2: Import pages (60%)
+      setImportProgress(40);
+      const pages = convertAllTemplates(parsed.templates);
+      const pageResults = await importPagesToSupabase(storeId, pages, supabase);
 
-      const migrationId = `migration_${Date.now()}`;
-      const assetResult = await runAssetMigration(storeId, migrationId, (assetProg) => {
-        setAssetProgress(assetProg);
+      setImportProgress(80);
+
+      // Step 3: Save assets metadata (if any)
+      if (parsed.assets.logoUrl || parsed.assets.faviconUrl) {
+        await supabase.from('store_config').upsert({
+          store_id: storeId,
+          logo_url: parsed.assets.logoUrl,
+          favicon_url: parsed.assets.faviconUrl,
+        });
+      }
+
+      setImportProgress(100);
+
+      setImportResult({
+        success: true,
+        designCreated: !!designData,
+        pagesImported: pageResults.success,
+        pagesFailed: pageResults.failed,
+        errors: pageResults.errors,
       });
 
       setStep('complete');
     } catch (err: any) {
       setError(err.message || 'Import failed');
-    } finally {
       setImporting(false);
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Shopify Data Import</h1>
+  if (step === 'upload') {
+    return (
+      <div className="max-w-4xl mx-auto p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-2">Import Shopify Theme</h1>
           <p className="text-gray-600">
-            Migrate your complete Shopify store data to WebPilot
+            Upload your Shopify theme to automatically convert it to WebPilot
           </p>
         </div>
 
-        {/* Progress Steps */}
-        <div className="mb-8 flex items-center justify-between">
-          {[
-            { key: 'connect', label: 'Connect' },
-            { key: 'select', label: 'Select Data' },
-            { key: 'importing', label: 'Import' },
-            { key: 'complete', label: 'Complete' },
-          ].map((s, i, arr) => (
-            <div key={s.key} className="flex items-center flex-1">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                  step === s.key
-                    ? 'bg-blue-600 text-white'
-                    : ['complete'].includes(step) || arr.findIndex(x => x.key === step) > i
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-300 text-gray-600'
-                }`}
-              >
-                {['complete'].includes(step) || arr.findIndex(x => x.key === step) > i ? (
-                  <CheckCircle className="w-6 h-6" />
-                ) : (
-                  i + 1
-                )}
-              </div>
-              <div className="ml-3 flex-1">
-                <div className="text-sm font-medium text-gray-900">{s.label}</div>
-              </div>
-              {i < arr.length - 1 && (
-                <div className="flex-1 h-1 bg-gray-300 mx-4" />
-              )}
+        {/* Upload Area */}
+        <div
+          className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
+            dragActive
+              ? 'border-blue-500 bg-blue-50'
+              : error
+              ? 'border-red-300 bg-red-50'
+              : 'border-gray-300 hover:border-gray-400'
+          }`}
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+        >
+          {importing ? (
+            <div className="py-8">
+              <Loader className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+              <p className="text-lg font-medium">Processing theme...</p>
             </div>
-          ))}
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <div className="text-red-800">{error}</div>
-          </div>
-        )}
-
-        {/* Step 1: Connect */}
-        {step === 'connect' && (
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <div className="mb-6">
-              <Store className="w-12 h-12 text-blue-600 mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Connect Your Shopify Store</h2>
-              <p className="text-gray-600">
-                Enter your Shopify credentials to begin the migration process
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Shop Domain
-                </label>
-                <input
-                  type="text"
-                  value={shopDomain}
-                  onChange={(e) => setShopDomain(e.target.value)}
-                  placeholder="yourstore.myshopify.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ color: '#000000' }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Admin API Access Token
-                </label>
-                <input
-                  type="password"
-                  value={accessToken}
-                  onChange={(e) => setAccessToken(e.target.value)}
-                  placeholder="shpat_xxxxxxxxxxxxx"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ color: '#000000' }}
-                />
-                <p className="mt-2 text-sm text-gray-500">
-                  <a
-                    href="https://help.shopify.com/en/manual/apps/app-types/custom-apps"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline inline-flex items-center gap-1"
-                  >
-                    How to create an access token <ExternalLink className="w-3 h-3" />
-                  </a>
+          ) : (
+            <>
+              <div className="mb-6">
+                <FileArchive className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Upload Theme Files</h3>
+                <p className="text-gray-600 mb-4">
+                  Drag & drop your theme ZIP file or folder here
                 </p>
               </div>
 
-              <button
-                onClick={handleConnect}
-                disabled={importing || !shopDomain || !accessToken}
-                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {importing ? (
-                  <>
-                    <Loader className="w-5 h-5 animate-spin" />
-                    Connecting...
-                  </>
-                ) : (
-                  'Connect Store'
-                )}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Select Data */}
-        {step === 'select' && (
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Select Data to Import</h2>
-              <p className="text-gray-600">
-                Connected to: <span className="font-semibold">{shopInfo?.name || shopDomain}</span>
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              {[
-                { type: 'all' as const, icon: Store, label: 'Import Everything', desc: 'All data types' },
-                { type: 'products' as const, icon: Package, label: 'Products', desc: 'All products with variants' },
-                { type: 'collections' as const, icon: FileText, label: 'Collections', desc: 'Smart & manual collections' },
-                { type: 'customers' as const, icon: Users, label: 'Customers', desc: 'Customer accounts & addresses' },
-                { type: 'orders' as const, icon: ShoppingCart, label: 'Orders', desc: 'Order history & refunds' },
-              ].map(({ type, icon: Icon, label, desc }) => (
-                <button
-                  key={type}
-                  onClick={() => toggleImportType(type)}
-                  className={`p-6 rounded-lg border-2 text-left transition-all ${
-                    selectedTypes.has(type)
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-start gap-4">
-                    <Icon className={`w-8 h-8 ${selectedTypes.has(type) ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-900 mb-1">{label}</div>
-                      <div className="text-sm text-gray-600">{desc}</div>
-                    </div>
-                    {selectedTypes.has(type) && (
-                      <CheckCircle className="w-6 h-6 text-blue-600" />
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleStartImport}
-              disabled={selectedTypes.size === 0}
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Start Import
-            </button>
-          </div>
-        )}
-
-        {/* Step 3: Importing */}
-        {step === 'importing' && progress && (
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Importing Data</h2>
-              <p className="text-gray-600">{progress.message}</p>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="mb-6">
-              <div className="flex justify-between text-sm text-gray-600 mb-2">
-                <span>{progress.currentType}</span>
-                <span>{Math.round(progress.overallProgress)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-4">
-                <div
-                  className="bg-blue-600 h-4 rounded-full transition-all duration-300"
-                  style={{ width: `${progress.overallProgress}%` }}
+              <label className="inline-block">
+                <input
+                  type="file"
+                  accept=".zip,application/zip"
+                  onChange={handleFileInput}
+                  className="hidden"
+                  style={{ color: '#000000' }}
                 />
-              </div>
+                <span className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer inline-block">
+                  Choose ZIP File
+                </span>
+              </label>
+
+              <p className="text-sm text-gray-500 mt-4">or</p>
+
+              <label className="inline-block mt-2">
+                <input
+                  type="file"
+                  multiple
+                  webkitdirectory=""
+                  directory=""
+                  onChange={handleFileInput}
+                  className="hidden"
+                  style={{ color: '#000000' }}
+                />
+                <span className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer inline-block">
+                  <Folder className="w-4 h-4 inline mr-2" />
+                  Select Theme Folder
+                </span>
+              </label>
+            </>
+          )}
+        </div>
+
+        {error && (
+          <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
+            <AlertCircle className="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-red-800">Upload Error</p>
+              <p className="text-sm text-red-700 mt-1">{error}</p>
             </div>
-
-            {/* Current Progress */}
-            {progress.currentCount > 0 && (
-              <div className="text-center text-gray-700 font-semibold">
-                {progress.currentCount} items imported
-              </div>
-            )}
-
-            {/* Asset Migration Progress */}
-            {assetProgress && (
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                <div className="text-sm font-medium text-gray-700 mb-2">
-                  Asset Migration: {assetProgress.message}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {assetProgress.current}/{assetProgress.total}
-                </div>
-              </div>
-            )}
           </div>
         )}
 
-        {/* Step 4: Complete */}
-        {step === 'complete' && result && (
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                <CheckCircle className="w-10 h-10 text-green-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Import Complete!</h2>
-              <p className="text-gray-600">
-                Successfully migrated {result.totalImported} items from Shopify
-              </p>
-            </div>
-
-            {/* Import Summary */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              {[
-                { label: 'Products', count: result.products.imported, icon: Package },
-                { label: 'Collections', count: result.collections.imported, icon: FileText },
-                { label: 'Customers', count: result.customers.imported, icon: Users },
-                { label: 'Orders', count: result.orders.imported, icon: ShoppingCart },
-              ].map(({ label, count, icon: Icon }) => (
-                <div key={label} className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Icon className="w-5 h-5 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-700">{label}</span>
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">{count}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Duration */}
-            <div className="text-center text-sm text-gray-600 mb-6">
-              Completed in {Math.round(result.duration / 1000)} seconds
-            </div>
-
-            {/* Warnings */}
-            {result.totalFailed > 0 && (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-6">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-semibold text-yellow-900 mb-1">
-                      {result.totalFailed} items failed to import
-                    </div>
-                    <div className="text-sm text-yellow-800">
-                      Check the import logs for details
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <button
-              onClick={onComplete}
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700"
-            >
-              Done
-            </button>
-          </div>
-        )}
+        {/* Instructions */}
+        <div className="mt-12 bg-gray-50 rounded-lg p-6">
+          <h3 className="font-semibold mb-3">How to get your Shopify theme:</h3>
+          <ol className="space-y-2 text-sm text-gray-700 list-decimal list-inside">
+            <li>Log into your Shopify admin panel</li>
+            <li>Go to Online Store → Themes</li>
+            <li>Click Actions → Download theme files</li>
+            <li>Upload the ZIP file here</li>
+          </ol>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (step === 'preview' && themePreview) {
+    return (
+      <ShopifyThemePreview
+        preview={themePreview}
+        onProceed={handleImport}
+        onCancel={() => {
+          setStep('upload');
+          setThemeFiles(null);
+          setThemePreview(null);
+        }}
+      />
+    );
+  }
+
+  if (step === 'importing') {
+    return (
+      <div className="max-w-2xl mx-auto p-8">
+        <div className="text-center mb-8">
+          <Loader className="w-16 h-16 text-blue-600 animate-spin mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Importing Your Theme...</h2>
+          <p className="text-gray-600">This may take a moment</p>
+        </div>
+
+        <div className="bg-white rounded-lg p-8 shadow-sm">
+          <div className="mb-6">
+            <div className="flex justify-between mb-2">
+              <span className="text-sm font-medium">Progress</span>
+              <span className="text-sm text-gray-600">{importProgress}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                style={{ width: `${importProgress}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2 text-sm">
+            <div className={importProgress >= 20 ? 'text-green-600' : 'text-gray-500'}>
+              ✓ Creating design settings
+            </div>
+            <div className={importProgress >= 40 ? 'text-green-600' : 'text-gray-500'}>
+              {importProgress >= 40 ? '✓' : '○'} Importing pages
+            </div>
+            <div className={importProgress >= 80 ? 'text-green-600' : 'text-gray-500'}>
+              {importProgress >= 80 ? '✓' : '○'} Saving assets
+            </div>
+            <div className={importProgress >= 100 ? 'text-green-600' : 'text-gray-500'}>
+              {importProgress >= 100 ? '✓' : '○'} Finalizing import
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'complete' && importResult) {
+    return (
+      <div className="max-w-2xl mx-auto p-8">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
+            <CheckCircle className="w-12 h-12 text-green-600" />
+          </div>
+          <h2 className="text-3xl font-bold mb-2">Import Complete!</h2>
+          <p className="text-gray-600">
+            Your Shopify theme has been successfully imported to WebPilot
+          </p>
+        </div>
+
+        <div className="bg-white rounded-lg p-8 shadow-sm mb-6">
+          <h3 className="font-semibold mb-4">Import Summary</h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+              <span className="text-sm">Design Settings</span>
+              <CheckCircle className="w-5 h-5 text-green-600" />
+            </div>
+            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+              <span className="text-sm">Pages Imported</span>
+              <span className="font-semibold text-green-600">{importResult.pagesImported}</span>
+            </div>
+            {importResult.pagesFailed > 0 && (
+              <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                <span className="text-sm">Pages Failed</span>
+                <span className="font-semibold text-yellow-600">{importResult.pagesFailed}</span>
+              </div>
+            )}
+          </div>
+
+          {importResult.errors && importResult.errors.length > 0 && (
+            <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
+              <p className="text-sm font-medium text-yellow-800 mb-2">Warnings:</p>
+              <ul className="text-sm text-yellow-700 space-y-1">
+                {importResult.errors.map((err: string, i: number) => (
+                  <li key={i}>• {err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={() => {
+              setStep('upload');
+              setThemeFiles(null);
+              setThemePreview(null);
+              setImportResult(null);
+            }}
+            className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Import Another Theme
+          </button>
+          <button
+            onClick={onComplete}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+          >
+            View My Site →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
