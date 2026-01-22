@@ -33,6 +33,7 @@ import { CollectionAnalytics } from './CollectionAnalytics';
 import EmailSubscribers from './EmailSubscribers';
 import EmailSettings from './EmailSettings';
 import ShopifyMigration from './ShopifyMigration';
+import ShopifyDataImport from './ShopifyDataImport';
 import WebsiteMigration from './WebsiteMigration';
 import Customers from './Customers';
 import { supabase } from '../lib/supabaseClient';
@@ -1897,6 +1898,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         textColor: 'text-slate-400',
         items: [
           { id: AdminTab.SHOPIFY_MIGRATION, icon: Upload, label: 'Shopify Import' },
+          { id: AdminTab.SHOPIFY_DATA_IMPORT, icon: Database, label: 'Shopify Data' },
           { id: AdminTab.WEBSITE_MIGRATION, icon: Globe, label: 'Website Import' },
           { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' }
         ]
@@ -15875,6 +15877,16 @@ Return ONLY the JSON object, no markdown.`;
             }}
             onComplete={() => {
               onTabChange(AdminTab.DASHBOARD);
+            }} 
+          />
+        );
+
+      case AdminTab.SHOPIFY_DATA_IMPORT:
+        return (
+          <ShopifyDataImport 
+            storeId={storeId || ''}
+            onComplete={() => {
+              onTabChange(AdminTab.PRODUCTS);
             }} 
           />
         );
