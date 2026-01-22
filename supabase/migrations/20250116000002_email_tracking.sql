@@ -10,7 +10,7 @@
 CREATE TABLE IF NOT EXISTS email_logs (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   campaign_id TEXT REFERENCES campaigns(id) ON DELETE CASCADE,
-  customer_id TEXT REFERENCES customers(id) ON DELETE SET NULL,
+  customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
   email_address TEXT NOT NULL,
   subject TEXT,
   sent_at TIMESTAMPTZ DEFAULT NOW(),
@@ -54,7 +54,7 @@ CREATE INDEX IF NOT EXISTS idx_email_events_created_at ON email_events(created_a
 
 CREATE TABLE IF NOT EXISTS email_unsubscribes (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  store_id TEXT REFERENCES stores(id) ON DELETE CASCADE,
+  store_id UUID REFERENCES stores(id) ON DELETE CASCADE,
   email_address TEXT NOT NULL,
   reason TEXT,
   unsubscribed_at TIMESTAMPTZ DEFAULT NOW(),

@@ -2,6 +2,15 @@
 -- Date: January 16, 2026
 -- Purpose: Complete the category migration from string values to proper foreign keys
 
+-- Ensure slug has unique constraint (should exist from earlier migration)
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'categories_slug_key'
+  ) THEN
+    ALTER TABLE categories ADD CONSTRAINT categories_slug_key UNIQUE (slug);
+  END IF;
+END $$;
+
 -- Step 1: Create default categories from existing product.category values
 insert into categories (id, name, slug, description, is_visible)
 select 
@@ -17,7 +26,7 @@ from (
     and category != ''
     and category not in (select name from categories)
 ) as unique_categories
-on conflict (slug) do nothing;
+on conflict (slug) do update set name = EXCLUDED.name;
 
 -- Step 2: Update products to set category_id based on category name
 update products p
@@ -37,7 +46,7 @@ values (
   'Products without a specific category',
   true
 )
-on conflict (slug) do nothing;
+on conflict (slug) do update set name = EXCLUDED.name;
 
 -- Step 4: Set any remaining null category_id products to "Uncategorized"
 update products

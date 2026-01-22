@@ -8,12 +8,12 @@
 
 create table if not exists collection_events (
   id text primary key default gen_random_uuid()::text,
-  store_id text not null references stores(id) on delete cascade,
+  store_id uuid not null references stores(id) on delete cascade,
   collection_id text references collections(id) on delete cascade,
   section_id text, -- Which page section displayed the collection
   event_type text not null, -- 'view', 'click', 'add_to_cart', 'purchase'
   product_id text references products(id) on delete set null,
-  customer_id text references customers(id) on delete set null,
+  customer_id uuid references customers(id) on delete set null,
   session_id text, -- For tracking anonymous users
   revenue numeric(10,2) default 0, -- For purchase events
   metadata jsonb default '{}', -- Additional context
@@ -39,7 +39,7 @@ create index if not exists idx_collection_events_analytics
 -- Aggregated stats per collection for fast dashboard queries
 create table if not exists collection_stats (
   id text primary key default gen_random_uuid()::text,
-  store_id text not null references stores(id) on delete cascade,
+  store_id uuid not null references stores(id) on delete cascade,
   collection_id text not null references collections(id) on delete cascade,
   period text not null, -- 'today', 'week', 'month', 'all_time'
   views integer default 0,
@@ -64,7 +64,7 @@ create index if not exists idx_collection_stats_period on collection_stats(perio
 -- Track which products perform best in which collections
 create table if not exists collection_product_stats (
   id text primary key default gen_random_uuid()::text,
-  store_id text not null references stores(id) on delete cascade,
+  store_id uuid not null references stores(id) on delete cascade,
   collection_id text not null references collections(id) on delete cascade,
   product_id text not null references products(id) on delete cascade,
   period text not null, -- 'today', 'week', 'month', 'all_time'
@@ -288,15 +288,15 @@ alter table collection_product_stats enable row level security;
 -- Store owners can manage their own analytics
 create policy "Store owners manage collection events"
   on collection_events for all
-  using (store_id in (select id from stores where owner_id = auth.uid()));
+  using (store_id in (select store_id from profiles where id = auth.uid()));
 
 create policy "Store owners view collection stats"
   on collection_stats for select
-  using (store_id in (select id from stores where owner_id = auth.uid()));
+  using (store_id in (select store_id from profiles where id = auth.uid()));
 
 create policy "Store owners view product stats"
   on collection_product_stats for select
-  using (store_id in (select id from stores where owner_id = auth.uid()));
+  using (store_id in (select store_id from profiles where id = auth.uid()));
 
 -- Public can track events (for storefront)
 create policy "Public can insert collection events"

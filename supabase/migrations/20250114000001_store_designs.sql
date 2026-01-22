@@ -56,46 +56,76 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_active_design
 ALTER TABLE store_designs ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
-CREATE POLICY "Users can view their store designs"
-  ON store_designs FOR SELECT
-  USING (
-    store_id IN (
-      SELECT store_id FROM profiles WHERE id = auth.uid()
-    )
-    OR public.is_superuser()
-  );
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'store_designs' AND policyname = 'Users can view their store designs'
+  ) THEN
+    CREATE POLICY "Users can view their store designs"
+      ON store_designs FOR SELECT
+      USING (
+        store_id IN (
+          SELECT store_id FROM profiles WHERE id = auth.uid()
+        )
+        OR public.is_superuser()
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Users can create designs for their stores"
-  ON store_designs FOR INSERT
-  WITH CHECK (
-    store_id IN (
-      SELECT store_id FROM profiles WHERE id = auth.uid()
-    )
-    OR public.is_superuser()
-  );
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'store_designs' AND policyname = 'Users can create designs for their stores'
+  ) THEN
+    CREATE POLICY "Users can create designs for their stores"
+      ON store_designs FOR INSERT
+      WITH CHECK (
+        store_id IN (
+          SELECT store_id FROM profiles WHERE id = auth.uid()
+        )
+        OR public.is_superuser()
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Users can update their store designs"
-  ON store_designs FOR UPDATE
-  USING (
-    store_id IN (
-      SELECT store_id FROM profiles WHERE id = auth.uid()
-    )
-    OR public.is_superuser()
-  );
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'store_designs' AND policyname = 'Users can update their store designs'
+  ) THEN
+    CREATE POLICY "Users can update their store designs"
+      ON store_designs FOR UPDATE
+      USING (
+        store_id IN (
+          SELECT store_id FROM profiles WHERE id = auth.uid()
+        )
+        OR public.is_superuser()
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Users can delete their store designs"
-  ON store_designs FOR DELETE
-  USING (
-    store_id IN (
-      SELECT store_id FROM profiles WHERE id = auth.uid()
-    )
-    OR public.is_superuser()
-  );
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'store_designs' AND policyname = 'Users can delete their store designs'
+  ) THEN
+    CREATE POLICY "Users can delete their store designs"
+      ON store_designs FOR DELETE
+      USING (
+        store_id IN (
+          SELECT store_id FROM profiles WHERE id = auth.uid()
+        )
+        OR public.is_superuser()
+      );
+  END IF;
+END $$;
 
 -- Public read for active designs (for storefront)
-CREATE POLICY "Public can view active designs"
-  ON store_designs FOR SELECT
-  USING (is_active = true);
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'store_designs' AND policyname = 'Public can view active designs'
+  ) THEN
+    CREATE POLICY "Public can view active designs"
+      ON store_designs FOR SELECT
+      USING (is_active = true);
+  END IF;
+END $$;
 
 -- Function to ensure only one active design per store
 CREATE OR REPLACE FUNCTION ensure_single_active_design()
@@ -115,10 +145,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_ensure_single_active_design
-  BEFORE INSERT OR UPDATE ON store_designs
-  FOR EACH ROW
-  EXECUTE FUNCTION ensure_single_active_design();
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_trigger WHERE tgname = 'trigger_ensure_single_active_design'
+  ) THEN
+    CREATE TRIGGER trigger_ensure_single_active_design
+      BEFORE INSERT OR UPDATE ON store_designs
+      FOR EACH ROW
+      EXECUTE FUNCTION ensure_single_active_design();
+  END IF;
+END $$;
 
 -- Migrate existing store_config design data to store_designs
 -- Create one initial design for each existing store

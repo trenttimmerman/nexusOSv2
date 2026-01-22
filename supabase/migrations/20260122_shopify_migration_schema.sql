@@ -66,7 +66,7 @@ ALTER TABLE order_items
 
 -- Customer Addresses Table
 CREATE TABLE IF NOT EXISTS customer_addresses (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   customer_id uuid REFERENCES customers(id) ON DELETE CASCADE,
   first_name text,
   last_name text,
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS customer_addresses (
 
 -- Refunds Table
 CREATE TABLE IF NOT EXISTS refunds (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id uuid REFERENCES orders(id) ON DELETE CASCADE,
   amount numeric NOT NULL,
   reason text,
@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS refunds (
 
 -- Refund Line Items Table
 CREATE TABLE IF NOT EXISTS refund_line_items (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   refund_id uuid REFERENCES refunds(id) ON DELETE CASCADE,
   order_item_id uuid REFERENCES order_items(id) ON DELETE CASCADE,
   quantity integer,
@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS refund_line_items (
 
 -- Carts Table (Abandoned Cart Support)
 CREATE TABLE IF NOT EXISTS carts (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   store_id uuid REFERENCES stores(id) ON DELETE CASCADE,
   customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
   session_id text,
@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS carts (
 
 -- Cart Items Table
 CREATE TABLE IF NOT EXISTS cart_items (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   cart_id uuid REFERENCES carts(id) ON DELETE CASCADE,
   product_id text,
   variant_id text,
@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS articles (
 
 -- Article Comments Table
 CREATE TABLE IF NOT EXISTS article_comments (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   article_id text REFERENCES articles(id) ON DELETE CASCADE,
   author_name text,
   author_email text,
@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS article_comments (
 
 -- Shopify Import Jobs Table (Track Migration Progress)
 CREATE TABLE IF NOT EXISTS shopify_import_jobs (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   store_id uuid REFERENCES stores(id) ON DELETE CASCADE,
   import_type text NOT NULL, -- products, collections, customers, orders, all
   status text DEFAULT 'pending', -- pending, in_progress, completed, failed
@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS shopify_import_jobs (
 
 -- Shopify API Credentials Table (Encrypted Storage)
 CREATE TABLE IF NOT EXISTS shopify_credentials (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   store_id uuid REFERENCES stores(id) ON DELETE CASCADE UNIQUE,
   shop_domain text NOT NULL,
   access_token text NOT NULL, -- Should be encrypted in production
@@ -232,16 +232,19 @@ CREATE INDEX IF NOT EXISTS idx_import_jobs_store ON shopify_import_jobs(store_id
 -- Customer Addresses
 ALTER TABLE customer_addresses ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Tenant Read Customer Addresses" ON customer_addresses;
 CREATE POLICY "Tenant Read Customer Addresses" ON customer_addresses
   FOR SELECT USING (
     customer_id IN (SELECT id FROM customers WHERE store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()))
   );
 
+DROP POLICY IF EXISTS "Tenant Insert Customer Addresses" ON customer_addresses;
 CREATE POLICY "Tenant Insert Customer Addresses" ON customer_addresses
   FOR INSERT WITH CHECK (
     customer_id IN (SELECT id FROM customers WHERE store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()))
   );
 
+DROP POLICY IF EXISTS "Tenant Update Customer Addresses" ON customer_addresses;
 CREATE POLICY "Tenant Update Customer Addresses" ON customer_addresses
   FOR UPDATE USING (
     customer_id IN (SELECT id FROM customers WHERE store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()))
@@ -250,11 +253,13 @@ CREATE POLICY "Tenant Update Customer Addresses" ON customer_addresses
 -- Refunds
 ALTER TABLE refunds ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Tenant Read Refunds" ON refunds;
 CREATE POLICY "Tenant Read Refunds" ON refunds
   FOR SELECT USING (
     order_id IN (SELECT id FROM orders WHERE store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()))
   );
 
+DROP POLICY IF EXISTS "Tenant Insert Refunds" ON refunds;
 CREATE POLICY "Tenant Insert Refunds" ON refunds
   FOR INSERT WITH CHECK (
     order_id IN (SELECT id FROM orders WHERE store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()))
@@ -263,20 +268,24 @@ CREATE POLICY "Tenant Insert Refunds" ON refunds
 -- Carts
 ALTER TABLE carts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Tenant Read Carts" ON carts;
 CREATE POLICY "Tenant Read Carts" ON carts
   FOR SELECT USING (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Tenant Insert Carts" ON carts;
 CREATE POLICY "Tenant Insert Carts" ON carts
   FOR INSERT WITH CHECK (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
 -- Cart Items
 ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Tenant Read Cart Items" ON cart_items;
 CREATE POLICY "Tenant Read Cart Items" ON cart_items
   FOR SELECT USING (
     cart_id IN (SELECT id FROM carts WHERE store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()))
   );
 
+DROP POLICY IF EXISTS "Tenant Insert Cart Items" ON cart_items;
 CREATE POLICY "Tenant Insert Cart Items" ON cart_items
   FOR INSERT WITH CHECK (
     cart_id IN (SELECT id FROM carts WHERE store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()))
@@ -285,20 +294,24 @@ CREATE POLICY "Tenant Insert Cart Items" ON cart_items
 -- Blogs
 ALTER TABLE blogs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Tenant Read Blogs" ON blogs;
 CREATE POLICY "Tenant Read Blogs" ON blogs
   FOR SELECT USING (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Tenant Insert Blogs" ON blogs;
 CREATE POLICY "Tenant Insert Blogs" ON blogs
   FOR INSERT WITH CHECK (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
 -- Articles
 ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Tenant Read Articles" ON articles;
 CREATE POLICY "Tenant Read Articles" ON articles
   FOR SELECT USING (
     blog_id IN (SELECT id FROM blogs WHERE store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()))
   );
 
+DROP POLICY IF EXISTS "Tenant Insert Articles" ON articles;
 CREATE POLICY "Tenant Insert Articles" ON articles
   FOR INSERT WITH CHECK (
     blog_id IN (SELECT id FROM blogs WHERE store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()))
@@ -307,26 +320,33 @@ CREATE POLICY "Tenant Insert Articles" ON articles
 -- Shopify Import Jobs
 ALTER TABLE shopify_import_jobs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Tenant Read Import Jobs" ON shopify_import_jobs;
 CREATE POLICY "Tenant Read Import Jobs" ON shopify_import_jobs
   FOR SELECT USING (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Tenant Insert Import Jobs" ON shopify_import_jobs;
 CREATE POLICY "Tenant Insert Import Jobs" ON shopify_import_jobs
   FOR INSERT WITH CHECK (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Tenant Update Import Jobs" ON shopify_import_jobs;
 CREATE POLICY "Tenant Update Import Jobs" ON shopify_import_jobs
   FOR UPDATE USING (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
 -- Shopify Credentials
 ALTER TABLE shopify_credentials ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Tenant Read Own Credentials" ON shopify_credentials;
 CREATE POLICY "Tenant Read Own Credentials" ON shopify_credentials
   FOR SELECT USING (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Tenant Insert Own Credentials" ON shopify_credentials;
 CREATE POLICY "Tenant Insert Own Credentials" ON shopify_credentials
   FOR INSERT WITH CHECK (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Tenant Update Own Credentials" ON shopify_credentials;
 CREATE POLICY "Tenant Update Own Credentials" ON shopify_credentials
   FOR UPDATE USING (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Tenant Delete Own Credentials" ON shopify_credentials;
 CREATE POLICY "Tenant Delete Own Credentials" ON shopify_credentials
   FOR DELETE USING (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
