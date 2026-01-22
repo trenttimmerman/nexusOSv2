@@ -4686,9 +4686,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const gridData = activeBlock.data || {};
     const CardComponent = PRODUCT_CARD_COMPONENTS[currentVariant as ProductCardStyleId] || PRODUCT_CARD_COMPONENTS['classic'];
 
-    // Handle variant change
+    // Handle variant change with field warning
     const handleGridStyleChange = (newVariant: string) => {
-      // For grid cards, we usually don't lose data since it's common (heading/subheading)
+      const currentFields = Object.keys(gridData).filter(k => gridData[k] && !k.includes('_style'));
+      const targetFields = PRODUCT_GRID_FIELDS[newVariant] || [];
+      const lostFields = currentFields.filter(field => !targetFields.includes(field));
+
+      if (lostFields.length > 0) {
+        setGridWarningFields(lostFields);
+        setGridPendingVariant(newVariant);
+      } else {
+        applyGridVariant(newVariant);
+      }
+    };
+
+    const applyGridVariant = (newVariant: string) => {
       setLocalPages(prev => prev.map(p => {
         if (p.id !== activePage.id) return p;
         return {
@@ -4697,6 +4709,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         };
       }));
       setHasUnsavedChanges(true);
+      setGridWarningFields([]);
+      setGridPendingVariant(null);
+    };
+
+    const confirmGridVariantChange = () => {
+      if (gridPendingVariant) {
+        applyGridVariant(gridPendingVariant);
+      }
     };
 
     // Update grid data
@@ -4756,6 +4776,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="flex-1 flex overflow-hidden">
             {/* LEFT PANEL - Editing Tools (30%) */}
             <div className="w-[30%] border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 relative">
+              {/* Warning Overlay for Field Loss */}
+              {gridWarningFields.length > 0 && (
+                <div className="absolute inset-0 z-50 bg-neutral-950/98 p-6 flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
+                  <div className="w-12 h-12 bg-red-900/30 rounded-full flex items-center justify-center text-red-500 mb-4">
+                    <AlertTriangle size={24} />
+                  </div>
+                  <h4 className="text-white font-bold text-lg mb-2">Content Warning</h4>
+                  <p className="text-neutral-400 text-sm mb-4">
+                    Switching to <span className="text-white font-bold">{PRODUCT_CARD_OPTIONS.find(o => o.id === gridPendingVariant)?.name}</span> will hide these fields:
+                  </p>
+                  <div className="bg-neutral-800 rounded-lg p-3 w-full max-w-xs mb-4 border border-neutral-700 max-h-32 overflow-y-auto">
+                    {gridWarningFields.map(field => (
+                      <div key={field} className="text-xs text-red-400 font-mono py-1 border-b border-neutral-700 last:border-0">{field}</div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 w-full max-w-xs">
+                    <button onClick={() => { setGridWarningFields([]); setGridPendingVariant(null); }} className="flex-1 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg font-bold text-sm transition-colors">Cancel</button>
+                    <button onClick={confirmGridVariantChange} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-sm transition-colors">Confirm</button>
+                  </div>
+                </div>
+              )}
+              
               {/* Scrollable Content */}
               <div className="flex-1 overflow-y-auto scrollbar-admin p-4">
                 {/* 1. Card Style Selection */}
@@ -4989,6 +5031,399 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <span className="text-[10px] text-neutral-300 leading-tight">Borders</span>
                     </div>
                   </div>
+                </div>
+
+                <div className="border-t border-neutral-800 my-4"></div>
+
+                {/* Variant-Specific Controls */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Sliders size={14} /> {PRODUCT_CARD_OPTIONS.find(o => o.id === currentVariant)?.name || 'Card'} Features
+                  </h4>
+
+                  {/* CLASSIC VARIANT */}
+                  {currentVariant === 'classic' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                        <span className="text-xs text-neutral-300">Show Category</span>
+                        <input
+                          type="checkbox"
+                          checked={gridData.showCategory !== false}
+                          onChange={(e) => updateGridData({ showCategory: e.target.checked })}
+                          className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                        <span className="text-xs text-neutral-300">Show Quick Add Button</span>
+                        <input
+                          type="checkbox"
+                          checked={gridData.showQuickAdd !== false}
+                          onChange={(e) => updateGridData({ showQuickAdd: e.target.checked })}
+                          className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Hover Animation</label>
+                        <select
+                          value={gridData.hoverAnimation || 'zoom'}
+                          onChange={(e) => updateGridData({ hoverAnimation: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="zoom">Zoom In</option>
+                          <option value="lift">Lift</option>
+                          <option value="slide">Slide</option>
+                          <option value="none">None</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Image Border Radius</label>
+                        <input
+                          type="text"
+                          value={gridData.imageBorderRadius || '0.75rem'}
+                          onChange={(e) => updateGridData({ imageBorderRadius: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                          placeholder="e.g., 0.75rem, 50%"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Card Padding</label>
+                        <input
+                          type="text"
+                          value={gridData.cardPadding || '0'}
+                          onChange={(e) => updateGridData({ cardPadding: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                          placeholder="e.g., 1rem"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* INDUSTRIAL VARIANT */}
+                  {currentVariant === 'industrial' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                        <span className="text-xs text-neutral-300">Show Product ID</span>
+                        <input
+                          type="checkbox"
+                          checked={gridData.showProductId !== false}
+                          onChange={(e) => updateGridData({ showProductId: e.target.checked })}
+                          className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                        <span className="text-xs text-neutral-300">Show Stock Count</span>
+                        <input
+                          type="checkbox"
+                          checked={gridData.showStock !== false}
+                          onChange={(e) => updateGridData({ showStock: e.target.checked })}
+                          className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Image Filter</label>
+                        <select
+                          value={gridData.imageFilter || 'grayscale'}
+                          onChange={(e) => updateGridData({ imageFilter: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="grayscale">Grayscale → Color</option>
+                          <option value="sepia">Sepia → Color</option>
+                          <option value="contrast">High Contrast</option>
+                          <option value="none">None</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Typography Style</label>
+                        <select
+                          value={gridData.typographyStyle || 'mono'}
+                          onChange={(e) => updateGridData({ typographyStyle: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="mono">Monospace</option>
+                          <option value="sans">Sans Serif</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Border Style</label>
+                        <select
+                          value={gridData.borderStyle || 'solid'}
+                          onChange={(e) => updateGridData({ borderStyle: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="solid">Solid</option>
+                          <option value="dashed">Dashed</option>
+                          <option value="dotted">Dotted</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Badge Colors</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={gridData.badgeBackgroundColor || '#000000'}
+                              onChange={(e) => updateGridData({ badgeBackgroundColor: e.target.value })}
+                              className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-[10px] text-neutral-300 leading-tight">BG</span>
+                          </div>
+                          <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={gridData.badgeTextColor || '#ffffff'}
+                              onChange={(e) => updateGridData({ badgeTextColor: e.target.value })}
+                              className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-[10px] text-neutral-300 leading-tight">Text</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* FOCUS VARIANT */}
+                  {currentVariant === 'focus' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                        <span className="text-xs text-neutral-300">Show Category</span>
+                        <input
+                          type="checkbox"
+                          checked={gridData.showCategory !== false}
+                          onChange={(e) => updateGridData({ showCategory: e.target.checked })}
+                          className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Overlay Opacity (%)</label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="80"
+                          value={gridData.overlayOpacity || 40}
+                          onChange={(e) => updateGridData({ overlayOpacity: parseInt(e.target.value) })}
+                          className="w-full"
+                        />
+                        <span className="text-[10px] text-neutral-500">{gridData.overlayOpacity || 40}%</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Hover Reveal Speed (ms)</label>
+                        <select
+                          value={gridData.hoverRevealSpeed || 300}
+                          onChange={(e) => updateGridData({ hoverRevealSpeed: parseInt(e.target.value) })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="150">Fast (150ms)</option>
+                          <option value="300">Normal (300ms)</option>
+                          <option value="500">Slow (500ms)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Image Zoom Scale (%)</label>
+                        <input
+                          type="range"
+                          min="100"
+                          max="150"
+                          value={gridData.imageZoomScale || 110}
+                          onChange={(e) => updateGridData({ imageZoomScale: parseInt(e.target.value) })}
+                          className="w-full"
+                        />
+                        <span className="text-[10px] text-neutral-500">{gridData.imageZoomScale || 110}%</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Typography Style</label>
+                        <select
+                          value={gridData.typographyStyle || 'serif'}
+                          onChange={(e) => updateGridData({ typographyStyle: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="serif">Serif</option>
+                          <option value="sans">Sans Serif</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Button Border Radius</label>
+                        <input
+                          type="text"
+                          value={gridData.buttonBorderRadius || '9999px'}
+                          onChange={(e) => updateGridData({ buttonBorderRadius: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                          placeholder="e.g., 9999px, 0.5rem"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* HYPE VARIANT */}
+                  {currentVariant === 'hype' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                        <span className="text-xs text-neutral-300">Show "New Drop" Badge</span>
+                        <input
+                          type="checkbox"
+                          checked={gridData.showNewBadge !== false}
+                          onChange={(e) => updateGridData({ showNewBadge: e.target.checked })}
+                          className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                        <span className="text-xs text-neutral-300">Show Stock Badge</span>
+                        <input
+                          type="checkbox"
+                          checked={gridData.showStockBadge !== false}
+                          onChange={(e) => updateGridData({ showStockBadge: e.target.checked })}
+                          className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Shadow Style</label>
+                        <select
+                          value={gridData.shadowStyle || 'hard'}
+                          onChange={(e) => updateGridData({ shadowStyle: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="hard">Hard Shadow (Brutalist)</option>
+                          <option value="soft">Soft Shadow (Modern)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Button Icon</label>
+                        <select
+                          value={gridData.buttonIcon || 'zap'}
+                          onChange={(e) => updateGridData({ buttonIcon: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="zap">⚡ Lightning Bolt</option>
+                          <option value="plus">➕ Plus Sign</option>
+                          <option value="bag">🛍️ Shopping Bag</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Badge Colors</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={gridData.badgePrimaryColor || '#ccff00'}
+                              onChange={(e) => updateGridData({ badgePrimaryColor: e.target.value })}
+                              className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-[10px] text-neutral-300 leading-tight">New Drop</span>
+                          </div>
+                          <div className="flex items-center gap-2 bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                            <input
+                              type="color"
+                              value={gridData.badgeSecondaryColor || '#ff0000'}
+                              onChange={(e) => updateGridData({ badgeSecondaryColor: e.target.value })}
+                              className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                            />
+                            <span className="text-[10px] text-neutral-300 leading-tight">Stock</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* MAGAZINE VARIANT */}
+                  {currentVariant === 'magazine' && (
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Text Alignment</label>
+                        <select
+                          value={gridData.textAlignment || 'center'}
+                          onChange={(e) => updateGridData({ textAlignment: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="left">Left</option>
+                          <option value="center">Center</option>
+                          <option value="right">Right</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Typography Style</label>
+                        <select
+                          value={gridData.typographyStyle || 'serif'}
+                          onChange={(e) => updateGridData({ typographyStyle: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="serif">Serif (Editorial)</option>
+                          <option value="sans">Sans Serif (Modern)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Letter Spacing</label>
+                        <select
+                          value={gridData.letterSpacing || 'wide'}
+                          onChange={(e) => updateGridData({ letterSpacing: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="tight">Tight</option>
+                          <option value="normal">Normal</option>
+                          <option value="wide">Wide</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Image Aspect Ratio</label>
+                        <select
+                          value={gridData.imageAspectRatio || '3/4'}
+                          onChange={(e) => updateGridData({ imageAspectRatio: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="1/1">Square (1:1)</option>
+                          <option value="3/4">Portrait (3:4)</option>
+                          <option value="4/3">Landscape (4:3)</option>
+                          <option value="16/9">Widescreen (16:9)</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* GLASS VARIANT */}
+                  {currentVariant === 'glass' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                        <span className="text-xs text-neutral-300">Show Wishlist Button</span>
+                        <input
+                          type="checkbox"
+                          checked={gridData.showWishlist !== false}
+                          onChange={(e) => updateGridData({ showWishlist: e.target.checked })}
+                          className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between bg-neutral-900 p-2 rounded-lg border border-neutral-700">
+                        <span className="text-xs text-neutral-300">Slide Animation</span>
+                        <input
+                          type="checkbox"
+                          checked={gridData.slideAnimation !== false}
+                          onChange={(e) => updateGridData({ slideAnimation: e.target.checked })}
+                          className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Glass Opacity (%)</label>
+                        <input
+                          type="range"
+                          min="10"
+                          max="90"
+                          value={gridData.glassOpacity || 70}
+                          onChange={(e) => updateGridData({ glassOpacity: parseInt(e.target.value) })}
+                          className="w-full"
+                        />
+                        <span className="text-[10px] text-neutral-500">{gridData.glassOpacity || 70}%</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-neutral-400">Blur Intensity</label>
+                        <select
+                          value={gridData.blurIntensity || 'md'}
+                          onChange={(e) => updateGridData({ blurIntensity: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
+                        >
+                          <option value="sm">Subtle</option>
+                          <option value="md">Medium</option>
+                          <option value="lg">Strong</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="border-t border-neutral-800 my-4"></div>
