@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { X, Upload, CheckCircle, AlertCircle, ArrowRight, ArrowLeft, Eye, Edit2, Trash2, Sparkles } from 'lucide-react';
+import { extractThemeZip } from '../lib/shopify/themeUploadHandler';
+import { parseShopifyTheme, calculateCompatibilityScore } from '../lib/shopify/themeParser';
+import { convertShopifyTemplate } from '../lib/shopify/sectionMapper';
 
 interface ThemeAnalysis {
   compatibility: number;
@@ -56,60 +59,134 @@ export default function ShopifyImportWizard({ onClose, onComplete }: ShopifyImpo
     setAnalyzing(true);
     
     try {
-      // TODO: Call actual theme analysis
-      // For now, simulate
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Extract ZIP file
+      const themeFiles = await extractThemeZip(file);
       
-      const mockAnalysis: ThemeAnalysis = {
-        compatibility: 95,
-        design: {
-          primaryColor: '#1a73e8',
-          secondaryColor: '#f50057',
-          backgroundColor: '#ffffff',
-          headingFont: 'Montserrat',
-          bodyFont: 'Open Sans',
-        },
-        pages: [
-          {
-            shopifyFile: 'index.json',
-            title: 'Home',
-            slug: '/',
-            isTemplate: false,
-            sections: [
-              { id: 's1', type: 'image-banner', data: {} },
-              { id: 's2', type: 'featured-product', data: {} },
-              { id: 's3', type: 'multicolumn', data: {} },
-            ]
-          },
-          {
-            shopifyFile: 'page.contact.json',
-            title: 'Contact',
-            slug: '/contact',
-            isTemplate: false,
-            sections: [
-              { id: 's4', type: 'rich-text', data: {} },
-              { id: 's5', type: 'newsletter', data: {} },
-            ]
-          },
-          {
-            shopifyFile: 'product.json',
-            title: 'Product Template',
-            slug: '',
-            isTemplate: true,
-            sections: []
+      // Find settings_data.json
+      const settingsPath = Object.keys(themeFiles).find(path => path.endsWith('config/settings_data.json'));
+      if (!settingsPath) {
+        throw new Error('settings_data.json not found in theme');
+      }
+      
+      const settingsData = JSON.parse(themeFiles[settingsPath]);
+      
+      // Parse design settings
+      const design = parseShopifyTheme(settingsData);
+      
+      // Find all template files
+      const templatePaths = Object.keys(themeFiles).filter(path => 
+        path.includes('/templates/') && path.endsWith('.json')
+      );
+      
+      console.log(`Found ${templatePaths.length} template files`);
+      
+      // Analyze each template
+      const pages: Array<{
+        shopifyFile: string;
+        title: string;
+        slug: string;
+        sections: any[];
+        isTemplate: boolean;
+      }> = [];
+      
+      let totalSections = 0;
+      let supportedSections = 0;
+      
+      for (const templatePath of templatePaths) {
+        const templateData = JSON.parse(themeFiles[templatePath]);
+        const fileName = templatePath.split('/').pop() || '';
+        
+        // Determine if this is a template (product.json, collection.json, etc.) or a page
+        const isTemplate = !fileName.startsWith('page.') && 
+                          (fileName === 'product.json' || 
+                           fileName === 'collection.json' || 
+                           fileName === 'article.json' ||
+                           fileName === 'blog.json' ||
+                           fileName === 'cart.json' ||
+                           fileName === 'search.json' ||
+                           fileName === 'list-collections.json');
+        
+        // Extract title from filename
+        let title = fileName.replace('.json', '');
+        if (title.startsWith('page.')) {
+          title = title.replace('page.', '').split('-').map(w => 
+            w.charAt(0).toUpperCase() + w.slice(1)
+          ).join(' ');
+        } else if (title === 'index') {
+          title = 'Home';
+        } else {
+          title = title.split('-').map(w => 
+            w.charAt(0).toUpperCase() + w.slice(1)
+          ).join(' ') + (isTemplate ? ' Template' : '');
+        }
+        
+        // Generate slug
+        const slug = fileName === 'index.json' ? '/' : 
+                     fileName.startsWith('page.') ? '/' + fileName.replace('page.', '').replace('.json', '') :
+                     '';
+        
+        // Extract sections
+        const sections = [];
+        if (templateData.sections && typeof templateData.sections === 'object') {
+          for (const [sectionId, sectionData] of Object.entries(templateData.sections)) {
+            const section = sectionData as any;
+            sections.push({
+              id: sectionId,
+              type: section.type || 'unknown',
+              data: section.settings || {}
+            });
+            totalSections++;
+            
+            // Check if supported
+            const supportedTypes = [
+              'image-banner', 'featured-product', 'featured-collection',
+              'multirow', 'image-with-text', 'rich-text', 'collection-list',
+              'multicolumn', 'newsletter', 'slideshow', 'video',
+              'header', 'footer', 'announcement-bar'
+            ];
+            if (supportedTypes.includes(section.type)) {
+              supportedSections++;
+            }
           }
-        ],
+        }
+        
+        pages.push({
+          shopifyFile: fileName,
+          title,
+          slug,
+          isTemplate,
+          sections
+        });
+      }
+      
+      // Calculate compatibility score
+      const compatibility = totalSections > 0 
+        ? Math.round((supportedSections / totalSections) * 100)
+        : 95;
+      
+      const analysis: ThemeAnalysis = {
+        compatibility,
+        design: {
+          primaryColor: design.primary_color,
+          secondaryColor: design.secondary_color,
+          backgroundColor: design.background_color,
+          headingFont: design.typography.headingFont,
+          bodyFont: design.typography.bodyFont,
+        },
+        pages,
         stats: {
-          totalSections: 38,
-          supportedSections: 36,
-          unsupportedSections: 2,
+          totalSections,
+          supportedSections,
+          unsupportedSections: totalSections - supportedSections,
         }
       };
       
-      setThemeAnalysis(mockAnalysis);
+      console.log('Theme Analysis:', analysis);
+      
+      setThemeAnalysis(analysis);
       
       // Initialize page selections
-      const selections = mockAnalysis.pages
+      const selections = analysis.pages
         .filter(p => !p.isTemplate)
         .map(page => ({
           shopifyFile: page.shopifyFile,
@@ -139,10 +216,18 @@ export default function ShopifyImportWizard({ onClose, onComplete }: ShopifyImpo
       'featured-product': 'ProductShowcase',
       'featured-collection': 'ProductGrid',
       'multicolumn': 'Features',
+      'multirow': 'ImageTextGrid',
+      'image-with-text': 'ImageText',
       'rich-text': 'RichText',
       'newsletter': 'EmailSignup',
+      'slideshow': 'Hero',
+      'video': 'VideoEmbed',
+      'collection-list': 'CollectionGrid',
+      'header': 'Header',
+      'footer': 'Footer',
+      'announcement-bar': 'PromoBanner',
     };
-    return mapping[shopifyType] || 'Custom';
+    return mapping[shopifyType] || 'Custom Section';
   };
 
   const handleImport = async () => {
