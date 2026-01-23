@@ -153,7 +153,6 @@ import {
   EyeOff,
   X,
   LayoutTemplate,
-  ChevronDown,
   ArrowDownAZ,
   Calendar,
   Flame,

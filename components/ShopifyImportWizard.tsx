@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { X, Upload, CheckCircle, AlertCircle, ArrowRight, ArrowLeft, Eye, Edit2, Trash2, Sparkles } from 'lucide-react';
+import { X, Upload, CheckCircle, AlertCircle, ArrowRight, ArrowLeft, Eye, Edit2, Trash2, Sparkles, Zap, Star } from 'lucide-react';
 import { extractThemeZip } from '../lib/shopify/themeUploadHandler';
 import { parseShopifyTheme, calculateCompatibilityScore } from '../lib/shopify/themeParser';
 import { convertShopifyTemplate } from '../lib/shopify/sectionMapper';
+import { getUpgradeOptions, getRecommendedOption, mapShopifyToWebPilot } from '../lib/shopify/upgradeMapper';
 
 interface ThemeAnalysis {
   compatibility: number;
@@ -53,6 +54,8 @@ export default function ShopifyImportWizard({ onClose, onComplete }: ShopifyImpo
   const [designCustomizations, setDesignCustomizations] = useState<any>({});
   const [pageSelections, setPageSelections] = useState<PageSelection[]>([]);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const [upgradeSelections, setUpgradeSelections] = useState<Record<string, any>>({});
 
   // Handle file upload
   const handleFileUpload = async (file: File) => {
@@ -617,6 +620,7 @@ export default function ShopifyImportWizard({ onClose, onComplete }: ShopifyImpo
                   <button
                     onClick={() => {
                       setCurrentPageIndex(idx);
+                      setCurrentSectionIndex(0); // Reset section index
                       setStep(5);
                     }}
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-2"
@@ -670,8 +674,22 @@ export default function ShopifyImportWizard({ onClose, onComplete }: ShopifyImpo
   // STEP 5: Section-by-Section Review
   const renderStep5 = () => {
     const currentPage = pageSelections[currentPageIndex];
-    const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
     const currentSection = currentPage.sections[currentSectionIndex];
+    const sectionKey = `${currentPageIndex}-${currentSectionIndex}`;
+    
+    // Check if this section has upgrade options
+    const upgradeMapping = getUpgradeOptions(currentSection.shopifyType);
+    const hasUpgrades = !!upgradeMapping;
+    
+    // Get selected upgrade or recommended one
+    const selectedUpgrade = upgradeSelections[sectionKey] || getRecommendedOption(currentSection.shopifyType);
+
+    const handleSelectUpgrade = (option: any) => {
+      setUpgradeSelections({
+        ...upgradeSelections,
+        [sectionKey]: option
+      });
+    };
 
     return (
       <div className="py-8">
@@ -682,78 +700,172 @@ export default function ShopifyImportWizard({ onClose, onComplete }: ShopifyImpo
           Section {currentSectionIndex + 1} of {currentPage.sections.length}
         </p>
 
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-2 gap-8 mb-8">
-            {/* Shopify Section */}
-            <div className="bg-gray-800 rounded-xl p-6">
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-purple-400" />
-                Shopify Section
-              </h3>
-              
-              <div className="bg-gray-900 rounded-lg p-4 mb-4">
-                <div className="text-sm text-gray-500 mb-1">Section Type</div>
-                <div className="font-mono text-purple-400 text-lg">{currentSection.shopifyType}</div>
+        <div className="max-w-6xl mx-auto">
+          {hasUpgrades ? (
+            // UPGRADE OPPORTUNITY UI
+            <div>
+              {/* Header Message */}
+              <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-xl p-6 mb-8 text-center">
+                <div className="text-4xl mb-3">{upgradeMapping.emoji}</div>
+                <h3 className="text-2xl font-bold mb-2">{upgradeMapping.message}</h3>
+                <p className="text-gray-400">Choose your preferred upgrade option</p>
               </div>
 
-              <div className="bg-gray-900 rounded-lg p-6 text-center text-gray-500">
-                <div className="text-sm mb-2">Preview</div>
-                <div className="italic">Shopify section preview</div>
-              </div>
-            </div>
+              {/* Side-by-side Comparison */}
+              <div className="grid grid-cols-2 gap-8 mb-8">
+                {/* Left: Your Shopify Section */}
+                <div className="bg-gray-800 rounded-xl p-6">
+                  <h4 className="text-lg font-bold mb-4 text-gray-400 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5" />
+                    Your Shopify Section
+                  </h4>
+                  
+                  <div className="bg-gray-900 rounded-lg p-4 mb-4">
+                    <div className="text-sm text-gray-500 mb-1">Section Type</div>
+                    <div className="font-mono text-purple-400">{currentSection.shopifyType}</div>
+                  </div>
 
-            {/* WebPilot Component */}
-            <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-xl p-6 border-2 border-blue-500">
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-400" />
-                WebPilot Component
-              </h3>
-              
-              <div className="bg-gray-900/50 rounded-lg p-4 mb-4">
-                <div className="text-sm text-gray-500 mb-1">Component Type</div>
-                <div className="font-mono text-blue-400 text-lg">{currentSection.webpilotType}</div>
+                  <div className="bg-gray-900 rounded-lg p-4 text-sm text-gray-500">
+                    <div className="mb-2 font-semibold">Current Features:</div>
+                    <ul className="space-y-1 list-disc list-inside">
+                      <li>Basic functionality</li>
+                      <li>Limited customization</li>
+                      <li>Standard Shopify design</li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Right: Upgrade Options */}
+                <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-xl p-6 border-2 border-blue-500">
+                  <h4 className="text-lg font-bold mb-4 text-blue-400 flex items-center gap-2">
+                    <Zap className="w-5 h-5" />
+                    WebPilot Upgrade Options
+                  </h4>
+                  
+                  <div className="space-y-3">
+                    {upgradeMapping.options.map((option, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => handleSelectUpgrade(option)}
+                        className={`bg-gray-900/50 rounded-lg p-4 cursor-pointer transition-all hover:bg-gray-900/70 ${
+                          selectedUpgrade?.id === option.id && selectedUpgrade?.variant === option.variant
+                            ? 'border-2 border-blue-500 ring-2 ring-blue-500/30'
+                            : 'border-2 border-transparent'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                              selectedUpgrade?.id === option.id && selectedUpgrade?.variant === option.variant
+                                ? 'border-blue-500 bg-blue-500'
+                                : 'border-gray-600'
+                            }`}>
+                              {selectedUpgrade?.id === option.id && selectedUpgrade?.variant === option.variant && (
+                                <CheckCircle className="w-4 h-4 text-white" />
+                              )}
+                            </div>
+                            <h5 className="font-bold text-white">{option.name}</h5>
+                          </div>
+                          {option.recommended && (
+                            <span className="px-2 py-1 bg-green-500 text-white text-xs rounded-full flex items-center gap-1">
+                              <Star className="w-3 h-3" />
+                              Recommended
+                            </span>
+                          )}
+                        </div>
+                        
+                        <p className="text-sm text-gray-400 mb-3">{option.description}</p>
+                        
+                        <div className="text-xs text-gray-500">
+                          <div className="font-semibold text-green-400 mb-1">✨ Upgrades:</div>
+                          <ul className="space-y-0.5">
+                            {option.upgrades.slice(0, 3).map((upgrade, i) => (
+                              <li key={i}>• {upgrade}</li>
+                            ))}
+                            {option.upgrades.length > 3 && (
+                              <li className="text-blue-400">+ {option.upgrades.length - 3} more...</li>
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              <div className="bg-gray-900/50 rounded-lg p-6 text-center">
-                <div className="text-sm mb-2 text-gray-400">Component Preview</div>
-                <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg p-8 border border-blue-500/30">
-                  <div className="text-blue-400 font-semibold mb-2">{currentSection.webpilotType}</div>
-                  <div className="text-sm text-gray-400">Will be rendered here</div>
+              {/* Preview Section */}
+              <div className="bg-gray-800 rounded-xl p-6 mb-6">
+                <h4 className="text-lg font-bold mb-4">Preview</h4>
+                <div className="bg-white rounded-lg p-8 min-h-[200px] flex items-center justify-center">
+                  <div className="text-gray-800 text-center">
+                    <div className="text-2xl font-bold mb-2">{selectedUpgrade?.name}</div>
+                    <div className="text-gray-600">Component preview will render here</div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            // STANDARD SECTION (No upgrades available)
+            <div className="grid grid-cols-2 gap-8 mb-8">
+              {/* Shopify Section */}
+              <div className="bg-gray-800 rounded-xl p-6">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-400" />
+                  Shopify Section
+                </h3>
+                
+                <div className="bg-gray-900 rounded-lg p-4 mb-4">
+                  <div className="text-sm text-gray-500 mb-1">Section Type</div>
+                  <div className="font-mono text-purple-400 text-lg">{currentSection.shopifyType}</div>
+                </div>
 
-          {/* Section Control */}
+                <div className="bg-gray-900 rounded-lg p-6 text-center text-gray-500">
+                  <div className="text-sm mb-2">Preview</div>
+                  <div className="italic">Shopify section preview</div>
+                </div>
+              </div>
+
+              {/* WebPilot Component */}
+              <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-xl p-6 border-2 border-blue-500">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  WebPilot Component
+                </h3>
+                
+                <div className="bg-gray-900/50 rounded-lg p-4 mb-4">
+                  <div className="text-sm text-gray-500 mb-1">Component Type</div>
+                  <div className="font-mono text-blue-400 text-lg">{currentSection.webpilotType}</div>
+                </div>
+
+                <div className="bg-gray-900/50 rounded-lg p-6 text-center">
+                  <div className="text-sm mb-2 text-gray-400">Component Preview</div>
+                  <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg p-8 border border-blue-500/30">
+                    <div className="text-blue-400 font-semibold mb-2">{currentSection.webpilotType}</div>
+                    <div className="text-sm text-gray-400">Will be rendered here</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Section Navigation */}
           <div className="flex items-center justify-between bg-gray-800 rounded-lg p-4 mb-6">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={currentSection.include}
-                onChange={(e) => {
-                  const updated = [...pageSelections];
-                  updated[currentPageIndex].sections[currentSectionIndex].include = e.target.checked;
-                  setPageSelections(updated);
-                }}
-                className="w-5 h-5 text-blue-500"
-              />
-              <span className="font-semibold">
-                {currentSection.include ? 'Include this section' : 'Skip this section'}
-              </span>
-            </label>
+            <div className="text-gray-400">
+              Section {currentSectionIndex + 1} of {currentPage.sections.length}
+            </div>
 
             <div className="flex gap-2">
               <button
                 onClick={() => setCurrentSectionIndex(Math.max(0, currentSectionIndex - 1))}
                 disabled={currentSectionIndex === 0}
-                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50"
+                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setCurrentSectionIndex(Math.min(currentPage.sections.length - 1, currentSectionIndex + 1))}
                 disabled={currentSectionIndex === currentPage.sections.length - 1}
-                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50"
+                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ArrowRight className="w-4 h-4" />
               </button>
