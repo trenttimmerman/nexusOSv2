@@ -76,12 +76,27 @@ export default function ShopifyImportWizard({ onClose, onComplete }: ShopifyImpo
       
       console.log('Found settings at:', settingsPath);
       
-      const settingsData = JSON.parse(themeFiles[settingsPath]);
+      // Normalize theme files to expected structure (parseShopifyTheme expects exact keys)
+      const normalizedFiles: { [key: string]: string } = {};
+      for (const [path, content] of Object.entries(themeFiles)) {
+        // Normalize path (remove any leading folder names)
+        let normalizedPath = path;
+        if (path.includes('config/')) {
+          normalizedPath = 'config/' + path.split('config/')[1];
+        } else if (path.includes('templates/')) {
+          normalizedPath = 'templates/' + path.split('templates/')[1];
+        } else if (path.includes('sections/')) {
+          normalizedPath = 'sections/' + path.split('sections/')[1];
+        }
+        normalizedFiles[normalizedPath] = content;
+      }
       
-      // Parse design settings
-      const design = parseShopifyTheme(settingsData);
+      console.log('Normalized file keys:', Object.keys(normalizedFiles).slice(0, 10));
       
-      console.log('Parsed design:', design);
+      // Parse entire theme
+      const parsedTheme = await parseShopifyTheme(normalizedFiles);
+      
+      console.log('Parsed theme:', parsedTheme);
       
       // Find all template files (flexible path matching)
       const templatePaths = Object.keys(themeFiles).filter(path => 
@@ -177,11 +192,11 @@ export default function ShopifyImportWizard({ onClose, onComplete }: ShopifyImpo
       const analysis: ThemeAnalysis = {
         compatibility,
         design: {
-          primaryColor: design?.primary_color || '#000000',
-          secondaryColor: design?.secondary_color || '#666666',
-          backgroundColor: design?.background_color || '#ffffff',
-          headingFont: design?.typography?.headingFont || 'Arial',
-          bodyFont: design?.typography?.bodyFont || 'Arial',
+          primaryColor: parsedTheme.design.primary_color || '#000000',
+          secondaryColor: parsedTheme.design.secondary_color || '#666666',
+          backgroundColor: parsedTheme.design.background_color || '#ffffff',
+          headingFont: parsedTheme.design.typography?.headingFont || 'Arial',
+          bodyFont: parsedTheme.design.typography?.bodyFont || 'Arial',
         },
         pages,
         stats: {
