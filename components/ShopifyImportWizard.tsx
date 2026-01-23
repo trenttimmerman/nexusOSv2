@@ -46,6 +46,7 @@ export default function ShopifyImportWizard({ onClose, onComplete }: ShopifyImpo
   const [themeAnalysis, setThemeAnalysis] = useState<ThemeAnalysis | null>(null);
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   
   // Selection state
   const [importDesign, setImportDesign] = useState(true);
@@ -57,28 +58,37 @@ export default function ShopifyImportWizard({ onClose, onComplete }: ShopifyImpo
   const handleFileUpload = async (file: File) => {
     setUploadedFile(file);
     setAnalyzing(true);
+    setError(null);
     
     try {
       // Extract ZIP file
       const themeFiles = await extractThemeZip(file);
       
-      // Find settings_data.json
-      const settingsPath = Object.keys(themeFiles).find(path => path.endsWith('config/settings_data.json'));
+      console.log('Extracted files:', Object.keys(themeFiles));
+      
+      // Find settings_data.json (flexible path matching)
+      const settingsPath = Object.keys(themeFiles).find(path => 
+        path.endsWith('settings_data.json') && path.includes('config')
+      );
       if (!settingsPath) {
-        throw new Error('settings_data.json not found in theme');
+        throw new Error(`settings_data.json not found in theme. Files found: ${Object.keys(themeFiles).slice(0, 10).join(', ')}`);
       }
+      
+      console.log('Found settings at:', settingsPath);
       
       const settingsData = JSON.parse(themeFiles[settingsPath]);
       
       // Parse design settings
       const design = parseShopifyTheme(settingsData);
       
-      // Find all template files
+      console.log('Parsed design:', design);
+      
+      // Find all template files (flexible path matching)
       const templatePaths = Object.keys(themeFiles).filter(path => 
-        path.includes('/templates/') && path.endsWith('.json')
+        path.includes('templates') && path.endsWith('.json') && !path.includes('customers')
       );
       
-      console.log(`Found ${templatePaths.length} template files`);
+      console.log(`Found ${templatePaths.length} template files:`, templatePaths.slice(0, 5));
       
       // Analyze each template
       const pages: Array<{
@@ -167,11 +177,11 @@ export default function ShopifyImportWizard({ onClose, onComplete }: ShopifyImpo
       const analysis: ThemeAnalysis = {
         compatibility,
         design: {
-          primaryColor: design.primary_color,
-          secondaryColor: design.secondary_color,
-          backgroundColor: design.background_color,
-          headingFont: design.typography.headingFont,
-          bodyFont: design.typography.bodyFont,
+          primaryColor: design?.primary_color || '#000000',
+          secondaryColor: design?.secondary_color || '#666666',
+          backgroundColor: design?.background_color || '#ffffff',
+          headingFont: design?.typography?.headingFont || 'Arial',
+          bodyFont: design?.typography?.bodyFont || 'Arial',
         },
         pages,
         stats: {
@@ -204,8 +214,9 @@ export default function ShopifyImportWizard({ onClose, onComplete }: ShopifyImpo
       setPageSelections(selections);
       setAnalyzing(false);
       setStep(2);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Analysis failed:', error);
+      setError(error.message || 'Failed to analyze theme. Please check the file and try again.');
       setAnalyzing(false);
     }
   };
@@ -315,6 +326,27 @@ export default function ShopifyImportWizard({ onClose, onComplete }: ShopifyImpo
           <div className="mt-8 text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
             <p className="text-gray-400">Analyzing your theme...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-8 bg-red-900/20 border border-red-500/50 rounded-lg p-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
+              <div>
+                <div className="font-semibold text-red-400 mb-2">Upload Failed</div>
+                <div className="text-sm text-gray-300">{error}</div>
+                <button
+                  onClick={() => {
+                    setError(null);
+                    setUploadedFile(null);
+                  }}
+                  className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
