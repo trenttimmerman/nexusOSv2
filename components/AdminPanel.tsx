@@ -34,6 +34,7 @@ import EmailSubscribers from './EmailSubscribers';
 import EmailSettings from './EmailSettings';
 import ShopifyMigration from './ShopifyMigration';
 import ShopifyDataImport from './ShopifyDataImport';
+import ShopifyImportWizard from './ShopifyImportWizard';
 import WebsiteMigration from './WebsiteMigration';
 import Customers from './Customers';
 import { supabase } from '../lib/supabaseClient';
@@ -1077,6 +1078,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
   const [isSpacerModalOpen, setIsSpacerModalOpen] = useState(false);
+  const [isShopifyWizardOpen, setIsShopifyWizardOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Auto-focus field in Hero Studio when activeField changes
@@ -15869,16 +15871,32 @@ Return ONLY the JSON object, no markdown.`;
 
       case AdminTab.SHOPIFY_MIGRATION:
         return (
-          <ShopifyMigration 
-            storeId={storeId || ''} 
-            onNavigateToPage={(pageId) => {
-              onSetActivePage(pageId);
-              onTabChange(AdminTab.DESIGN);
-            }}
-            onComplete={() => {
-              onTabChange(AdminTab.DASHBOARD);
-            }} 
-          />
+          <div>
+            <div className="mb-6 p-6 bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-xl border border-blue-500/50">
+              <h2 className="text-2xl font-bold mb-3">🚀 New Comprehensive Import Wizard</h2>
+              <p className="text-gray-300 mb-4">
+                Experience our new step-by-step wizard with visual previews and granular control over every section.
+              </p>
+              <button
+                onClick={() => setIsShopifyWizardOpen(true)}
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 font-semibold flex items-center gap-2"
+              >
+                <Upload className="w-5 h-5" />
+                Launch Import Wizard
+              </button>
+            </div>
+            
+            <ShopifyMigration 
+              storeId={storeId || ''} 
+              onNavigateToPage={(pageId) => {
+                onSetActivePage(pageId);
+                onTabChange(AdminTab.DESIGN);
+              }}
+              onComplete={() => {
+                onTabChange(AdminTab.DASHBOARD);
+              }} 
+            />
+          </div>
         );
 
       case AdminTab.SHOPIFY_DATA_IMPORT:
@@ -18214,6 +18232,17 @@ Return ONLY the JSON object, no markdown.`;
           )}
           <span className="text-sm font-medium whitespace-nowrap">{toast.message}</span>
         </div>
+      )}
+
+      {/* Shopify Import Wizard */}
+      {isShopifyWizardOpen && (
+        <ShopifyImportWizard
+          onClose={() => setIsShopifyWizardOpen(false)}
+          onComplete={() => {
+            setIsShopifyWizardOpen(false);
+            onTabChange(AdminTab.DASHBOARD);
+          }}
+        />
       )}
     </div>
   );
