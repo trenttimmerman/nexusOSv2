@@ -233,16 +233,16 @@ export default function LoveableImport({ storeId, onComplete, onNavigateToPage }
       setProgress(70);
 
       // Create a new page with the HTML content
+      const pageId = `loveable_${Date.now()}`;
       const { data: pageData, error: pageError } = await supabase
         .from('pages')
         .insert({
+          id: pageId,
           store_id: storeId,
           title: preview.title || 'Loveable Import',
           slug: generateSlug(preview.title || 'loveable-import'),
-          sections: [],
-          meta_title: preview.title,
-          meta_description: preview.description,
-          is_published: false,
+          type: 'custom',
+          blocks: [],
         })
         .select()
         .single();
