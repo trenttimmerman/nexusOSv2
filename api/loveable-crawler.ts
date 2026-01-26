@@ -4,39 +4,7 @@
  * Bypasses CORS by making requests from the backend
  */
 
-// Types for Vercel serverless functions
-type VercelRequest = any;
-type VercelResponse = any;
-
-interface LoveableResult {
-  success: boolean;
-  html?: string;
-  title?: string;
-  description?: string;
-  sections?: any[];
-  design?: {
-    colors: {
-      primary: string[];
-      secondary: string[];
-      background: string[];
-      text: string[];
-    };
-    fonts: {
-      headings: string[];
-      body: string[];
-    };
-  };
-  images?: string[];
-  scripts?: string[];
-  styles?: string[];
-  metadata?: Record<string, any>;
-  error?: string;
-}
-
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-): Promise<void> {
+export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -89,14 +57,14 @@ export default async function handler(
     console.log('[Loveable Crawler] HTML fetched, length:', html.length);
 
     // Parse HTML for key information
-    const result: LoveableResult = {
+    const result = {
       success: true,
       html,
       ...parseHTML(html, url),
     };
 
     res.status(200).json(result);
-  } catch (error: any) {
+  } catch (error) {
     console.error('[Loveable Crawler] Error:', error);
     res.status(500).json({
       success: false,
@@ -108,8 +76,8 @@ export default async function handler(
 /**
  * Parse HTML to extract useful information
  */
-function parseHTML(html: string, baseUrl: string): Partial<LoveableResult> {
-  const result: Partial<LoveableResult> = {
+function parseHTML(html, baseUrl) {
+  const result = {
     images: [],
     scripts: [],
     styles: [],
@@ -140,16 +108,18 @@ function parseHTML(html: string, baseUrl: string): Partial<LoveableResult> {
     result.description = descMatch[1].trim();
   }
 
-  // Extract Open Graph metadata
-  const ogMatches = html.matchAll(/<meta\s+property=["']og:([^"']+)["']\s+content=["']([^"']+)["']/gi);
-  for (const match of ogMatches) {
-    result.metadata![`og:${match[1]}`] = match[2];
+  // Extract Open Graph metadata using exec instead of matchAll
+  const ogRegex = /<meta\s+property=["']og:([^"']+)["']\s+content=["']([^"']+)["']/gi;
+  let ogMatch;
+  while ((ogMatch = ogRegex.exec(html)) !== null) {
+    result.metadata[`og:${ogMatch[1]}`] = ogMatch[2];
   }
 
   // Extract all images
-  const imgMatches = html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi);
-  for (const match of imgMatches) {
-    let imgUrl = match[1];
+  const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
+  let imgMatch;
+  while ((imgMatch = imgRegex.exec(html)) !== null) {
+    let imgUrl = imgMatch[1];
     // Make absolute URLs
     if (imgUrl.startsWith('/')) {
       const urlObj = new URL(baseUrl);
@@ -157,59 +127,65 @@ function parseHTML(html: string, baseUrl: string): Partial<LoveableResult> {
     } else if (!imgUrl.startsWith('http')) {
       imgUrl = new URL(imgUrl, baseUrl).href;
     }
-    result.images!.push(imgUrl);
+    result.images.push(imgUrl);
   }
 
   // Extract stylesheets
-  const linkMatches = html.matchAll(/<link[^>]+rel=["']stylesheet["'][^>]+href=["']([^"']+)["']/gi);
-  for (const match of linkMatches) {
-    result.styles!.push(match[1]);
+  const linkRegex = /<link[^>]+rel=["']stylesheet["'][^>]+href=["']([^"']+)["']/gi;
+  let linkMatch;
+  while ((linkMatch = linkRegex.exec(html)) !== null) {
+    result.styles.push(linkMatch[1]);
   }
 
   // Extract inline styles for color detection
-  const styleMatches = html.matchAll(/style=["']([^"']+)["']/gi);
-  for (const match of styleMatches) {
-    const styleContent = match[1];
+  const styleRegex = /style=["']([^"']+)["']/gi;
+  let styleMatch;
+  while ((styleMatch = styleRegex.exec(html)) !== null) {
+    const styleContent = styleMatch[1];
     
     // Extract colors
-    const colorMatches = styleContent.matchAll(/(?:color|background|background-color|border-color):\s*(#[0-9a-fA-F]{3,6}|rgb\([^)]+\)|rgba\([^)]+\))/gi);
-    for (const colorMatch of colorMatches) {
+    const colorRegex = /(?:color|background|background-color|border-color):\s*(#[0-9a-fA-F]{3,6}|rgb\([^)]+\)|rgba\([^)]+\))/gi;
+    let colorMatch;
+    while ((colorMatch = colorRegex.exec(styleContent)) !== null) {
       const color = colorMatch[1];
-      if (!result.design!.colors.primary.includes(color) && result.design!.colors.primary.length < 5) {
-        result.design!.colors.primary.push(color);
+      if (!result.design.colors.primary.includes(color) && result.design.colors.primary.length < 5) {
+        result.design.colors.primary.push(color);
       }
     }
   }
 
   // Extract CSS color variables
-  const cssVarMatches = html.matchAll(/--[a-zA-Z-]+:\s*(#[0-9a-fA-F]{3,6}|rgb\([^)]+\)|rgba\([^)]+\))/gi);
-  for (const match of cssVarMatches) {
-    const color = match[1];
-    if (!result.design!.colors.secondary.includes(color) && result.design!.colors.secondary.length < 5) {
-      result.design!.colors.secondary.push(color);
+  const cssVarRegex = /--[a-zA-Z-]+:\s*(#[0-9a-fA-F]{3,6}|rgb\([^)]+\)|rgba\([^)]+\))/gi;
+  let cssVarMatch;
+  while ((cssVarMatch = cssVarRegex.exec(html)) !== null) {
+    const color = cssVarMatch[1];
+    if (!result.design.colors.secondary.includes(color) && result.design.colors.secondary.length < 5) {
+      result.design.colors.secondary.push(color);
     }
   }
 
   // Extract font families
-  const fontMatches = html.matchAll(/font-family:\s*([^;}"']+)/gi);
-  for (const match of fontMatches) {
-    const font = match[1].trim().replace(/["']/g, '').split(',')[0];
-    if (!result.design!.fonts.body.includes(font) && result.design!.fonts.body.length < 3) {
-      result.design!.fonts.body.push(font);
+  const fontRegex = /font-family:\s*([^;}"']+)/gi;
+  let fontMatch;
+  while ((fontMatch = fontRegex.exec(html)) !== null) {
+    const font = fontMatch[1].trim().replace(/["']/g, '').split(',')[0];
+    if (!result.design.fonts.body.includes(font) && result.design.fonts.body.length < 3) {
+      result.design.fonts.body.push(font);
     }
   }
 
   // Extract script sources
-  const scriptMatches = html.matchAll(/<script[^>]+src=["']([^"']+)["']/gi);
-  for (const match of scriptMatches) {
-    result.scripts!.push(match[1]);
+  const scriptRegex = /<script[^>]+src=["']([^"']+)["']/gi;
+  let scriptMatch;
+  while ((scriptMatch = scriptRegex.exec(html)) !== null) {
+    result.scripts.push(scriptMatch[1]);
   }
 
   // Deduplicate and clean up
   result.images = [...new Set(result.images)];
-  result.design!.colors.primary = [...new Set(result.design!.colors.primary)];
-  result.design!.colors.secondary = [...new Set(result.design!.colors.secondary)];
-  result.design!.fonts.body = [...new Set(result.design!.fonts.body)];
+  result.design.colors.primary = [...new Set(result.design.colors.primary)];
+  result.design.colors.secondary = [...new Set(result.design.colors.secondary)];
+  result.design.fonts.body = [...new Set(result.design.fonts.body)];
 
   return result;
 }
