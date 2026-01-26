@@ -269,6 +269,18 @@ export default function LoveableImport({ storeId, onComplete, onNavigateToPage }
       const baseSlug = generateSlug(preview.title || 'loveable-import');
       const uniqueSlug = `${baseSlug}-${timestamp}`;
 
+      // Create a custom section block with the HTML content
+      const htmlBlock = {
+        id: `block_${timestamp}`,
+        type: 'section' as const,
+        name: 'Loveable Content',
+        content: preview.html,
+        data: {
+          heading: preview.title || '',
+          subheading: preview.description || '',
+        }
+      };
+
       // Create a new page with the HTML content
       const pageId = `loveable_${timestamp}`;
       const { data: pageData, error: pageError } = await supabase
@@ -279,7 +291,7 @@ export default function LoveableImport({ storeId, onComplete, onNavigateToPage }
           title: preview.title || 'Loveable Import',
           slug: uniqueSlug,
           type: 'custom',
-          blocks: [],
+          blocks: [htmlBlock],
         })
         .select()
         .single();
@@ -287,10 +299,7 @@ export default function LoveableImport({ storeId, onComplete, onNavigateToPage }
       if (pageError) throw pageError;
 
       setProgress(95);
-      setCurrentTask('Finalizing...');
-
-      // Store the HTML content as a custom section (if needed)
-      // For now, we'll just create the page and let the user add sections manually
+      setCurrentTask('Finalizing...')
       
       setCreatedPageId(pageData.id);
       setProgress(100);
@@ -577,7 +586,7 @@ export default function LoveableImport({ storeId, onComplete, onNavigateToPage }
               <ul className="space-y-3 text-sm text-gray-700">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span>A new page has been created with your Loveable content</span>
+                  <span>A new page has been created with your Loveable HTML content imported as a custom section</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -589,7 +598,7 @@ export default function LoveableImport({ storeId, onComplete, onNavigateToPage }
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span>You can now add sections and build out your page content</span>
+                  <span>You can edit the HTML content using the Block Architect or add additional sections</span>
                 </li>
               </ul>
             </div>
