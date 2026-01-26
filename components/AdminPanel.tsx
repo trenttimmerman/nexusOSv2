@@ -36,6 +36,7 @@ import ShopifyMigration from './ShopifyMigration';
 import ShopifyDataImport from './ShopifyDataImport';
 import ShopifyImportWizard from './ShopifyImportWizard';
 import WebsiteMigration from './WebsiteMigration';
+import LoveableImport from './LoveableImport';
 import Customers from './Customers';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
@@ -202,7 +203,6 @@ import {
   Clock,
   ChevronRight,
   ChevronLeft,
-  ChevronDown,
   Tag,
   Share2,
   List,
@@ -251,7 +251,8 @@ import {
   Languages,
   Settings2,
   PackageOpen,
-  Hash
+  Hash,
+  Heart
 } from 'lucide-react';
 
 // Page type options for creating new pages
@@ -1901,6 +1902,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.SHOPIFY_MIGRATION, icon: Upload, label: 'Shopify Import' },
           { id: AdminTab.SHOPIFY_DATA_IMPORT, icon: Database, label: 'Shopify Data' },
           { id: AdminTab.WEBSITE_MIGRATION, icon: Globe, label: 'Website Import' },
+          { id: AdminTab.LOVEABLE_IMPORT, icon: Heart, label: 'Loveable Import' },
           { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' }
         ]
       }
@@ -15911,6 +15913,20 @@ Return ONLY the JSON object, no markdown.`;
       case AdminTab.WEBSITE_MIGRATION:
         return (
           <WebsiteMigration 
+            storeId={storeId || ''} 
+            onNavigateToPage={(pageId) => {
+              onSetActivePage(pageId);
+              onTabChange(AdminTab.DESIGN);
+            }}
+            onComplete={() => {
+              onTabChange(AdminTab.DASHBOARD);
+            }} 
+          />
+        );
+
+      case AdminTab.LOVEABLE_IMPORT:
+        return (
+          <LoveableImport 
             storeId={storeId || ''} 
             onNavigateToPage={(pageId) => {
               onSetActivePage(pageId);
