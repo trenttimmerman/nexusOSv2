@@ -37,6 +37,7 @@ import ShopifyDataImport from './ShopifyDataImport';
 import ShopifyImportWizard from './ShopifyImportWizard';
 import WebsiteMigration from './WebsiteMigration';
 import LoveableImport from './LoveableImport';
+import AISiteGenerator from './AISiteGenerator';
 import Customers from './Customers';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
@@ -253,7 +254,8 @@ import {
   Settings2,
   PackageOpen,
   Hash,
-  Heart
+  Heart,
+  Wand2
 } from 'lucide-react';
 
 // Page type options for creating new pages
@@ -1904,6 +1906,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.SHOPIFY_DATA_IMPORT, icon: Database, label: 'Shopify Data' },
           { id: AdminTab.WEBSITE_MIGRATION, icon: Globe, label: 'Website Import' },
           { id: AdminTab.LOVEABLE_IMPORT, icon: Heart, label: 'Loveable Import' },
+          { id: AdminTab.AI_SITE_GENERATOR, icon: Wand2, label: 'AI Website Generator' },
           { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' }
         ]
       }
@@ -15928,6 +15931,20 @@ Return ONLY the JSON object, no markdown.`;
       case AdminTab.LOVEABLE_IMPORT:
         return (
           <LoveableImport 
+            storeId={storeId || ''} 
+            onNavigateToPage={(pageId) => {
+              onSetActivePage(pageId);
+              onTabChange(AdminTab.DESIGN);
+            }}
+            onComplete={() => {
+              onTabChange(AdminTab.DASHBOARD);
+            }} 
+          />
+        );
+
+      case AdminTab.AI_SITE_GENERATOR:
+        return (
+          <AISiteGenerator 
             storeId={storeId || ''} 
             onNavigateToPage={(pageId) => {
               onSetActivePage(pageId);
