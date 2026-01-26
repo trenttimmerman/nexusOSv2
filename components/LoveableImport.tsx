@@ -229,18 +229,55 @@ export default function LoveableImport({ storeId, onComplete, onNavigateToPage }
 
     try {
       setStep('importing');
-      setCurrentTask('Creating page from Loveable preview...');
-      setProgress(70);
+      setCurrentTask('Creating design from Loveable preview...');
+      setProgress(60);
+
+      // Create a new design for the imported Loveable site
+      const designName = `${preview.title || 'Loveable Import'} - Design`;
+      const { data: designData, error: designError } = await supabase
+        .from('store_designs')
+        .insert({
+          store_id: storeId,
+          name: designName,
+          is_active: false, // Don't activate automatically
+          primary_color: preview.design.colors.primary[0] || '#3b82f6',
+          secondary_color: preview.design.colors.secondary[0] || '#8B5CF6',
+          background_color: preview.design.colors.background[0] || '#FFFFFF',
+          store_vibe: 'modern',
+          typography: {
+            headingFont: preview.design.fonts.headings[0] || 'Inter',
+            bodyFont: preview.design.fonts.body[0] || 'Inter',
+            headingColor: '#000000',
+            bodyColor: '#737373',
+            linkColor: preview.design.colors.primary[0] || '#3b82f6',
+            baseFontSize: '16px',
+            headingScale: 'default',
+            headingWeight: '700',
+            bodyWeight: '400'
+          }
+        })
+        .select()
+        .single();
+
+      if (designError) throw designError;
+
+      setProgress(75);
+      setCurrentTask('Creating page...');
+
+      // Create a unique slug with timestamp to avoid conflicts
+      const timestamp = Date.now();
+      const baseSlug = generateSlug(preview.title || 'loveable-import');
+      const uniqueSlug = `${baseSlug}-${timestamp}`;
 
       // Create a new page with the HTML content
-      const pageId = `loveable_${Date.now()}`;
+      const pageId = `loveable_${timestamp}`;
       const { data: pageData, error: pageError } = await supabase
         .from('pages')
         .insert({
           id: pageId,
           store_id: storeId,
           title: preview.title || 'Loveable Import',
-          slug: generateSlug(preview.title || 'loveable-import'),
+          slug: uniqueSlug,
           type: 'custom',
           blocks: [],
         })
@@ -248,29 +285,6 @@ export default function LoveableImport({ storeId, onComplete, onNavigateToPage }
         .single();
 
       if (pageError) throw pageError;
-
-      setProgress(85);
-      setCurrentTask('Applying design settings...');
-
-      // If we have color data, we could optionally update store design
-      if (preview.design.colors.primary.length > 0) {
-        const { data: designData } = await supabase
-          .from('store_designs')
-          .select('*')
-          .eq('store_id', storeId)
-          .single();
-
-        if (designData) {
-          // Update with Loveable colors
-          await supabase
-            .from('store_designs')
-            .update({
-              primary_color: preview.design.colors.primary[0] || designData.primary_color,
-              secondary_color: preview.design.colors.secondary[0] || designData.secondary_color,
-            })
-            .eq('store_id', storeId);
-        }
-      }
 
       setProgress(95);
       setCurrentTask('Finalizing...');
@@ -567,11 +581,15 @@ export default function LoveableImport({ storeId, onComplete, onNavigateToPage }
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span>You can now add sections and customize the design</span>
+                  <span>A new design has been created in your Design Library with the extracted colors and fonts</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span>Colors from your Loveable design have been detected and can be applied</span>
+                  <span>Visit the Design Library to activate the new design or customize it further</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <span>You can now add sections and build out your page content</span>
                 </li>
               </ul>
             </div>
