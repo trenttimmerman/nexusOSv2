@@ -254,8 +254,7 @@ import {
   Settings2,
   PackageOpen,
   Hash,
-  Heart,
-  Wand2
+  Heart
 } from 'lucide-react';
 
 // Page type options for creating new pages
@@ -1145,12 +1144,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Editor Resize State
   const [editorWidth, setEditorWidth] = useState(320);
   
-  // Design Studio Welcome Wizard State
+  // Design Studio Welcome - Now redirects to AI Generator
   const [showWelcomeWizard, setShowWelcomeWizard] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(() => localStorage.getItem('webpilot_seen_welcome') === 'true');
-  const [wizardMode, setWizardMode] = useState<'select' | 'ai-questions' | 'ai-generating' | 'templates'>('select');
-  const [aiWizardStep, setAiWizardStep] = useState(0);
-  const [aiWizardAnswers, setAiWizardAnswers] = useState<Record<string, string>>({});
   
   // AI Section Recommendations State
   const [showSectionRecommendations, setShowSectionRecommendations] = useState(false);
@@ -1250,12 +1246,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [newPageName, setNewPageName] = useState('');
   const [newPageSlug, setNewPageSlug] = useState('');
   
-  // Show welcome wizard when entering Design Studio for first time
+  // Show AI website generator when entering Design Studio for first time
   useEffect(() => {
     if (activeTab === AdminTab.DESIGN && !hasSeenWelcome) {
       setShowWelcomeWizard(true);
+      setActiveTab(AdminTab.AI_SITE_GENERATOR);
+      setHasSeenWelcome(true);
+      localStorage.setItem('webpilot_seen_welcome', 'true');
     }
-  }, [activeTab, hasSeenWelcome]);;
+  }, [activeTab, hasSeenWelcome]);
   const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
@@ -12990,243 +12989,8 @@ Return ONLY the JSON object, no markdown.`;
     );
   };
 
-  // AI Website Builder Questions
-  const AI_WIZARD_QUESTIONS = [
-    {
-      id: 'business_type',
-      question: "What type of business is this website for?",
-      options: [
-        { value: 'ecommerce', label: '🛍️ Online Store', description: 'Sell products online' },
-        { value: 'portfolio', label: '🎨 Portfolio', description: 'Showcase your work' },
-        { value: 'service', label: '💼 Service Business', description: 'Offer services' },
-        { value: 'restaurant', label: '🍽️ Restaurant/Food', description: 'Food & dining' },
-        { value: 'blog', label: '📝 Blog/Content', description: 'Share articles & content' },
-        { value: 'agency', label: '🏢 Agency', description: 'Marketing/Creative agency' },
-      ]
-    },
-    {
-      id: 'style_preference',
-      question: "What style best matches your brand?",
-      options: [
-        { value: 'minimal', label: '✨ Minimal', description: 'Clean and simple' },
-        { value: 'bold', label: '💪 Bold', description: 'Strong and impactful' },
-        { value: 'playful', label: '🎉 Playful', description: 'Fun and energetic' },
-        { value: 'luxury', label: '💎 Luxury', description: 'Premium and elegant' },
-        { value: 'modern', label: '🚀 Modern', description: 'Contemporary and sleek' },
-        { value: 'cozy', label: '🏡 Cozy', description: 'Warm and inviting' },
-      ]
-    },
-    {
-      id: 'primary_goal',
-      question: "What's the main goal of your website?",
-      options: [
-        { value: 'sell', label: '💰 Sell Products', description: 'Drive purchases' },
-        { value: 'leads', label: '📧 Get Leads', description: 'Collect contact info' },
-        { value: 'showcase', label: '🖼️ Showcase Work', description: 'Display portfolio' },
-        { value: 'inform', label: '📚 Inform Visitors', description: 'Share information' },
-        { value: 'bookings', label: '📅 Get Bookings', description: 'Schedule appointments' },
-        { value: 'brand', label: '🏷️ Build Brand', description: 'Establish presence' },
-      ]
-    },
-    {
-      id: 'color_preference',
-      question: "Choose your primary brand color:",
-      options: [
-        { value: '#3B82F6', label: '💙 Blue', description: 'Trust & professionalism' },
-        { value: '#10B981', label: '💚 Green', description: 'Growth & nature' },
-        { value: '#8B5CF6', label: '💜 Purple', description: 'Creativity & luxury' },
-        { value: '#EF4444', label: '❤️ Red', description: 'Energy & passion' },
-        { value: '#F59E0B', label: '🧡 Orange', description: 'Friendly & optimistic' },
-        { value: '#000000', label: '🖤 Black', description: 'Sophisticated & bold' },
-      ]
-    },
-    {
-      id: 'business_name',
-      question: "What's your business name?",
-      type: 'text',
-      placeholder: 'Enter your business name...'
-    }
-  ];
-
-  // Generate AI Website based on answers
-  const generateAIWebsite = async () => {
-    setWizardMode('ai-generating');
-    
-    const { business_type, style_preference, primary_goal, color_preference, business_name } = aiWizardAnswers;
-    let sectionsToAdd: PageBlock[] = [];
-
-    try {
-      if (genAI) {
-        const model = (genAI as any).getGenerativeModel({ model: "gemini-1.5-flash" });
-        const prompt = `You are an expert website builder. Generate a JSON array of section configurations for a new website.
-        Business Name: ${business_name}
-        Business Type: ${business_type}
-        Style Preference: ${style_preference}
-        Primary Goal: ${primary_goal}
-        
-        Return a JSON array of objects with this structure:
-        {
-          "type": "system-hero" | "system-collection" | "system-gallery" | "system-social" | "system-contact" | "system-email",
-          "variant": "string",
-          "data": { ...relevant fields for that section... }
-        }
-        
-        Include at least 5 sections: Hero, Features/Collection, Social Proof, Contact, and Email Signup.
-        Make the content specific to the business name and type.
-        Just return the JSON array, no markdown formatting.`;
-
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text().trim();
-        
-        try {
-          // Clean up potential markdown formatting if AI included it
-          const jsonStr = text.replace(/```json\n?|\n?```/g, '');
-          const generatedSections = JSON.parse(jsonStr);
-          sectionsToAdd = generatedSections.map((s: any, i: number) => ({
-            ...s,
-            id: `${s.type}-${Date.now()}-${i}`
-          }));
-        } catch (e) {
-          console.error('Failed to parse AI generated sections, falling back to template', e);
-        }
-      }
-
-      // Fallback or default logic if AI failed or not available
-      if (sectionsToAdd.length === 0) {
-    const heroTexts: Record<string, { heading: string, subheading: string }> = {
-      ecommerce: { heading: `Welcome to ${business_name || 'Our Store'}`, subheading: 'Discover our curated collection of premium products.' },
-      portfolio: { heading: `${business_name || 'Creative Studio'}`, subheading: 'Crafting beautiful digital experiences since day one.' },
-      service: { heading: `${business_name || 'Expert Services'}`, subheading: 'Professional solutions tailored to your needs.' },
-      restaurant: { heading: `${business_name || 'Delicious Eats'}`, subheading: 'Fresh ingredients, unforgettable flavors.' },
-      blog: { heading: `${business_name || 'The Blog'}`, subheading: 'Stories, insights, and ideas worth sharing.' },
-      agency: { heading: `${business_name || 'Creative Agency'}`, subheading: 'We turn bold ideas into remarkable results.' },
-    };
-    
-    const heroContent = heroTexts[business_type] || heroTexts.ecommerce;
-    
-    sectionsToAdd.push({
-      id: `hero-${Date.now()}`,
-      type: 'system-hero',
-      name: 'Hero',
-      content: '',
-      variant: style_preference === 'minimal' ? 'centered-gradient' : style_preference === 'bold' ? 'impact' : 'editorial',
-      data: {
-        heading: heroContent.heading,
-        subheading: heroContent.subheading,
-        buttonText: primary_goal === 'sell' ? 'Shop Now' : primary_goal === 'leads' ? 'Get Started' : 'Learn More',
-        buttonLink: primary_goal === 'sell' ? '/shop' : '#contact',
-      }
-    });
-    
-    // Add sections based on business type
-    if (business_type === 'ecommerce' || primary_goal === 'sell') {
-      sectionsToAdd.push({
-        id: `products-${Date.now()}`,
-        type: 'system-collection',
-        name: 'Featured Products',
-        content: '',
-        variant: 'minimal-grid',
-        data: {
-          heading: 'Featured Products',
-          subheading: 'Our most popular items',
-          productCount: 8,
-          gridColumns: '4',
-        }
-      });
-    }
-    
-    if (business_type === 'portfolio' || primary_goal === 'showcase') {
-      sectionsToAdd.push({
-        id: `gallery-${Date.now()}`,
-        type: 'system-gallery',
-        name: 'Gallery',
-        content: '',
-        variant: 'masonry',
-        data: {
-          heading: 'Our Work',
-          subheading: 'A selection of our best projects',
-        }
-      });
-    }
-    
-    // Add social proof section
-    sectionsToAdd.push({
-      id: `social-${Date.now()}`,
-      type: 'system-social',
-      name: 'Testimonials',
-      content: '',
-      variant: 'testimonial-cards',
-      data: {
-        heading: 'What People Say',
-        subheading: 'Trusted by customers worldwide',
-      }
-    });
-    
-    // Add contact section for lead generation
-    if (primary_goal === 'leads' || primary_goal === 'bookings') {
-      sectionsToAdd.push({
-        id: `contact-${Date.now()}`,
-        type: 'system-contact',
-        name: 'Contact',
-        content: '',
-        variant: 'split',
-        data: {
-          heading: 'Get in Touch',
-          subheading: 'We\'d love to hear from you',
-          submitButtonText: 'Send Message',
-          successMessage: 'Thanks! We\'ll be in touch soon.',
-        }
-      });
-    }
-    
-    // Add email signup
-    sectionsToAdd.push({
-      id: `email-${Date.now()}`,
-      type: 'system-email',
-      name: 'Newsletter',
-      content: '',
-      variant: 'centered',
-      data: {
-        heading: 'Stay Updated',
-        subheading: 'Subscribe to our newsletter for the latest news and offers.',
-        buttonText: 'Subscribe',
-      }
-    });
-    
-    // Update the page with generated sections
-    onUpdatePage(activePageId, { blocks: sectionsToAdd });
-    
-    // Update store config with color preference
-    if (color_preference) {
-      onConfigChange({ ...config, primaryColor: color_preference });
-    }
-    if (business_name) {
-      onConfigChange({ ...config, name: business_name });
-    }
-    
-    // Close wizard
-    setShowWelcomeWizard(false);
-    setHasSeenWelcome(true);
-    localStorage.setItem('webpilot_seen_welcome', 'true');
-    setWizardMode('select');
-    setAiWizardStep(0);
-    setAiWizardAnswers({});
-    
-    showToast('🎉 Your website has been generated! Customize each section as needed.', 'success');
-    
-    // Show tutorial after generation
-    if (!hasSeenTutorial) {
-      setTimeout(() => setShowTutorial(true), 500);
-    }
-    }
-    } catch (err) {
-      console.error('Error generating AI website:', err);
-      showToast('Failed to generate website. Please try again.', 'error');
-    } finally {
-      setWizardMode('select');
-    }
-  };
+  // AI Generator replaces old wizard - redirects to AI_SITE_GENERATOR tab
+  const WelcomeWizard = () => null;
 
   // Page Templates
   const PAGE_TEMPLATES = [

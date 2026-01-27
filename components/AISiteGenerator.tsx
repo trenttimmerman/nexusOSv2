@@ -56,14 +56,14 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage 
 
   // Check if AI is available
   const getGenAI = () => {
-    const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 10) {
-      throw new Error('VITE_GOOGLE_AI_API_KEY not configured');
+      throw new Error('VITE_GEMINI_API_KEY not configured');
     }
     return new GoogleGenAI({ apiKey: apiKey.trim() });
   };
 
-  const hasAI = !!(import.meta.env.VITE_GOOGLE_AI_API_KEY?.trim());
+  const hasAI = !!(import.meta.env.VITE_GEMINI_API_KEY?.trim());
 
   const generateSiteStructure = async (genAI: any, userPrompt: string): Promise<any> => {
     const structurePrompt = `You are a website structure architect. Based on this business description, create a complete website structure.
@@ -103,9 +103,14 @@ Limit to ${numPages} pages. Return ONLY valid JSON, no other text.`;
   };
 
   const generatePageContent = async (genAI: any, pageName: string, pageType: string, siteContext: any): Promise<PageBlock[]> => {
-    const contentPrompt = `Create page content blocks for a "${pageName}" page on a ${siteContext.businessType} website: ${siteContext.businessName}.
+    const contentPrompt = `Create gorgeous, complete page content for a "${pageName}" page on a ${siteContext.businessType} website: ${siteContext.businessName}.
 
-Generate 3-5 sections. Return a JSON array of blocks with this structure:
+Design theme colors:
+- Primary: ${siteContext.designTheme.primaryColor}
+- Secondary: ${siteContext.designTheme.secondaryColor}
+- Background: ${siteContext.designTheme.backgroundColor}
+
+Generate 3-5 sections with COMPLETE, compelling copy. Return a JSON array:
 [
   {
     "id": "block_1",
@@ -114,19 +119,40 @@ Generate 3-5 sections. Return a JSON array of blocks with this structure:
     "content": "",
     "variant": "impact",
     "data": {
-      "heading": "Main heading text",
-      "subheading": "Subheading text",
-      "buttonText": "Call to Action",
+      "heading": "Write a powerful, specific headline (not generic)",
+      "subheading": "Write an engaging 2-sentence description that sells the value",
+      "buttonText": "Clear Call to Action",
+      "image": "https://images.unsplash.com/photo-${siteContext.businessType === 'restaurant' ? '1504674900247-0877df9cc836' : siteContext.businessType === 'coffee' ? '1447933601403-0c61db6f49a7' : siteContext.businessType === 'fashion' || siteContext.businessType === 'ecommerce' ? '1483985988355-763728e1935b' : '1451187580459-43490279c0fa'}?w=1200&h=800&q=80&auto=format&fit=crop",
       "style": {
-        "backgroundColor": "#hex",
-        "textColor": "#hex"
+        "backgroundColor": "${siteContext.designTheme.primaryColor}",
+        "textColor": "#FFFFFF",
+        "padding": "xl",
+        "alignment": "center"
+      }
+    }
+  },
+  {
+    "id": "block_2",
+    "type": "system-rich-text",
+    "name": "About Section",
+    "content": "<h2>Section Heading</h2><p>Paragraph with real, compelling copy about the business. Make it specific and engaging, not generic placeholder text.</p>",
+    "data": {
+      "style": {
+        "backgroundColor": "#FFFFFF",
+        "textColor": "#000000",
+        "padding": "l"
       }
     }
   }
 ]
 
-Valid block types: system-hero, system-rich-text, system-gallery, system-contact, section
-Valid variants for hero: impact, minimal, centered, split
+IMPORTANT:
+- Write REAL, compelling copy - not "Lorem ipsum" or generic placeholders
+- Include real Unsplash image URLs related to the business type (use photo IDs: restaurant=1504674900247-0877df9cc836, coffee=1447933601403-0c61db6f49a7, fashion/ecommerce=1483985988355-763728e1935b, tech/service=1451187580459-43490279c0fa)
+- Use the provided theme colors in style objects
+- Make headings specific to the business (not "Welcome" or "About Us")
+- Valid block types: system-hero, system-rich-text, system-gallery, system-contact, system-promo, system-layout, system-collection
+- Valid hero variants: impact, minimal, centered, split
 Return ONLY valid JSON array.`;
 
     const result = await genAI.models.generateContent({
@@ -295,7 +321,7 @@ Return ONLY valid JSON.`;
         .insert({
           store_id: storeId,
           name: `${generatedSite.businessType} AI Generated Design`,
-          is_active: false,
+          is_active: true,
           primary_color: generatedSite.designTheme.primaryColor,
           secondary_color: generatedSite.designTheme.secondaryColor,
           background_color: generatedSite.designTheme.backgroundColor,
@@ -378,14 +404,22 @@ Return ONLY valid JSON.`;
 
       setCreatedPageIds(pageIds);
       setProgress(100);
-      setStep('complete');
+      setCurrentTask('Opening your new website...');
+      
+      // Auto-navigate to first page in designer after short delay
+      setTimeout(() => {
+        setStep('complete');
+        if (pageIds.length > 0 && onNavigateToPage) {
+          onNavigateToPage(pageIds[0]);
+        }
+      }, 1500);
 
     } catch (error: any) {
       console.error('[AISiteGenerator] Save error:', error);
       setError(error.message || 'Failed to save website');
       setStep('review');
     }
-  }, [generatedSite, storeId]);
+  }, [generatedSite, storeId, onNavigateToPage]);
 
   // Render steps
   if (!hasAI) {
@@ -397,7 +431,7 @@ Return ONLY valid JSON.`;
             <div>
               <h3 className="font-semibold text-yellow-900 mb-2">AI Not Configured</h3>
               <p className="text-sm text-yellow-800">
-                The Google AI API key (VITE_GOOGLE_AI_API_KEY) is not configured. 
+                The Google AI API key (VITE_GEMINI_API_KEY) is not configured. 
                 Please add it to your environment variables to use the AI Website Generator.
               </p>
             </div>
@@ -604,7 +638,7 @@ Return ONLY valid JSON.`;
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:from-purple-600 hover:to-pink-700 font-semibold flex items-center justify-center gap-2"
               >
                 <CheckCircle className="w-5 h-5" />
-                Save Website
+                Save & Open in Designer
               </button>
             </div>
           </div>
@@ -671,9 +705,10 @@ Return ONLY valid JSON.`;
               {createdPageIds.length > 0 && onNavigateToPage && (
                 <button
                   onClick={() => onNavigateToPage(createdPageIds[0])}
-                  className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+                  className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold flex items-center justify-center gap-2"
                 >
-                  View Pages
+                  <Layout className="w-5 h-5" />
+                  Open in Designer
                 </button>
               )}
               {onComplete && (
