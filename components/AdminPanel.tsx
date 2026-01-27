@@ -1147,6 +1147,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Design Studio Welcome - Now redirects to AI Generator
   const [showWelcomeWizard, setShowWelcomeWizard] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(() => localStorage.getItem('webpilot_seen_welcome') === 'true');
+  const [showWelcomeModal, setShowWelcomeModal] = useState(!localStorage.getItem('webpilot_seen_welcome'));
   
   // AI Section Recommendations State
   const [showSectionRecommendations, setShowSectionRecommendations] = useState(false);
@@ -13406,6 +13407,126 @@ Return ONLY the JSON object, no markdown.`;
     );
   };
 
+  // New Customer Welcome Modal
+  const renderWelcomeModal = () => {
+    if (!showWelcomeModal) return null;
+
+    const handleLaunchAI = () => {
+      setShowWelcomeModal(false);
+      setHasSeenWelcome(true);
+      localStorage.setItem('webpilot_seen_welcome', 'true');
+      setActiveTab(AdminTab.AI_SITE_GENERATOR);
+    };
+
+    const handleExploreDashboard = () => {
+      setShowWelcomeModal(false);
+      setHasSeenWelcome(true);
+      localStorage.setItem('webpilot_seen_welcome', 'true');
+    };
+
+    return (
+      <div className="fixed inset-0 z-[350] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="bg-gradient-to-br from-neutral-900 via-neutral-900 to-blue-900/20 border border-neutral-700 rounded-3xl shadow-2xl w-full max-w-3xl animate-in zoom-in-95 duration-500 overflow-hidden">
+          {/* Header */}
+          <div className="relative p-12 text-center border-b border-neutral-800/50 bg-gradient-to-br from-blue-600/10 to-purple-600/10">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 animate-pulse" />
+            <div className="relative">
+              <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/20 animate-in zoom-in duration-700">
+                <Sparkles size={48} className="text-white" />
+              </div>
+              <h1 className="text-4xl font-black text-white mb-3 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Welcome to WebPilot! 🎉
+              </h1>
+              <p className="text-lg text-neutral-300 max-w-xl mx-auto">
+                We're thrilled to have you here. Let's create something amazing together!
+              </p>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-8 space-y-6">
+            {/* Value Props */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="text-center p-4 bg-neutral-800/30 rounded-2xl border border-neutral-700/50">
+                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Wand2 className="w-6 h-6 text-blue-400" />
+                </div>
+                <h4 className="text-sm font-bold text-white mb-1">AI-Powered</h4>
+                <p className="text-xs text-neutral-400">Generate beautiful sites in seconds</p>
+              </div>
+              <div className="text-center p-4 bg-neutral-800/30 rounded-2xl border border-neutral-700/50">
+                <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Palette className="w-6 h-6 text-purple-400" />
+                </div>
+                <h4 className="text-sm font-bold text-white mb-1">Fully Customizable</h4>
+                <p className="text-xs text-neutral-400">Every pixel under your control</p>
+              </div>
+              <div className="text-center p-4 bg-neutral-800/30 rounded-2xl border border-neutral-700/50">
+                <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <ShoppingBag className="w-6 h-6 text-green-400" />
+                </div>
+                <h4 className="text-sm font-bold text-white mb-1">E-commerce Ready</h4>
+                <p className="text-xs text-neutral-400">Start selling immediately</p>
+              </div>
+            </div>
+
+            {/* Main CTA */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-center relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative">
+                <h3 className="text-2xl font-bold text-white mb-3">
+                  ✨ Let AI Build Your Website
+                </h3>
+                <p className="text-blue-50 mb-6 max-w-lg mx-auto">
+                  Describe your business and watch as our AI creates a complete, professional website tailored just for you - in under 30 seconds.
+                </p>
+                <button
+                  onClick={handleLaunchAI}
+                  className="px-8 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg hover:scale-105 transition-all duration-200 shadow-xl hover:shadow-2xl flex items-center gap-3 mx-auto"
+                >
+                  <Wand2 className="w-5 h-5" />
+                  Launch AI Website Generator
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Alternative Option */}
+            <div className="text-center">
+              <p className="text-sm text-neutral-500 mb-3">or</p>
+              <button
+                onClick={handleExploreDashboard}
+                className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl font-medium transition-all border border-neutral-700 hover:border-neutral-600"
+              >
+                I'll explore the dashboard first
+              </button>
+            </div>
+
+            {/* Quick Stats / Trust Signals */}
+            <div className="pt-6 border-t border-neutral-800/50">
+              <div className="flex items-center justify-center gap-8 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-white">30s</div>
+                  <div className="text-xs text-neutral-400">Average Build Time</div>
+                </div>
+                <div className="w-px h-8 bg-neutral-700" />
+                <div>
+                  <div className="text-2xl font-bold text-white">100%</div>
+                  <div className="text-xs text-neutral-400">Customizable</div>
+                </div>
+                <div className="w-px h-8 bg-neutral-700" />
+                <div>
+                  <div className="text-2xl font-bold text-white">0</div>
+                  <div className="text-xs text-neutral-400">Coding Required</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Tutorial System for first-time users
   const TUTORIAL_STEPS = [
     {
@@ -17960,6 +18081,7 @@ Return ONLY the JSON object, no markdown.`;
       {renderLayoutModal()}
       {renderSpacerModal()}
       {renderAddSectionLibrary()}
+      {renderWelcomeModal()}
       {renderWelcomeWizard()}
       {renderAddPageModal()}
       {renderTutorial()}
