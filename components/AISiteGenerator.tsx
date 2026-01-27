@@ -347,6 +347,8 @@ Return ONLY valid JSON.`;
         const page = generatedSite.pages[i];
         const pageId = `ai_page_${Date.now()}_${i}`;
         
+        console.log(`[AISiteGenerator] Saving page ${page.name} with ${page.blocks?.length || 0} blocks:`, page.blocks);
+        
         const { error: pageError } = await supabase
           .from('pages')
           .insert({
@@ -358,7 +360,12 @@ Return ONLY valid JSON.`;
             blocks: page.blocks
           });
 
-        if (!pageError) pageIds.push(pageId);
+        if (pageError) {
+          console.error(`[AISiteGenerator] Error saving page ${page.name}:`, pageError);
+        } else {
+          console.log(`[AISiteGenerator] Successfully saved page ${page.name} with ID ${pageId}`);
+          pageIds.push(pageId);
+        }
         setProgress(30 + ((i + 1) / generatedSite.pages.length) * 40);
       }
 
