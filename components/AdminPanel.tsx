@@ -1154,9 +1154,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     // Only show for new users: less than 3 pages (default home + about = 2)
     // and haven't seen it before in this browser
     const hasSeenInBrowser = localStorage.getItem('webpilot_seen_welcome') === 'true';
-    const isNewAccount = localPages.length <= 2; // New accounts have 2 default pages
+    const isNewAccount = localPages.length <= 2 && localPages.length > 0;
     
-    if (!hasSeenInBrowser && isNewAccount && localPages.length > 0) {
+    console.log('[WelcomeModal] Check:', {
+      hasSeenInBrowser,
+      pageCount: localPages.length,
+      isNewAccount,
+      willShow: !hasSeenInBrowser && isNewAccount
+    });
+    
+    if (!hasSeenInBrowser && isNewAccount) {
+      console.log('[WelcomeModal] Showing welcome modal!');
       setShowWelcomeModal(true);
     }
   }, [localPages.length]);
