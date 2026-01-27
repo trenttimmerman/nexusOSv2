@@ -94,7 +94,9 @@ interface ClientFilters {
 // =============================================================================
 
 export const ClientManagement: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'tenants' | 'users'>('tenants');
   const [clients, setClients] = useState<Client[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showClientModal, setShowClientModal] = useState(false);
@@ -242,6 +244,46 @@ export const ClientManagement: React.FC = () => {
       console.error('Error loading clients:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch all users from Supabase Auth
+  const fetchAllUsers = async () => {
+    setLoading(true);
+    try {
+      const { data: { users }, error } = await supabase.auth.admin.listUsers();
+      
+      if (error) throw error;
+      
+      setAllUsers(users || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete user from Supabase Auth
+  const deleteUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return;
+    }
+
+    setActionLoading(userId);
+    try {
+      const { error } = await supabase.auth.admin.deleteUser(userId);
+      
+      if (error) throw error;
+      
+      // Refresh user list
+      await fetchAllUsers();
+      
+      alert('User deleted successfully');
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      alert(`Failed to delete user: ${error.message}`);
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -427,12 +469,12 @@ export const ClientManagement: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Building2 className="w-7 h-7 text-indigo-600" />
-            Client Management
+            Platform Admin
           </h1>
-          <p className="text-gray-500 mt-1">Manage all stores and clients on the platform</p>
+          <p className="text-gray-500 mt-1">Manage all stores, clients, and users on the platform</p>
         </div>
         <button
-          onClick={loadClients}
+          onClick={activeTab === 'tenants' ? loadClients : fetchAllUsers}
           className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
         >
           <RefreshCw size={16} />
@@ -440,7 +482,43 @@ export const ClientManagement: React.FC = () => {
         </button>
       </div>
 
-      {/* Stats Cards */}
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="flex gap-4">
+          <button
+            onClick={() => setActiveTab('tenants')}
+            className={`px-4 py-2 border-b-2 font-medium transition-colors ${
+              activeTab === 'tenants'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Store size={18} />
+              Tenants ({clients.length})
+            </div>
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('users');
+              if (allUsers.length === 0) fetchAllUsers();
+            }}
+            className={`px-4 py-2 border-b-2 font-medium transition-colors ${
+              activeTab === 'users'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Users size={18} />
+              All Users ({allUsers.length})
+            </div>
+          </button>
+        </nav>
+      </div>
+
+      {/* Stats Cards - Only show on Tenants tab */}
+      {activeTab === 'tenants' && (
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center gap-3">
@@ -502,8 +580,10 @@ export const ClientManagement: React.FC = () => {
           </div>
         </div>
       </div>
+      )}
 
-      {/* Filters */}
+      {/* Filters - Only show on Tenants tab */}
+      {activeTab === 'tenants' && (
       <div className="bg-white rounded-xl border border-gray-200 p-4">
         <div className="flex flex-wrap gap-4 items-center">
           {/* Search */}
@@ -563,8 +643,10 @@ export const ClientManagement: React.FC = () => {
           </select>
         </div>
       </div>
+      )}
 
-      {/* Client List */}
+      {/* Tenants List */}
+      {activeTab === 'tenants' && (
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -684,6 +766,101 @@ export const ClientManagement: React.FC = () => {
           </table>
         </div>
       </div>
+      )}
+
+      {/* All Users List */}
+      {activeTab === 'users' && (
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw className="w-6 h-6 animate-spin text-indigo-600" />
+            </div>
+          ) : allUsers.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No users found</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Full Name</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Created</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Sign In</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">User ID</th>
+                    <th className="text-right px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {allUsers.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <Mail size={16} className="text-gray-400" />
+                          <span className="text-sm font-medium text-gray-900">{user.email}</span>
+                          {user.email_confirmed_at && (
+                            <CheckCircle size={14} className="text-green-500" />
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-600">
+                          {user.user_metadata?.full_name || user.user_metadata?.name || '-'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-600">
+                          {user.user_metadata?.phone || user.phone || '-'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-600">
+                          {formatDate(user.created_at)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-600">
+                          {user.last_sign_in_at ? formatDate(user.last_sign_in_at) : '-'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <code className="text-xs bg-gray-100 px-2 py-1 rounded font-mono">
+                            {user.id.slice(0, 8)}...
+                          </code>
+                          <button
+                            onClick={() => copyToClipboard(user.id)}
+                            className="text-gray-400 hover:text-indigo-600"
+                          >
+                            <Copy size={14} />
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => deleteUser(user.id)}
+                          disabled={actionLoading === user.id}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium disabled:opacity-50"
+                        >
+                          {actionLoading === user.id ? (
+                            <RefreshCw size={14} className="animate-spin" />
+                          ) : (
+                            <Trash2 size={14} />
+                          )}
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Client Detail Modal */}
       {showClientModal && selectedClient && (
