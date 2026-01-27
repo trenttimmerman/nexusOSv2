@@ -1147,7 +1147,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Design Studio Welcome - Now redirects to AI Generator
   const [showWelcomeWizard, setShowWelcomeWizard] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(() => localStorage.getItem('webpilot_seen_welcome') === 'true');
-  const [showWelcomeModal, setShowWelcomeModal] = useState(!localStorage.getItem('webpilot_seen_welcome'));
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false); // Start false, check in useEffect
+  
+  // Check if user should see welcome modal (for new accounts)
+  useEffect(() => {
+    // Only show for new users: less than 3 pages (default home + about = 2)
+    // and haven't seen it before in this browser
+    const hasSeenInBrowser = localStorage.getItem('webpilot_seen_welcome') === 'true';
+    const isNewAccount = localPages.length <= 2; // New accounts have 2 default pages
+    
+    if (!hasSeenInBrowser && isNewAccount && localPages.length > 0) {
+      setShowWelcomeModal(true);
+    }
+  }, [localPages.length]);
   
   // AI Section Recommendations State
   const [showSectionRecommendations, setShowSectionRecommendations] = useState(false);
