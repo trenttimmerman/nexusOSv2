@@ -298,7 +298,7 @@ Return ONLY valid JSON.`;
       setStep('input');
       setProgress(0);
     }
-  }, [prompt, numPages, numProducts, hasAI]);
+  }, [prompt, numPages, numProducts]);
 
   const handleSaveToDatabase = useCallback(async () => {
     if (!generatedSite || !storeId) return;
