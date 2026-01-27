@@ -235,6 +235,7 @@ Return ONLY valid JSON.`;
       // Step 1: Generate site structure
       setProgress(15);
       const structure = await generateSiteStructure(genAI, prompt);
+      console.log('[AISiteGenerator] Generated structure:', structure);
 
       setCurrentTask('Creating pages...');
       setProgress(30);
@@ -247,6 +248,7 @@ Return ONLY valid JSON.`;
         setProgress(30 + (i / structure.pages.length) * 30);
 
         const blocks = await generatePageContent(genAI, page.name, page.type, structure);
+        console.log(`[AISiteGenerator] Generated blocks for ${page.name}:`, blocks);
         pages.push({
           name: page.name,
           type: page.type === 'home' ? 'home' : 'custom',
