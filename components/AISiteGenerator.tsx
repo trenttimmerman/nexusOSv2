@@ -57,19 +57,11 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage 
   // Check if AI is available
   const getGenAI = () => {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 10) {
-      console.error('VITE_GEMINI_API_KEY check failed:', {
-        exists: !!apiKey,
-        type: typeof apiKey,
-        length: apiKey?.length,
-        trimmedLength: apiKey?.trim().length
-      });
-      throw new Error('VITE_GEMINI_API_KEY not configured');
+    if (!apiKey) {
+      throw new Error('VITE_GEMINI_API_KEY not configured. Please add it to your environment variables.');
     }
-    return new GoogleGenAI({ apiKey: apiKey.trim() });
+    return new GoogleGenAI({ apiKey: apiKey });
   };
-
-  const hasAI = !!import.meta.env.VITE_GEMINI_API_KEY;
 
   const generateSiteStructure = async (genAI: any, userPrompt: string): Promise<any> => {
     const structurePrompt = `You are a website structure architect. Based on this business description, create a complete website structure.
@@ -229,11 +221,6 @@ Return ONLY valid JSON.`;
   const handleGenerate = useCallback(async () => {
     if (!prompt) {
       setError('Please enter a business description');
-      return;
-    }
-
-    if (!hasAI) {
-      setError('Google AI API key not configured');
       return;
     }
 
@@ -428,25 +415,6 @@ Return ONLY valid JSON.`;
   }, [generatedSite, storeId, onNavigateToPage]);
 
   // Render steps
-  if (!hasAI) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="font-semibold text-yellow-900 mb-2">AI Not Configured</h3>
-              <p className="text-sm text-yellow-800">
-                The Google AI API key (VITE_GEMINI_API_KEY) is not configured. 
-                Please add it to your environment variables to use the AI Website Generator.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (step === 'input') {
     return (
       <div className="max-w-4xl mx-auto p-6">
