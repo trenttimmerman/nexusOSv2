@@ -32,8 +32,8 @@ export const Login = () => {
           .single();
 
         if (!profile?.store_id) {
-          // User confirmed email but hasn't created a store yet
-          navigate('/start');
+          // User confirmed email but hasn't created a store yet - AI Website Generator will handle this
+          navigate('/admin');
         } else {
           navigate('/admin');
         }

@@ -35,8 +35,8 @@ export const SignUp = () => {
         return;
       }
 
-      // Session exists - redirect to new simple wizard!
-      navigate('/start');
+      // Session exists - redirect to admin (AI Website Generator will show for new users)
+      navigate('/admin');
 
     } catch (err: any) {
       console.error('Sign up error:', err);
