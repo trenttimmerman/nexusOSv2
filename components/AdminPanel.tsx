@@ -13442,7 +13442,7 @@ Return ONLY the JSON object, no markdown.`;
       if (storeId) {
         localStorage.setItem(`webpilot_seen_welcome_${storeId}`, 'true');
       }
-      setActiveTab(AdminTab.AI_SITE_GENERATOR);
+      onTabChange(AdminTab.AI_SITE_GENERATOR);
     };
 
     const handleExploreDashboard = () => {
