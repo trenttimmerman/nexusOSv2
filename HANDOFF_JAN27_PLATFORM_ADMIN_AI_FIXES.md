@@ -177,8 +177,8 @@ subscriptions (
 ```
 
 ### Environment Variables
-- `VITE_GEMINI_API_KEY` - Set in Vercel dashboard for production
-- Value: `AIzaSyA26wqns7ytPFl-gFYV4FurWLCS5KPKsJo` (also in .env.local for dev)
+- `VITE_GEMINI_API_KEY` - Set in Vercel dashboard for production and .env.local for dev
+- **SECURITY NOTE:** API key must be rotated due to accidental exposure in git history
 
 ### Routes Changed
 - `/start` → Redirects to `/admin` (no longer shows SimpleWizard)
