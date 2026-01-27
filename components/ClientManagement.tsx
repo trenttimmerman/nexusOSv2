@@ -44,17 +44,40 @@ interface Client {
   owner?: {
     id: string;
     email: string;
+    full_name?: string;
+    phone?: string;
+    created_at?: string;
   };
   subscription?: {
     plan_id: string;
     status: string;
     current_period_end: string;
+    current_period_start?: string;
+    cancel_at_period_end?: boolean;
   };
   stats?: {
     products: number;
     orders: number;
     revenue: number;
     customers: number;
+  };
+  storeConfig?: {
+    name?: string;
+    currency?: string;
+    store_address?: {
+      line1?: string;
+      line2?: string;
+      city?: string;
+      state?: string;
+      postal_code?: string;
+      country?: string;
+    };
+    notification_settings?: {
+      email?: string;
+      phone?: string;
+    };
+    shipping_provider?: string;
+    tax_regions?: any[];
   };
 }
 
@@ -109,7 +132,7 @@ export const ClientManagement: React.FC = () => {
 
       if (storesError) throw storesError;
 
-      // Get all profiles to map owners (includes email if stored)
+      // Get all profiles to map owners
       const { data: profiles } = await supabase
         .from('profiles')
         .select('*');
@@ -117,6 +140,11 @@ export const ClientManagement: React.FC = () => {
       // Get all subscriptions
       const { data: subscriptions } = await supabase
         .from('subscriptions')
+        .select('*');
+
+      // Get store configs
+      const { data: storeConfigs } = await supabase
+        .from('store_config')
         .select('*');
 
       // Get products count per store
@@ -134,13 +162,22 @@ export const ClientManagement: React.FC = () => {
         .from('customers')
         .select('store_id');
 
+      // Get auth user details for owners
+      const { data: { users } } = await supabase.auth.admin.listUsers();
+
       // Build client objects
       const clientsData: Client[] = (stores || []).map(store => {
         // Find owner profile - any profile with this store_id and owner role
-        const ownerProfile = profiles?.find(p => p.store_id === store.id && (p.role === 'owner' || p.role === 'admin'));
+        const ownerProfile = profiles?.find(p => p.store_id === store.id && (p.role === 'owner' || p.role === 'admin' || p.role === 'superuser'));
+        
+        // Find auth user for owner
+        const authUser = ownerProfile ? users?.find(u => u.id === ownerProfile.id) : undefined;
         
         // Find subscription
         const subscription = subscriptions?.find(s => s.store_id === store.id);
+        
+        // Find store config
+        const storeConfig = storeConfigs?.find(c => c.store_id === store.id);
         
         // Calculate stats
         const storeProducts = products?.filter(p => p.store_id === store.id) || [];
@@ -154,21 +191,34 @@ export const ClientManagement: React.FC = () => {
           slug: store.slug,
           created_at: store.created_at,
           settings: store.settings,
-          owner: ownerProfile ? {
+          owner: ownerProfile && authUser ? {
             id: ownerProfile.id,
-            email: ownerProfile.email || ownerProfile.store_name || `User ${ownerProfile.id.slice(0, 8)}...`
+            email: authUser.email || 'N/A',
+            full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name,
+            phone: authUser.user_metadata?.phone || authUser.phone,
+            created_at: authUser.created_at
           } : undefined,
           subscription: subscription ? {
             plan_id: subscription.plan_id,
             status: subscription.status,
-            current_period_end: subscription.current_period_end
+            current_period_end: subscription.current_period_end,
+            current_period_start: subscription.current_period_start,
+            cancel_at_period_end: subscription.cancel_at_period_end
           } : undefined,
           stats: {
             products: storeProducts.length,
             orders: storeOrders.length,
             revenue: totalRevenue,
             customers: storeCustomers.length
-          }
+          },
+          storeConfig: storeConfig ? {
+            name: storeConfig.name,
+            currency: storeConfig.currency,
+            store_address: storeConfig.store_address,
+            notification_settings: storeConfig.notification_settings,
+            shipping_provider: storeConfig.shipping_provider,
+            tax_regions: storeConfig.tax_regions
+          } : undefined
         };
       });
 
@@ -687,15 +737,64 @@ export const ClientManagement: React.FC = () => {
                 </div>
               </div>
 
-              {/* Details */}
+              {/* Owner Information */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Details</h3>
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Owner Information
+                </h3>
+                
+                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500">Email</span>
+                    <span className="text-sm font-medium">{selectedClient.owner?.email || 'N/A'}</span>
+                  </div>
+                  
+                  {selectedClient.owner?.full_name && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Full Name</span>
+                      <span className="text-sm font-medium">{selectedClient.owner.full_name}</span>
+                    </div>
+                  )}
+                  
+                  {selectedClient.owner?.phone && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Phone</span>
+                      <span className="text-sm font-medium">{selectedClient.owner.phone}</span>
+                    </div>
+                  )}
+                  
+                  {selectedClient.owner?.created_at && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Account Created</span>
+                      <span className="text-sm font-medium">{formatDate(selectedClient.owner.created_at)}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500">User ID</span>
+                    <div className="flex items-center gap-2">
+                      <code className="text-xs bg-gray-200 px-2 py-1 rounded">{selectedClient.owner?.id.slice(0, 16)}...</code>
+                      <button onClick={() => copyToClipboard(selectedClient.owner?.id || '')} className="text-gray-400 hover:text-indigo-600">
+                        <Copy size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Business Details */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                  <Building2 className="w-4 h-4" />
+                  Business Details
+                </h3>
                 
                 <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-500">Store ID</span>
                     <div className="flex items-center gap-2">
-                      <code className="text-xs bg-gray-200 px-2 py-1 rounded">{selectedClient.id}</code>
+                      <code className="text-xs bg-gray-200 px-2 py-1 rounded">{selectedClient.id.slice(0, 16)}...</code>
                       <button onClick={() => copyToClipboard(selectedClient.id)} className="text-gray-400 hover:text-indigo-600">
                         <Copy size={14} />
                       </button>
@@ -703,10 +802,76 @@ export const ClientManagement: React.FC = () => {
                   </div>
                   
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500">Owner Email</span>
-                    <span className="text-sm font-medium">{selectedClient.owner?.email || 'N/A'}</span>
+                    <span className="text-sm text-gray-500">Business Name</span>
+                    <span className="text-sm font-medium">{selectedClient.storeConfig?.name || selectedClient.name}</span>
                   </div>
                   
+                  {selectedClient.storeConfig?.currency && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Currency</span>
+                      <span className="text-sm font-medium">{selectedClient.storeConfig.currency}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500">Created</span>
+                    <span className="text-sm font-medium">{formatDate(selectedClient.created_at)}</span>
+                  </div>
+                  
+                  {selectedClient.storeConfig?.notification_settings?.email && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Business Email</span>
+                      <span className="text-sm font-medium">{selectedClient.storeConfig.notification_settings.email}</span>
+                    </div>
+                  )}
+                  
+                  {selectedClient.storeConfig?.notification_settings?.phone && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Business Phone</span>
+                      <span className="text-sm font-medium">{selectedClient.storeConfig.notification_settings.phone}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Address */}
+              {selectedClient.storeConfig?.store_address && (
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                    <Store className="w-4 h-4" />
+                    Business Address
+                  </h3>
+                  
+                  <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                    {selectedClient.storeConfig.store_address.line1 && (
+                      <p className="text-sm text-gray-900">{selectedClient.storeConfig.store_address.line1}</p>
+                    )}
+                    {selectedClient.storeConfig.store_address.line2 && (
+                      <p className="text-sm text-gray-900">{selectedClient.storeConfig.store_address.line2}</p>
+                    )}
+                    {(selectedClient.storeConfig.store_address.city || selectedClient.storeConfig.store_address.state || selectedClient.storeConfig.store_address.postal_code) && (
+                      <p className="text-sm text-gray-900">
+                        {[selectedClient.storeConfig.store_address.city, selectedClient.storeConfig.store_address.state, selectedClient.storeConfig.store_address.postal_code].filter(Boolean).join(', ')}
+                      </p>
+                    )}
+                    {selectedClient.storeConfig.store_address.country && (
+                      <p className="text-sm text-gray-900">{selectedClient.storeConfig.store_address.country}</p>
+                    )}
+                    {!selectedClient.storeConfig.store_address.line1 && (
+                      <p className="text-sm text-gray-400 italic">No address on file</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Subscription & Payment */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  Subscription & Payment
+                </h3>
+                
+                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-500">Plan</span>
                     {getPlanBadge(selectedClient.subscription?.plan_id)}
@@ -717,15 +882,44 @@ export const ClientManagement: React.FC = () => {
                     {getStatusBadge(selectedClient.subscription?.status)}
                   </div>
                   
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500">Created</span>
-                    <span className="text-sm font-medium">{formatDate(selectedClient.created_at)}</span>
-                  </div>
+                  {selectedClient.subscription?.current_period_start && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Period Start</span>
+                      <span className="text-sm font-medium">{formatDate(selectedClient.subscription.current_period_start)}</span>
+                    </div>
+                  )}
                   
                   {selectedClient.subscription?.current_period_end && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500">Trial/Period Ends</span>
+                      <span className="text-sm text-gray-500">Period End</span>
                       <span className="text-sm font-medium">{formatDate(selectedClient.subscription.current_period_end)}</span>
+                    </div>
+                  )}
+                  
+                  {selectedClient.subscription?.cancel_at_period_end !== undefined && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Auto-Renewal</span>
+                      <span className="text-sm font-medium">
+                        {selectedClient.subscription.cancel_at_period_end ? (
+                          <span className="text-red-600">Cancelled</span>
+                        ) : (
+                          <span className="text-green-600">Active</span>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {selectedClient.storeConfig?.shipping_provider && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Shipping Provider</span>
+                      <span className="text-sm font-medium capitalize">{selectedClient.storeConfig.shipping_provider}</span>
+                    </div>
+                  )}
+                  
+                  {selectedClient.storeConfig?.tax_regions && selectedClient.storeConfig.tax_regions.length > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Tax Regions</span>
+                      <span className="text-sm font-medium">{selectedClient.storeConfig.tax_regions.length} configured</span>
                     </div>
                   )}
                 </div>
