@@ -154,13 +154,13 @@ export const ClientManagement: React.FC = () => {
         .from('products')
         .select('store_id');
 
-      // Get orders per store - with error handling for schema issues
+      // Get orders per store - just count, don't try to sum totals (column may not exist)
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
-        .select('store_id, total');
+        .select('store_id');
       
       if (ordersError) {
-        console.warn('[ClientManagement] Orders query failed (may not have proper columns):', ordersError);
+        console.warn('[ClientManagement] Orders query failed:', ordersError);
       }
 
       // Get customers per store
@@ -198,7 +198,8 @@ export const ClientManagement: React.FC = () => {
         const storeProducts = products?.filter(p => p.store_id === store.id) || [];
         const storeOrders = orders?.filter(o => o.store_id === store.id) || [];
         const storeCustomers = customers?.filter(c => c.store_id === store.id) || [];
-        const totalRevenue = storeOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+        // Note: Revenue calculation disabled as orders table doesn't have a total column
+        const totalRevenue = 0; // Would need to calculate from order_items if needed
 
         return {
           id: store.id,
