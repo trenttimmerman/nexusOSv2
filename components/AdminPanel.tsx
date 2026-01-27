@@ -15425,7 +15425,7 @@ Return ONLY the JSON object, no markdown.`;
                 </div>
               </div>
               <div className="flex-1 overflow-hidden flex items-center justify-center p-8 bg-[radial-gradient(#222_1px,transparent_1px)] [background-size:16px_16px]">
-                <div className={`bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shadow-2xl overflow-hidden relative ${
+                <div className={`bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shadow-2xl relative isolate ${
                   previewDevice === 'mobile' ? (
                     previewOrientation === 'landscape' ? 'w-[812px] h-[375px] rounded-[40px] border-[8px] border-neutral-900' : 'w-[375px] h-[812px] rounded-[40px] border-[8px] border-neutral-900'
                   ) : 
@@ -15434,8 +15434,20 @@ Return ONLY the JSON object, no markdown.`;
                   ) :
                   'w-full h-full max-w-[1400px] rounded-lg border border-neutral-800'
                 }`}>
-                  <div className={`w-full h-full overflow-y-auto bg-white scrollbar-${config.scrollbarStyle}`}>
-                    <Storefront
+                  <style>{`
+                    /* Fix for sticky/fixed headers in preview - make them position relative to container */
+                    .preview-container [class*="fixed"],
+                    .preview-container [class*="sticky"] {
+                      position: absolute !important;
+                    }
+                    .preview-container {
+                      position: relative;
+                      overflow: hidden;
+                    }
+                  `}</style>
+                  <div className={`preview-container w-full h-full overflow-y-auto overflow-x-hidden bg-white scrollbar-${config.scrollbarStyle} relative`}>
+                    <div className="relative" style={{ contain: 'layout style paint' }}>
+                      <Storefront
                       config={config}
                       products={products}
                       pages={localPages}
@@ -15543,6 +15555,7 @@ Return ONLY the JSON object, no markdown.`;
                       }}
                       showCartDrawer={false}
                     />
+                    </div>
                   </div>
                   <CartDrawer variant="absolute" />
                 </div>
