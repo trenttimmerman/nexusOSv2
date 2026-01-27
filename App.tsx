@@ -381,7 +381,7 @@ export default function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/account" element={<AccountPage />} />
             
-            {/* Admin Authentication */}
+            {/* Admin Authentication - /start redirects to AI Website Generator */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/onboarding" element={<OnboardingWizard />} />
