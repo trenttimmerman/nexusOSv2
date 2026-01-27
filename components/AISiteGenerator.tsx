@@ -58,12 +58,18 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage 
   const getGenAI = () => {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 10) {
+      console.error('VITE_GEMINI_API_KEY check failed:', {
+        exists: !!apiKey,
+        type: typeof apiKey,
+        length: apiKey?.length,
+        trimmedLength: apiKey?.trim().length
+      });
       throw new Error('VITE_GEMINI_API_KEY not configured');
     }
     return new GoogleGenAI({ apiKey: apiKey.trim() });
   };
 
-  const hasAI = !!(import.meta.env.VITE_GEMINI_API_KEY?.trim());
+  const hasAI = !!import.meta.env.VITE_GEMINI_API_KEY;
 
   const generateSiteStructure = async (genAI: any, userPrompt: string): Promise<any> => {
     const structurePrompt = `You are a website structure architect. Based on this business description, create a complete website structure.
