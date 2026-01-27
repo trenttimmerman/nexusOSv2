@@ -35,7 +35,28 @@ export const SignUp = () => {
         return;
       }
 
-      // Session exists - redirect to admin (AI Website Generator will show for new users)
+      // Session exists - create tenant (store + profile)
+      const emailPrefix = email.split('@')[0];
+      const storeName = `${emailPrefix}'s Store`;
+      const baseSlug = emailPrefix.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const randomSuffix = Math.random().toString(36).substring(2, 8);
+      const storeSlug = `${baseSlug}-${randomSuffix}`;
+
+      const { data: storeId, error: tenantError } = await supabase.rpc('create_tenant', {
+        store_name: storeName,
+        store_slug: storeSlug
+      });
+
+      if (tenantError) {
+        // Only warn if store already exists, otherwise fail hard
+        if (tenantError.message?.includes('already') || tenantError.code === '23505') {
+          console.warn('[SignUp] Store already exists for user - continuing to admin');
+        } else {
+          throw new Error(`Failed to create store: ${tenantError.message}`);
+        }
+      }
+
+      // Redirect to admin (AI Website Generator will show for new users)
       navigate('/admin');
 
     } catch (err: any) {
