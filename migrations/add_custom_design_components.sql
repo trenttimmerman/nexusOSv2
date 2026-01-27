@@ -35,33 +35,33 @@ ALTER TABLE custom_sections ENABLE ROW LEVEL SECURITY;
 -- RLS Policies for custom_headers
 CREATE POLICY "Users can view their own custom headers"
   ON custom_headers FOR SELECT
-  USING (store_id IN (SELECT id FROM stores WHERE user_id = auth.uid()));
+  USING (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
 CREATE POLICY "Users can insert their own custom headers"
   ON custom_headers FOR INSERT
-  WITH CHECK (store_id IN (SELECT id FROM stores WHERE user_id = auth.uid()));
+  WITH CHECK (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
 CREATE POLICY "Users can update their own custom headers"
   ON custom_headers FOR UPDATE
-  USING (store_id IN (SELECT id FROM stores WHERE user_id = auth.uid()));
+  USING (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
 CREATE POLICY "Users can delete their own custom headers"
   ON custom_headers FOR DELETE
-  USING (store_id IN (SELECT id FROM stores WHERE user_id = auth.uid()));
+  USING (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
 -- RLS Policies for custom_sections
 CREATE POLICY "Users can view their own custom sections"
   ON custom_sections FOR SELECT
-  USING (store_id IN (SELECT id FROM stores WHERE user_id = auth.uid()));
+  USING (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
 CREATE POLICY "Users can insert their own custom sections"
   ON custom_sections FOR INSERT
-  WITH CHECK (store_id IN (SELECT id FROM stores WHERE user_id = auth.uid()));
+  WITH CHECK (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
 CREATE POLICY "Users can update their own custom sections"
   ON custom_sections FOR UPDATE
-  USING (store_id IN (SELECT id FROM stores WHERE user_id = auth.uid()));
+  USING (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
 
 CREATE POLICY "Users can delete their own custom sections"
   ON custom_sections FOR DELETE
-  USING (store_id IN (SELECT id FROM stores WHERE user_id = auth.uid()));
+  USING (store_id IN (SELECT store_id FROM profiles WHERE id = auth.uid()));
