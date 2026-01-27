@@ -251,13 +251,20 @@ export const ClientManagement: React.FC = () => {
   const fetchAllUsers = async () => {
     setLoading(true);
     try {
-      const { data: { users }, error } = await supabase.auth.admin.listUsers();
+      console.log('[ClientManagement] Fetching users via API...');
+      const response = await fetch('/api/admin/list-users');
       
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch users');
+      }
       
+      const { users } = await response.json();
+      console.log('[ClientManagement] Successfully fetched users:', users?.length || 0);
       setAllUsers(users || []);
-    } catch (error) {
-      console.error('Error fetching users:', error);
+    } catch (error: any) {
+      console.error('[ClientManagement] Error fetching users:', error);
+      alert(`Failed to fetch users: ${error.message || 'Unknown error'}. Check console for details.`);
     } finally {
       setLoading(false);
     }
@@ -271,9 +278,18 @@ export const ClientManagement: React.FC = () => {
 
     setActionLoading(userId);
     try {
-      const { error } = await supabase.auth.admin.deleteUser(userId);
+      const response = await fetch('/api/admin/delete-user', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId })
+      });
       
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete user');
+      }
       
       // Refresh user list
       await fetchAllUsers();
