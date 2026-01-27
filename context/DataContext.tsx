@@ -173,8 +173,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // 1. If authenticated and no domain override, load tenant data from profile
       if (session) {
-        // Get Profile & Store ID
-        const { data: profile } = await supabase.from('profiles').select('store_id, role').eq('id', session.user.id).single();
+        // Get Profile & Store ID - with error handling
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('store_id, role')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        
+        if (profileError) {
+          console.warn('[DataContext] Profile fetch failed:', profileError);
+          if (!silent) setLoading(false);
+          return;
+        }
         
         if (profile && profile.store_id) {
           setUserRole(profile.role);
@@ -351,7 +361,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .select('*')
             .eq('store_id', currentStoreId)
             .eq('is_active', true)
-            .single();
+            .maybeSingle();
           
           if (configData) {
             setStoreConfig({

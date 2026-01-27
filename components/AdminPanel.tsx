@@ -592,7 +592,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         .select('name')
         .eq('store_id', storeId)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
       if (data) {
         setActiveDesignName(data.name);
       }

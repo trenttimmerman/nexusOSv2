@@ -154,18 +154,31 @@ export const ClientManagement: React.FC = () => {
         .from('products')
         .select('store_id');
 
-      // Get orders per store
-      const { data: orders } = await supabase
+      // Get orders per store - with error handling for schema issues
+      const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select('store_id, total');
+      
+      if (ordersError) {
+        console.warn('[ClientManagement] Orders query failed (may not have proper columns):', ordersError);
+      }
 
       // Get customers per store
       const { data: customers } = await supabase
         .from('customers')
         .select('store_id');
 
-      // Get auth user details for owners
-      const { data: { users } } = await supabase.auth.admin.listUsers();
+      // Get auth user details for owners via API
+      let users: any[] = [];
+      try {
+        const response = await fetch('/api/admin/list-users');
+        if (response.ok) {
+          const data = await response.json();
+          users = data.users || [];
+        }
+      } catch (error) {
+        console.error('[ClientManagement] Failed to fetch users for owner mapping:', error);
+      }
 
       // Build client objects
       const clientsData: Client[] = (stores || []).map(store => {
