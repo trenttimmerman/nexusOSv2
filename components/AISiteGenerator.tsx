@@ -56,9 +56,9 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage 
 
   // Check if AI is available
   const getGenAI = () => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
     if (!apiKey) {
-      throw new Error('VITE_GEMINI_API_KEY not configured. Please add it to your environment variables.');
+      throw new Error('VITE_GOOGLE_AI_API_KEY not configured. Please add it to your environment variables.');
     }
     return new GoogleGenAI({ apiKey: apiKey });
   };
