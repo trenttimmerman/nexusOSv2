@@ -1151,15 +1151,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   
   // Check if user should see welcome modal (for new accounts)
   useEffect(() => {
+    if (!currentStoreId) return;
+    
     // Only show for new users: less than 3 pages (default home + about = 2)
-    // and haven't seen it before in this browser
-    const hasSeenInBrowser = localStorage.getItem('webpilot_seen_welcome') === 'true';
+    // and haven't seen it before for THIS store
+    const storageKey = `webpilot_seen_welcome_${currentStoreId}`;
+    const hasSeenInBrowser = localStorage.getItem(storageKey) === 'true';
     const isNewAccount = localPages.length <= 2 && localPages.length > 0;
     
     console.log('[WelcomeModal] Check:', {
       hasSeenInBrowser,
       pageCount: localPages.length,
       isNewAccount,
+      currentStoreId,
+      storageKey,
       willShow: !hasSeenInBrowser && isNewAccount
     });
     
@@ -1167,7 +1172,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       console.log('[WelcomeModal] Showing welcome modal!');
       setShowWelcomeModal(true);
     }
-  }, [localPages.length]);
+  }, [localPages.length, currentStoreId]);
   
   // AI Section Recommendations State
   const [showSectionRecommendations, setShowSectionRecommendations] = useState(false);
@@ -13434,14 +13439,18 @@ Return ONLY the JSON object, no markdown.`;
     const handleLaunchAI = () => {
       setShowWelcomeModal(false);
       setHasSeenWelcome(true);
-      localStorage.setItem('webpilot_seen_welcome', 'true');
+      if (currentStoreId) {
+        localStorage.setItem(`webpilot_seen_welcome_${currentStoreId}`, 'true');
+      }
       setActiveTab(AdminTab.AI_SITE_GENERATOR);
     };
 
     const handleExploreDashboard = () => {
       setShowWelcomeModal(false);
       setHasSeenWelcome(true);
-      localStorage.setItem('webpilot_seen_welcome', 'true');
+      if (currentStoreId) {
+        localStorage.setItem(`webpilot_seen_welcome_${currentStoreId}`, 'true');
+      }
     };
 
     return (
