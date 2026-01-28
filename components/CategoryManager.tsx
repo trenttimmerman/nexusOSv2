@@ -106,13 +106,12 @@ export const CategoryManager: React.FC = () => {
     setIsGenerating('description');
     try {
       const genAI = getGenAI();
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       const prompt = `Write a compelling 2-3 sentence description for a product category called "${formData.name}". Make it engaging and SEO-friendly. Return ONLY the description text, no quotes or extra formatting.`;
       
-      const result = await genAI.models.generateContent({
-        model: 'gemini-1.5-flash',
-        contents: prompt
-      });
-      const description = result.text.trim();
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const description = response.text().trim();
       setFormData(prev => ({ ...prev, description }));
     } catch (error) {
       console.error('AI generation failed:', error);
