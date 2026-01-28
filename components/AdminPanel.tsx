@@ -4769,7 +4769,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const generateGridCopy = async (field: string) => {
       if (!genAI) return;
       try {
-        const model = (genAI as any).getGenerativeModel({ model: "gemini-1.5-flash-001" });
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-3-flash" });
         const variant = PRODUCT_CARD_OPTIONS.find(o => o.id === currentVariant)?.name || "product grid";
         const industry = config.theme_primary || "modern retail";
         
@@ -5647,7 +5647,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const generateCollectionCopy = async (field: 'heading' | 'subheading') => {
       if (!genAI) return;
       try {
-        const model = (genAI as any).getGenerativeModel({ model: "gemini-1.5-flash-001" });
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-3-flash" });
         const industry = config.theme_primary || "modern retail";
         const variant = COLLECTION_OPTIONS.find(o => o.id === currentVariant)?.name || "product collection";
         
@@ -7660,7 +7660,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         return;
       }
       try {
-        const model = (genAI as any).getGenerativeModel({ model: "gemini-1.5-flash-001" });
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-3-flash" });
         
         const prompts: Record<string, string> = {
           heading: `Generate a catchy, short email signup heading for an ecommerce newsletter (5-8 words max). Return ONLY the text, no quotes or extra formatting.`,
@@ -9628,7 +9628,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const generateHeroCopy = async (field: string) => {
       if (!genAI) return;
       try {
-        const model = (genAI as any).getGenerativeModel({ model: "gemini-1.5-flash-001" });
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-3-flash" });
         const variant = HERO_OPTIONS.find(o => o.id === currentHeroVariant)?.name || "hero section";
         const industry = config.theme_primary || "modern e-commerce";
         
@@ -12461,7 +12461,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       }
                       setIsGeneratingSEO(true);
                       try {
-                        const model = (genAI as any).getGenerativeModel({ model: "gemini-1.5-flash-001" });
+                        const model = (genAI as any).getGenerativeModel({ model: "gemini-3-flash" });
                         const prompt = `You are an expert SEO specialist. Generate comprehensive SEO metadata for an online store.
 
 Store Name: ${config.name || 'Online Store'}
