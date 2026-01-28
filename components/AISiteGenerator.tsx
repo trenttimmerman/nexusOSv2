@@ -223,14 +223,14 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
   if (step === 'input') {
     return (
       <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-6 text-white">
+          <div className="bg-gradient-to-r from-purple-500/20 to-pink-600/20 border-b border-white/10 p-6">
             <div className="flex items-center gap-3">
-              <Wand2 className="w-8 h-8" />
+              <Wand2 className="w-8 h-8 text-purple-400" />
               <div>
-                <h2 className="text-2xl font-bold">AI Website Generator</h2>
-                <p className="text-purple-100 mt-1">Describe your business and we'll build your entire website</p>
+                <h2 className="text-2xl font-bold text-white">AI Website Generator</h2>
+                <p className="text-neutral-300 mt-1">Describe your business and we'll build your entire website</p>
               </div>
             </div>
           </div>
@@ -238,18 +238,18 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
           {/* Content */}
           <div className="p-8">
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-neutral-200 mb-2">
                 Describe Your Business
               </label>
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="e.g., Modern coffee shop with online ordering and delivery. Focus on artisanal coffee and cozy atmosphere. Target audience is young professionals."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 resize-none text-white placeholder-neutral-400"
                 rows={4}
-                style={{ color: '#000000' }}
+                style={{ color: '#ffffff' }}
               />
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-neutral-400 mt-2">
                 Be specific! Include your business type, target audience, and key features.
               </p>
             </div>
@@ -257,7 +257,7 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
             {/* Options */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-200 mb-2">
                   Number of Pages
                 </label>
                 <input
@@ -266,12 +266,12 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
                   onChange={(e) => setNumPages(Math.max(1, Math.min(8, parseInt(e.target.value) || 3)))}
                   min={1}
                   max={8}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                  style={{ color: '#000000' }}
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 text-white"
+                  style={{ color: '#ffffff' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-200 mb-2">
                   Number of Products (if applicable)
                 </label>
                 <input
@@ -280,16 +280,16 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
                   onChange={(e) => setNumProducts(Math.max(0, Math.min(20, parseInt(e.target.value) || 5)))}
                   min={0}
                   max={20}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                  style={{ color: '#000000' }}
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 text-white"
+                  style={{ color: '#ffffff' }}
                 />
               </div>
             </div>
 
             {/* Examples */}
-            <div className="bg-purple-50 rounded-lg p-4 mb-6">
-              <h4 className="text-sm font-semibold text-purple-900 mb-2">Example Prompts:</h4>
-              <ul className="space-y-1 text-sm text-purple-700">
+            <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 mb-6">
+              <h4 className="text-sm font-semibold text-purple-300 mb-2">Example Prompts:</h4>
+              <ul className="space-y-1 text-sm text-purple-200/80">
                 <li>• "Luxury fashion boutique selling designer handbags and accessories"</li>
                 <li>• "Tech startup offering AI-powered marketing automation software"</li>
                 <li>• "Local bakery specializing in artisan bread and custom cakes"</li>
@@ -298,12 +298,12 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
             </div>
 
             {error && (
-              <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="mb-6 bg-red-500/10 border border-red-500/30 rounded-lg p-4">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium text-red-900">Error</p>
-                    <p className="text-sm text-red-700 mt-1">{error}</p>
+                    <p className="font-medium text-red-300">Error</p>
+                    <p className="text-sm text-red-200/80 mt-1">{error}</p>
                   </div>
                 </div>
               </div>
@@ -326,17 +326,17 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
   if (step === 'generating' || step === 'saving') {
     return (
       <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-8">
           <div className="text-center">
-            <Loader className="w-16 h-16 mx-auto mb-4 text-purple-600 animate-spin" />
-            <h3 className="text-xl font-bold mb-2">{currentTask}</h3>
-            <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
+            <Loader className="w-16 h-16 mx-auto mb-4 text-purple-400 animate-spin" />
+            <h3 className="text-xl font-bold mb-2 text-white">{currentTask}</h3>
+            <div className="w-full bg-white/10 rounded-full h-2 mt-4">
               <div
                 className="bg-gradient-to-r from-purple-500 to-pink-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-sm text-gray-600 mt-2">{progress}%</p>
+            <p className="text-sm text-neutral-300 mt-2">{progress}%</p>
           </div>
         </div>
       </div>
@@ -346,15 +346,15 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
   if (step === 'review' && generatedSite) {
     return (
       <div className="max-w-6xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-6 text-white">
+          <div className="bg-gradient-to-r from-purple-500/20 to-pink-600/20 border-b border-white/10 p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <CheckCircle className="w-8 h-8" />
+                <CheckCircle className="w-8 h-8 text-green-400" />
                 <div>
-                  <h2 className="text-2xl font-bold">Review Your Website</h2>
-                  <p className="text-purple-100 mt-1">Your AI-generated website is ready!</p>
+                  <h2 className="text-2xl font-bold text-white">Review Your Website</h2>
+                  <p className="text-neutral-300 mt-1">Your AI-generated website is ready!</p>
                 </div>
               </div>
             </div>
@@ -364,35 +364,35 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
           <div className="p-8">
             {/* Summary */}
             <div className="grid grid-cols-3 gap-4 mb-8">
-              <div className="bg-blue-50 rounded-lg p-4">
-                <Layout className="w-6 h-6 text-blue-600 mb-2" />
-                <div className="text-2xl font-bold text-blue-900">{generatedSite.pages.length}</div>
-                <div className="text-sm text-blue-700">Pages Created</div>
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                <Layout className="w-6 h-6 text-blue-400 mb-2" />
+                <div className="text-2xl font-bold text-white">{generatedSite.pages.length}</div>
+                <div className="text-sm text-blue-300">Pages Created</div>
               </div>
-              <div className="bg-green-50 rounded-lg p-4">
-                <ShoppingBag className="w-6 h-6 text-green-600 mb-2" />
-                <div className="text-2xl font-bold text-green-900">{generatedSite.products.length}</div>
-                <div className="text-sm text-green-700">Products Generated</div>
+              <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                <ShoppingBag className="w-6 h-6 text-green-400 mb-2" />
+                <div className="text-2xl font-bold text-white">{generatedSite.products.length}</div>
+                <div className="text-sm text-green-300">Products Generated</div>
               </div>
-              <div className="bg-purple-50 rounded-lg p-4">
-                <Palette className="w-6 h-6 text-purple-600 mb-2" />
-                <div className="text-2xl font-bold text-purple-900">1</div>
-                <div className="text-sm text-purple-700">Custom Header</div>
+              <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
+                <Palette className="w-6 h-6 text-purple-400 mb-2" />
+                <div className="text-2xl font-bold text-white">1</div>
+                <div className="text-sm text-purple-300">Custom Header</div>
               </div>
             </div>
 
             {/* Pages List */}
             <div className="mb-6">
-              <h3 className="text-lg font-bold mb-3">Pages</h3>
+              <h3 className="text-lg font-bold mb-3 text-white">Pages</h3>
               <div className="space-y-2">
                 {generatedSite.pages.map((page, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-4">
+                  <div key={idx} className="border border-white/10 bg-white/5 rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-semibold">{page.name}</h4>
-                        <p className="text-sm text-gray-600">{page.blocks.length} sections</p>
+                        <h4 className="font-semibold text-white">{page.name}</h4>
+                        <p className="text-sm text-neutral-400">{page.blocks.length} sections</p>
                       </div>
-                      <FileText className="w-5 h-5 text-gray-400" />
+                      <FileText className="w-5 h-5 text-neutral-400" />
                     </div>
                   </div>
                 ))}
@@ -400,7 +400,7 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
             </div>
 
             {/* Actions */}
-            <div className="flex gap-4 pt-6 border-t">
+            <div className="flex gap-4 pt-6 border-t border-white/10">
               <button
                 onClick={() => {
                   setStep('input');
@@ -408,7 +408,7 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
                   setPrompt('');
                   setProgress(0);
                 }}
-                className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+                className="px-6 py-3 border border-white/20 rounded-lg hover:bg-white/5 font-medium text-white"
               >
                 Start Over
               </button>
@@ -429,39 +429,39 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
   if (step === 'complete') {
     return (
       <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-white">
+          <div className="bg-gradient-to-r from-green-500/20 to-emerald-600/20 border-b border-white/10 p-6">
             <div className="flex items-center gap-3">
-              <CheckCircle className="w-8 h-8" />
+              <CheckCircle className="w-8 h-8 text-green-400" />
               <div>
-                <h2 className="text-2xl font-bold">Website Created! 🎉</h2>
-                <p className="text-green-100 mt-1">Your AI-generated website is live</p>
+                <h2 className="text-2xl font-bold text-white">Website Created! 🎉</h2>
+                <p className="text-neutral-300 mt-1">Your AI-generated website is live</p>
               </div>
             </div>
           </div>
 
           {/* Content */}
           <div className="p-8">
-            <div className="bg-gray-50 rounded-lg p-6 mb-6">
-              <h3 className="font-semibold mb-4">What Was Created:</h3>
-              <ul className="space-y-3 text-sm text-gray-700">
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6 mb-6">
+              <h3 className="font-semibold mb-4 text-white">What Was Created:</h3>
+              <ul className="space-y-3 text-sm text-neutral-300">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
                   <span><strong>{generatedSite?.pages.length || 0} pages</strong> with complete content and sections</span>
                 </li>
                 {generatedSite && generatedSite.products.length > 0 && (
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
                     <span><strong>{generatedSite.products.length} products</strong> added to your store</span>
                   </li>
                 )}
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
                   <span><strong>Custom header</strong> saved to Header Studio under "Custom" tab</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
                   <span><strong>Design theme</strong> created with colors and fonts (activate in Design Library)</span>
                 </li>
               </ul>
@@ -477,7 +477,7 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
                   setProgress(0);
                   setCreatedPageIds([]);
                 }}
-                className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+                className="px-6 py-3 border border-white/20 rounded-lg hover:bg-white/5 font-medium text-white"
               >
                 Generate Another
               </button>
@@ -493,7 +493,7 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
               {onComplete && (
                 <button
                   onClick={onComplete}
-                  className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-semibold"
+                  className="px-6 py-3 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 font-semibold"
                 >
                   Done
                 </button>
