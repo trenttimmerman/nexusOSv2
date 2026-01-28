@@ -90,10 +90,11 @@ Return a JSON object with this EXACT structure (valid JSON only, no markdown):
 
 Limit to ${numPages} pages. Return ONLY valid JSON, no other text.`;
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    const result = await model.generateContent(structurePrompt);
-    const response = await result.response;
-    const text = response.text().trim();
+    const result = await genAI.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: structurePrompt
+    });
+    const text = result.text.trim();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('Invalid JSON response from AI');
     return JSON.parse(jsonMatch[0]);
@@ -152,10 +153,11 @@ IMPORTANT:
 - Valid hero variants: impact, minimal, centered, split
 Return ONLY valid JSON array.`;
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    const result = await model.generateContent(contentPrompt);
-    const response = await result.response;
-    const text = response.text().trim();
+    const result = await genAI.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: contentPrompt
+    });
+    const text = result.text.trim();
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (!jsonMatch) return [];
     return JSON.parse(jsonMatch[0]);
@@ -176,10 +178,11 @@ Return a JSON array with this structure:
 
 Prices in cents (e.g., 2999 = $29.99). Return ONLY valid JSON array.`;
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    const result = await model.generateContent(productPrompt);
-    const response = await result.response;
-    const text = response.text().trim();
+    const result = await genAI.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: productPrompt
+    });
+    const text = result.text.trim();
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (!jsonMatch) return [];
     return JSON.parse(jsonMatch[0]);
@@ -202,10 +205,11 @@ Return JSON with this structure:
 
 Return ONLY valid JSON.`;
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    const result = await model.generateContent(headerPrompt);
-    const response = await result.response;
-    const text = response.text().trim();
+    const result = await genAI.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: headerPrompt
+    });
+    const text = result.text.trim();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return null;
     return JSON.parse(jsonMatch[0]);

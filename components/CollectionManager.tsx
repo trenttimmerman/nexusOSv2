@@ -240,12 +240,13 @@ export const CollectionManager: React.FC = () => {
     setIsGenerating('description');
     try {
       const genAI = getGenAI();
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       const prompt = `Write a compelling 2-3 sentence description for a product collection called "${formData.name}". Make it engaging and SEO-friendly. Return ONLY the description text, no quotes or extra formatting.`;
       
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const description = response.text().trim();
+      const result = await genAI.models.generateContent({
+        model: 'gemini-1.5-flash',
+        contents: prompt
+      });
+      const description = result.text.trim();
       setFormData(prev => ({ ...prev, description }));
     } catch (error) {
       console.error('AI generation failed:', error);
@@ -262,7 +263,6 @@ export const CollectionManager: React.FC = () => {
     setIsGenerating('seo');
     try {
       const genAI = getGenAI();
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       const prompt = `Generate SEO metadata for a product collection called "${formData.name}".
       
 Return in this exact format:
@@ -271,9 +271,11 @@ DESCRIPTION: [SEO description under 160 characters]
 
 Return ONLY those two lines, nothing else.`;
       
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text().trim();
+      const result = await genAI.models.generateContent({
+        model: 'gemini-1.5-flash',
+        contents: prompt
+      });
+      const text = result.text.trim();
       
       const titleMatch = text.match(/TITLE:\s*(.+)/);
       const descMatch = text.match(/DESCRIPTION:\s*(.+)/);
