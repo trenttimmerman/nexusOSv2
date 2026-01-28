@@ -109,7 +109,7 @@ export const CategoryManager: React.FC = () => {
       const prompt = `Write a compelling 2-3 sentence description for a product category called "${formData.name}". Make it engaging and SEO-friendly. Return ONLY the description text, no quotes or extra formatting.`;
       
       const result = await genAI.models.generateContent({
-        model: 'gemini-3-flash',
+        model: 'gemini-2.5-flash',
         contents: prompt
       });
       const description = result.text.trim();
@@ -138,7 +138,7 @@ DESCRIPTION: [SEO description under 160 characters]
 Return ONLY those two lines, nothing else.`;
       
       const result = await genAI.models.generateContent({
-        model: 'gemini-3-flash',
+        model: 'gemini-2.5-flash',
         contents: prompt
       });
       const text = result.text.trim();
