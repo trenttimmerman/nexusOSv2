@@ -272,7 +272,7 @@ const AdminWrapper = () => {
     storeConfig, products, pages, mediaAssets, campaigns, categories, collections, loading,
     updateConfig, addProduct, deleteProduct, addPage, updatePage, deletePage, 
     addAsset, deleteAsset, addCampaign, updateCampaign, deleteCampaign,
-    signOut, userRole, switchStore, storeId
+    signOut, userRole, switchStore, storeId, refreshData
   } = useData();
 
   const [activeTab, setActiveTab] = React.useState<AdminTab>(AdminTab.DASHBOARD);
@@ -318,6 +318,7 @@ const AdminWrapper = () => {
       userRole={userRole}
       storeId={storeId}
       onSwitchStore={switchStore}
+      onRefreshData={refreshData}
       categories={categories}
       collections={collections}
     />

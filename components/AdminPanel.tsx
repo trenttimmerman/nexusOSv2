@@ -539,6 +539,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   userRole,
   storeId,
   onSwitchStore,
+  onRefreshData,
   categories = [],
   collections = []
 }) => {
@@ -15879,7 +15880,8 @@ Return ONLY the JSON object, no markdown.`;
             }}
             onComplete={() => {
               onTabChange(AdminTab.DASHBOARD);
-            }} 
+            }}
+            onRefreshData={onRefreshData}
           />
         );
 

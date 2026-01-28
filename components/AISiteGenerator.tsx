@@ -8,6 +8,7 @@ interface AISiteGeneratorProps {
   storeId: string;
   onComplete?: () => void;
   onNavigateToPage?: (pageId: string) => void;
+  onRefreshData?: () => Promise<void>;
 }
 
 type GeneratorStep = 'input' | 'generating' | 'review' | 'saving' | 'complete';
@@ -43,7 +44,7 @@ interface GeneratedSite {
   };
 }
 
-export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage }: AISiteGeneratorProps) {
+export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage, onRefreshData }: AISiteGeneratorProps) {
   const [step, setStep] = useState<GeneratorStep>('input');
   const [prompt, setPrompt] = useState('');
   const [numPages, setNumPages] = useState(3);
@@ -406,7 +407,13 @@ Return ONLY valid JSON.`;
 
       setCreatedPageIds(pageIds);
       setProgress(100);
-      setCurrentTask('Opening your new website...');
+      setCurrentTask('Loading your new website...');
+      
+      // Reload pages from database so new AI pages are in state
+      console.log('[AISiteGenerator] Refreshing data to load new pages...');
+      if (onRefreshData) {
+        await onRefreshData();
+      }
       
       // Auto-navigate to first page in designer after short delay
       setTimeout(() => {
@@ -414,14 +421,14 @@ Return ONLY valid JSON.`;
         if (pageIds.length > 0 && onNavigateToPage) {
           onNavigateToPage(pageIds[0]);
         }
-      }, 1500);
+      }, 500);
 
     } catch (error: any) {
       console.error('[AISiteGenerator] Save error:', error);
       setError(error.message || 'Failed to save website');
       setStep('review');
     }
-  }, [generatedSite, storeId, onNavigateToPage]);
+  }, [generatedSite, storeId, onNavigateToPage, onRefreshData]);
 
   // Render steps
   if (step === 'input') {

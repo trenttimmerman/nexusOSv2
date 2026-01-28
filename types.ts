@@ -673,6 +673,7 @@ export interface AdminPanelProps {
   userRole?: string | null;
   storeId?: string | null;
   onSwitchStore?: (storeId: string) => Promise<void>;
+  onRefreshData?: () => Promise<void>;
   categories?: Category[];
   collections?: Collection[];
 }
