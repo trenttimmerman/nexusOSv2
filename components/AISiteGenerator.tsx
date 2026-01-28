@@ -305,18 +305,29 @@ Return ONLY valid JSON.`;
     try {
       setStep('saving');
       setProgress(10);
-      setCurrentTask('Saving design theme...');
+      setCurrentTask('Creating new design in library...');
 
-      // Save design theme
+      // Save design theme to design library
       const { data: designData, error: designError } = await supabase
         .from('store_designs')
         .insert({
           store_id: storeId,
-          name: `${generatedSite.businessType} AI Generated Design`,
-          is_active: true,
+          name: `AI Generated - ${generatedSite.businessType}`,
+          is_active: true, // Set as active automatically
+          header_style: 'canvas',
+          header_data: generatedSite.customHeader ? {
+            name: generatedSite.customHeader.name,
+            componentJsx: generatedSite.customHeader.componentJsx,
+            editControls: generatedSite.customHeader.editControls
+          } : {},
+          hero_style: 'impact',
+          product_card_style: 'classic',
+          footer_style: 'columns',
+          scrollbar_style: 'native',
           primary_color: generatedSite.designTheme.primaryColor,
           secondary_color: generatedSite.designTheme.secondaryColor,
           background_color: generatedSite.designTheme.backgroundColor,
+          store_type: generatedSite.businessType,
           store_vibe: 'modern',
           typography: {
             headingFont: generatedSite.designTheme.fonts.heading,
@@ -334,6 +345,8 @@ Return ONLY valid JSON.`;
         .single();
 
       if (designError) throw designError;
+      
+      console.log('[AISiteGenerator] Created design:', designData);
 
       setProgress(30);
       setCurrentTask('Creating pages...');
@@ -387,37 +400,24 @@ Return ONLY valid JSON.`;
       }
 
       setProgress(95);
-      setCurrentTask('Saving custom header...');
-
-      // Save custom header
-      if (generatedSite.customHeader) {
-        await supabase
-          .from('custom_headers')
-          .insert({
-            store_id: storeId,
-            name: generatedSite.customHeader.name,
-            component_jsx: generatedSite.customHeader.componentJsx,
-            edit_controls: generatedSite.customHeader.editControls
-          });
-      }
+      setCurrentTask('Finalizing design...');
 
       setCreatedPageIds(pageIds);
       setProgress(100);
       setCurrentTask('Loading your new website...');
       
       // Reload pages from database so new AI pages are in state
-      console.log('[AISiteGenerator] Refreshing data to load new pages...');
+      console.log('[AISiteGenerator] Refreshing data to load new pages and activate new design...');
       if (onRefreshData) {
         await onRefreshData();
       }
       
-      // Auto-navigate to first page in designer after short delay
+      // Auto-navigate to first page in designer after short delay, and reload to show new design
       setTimeout(() => {
         setStep('complete');
-        if (pageIds.length > 0 && onNavigateToPage) {
-          onNavigateToPage(pageIds[0]);
-        }
-      }, 500);
+        // Reload the entire page to activate the new design
+        window.location.reload();
+      }, 1000);
 
     } catch (error: any) {
       console.error('[AISiteGenerator] Save error:', error);
