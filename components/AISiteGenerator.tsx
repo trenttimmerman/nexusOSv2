@@ -91,7 +91,7 @@ Return a JSON object with this EXACT structure (valid JSON only, no markdown):
 Limit to ${numPages} pages. Return ONLY valid JSON, no other text.`;
 
     const result = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-1.5-flash',
       contents: structurePrompt
     });
 
@@ -155,7 +155,7 @@ IMPORTANT:
 Return ONLY valid JSON array.`;
 
     const result = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-1.5-flash',
       contents: contentPrompt
     });
 
@@ -181,7 +181,7 @@ Return a JSON array with this structure:
 Prices in cents (e.g., 2999 = $29.99). Return ONLY valid JSON array.`;
 
     const result = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-1.5-flash',
       contents: productPrompt
     });
 
@@ -209,7 +209,7 @@ Return JSON with this structure:
 Return ONLY valid JSON.`;
 
     const result = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-1.5-flash',
       contents: headerPrompt
     });
 

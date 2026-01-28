@@ -80,7 +80,7 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
                 const prompt = `Write a compelling product description for "${formData.name}" in the ${formData.category || 'general'} category. Make it engaging, SEO-friendly, and 2-3 paragraphs. Format as HTML with <p> tags and <ul><li> for features. Return ONLY the HTML, no markdown code blocks.`;
                 
                 const result = await genAI.models.generateContent({
-                    model: 'gemini-2.0-flash-exp',
+                    model: 'gemini-1.5-flash',
                     contents: prompt
                 });
                 const description = result.text.trim();
@@ -110,7 +110,7 @@ DESCRIPTION: [160 char meta description]
 SLUG: [url-friendly-slug]`;
                 
                 const result = await genAI.models.generateContent({
-                    model: 'gemini-2.0-flash-exp',
+                    model: 'gemini-1.5-flash',
                     contents: prompt
                 });
                 const text = result.text;
