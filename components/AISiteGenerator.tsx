@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Sparkles, Loader, CheckCircle, AlertTriangle, Layout, ShoppingBag, FileText, Palette, Wand2, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
-import { GoogleGenAI } from '@google/genai';
+import { generateCompleteSite, SiteBlueprint } from '../ai/agents';
 import { PageBlock } from '../types';
 
 interface AISiteGeneratorProps {
@@ -28,20 +28,20 @@ interface GeneratedProduct {
 }
 
 interface GeneratedSite {
-  businessType: string;
-  pages: GeneratedPage[];
-  products: GeneratedProduct[];
-  customHeader: any;
-  customSections: any[];
-  designTheme: {
-    primaryColor: string;
-    secondaryColor: string;
-    backgroundColor: string;
-    fonts: {
-      heading: string;
-      body: string;
-    };
-  };
+  blueprint: SiteBlueprint;
+  pages: Array<{
+    name: string;
+    type: 'home' | 'about' | 'shop' | 'contact';
+    slug: string;
+    blocks: PageBlock[];
+  }>;
+  products: Array<{
+    name: string;
+    description: string;
+    price: number;
+    category: string;
+    image: string;
+  }>;
 }
 
 export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage, onRefreshData }: AISiteGeneratorProps) {
@@ -55,166 +55,6 @@ export default function AISiteGenerator({ storeId, onComplete, onNavigateToPage,
   const [generatedSite, setGeneratedSite] = useState<GeneratedSite | null>(null);
   const [createdPageIds, setCreatedPageIds] = useState<string[]>([]);
 
-  // Check if AI is available
-  const getGenAI = () => {
-    const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
-    if (!apiKey) {
-      throw new Error('VITE_GOOGLE_AI_API_KEY not configured. Please add it to your environment variables.');
-    }
-    return new GoogleGenAI({ apiKey: apiKey });
-  };
-
-  const generateSiteStructure = async (genAI: any, userPrompt: string): Promise<any> => {
-    const structurePrompt = `You are a website structure architect. Based on this business description, create a complete website structure.
-
-Business Description: "${userPrompt}"
-
-Return a JSON object with this EXACT structure (valid JSON only, no markdown):
-{
-  "businessType": "restaurant|ecommerce|portfolio|service|blog",
-  "businessName": "Name of the business",
-  "pages": [
-    {"name": "Home", "type": "home", "slug": "home"},
-    {"name": "About", "type": "about", "slug": "about"},
-    {"name": "Contact", "type": "contact", "slug": "contact"}
-  ],
-  "hasProducts": true|false,
-  "designTheme": {
-    "primaryColor": "#hex",
-    "secondaryColor": "#hex",
-    "backgroundColor": "#hex",
-    "headingFont": "Font Name",
-    "bodyFont": "Font Name"
-  }
-}
-
-Limit to ${numPages} pages. Return ONLY valid JSON, no other text.`;
-
-    const result = await genAI.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: structurePrompt
-    });
-    const text = result.text.trim();
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('Invalid JSON response from AI');
-    return JSON.parse(jsonMatch[0]);
-  };
-
-  const generatePageContent = async (genAI: any, pageName: string, pageType: string, siteContext: any): Promise<PageBlock[]> => {
-    const contentPrompt = `Create gorgeous, complete page content for a "${pageName}" page on a ${siteContext.businessType} website: ${siteContext.businessName}.
-
-Design theme colors:
-- Primary: ${siteContext.designTheme.primaryColor}
-- Secondary: ${siteContext.designTheme.secondaryColor}
-- Background: ${siteContext.designTheme.backgroundColor}
-
-Generate 3-5 sections with COMPLETE, compelling copy. Return a JSON array:
-[
-  {
-    "id": "block_1",
-    "type": "system-hero",
-    "name": "Hero Section",
-    "content": "",
-    "variant": "impact",
-    "data": {
-      "heading": "Write a powerful, specific headline (not generic)",
-      "subheading": "Write an engaging 2-sentence description that sells the value",
-      "buttonText": "Clear Call to Action",
-      "image": "https://images.unsplash.com/photo-${siteContext.businessType === 'restaurant' ? '1504674900247-0877df9cc836' : siteContext.businessType === 'coffee' ? '1447933601403-0c61db6f49a7' : siteContext.businessType === 'fashion' || siteContext.businessType === 'ecommerce' ? '1483985988355-763728e1935b' : '1451187580459-43490279c0fa'}?w=1200&h=800&q=80&auto=format&fit=crop",
-      "style": {
-        "backgroundColor": "${siteContext.designTheme.primaryColor}",
-        "textColor": "#FFFFFF",
-        "padding": "xl",
-        "alignment": "center"
-      }
-    }
-  },
-  {
-    "id": "block_2",
-    "type": "system-rich-text",
-    "name": "About Section",
-    "content": "<h2>Section Heading</h2><p>Paragraph with real, compelling copy about the business. Make it specific and engaging, not generic placeholder text.</p>",
-    "data": {
-      "style": {
-        "backgroundColor": "#FFFFFF",
-        "textColor": "#000000",
-        "padding": "l"
-      }
-    }
-  }
-]
-
-IMPORTANT:
-- Write REAL, compelling copy - not "Lorem ipsum" or generic placeholders
-- Include real Unsplash image URLs related to the business type (use photo IDs: restaurant=1504674900247-0877df9cc836, coffee=1447933601403-0c61db6f49a7, fashion/ecommerce=1483985988355-763728e1935b, tech/service=1451187580459-43490279c0fa)
-- Use the provided theme colors in style objects
-- Make headings specific to the business (not "Welcome" or "About Us")
-- Valid block types: system-hero, system-rich-text, system-gallery, system-contact, system-promo, system-layout, system-collection
-- Valid hero variants: impact, minimal, centered, split
-Return ONLY valid JSON array.`;
-
-    const result = await genAI.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: contentPrompt
-    });
-    const text = result.text.trim();
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) return [];
-    return JSON.parse(jsonMatch[0]);
-  };
-
-  const generateProducts = async (genAI: any, businessType: string, count: number): Promise<GeneratedProduct[]> => {
-    const productPrompt = `Generate ${count} realistic products for a ${businessType} business.
-
-Return a JSON array with this structure:
-[
-  {
-    "name": "Product Name",
-    "description": "2-3 sentence product description",
-    "price": 2999,
-    "category": "Category Name"
-  }
-]
-
-Prices in cents (e.g., 2999 = $29.99). Return ONLY valid JSON array.`;
-
-    const result = await genAI.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: productPrompt
-    });
-    const text = result.text.trim();
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) return [];
-    return JSON.parse(jsonMatch[0]);
-  };
-
-  const generateCustomHeader = async (genAI: any, businessType: string, designTheme: any): Promise<any> => {
-    const headerPrompt = `Create a unique header design for a ${businessType} website.
-
-Design theme: ${JSON.stringify(designTheme)}
-
-Return JSON with this structure:
-{
-  "name": "Descriptive Header Name (e.g., 'Modern Coffee Shop Header')",
-  "componentJsx": "<!-- Simple HTML header structure -->",
-  "editControls": [
-    {"field": "logoText", "type": "text", "label": "Logo Text"},
-    {"field": "backgroundColor", "type": "color", "label": "Background Color"}
-  ]
-}
-
-Return ONLY valid JSON.`;
-
-    const result = await genAI.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: headerPrompt
-    });
-    const text = result.text.trim();
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
-    return JSON.parse(jsonMatch[0]);
-  };
-
   const handleGenerate = useCallback(async () => {
     if (!prompt) {
       setError('Please enter a business description');
@@ -225,79 +65,33 @@ Return ONLY valid JSON.`;
       setError(null);
       setStep('generating');
       setProgress(5);
-      setCurrentTask('Analyzing your business...');
+      setCurrentTask('🎨 Analyzing your business with AI Architect...');
 
-      const genAI = getGenAI();
+      // Step 1: Use the new two-agent system
+      setProgress(20);
+      setCurrentTask('🏗️ Creating site blueprint...');
+      
+      const result = await generateCompleteSite(prompt, numPages);
+      
+      setProgress(50);
+      setCurrentTask('✨ Generating page content...');
+      
+      console.log('[AISiteGenerator] Complete site generated:', result);
 
-      // Step 1: Generate site structure
-      setProgress(15);
-      const structure = await generateSiteStructure(genAI, prompt);
-      console.log('[AISiteGenerator] Generated structure:', structure);
+      setProgress(90);
+      setCurrentTask('🎁 Preparing your preview...');
 
-      setCurrentTask('Creating pages...');
-      setProgress(30);
-
-      // Step 2: Generate page content
-      const pages: GeneratedPage[] = [];
-      for (let i = 0; i < structure.pages.length; i++) {
-        const page = structure.pages[i];
-        setCurrentTask(`Creating ${page.name} page...`);
-        setProgress(30 + (i / structure.pages.length) * 30);
-
-        const blocks = await generatePageContent(genAI, page.name, page.type, structure);
-        console.log(`[AISiteGenerator] Generated blocks for ${page.name}:`, blocks);
-        pages.push({
-          name: page.name,
-          type: page.type === 'home' ? 'home' : 'custom',
-          slug: page.slug,
-          blocks: blocks
-        });
-      }
-
-      // Step 3: Generate products if needed
-      let products: GeneratedProduct[] = [];
-      if (structure.hasProducts && numProducts > 0) {
-        setCurrentTask('Generating products...');
-        setProgress(65);
-        products = await generateProducts(genAI, structure.businessType, numProducts);
-      }
-
-      // Step 4: Generate custom header
-      setCurrentTask('Creating custom header design...');
-      setProgress(80);
-      const customHeader = await generateCustomHeader(genAI, structure.businessType, structure.designTheme);
-
-      // Step 5: Store results
-      setProgress(95);
-      setCurrentTask('Preparing preview...');
-
-      setGeneratedSite({
-        businessType: structure.businessType,
-        pages: pages,
-        products: products,
-        customHeader: customHeader,
-        customSections: [],
-        designTheme: {
-          primaryColor: structure.designTheme.primaryColor,
-          secondaryColor: structure.designTheme.secondaryColor,
-          backgroundColor: structure.designTheme.backgroundColor,
-          fonts: {
-            heading: structure.designTheme.headingFont,
-            body: structure.designTheme.bodyFont
-          }
-        }
-      });
-
+      setGeneratedSite(result);
       setProgress(100);
       setStep('review');
 
     } catch (error: any) {
       console.error('[AISiteGenerator] Generation error:', error);
-      setError(error.message || 'Failed to generate website');
+      setError(error.message || 'Failed to generate website. Please try again.');
       setStep('input');
       setProgress(0);
     }
-  }, [prompt, numPages, numProducts]);
+  }, [prompt, numPages]);
 
   const handleSaveToDatabase = useCallback(async () => {
     if (!generatedSite || !storeId) return;
@@ -307,34 +101,32 @@ Return ONLY valid JSON.`;
       setProgress(10);
       setCurrentTask('Creating new design in library...');
 
+      const { blueprint, pages, products } = generatedSite;
+
       // Save design theme to design library
       const { data: designData, error: designError } = await supabase
         .from('store_designs')
         .insert({
           store_id: storeId,
-          name: `AI Generated - ${generatedSite.businessType}`,
+          name: `AI Generated - ${blueprint.brand.name}`,
           is_active: true, // Set as active automatically
           header_style: 'canvas',
-          header_data: generatedSite.customHeader ? {
-            name: generatedSite.customHeader.name,
-            componentJsx: generatedSite.customHeader.componentJsx,
-            editControls: generatedSite.customHeader.editControls
-          } : {},
+          header_data: {},
           hero_style: 'impact',
-          product_card_style: 'classic',
+          product_card_style: 'modern',
           footer_style: 'columns',
           scrollbar_style: 'native',
-          primary_color: generatedSite.designTheme.primaryColor,
-          secondary_color: generatedSite.designTheme.secondaryColor,
-          background_color: generatedSite.designTheme.backgroundColor,
-          store_type: generatedSite.businessType,
-          store_vibe: 'modern',
+          primary_color: blueprint.design.primaryColor,
+          secondary_color: blueprint.design.secondaryColor,
+          background_color: blueprint.design.backgroundColor,
+          store_type: blueprint.brand.industry,
+          store_vibe: blueprint.brand.vibe,
           typography: {
-            headingFont: generatedSite.designTheme.fonts.heading,
-            bodyFont: generatedSite.designTheme.fonts.body,
+            headingFont: blueprint.design.headingFont,
+            bodyFont: blueprint.design.bodyFont,
             headingColor: '#000000',
             bodyColor: '#737373',
-            linkColor: generatedSite.designTheme.primaryColor,
+            linkColor: blueprint.design.primaryColor,
             baseFontSize: '16px',
             headingScale: 'default',
             headingWeight: '700',
@@ -353,11 +145,11 @@ Return ONLY valid JSON.`;
 
       // Save pages
       const pageIds: string[] = [];
-      for (let i = 0; i < generatedSite.pages.length; i++) {
-        const page = generatedSite.pages[i];
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
         const pageId = `ai_page_${Date.now()}_${i}`;
         
-        console.log(`[AISiteGenerator] Saving page ${page.name} with ${page.blocks?.length || 0} blocks:`, page.blocks);
+        console.log(`[AISiteGenerator] Saving page ${page.name} with ${page.blocks?.length || 0} blocks`);
         
         const { error: pageError } = await supabase
           .from('pages')
@@ -376,15 +168,15 @@ Return ONLY valid JSON.`;
           console.log(`[AISiteGenerator] Successfully saved page ${page.name} with ID ${pageId}`);
           pageIds.push(pageId);
         }
-        setProgress(30 + ((i + 1) / generatedSite.pages.length) * 40);
+        setProgress(30 + ((i + 1) / pages.length) * 40);
       }
 
       setProgress(70);
       setCurrentTask('Creating products...');
 
       // Save products
-      for (let i = 0; i < generatedSite.products.length; i++) {
-        const product = generatedSite.products[i];
+      for (let i = 0; i < products.length; i++) {
+        const product = products[i];
         await supabase
           .from('products')
           .insert({
@@ -394,9 +186,10 @@ Return ONLY valid JSON.`;
             description: product.description,
             price: product.price,
             stock: 100,
-            category: product.category
+            category: product.category,
+            images: [product.image]
           });
-        setProgress(70 + ((i + 1) / generatedSite.products.length) * 20);
+        setProgress(70 + ((i + 1) / products.length) * 25);
       }
 
       setProgress(95);
