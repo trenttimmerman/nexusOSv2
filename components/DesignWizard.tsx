@@ -106,12 +106,13 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete,
           typography: {
             headingFont: 'Inter',
             bodyFont: 'Inter',
+            headingColor: '#000000',
+            bodyColor: '#737373',
+            linkColor: selectedPalette.primary,
+            baseFontSize: '16px',
+            headingScale: 'default',
             headingWeight: '700',
-            bodyWeight: '400',
-            headingSize: '2.5rem',
-            bodySize: '1rem',
-            letterSpacing: 'normal',
-            lineHeight: '1.5'
+            bodyWeight: '400'
           }
         })
         .select()
