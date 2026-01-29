@@ -40,6 +40,13 @@ CREATE INDEX IF NOT EXISTS idx_component_library_created_at ON component_library
 -- Enable RLS (Row Level Security) for multi-tenant safety
 ALTER TABLE component_library ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist (allows re-running migration)
+DROP POLICY IF EXISTS "Anyone can view component library" ON component_library;
+DROP POLICY IF EXISTS "Service role can insert components" ON component_library;
+DROP POLICY IF EXISTS "Service role can update components" ON component_library;
+DROP POLICY IF EXISTS "Authenticated users can insert components" ON component_library;
+DROP POLICY IF EXISTS "Authenticated users can update components" ON component_library;
+
 -- Policy: All authenticated users can read components
 CREATE POLICY "Anyone can view component library"
   ON component_library
