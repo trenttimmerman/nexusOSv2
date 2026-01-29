@@ -40,6 +40,7 @@ import LoveableImport from './LoveableImport';
 import AISiteGenerator from './AISiteGenerator';
 import Customers from './Customers';
 import { DesignWizard } from './DesignWizard';
+import { UnifiedWebsiteGenerator } from './UnifiedWebsiteGenerator';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
 import { GoogleGenAI } from '@google/genai';
@@ -15900,6 +15901,7 @@ Return ONLY the JSON object, no markdown.`;
                 onTabChange(AdminTab.DASHBOARD);
               }}
               onClose={() => onTabChange(AdminTab.DASHBOARD)}
+              onRefreshData={onRefreshData}
             />
           </div>
         );

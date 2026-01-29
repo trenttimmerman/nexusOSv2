@@ -5,15 +5,18 @@ import { HERO_OPTIONS, HERO_COMPONENTS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_COMPONENTS } from './FooterLibrary';
 import { HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId } from '../types';
-import { Sparkles, Palette, Layout, Layers, Package, ArrowRight, ArrowLeft, Check, X } from 'lucide-react';
+import { Sparkles, Palette, Layout, Layers, Package, ArrowRight, ArrowLeft, Check, X, Wand2, Loader2, AlertCircle } from 'lucide-react';
+import { generateCompleteSite, SiteBlueprint } from '../ai/agents';
+import { extractComponentsFromGeneration } from '../lib/componentExtractor';
 
 interface DesignWizardProps {
   storeId: string;
   onComplete: () => void;
   onClose: () => void;
+  onRefreshData?: () => Promise<void>;
 }
 
-type WizardStep = 'vibe' | 'colors' | 'header' | 'hero' | 'products' | 'footer' | 'review';
+type WizardStep = 'prompt' | 'generating' | 'vibe' | 'colors' | 'header' | 'hero' | 'products' | 'footer' | 'review';
 
 interface ColorPalette {
   id: string;
@@ -46,8 +49,19 @@ const COLOR_PALETTES: ColorPalette[] = [
   { id: 'minimal-warm', name: 'Warm Beige', primary: '#78716C', secondary: '#A8A29E', background: '#FAFAF9', vibe: 'minimal' },
 ];
 
-export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete, onClose }) => {
-  const [currentStep, setCurrentStep] = useState<WizardStep>('vibe');
+export const DesignWizard: React.FC<DesignWizardProps> = ({ 
+  storeId, 
+  onComplete, 
+  onClose,
+  onRefreshData
+}) => {
+  const [currentStep, setCurrentStep] = useState<WizardStep>('prompt');
+  const [userPrompt, setUserPrompt] = useState<string>('');
+  const [aiBlueprint, setAiBlueprint] = useState<SiteBlueprint | null>(null);
+  const [generatedPages, setGeneratedPages] = useState<any[]>([]);
+  const [generatedProducts, setGeneratedProducts] = useState<any[]>([]);
+  const [aiProgress, setAiProgress] = useState(0);
+  const [error, setError] = useState<string>('');
   const [selectedVibe, setSelectedVibe] = useState<string>('');
   const [selectedPalette, setSelectedPalette] = useState<ColorPalette | null>(null);
   const [selectedHeader, setSelectedHeader] = useState<HeaderStyleId>('canvas');
@@ -57,6 +71,7 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete,
   const [isApplying, setIsApplying] = useState(false);
 
   const steps: { id: WizardStep; label: string; icon: any }[] = [
+    { id: 'prompt', label: 'AI Prompt', icon: Wand2 },
     { id: 'vibe', label: 'Store Vibe', icon: Sparkles },
     { id: 'colors', label: 'Colors', icon: Palette },
     { id: 'header', label: 'Header', icon: Layout },
@@ -93,7 +108,7 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete,
         .from('store_designs')
         .insert({
           store_id: storeId,
-          name: `Wizard Design - ${selectedPalette.name}`,
+          name: aiBlueprint ? `AI Generated - ${aiBlueprint.brand.name}` : `Wizard Design - ${selectedPalette.name}`,
           is_active: true,
           header_style: selectedHeader,
           hero_style: selectedHero,
@@ -104,8 +119,8 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete,
           background_color: selectedPalette.background,
           store_vibe: selectedVibe,
           typography: {
-            headingFont: 'Inter',
-            bodyFont: 'Inter',
+            headingFont: aiBlueprint?.design.headingFont || 'Inter',
+            bodyFont: aiBlueprint?.design.bodyFont || 'Inter',
             headingColor: '#000000',
             bodyColor: '#737373',
             linkColor: selectedPalette.primary,
@@ -129,13 +144,164 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete,
           .neq('id', designData.id);
       }
 
-      onComplete();
+      // If AI generated content, save pages and products
+      if (aiBlueprint && generatedPages.length > 0) {
+        console.log('[DesignWizard] Saving AI-generated content...');
+        
+        // Insert pages
+        for (let i = 0; i < generatedPages.length; i++) {
+          const page = generatedPages[i];
+          await supabase.from('pages').insert({
+            id: `ai_page_${Date.now()}_${i}`,
+            store_id: storeId,
+            title: page.name,
+            slug: `${page.slug}-${Date.now()}`,
+            type: page.type,
+            blocks: page.blocks
+          });
+        }
+
+        // Insert products
+        for (let i = 0; i < generatedProducts.length; i++) {
+          const product = generatedProducts[i];
+          await supabase.from('products').insert({
+            id: `ai_product_${Date.now()}_${i}`,
+            store_id: storeId,
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            stock: 100,
+            category: product.category,
+            images: [product.image]
+          });
+        }
+
+        // Refresh data if handler provided
+        if (onRefreshData) {
+          await onRefreshData();
+        }
+      }
+
+      // Reload to activate design
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+
     } catch (error) {
       console.error('Error applying design:', error);
       alert('Failed to apply design. Please try again.');
     } finally {
       setIsApplying(false);
     }
+  };
+
+  const handleGenerateAI = async () => {
+    if (!userPrompt.trim()) {
+      setError('Please describe your business');
+      return;
+    }
+
+    setCurrentStep('generating');
+    setError('');
+    setAiProgress(0);
+
+    try {
+      console.log('[DesignWizard] Starting AI generation...');
+      setAiProgress(10);
+
+      const result = await generateCompleteSite(userPrompt, 3);
+      
+      console.log('[DesignWizard] AI generation complete:', result.blueprint.brand.name);
+      setAiProgress(100);
+      
+      setAiBlueprint(result.blueprint);
+      setGeneratedPages(result.pages);
+      setGeneratedProducts(result.products);
+
+      // Extract unique components to library (runs in background)
+      console.log('[DesignWizard] Extracting components to library...');
+      extractComponentsFromGeneration(result.pages, storeId, {
+        similarityThreshold: 0.85,
+        skipExisting: true
+      }).then(extractResult => {
+        console.log('[DesignWizard] Component extraction complete:', {
+          extracted: extractResult.extracted,
+          skipped: extractResult.skipped,
+          errors: extractResult.errors
+        });
+      }).catch(err => {
+        console.error('[DesignWizard] Component extraction error:', err);
+      });
+
+      // Auto-select design based on AI suggestions
+      const vibe = result.blueprint.brand.vibe.toLowerCase();
+      setSelectedVibe(vibe);
+      
+      // Find closest color palette
+      const closestPalette = findClosestPalette(result.blueprint);
+      setSelectedPalette(closestPalette);
+      
+      // Set component styles from AI
+      setSelectedHeader(result.blueprint.styles.headerStyle as HeaderStyleId);
+      setSelectedHero(result.blueprint.styles.heroStyle as HeroStyleId);
+      setSelectedProductCard(result.blueprint.styles.productCardStyle as ProductCardStyleId);
+      setSelectedFooter(result.blueprint.styles.footerStyle as FooterStyleId);
+
+      // Brief delay to show completion
+      setTimeout(() => {
+        setCurrentStep('vibe');
+      }, 800);
+
+    } catch (err: any) {
+      console.error('[DesignWizard] AI generation error:', err);
+      setError(err.message || 'Failed to generate website. Please try again.');
+      setCurrentStep('prompt');
+      setAiProgress(0);
+    }
+  };
+
+  // Helper function to find closest color palette
+  const findClosestPalette = (blueprint: SiteBlueprint): ColorPalette => {
+    const vibe = blueprint.brand.vibe.toLowerCase();
+    const vibeMatches = COLOR_PALETTES.filter(p => p.vibe === vibe);
+    
+    if (vibeMatches.length > 0) {
+      let closest = vibeMatches[0];
+      let minDiff = colorDistance(blueprint.design.primaryColor, vibeMatches[0].primary);
+      
+      for (const palette of vibeMatches) {
+        const diff = colorDistance(blueprint.design.primaryColor, palette.primary);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closest = palette;
+        }
+      }
+      return closest;
+    }
+    
+    // Fallback to first matching vibe
+    return COLOR_PALETTES.find(p => p.vibe === vibe) || COLOR_PALETTES[0];
+  };
+
+  const colorDistance = (hex1: string, hex2: string): number => {
+    const rgb1 = hexToRgb(hex1);
+    const rgb2 = hexToRgb(hex2);
+    if (!rgb1 || !rgb2) return Infinity;
+    
+    return Math.sqrt(
+      Math.pow(rgb1.r - rgb2.r, 2) +
+      Math.pow(rgb1.g - rgb2.g, 2) +
+      Math.pow(rgb1.b - rgb2.b, 2)
+    );
+  };
+
+  const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
   };
 
   const filteredPalettes = selectedVibe 
@@ -151,9 +317,9 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete,
             <div>
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Sparkles className="w-6 h-6 text-purple-400" />
-                Design Wizard
+                AI Website Builder
               </h2>
-              <p className="text-neutral-300 mt-1">Create your perfect store design in 7 easy steps</p>
+              <p className="text-neutral-300 mt-1">Create your complete website with AI-powered content and custom design</p>
             </div>
             <button
               onClick={onClose}
@@ -165,10 +331,12 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete,
 
           {/* Progress Bar */}
           <div className="mt-6 flex items-center gap-2">
-            {steps.map((step, idx) => {
+            {steps.filter(s => s.id !== 'generating').map((step, idx) => {
               const Icon = step.icon;
-              const isActive = idx === stepIndex;
-              const isCompleted = idx < stepIndex;
+              const isActive = step.id === currentStep;
+              const stepIdx = steps.filter(s => s.id !== 'generating').indexOf(step);
+              const currentIdx = steps.filter(s => s.id !== 'generating').findIndex(s => s.id === currentStep);
+              const isCompleted = stepIdx < currentIdx;
               
               return (
                 <React.Fragment key={step.id}>
@@ -190,7 +358,7 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete,
                       {step.label}
                     </span>
                   </div>
-                  {idx < steps.length - 1 && (
+                  {stepIdx < steps.filter(s => s.id !== 'generating').length - 1 && (
                     <div className={`h-px flex-1 ${
                       isCompleted ? 'bg-green-500/30' : 'bg-white/10'
                     }`} />
@@ -203,12 +371,90 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete,
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
+          {/* Step 0: AI Prompt */}
+          {currentStep === 'prompt' && (
+            <div className="space-y-6 max-w-2xl mx-auto">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-600/20 flex items-center justify-center border border-white/10">
+                  <Wand2 className="w-8 h-8 text-purple-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">Describe Your Business</h3>
+                <p className="text-neutral-400">Our AI will generate content and suggest a perfect design for you to customize</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                  What kind of business are you creating?
+                </label>
+                <textarea
+                  value={userPrompt}
+                  onChange={(e) => setUserPrompt(e.target.value)}
+                  placeholder="Example: A modern coffee shop in Portland that roasts organic beans and offers pour-over brewing classes. We focus on sustainability and creating a cozy community space..."
+                  className="w-full h-40 px-4 py-3 bg-black/40 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none"
+                  style={{ color: '#FFFFFF' }}
+                />
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                  <AlertCircle className="w-5 h-5 text-red-400" />
+                  <p className="text-sm text-red-400">{error}</p>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                <p className="text-xs text-neutral-500">
+                  <Sparkles className="w-3 h-3 inline mr-1" />
+                  AI will create 3 pages and 4 products (~30 seconds)
+                </p>
+                <button
+                  onClick={handleGenerateAI}
+                  disabled={!userPrompt.trim()}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:from-purple-500 hover:to-pink-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <Wand2 className="w-4 h-4" />
+                  Generate with AI
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Generating Step */}
+          {currentStep === 'generating' && (
+            <div className="space-y-6 max-w-md mx-auto text-center py-12">
+              <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-purple-500/20 to-pink-600/20 flex items-center justify-center border border-white/10">
+                <Loader2 className="w-10 h-10 text-purple-400 animate-spin" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white mb-2">Creating Your Website</h3>
+                <p className="text-sm text-neutral-400">AI is generating pages, products, and design suggestions...</p>
+              </div>
+              <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-500"
+                  style={{ width: `${aiProgress}%` }}
+                />
+              </div>
+              <p className="text-xs text-neutral-500">{aiProgress}% complete</p>
+            </div>
+          )}
+
           {/* Step 1: Vibe Selection */}
           {currentStep === 'vibe' && (
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">Choose Your Store Vibe</h3>
-                <p className="text-neutral-400">Select the overall personality and aesthetic for your store</p>
+                <p className="text-neutral-400">
+                  {aiBlueprint ? (
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-400" />
+                      AI suggested: <span className="text-purple-400 font-medium capitalize">{selectedVibe}</span> 
+                      <span className="text-neutral-500 ml-2">(you can change it)</span>
+                    </span>
+                  ) : (
+                    'Select the overall personality and aesthetic for your store'
+                  )}
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -567,7 +813,7 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete,
         <div className="bg-white/5 border-t border-white/10 p-6 flex items-center justify-between">
           <button
             onClick={handleBack}
-            disabled={stepIndex === 0}
+            disabled={currentStep === 'prompt' || currentStep === 'generating'}
             className="px-4 py-2 border border-white/20 hover:bg-white/5 rounded-lg text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -575,7 +821,13 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete,
           </button>
 
           <div className="text-neutral-400 text-sm">
-            Step {stepIndex + 1} of {steps.length}
+            {currentStep === 'generating' ? (
+              'Generating...'
+            ) : currentStep === 'prompt' ? (
+              'Describe your business'
+            ) : (
+              `Step ${steps.filter(s => s.id !== 'generating').findIndex(s => s.id === currentStep) + 1} of ${steps.filter(s => s.id !== 'generating').length}`
+            )}
           </div>
 
           {currentStep === 'review' ? (
@@ -587,15 +839,17 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete,
               {isApplying ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Applying...
+                  {aiBlueprint ? 'Creating Website...' : 'Applying...'}
                 </>
               ) : (
                 <>
-                  Apply Design
+                  {aiBlueprint ? 'Create Complete Website' : 'Apply Design'}
                   <Check className="w-4 h-4" />
                 </>
               )}
             </button>
+          ) : currentStep === 'prompt' || currentStep === 'generating' ? (
+            <div></div>
           ) : (
             <button
               onClick={handleNext}

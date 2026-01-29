@@ -26,6 +26,32 @@ You must generate a comprehensive blueprint with the following structure:
 - `headingFont`: Specific font name for headings (e.g., "Inter", "Playfair Display", "Space Grotesk")
 - `bodyFont`: Specific font name for body text (e.g., "Inter", "Lora", "Roboto")
 
+### 2.5. Component Style Selections
+Based on the vibe, select appropriate component styles:
+- `headerStyle`: Header component ("canvas", "nebula", "luxe")
+  - minimal/modern → "canvas"
+  - luxury/elegant → "luxe"
+  - bold/tech → "nebula"
+- `heroStyle`: Hero section style ("impact", "split", "kinetik", "minimal", "bento", "grid", "typographic", "video-mask")
+  - minimal → "minimal"
+  - modern/tech → "impact" or "kinetik"
+  - luxury → "split"
+  - bold → "bento" or "grid"
+  - organic → "video-mask"
+  - playful → "typographic"
+- `productCardStyle`: Product card style ("classic", "industrial", "focus", "hype", "magazine", "glass", "minimal")
+  - minimal → "minimal"
+  - modern → "classic" or "focus"
+  - luxury → "glass"
+  - industrial → "industrial"
+  - bold → "hype"
+  - organic/elegant → "magazine"
+- `footerStyle`: Footer style ("columns", "minimal", "brand", "newsletter", "social")
+  - minimal → "minimal"
+  - modern → "columns"
+  - luxury/bold → "brand"
+  - Any → "newsletter" or "social"
+
 ### 3. Hero Section Content
 - `heroHeadline`: Powerful, specific headline (NOT generic - make it compelling and unique to the business)
 - `heroSubheadline`: 2-3 sentence value proposition that sells the vision
@@ -102,6 +128,12 @@ Each image prompt should be 15-30 words and include:
     "fontStyle": "serif",
     "headingFont": "Playfair Display",
     "bodyFont": "Lora"
+  },
+  "styles": {
+    "headerStyle": "canvas",
+    "heroStyle": "video-mask",
+    "productCardStyle": "magazine",
+    "footerStyle": "columns"
   },
   "content": {
     "heroHeadline": "Light That Feels Like Home",

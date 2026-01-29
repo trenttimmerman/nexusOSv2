@@ -88,6 +88,12 @@ export interface SiteBlueprint {
     headingFont: string;
     bodyFont: string;
   };
+  styles: {
+    headerStyle: string;
+    heroStyle: string;
+    productCardStyle: string;
+    footerStyle: string;
+  };
   content: {
     heroHeadline: string;
     heroSubheadline: string;
