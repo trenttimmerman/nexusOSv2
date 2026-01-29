@@ -245,7 +245,7 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({ storeId, onComplete,
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">Choose Your Color Palette</h3>
                 <p className="text-neutral-400">
-                  {selectedVibe ? `${selectedVibe.charAt(0).toUpperCase() + selectedVibe.slice(1)} palettes` : 'All available color schemes'}
+                  {selectedVibe && selectedVibe.length > 0 ? `${selectedVibe.charAt(0).toUpperCase() + selectedVibe.slice(1)} palettes` : 'All available color schemes'}
                 </p>
               </div>
 
