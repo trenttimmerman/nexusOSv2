@@ -1936,7 +1936,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.SHOPIFY_DATA_IMPORT, icon: Database, label: 'Shopify Data' },
           { id: AdminTab.WEBSITE_MIGRATION, icon: Globe, label: 'Website Import' },
           { id: AdminTab.LOVEABLE_IMPORT, icon: Heart, label: 'Loveable Import' },
-          { id: AdminTab.AI_SITE_GENERATOR, icon: Wand2, label: 'AI Website Generator' },
+          { id: AdminTab.AI_SITE_GENERATOR, icon: Wand2, label: 'Design Wizard' },
           { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' }
         ]
       }
@@ -15892,17 +15892,16 @@ Return ONLY the JSON object, no markdown.`;
 
       case AdminTab.AI_SITE_GENERATOR:
         return (
-          <AISiteGenerator 
-            storeId={storeId || ''} 
-            onNavigateToPage={(pageId) => {
-              onSetActivePage(pageId);
-              onTabChange(AdminTab.DESIGN);
-            }}
-            onComplete={() => {
-              onTabChange(AdminTab.DASHBOARD);
-            }}
-            onRefreshData={onRefreshData}
-          />
+          <div className="p-8">
+            <DesignWizard
+              storeId={storeId || ''}
+              onComplete={() => {
+                onRefreshData();
+                onTabChange(AdminTab.DASHBOARD);
+              }}
+              onClose={() => onTabChange(AdminTab.DASHBOARD)}
+            />
+          </div>
         );
 
       case AdminTab.SETTINGS:
