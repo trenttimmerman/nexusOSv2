@@ -47,18 +47,18 @@ CREATE POLICY "Anyone can view component library"
   TO authenticated
   USING (true);
 
--- Policy: Only service role can insert (AI generation process)
-CREATE POLICY "Service role can insert components"
+-- Policy: Authenticated users can insert components (AI generation from admin panel)
+CREATE POLICY "Authenticated users can insert components"
   ON component_library
   FOR INSERT
-  TO service_role
+  TO authenticated
   WITH CHECK (true);
 
--- Policy: Service role can update (for usage counts, ratings)
-CREATE POLICY "Service role can update components"
+-- Policy: Authenticated users can update (for usage counts, ratings)
+CREATE POLICY "Authenticated users can update components"
   ON component_library
   FOR UPDATE
-  TO service_role
+  TO authenticated
   USING (true);
 
 -- Function to update usage count when component is used
