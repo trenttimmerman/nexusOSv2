@@ -346,7 +346,7 @@ export const HeaderVenture: React.FC<HeaderProps> = ({ storeName, logoUrl, logoH
           <div className="px-4 flex items-center gap-2">
              {!logoUrl && (
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-                    {storeName.charAt(0)}
+                    {storeName?.charAt(0) || 'S'}
                 </div>
              )}
              <Logo storeName={storeName} logoUrl={logoUrl} logoHeight={logoHeight} className="font-bold text-lg tracking-tight hidden sm:block" />

@@ -1947,9 +1947,9 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({
                 }}
               >
                 {logoUrl ? (
-                  <img src={logoUrl} alt={storeName} className="w-16 h-16 object-contain" />
+                  <img src={logoUrl} alt={storeName || 'Store'} className="w-16 h-16 object-contain" />
                 ) : (
-                  <span className="text-2xl font-bold text-white">{storeName.charAt(0)}</span>
+                  <span className="text-2xl font-bold text-white">{storeName?.charAt(0) || 'S'}</span>
                 )}
               </div>
             </button>

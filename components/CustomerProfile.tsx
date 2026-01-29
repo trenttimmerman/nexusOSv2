@@ -206,7 +206,7 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   return (
     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${style}`}>
       <Icon className="w-3 h-3" />
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {status && status.length > 0 ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'}
     </span>
   );
 };

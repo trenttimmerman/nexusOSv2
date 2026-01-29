@@ -706,7 +706,7 @@ export const ClientManagement: React.FC = () => {
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
-                          {client.name.charAt(0).toUpperCase()}
+                          {client.name?.charAt(0)?.toUpperCase() || 'C'}
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">{client.name}</p>
@@ -900,7 +900,7 @@ export const ClientManagement: React.FC = () => {
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-xl font-bold">
-                  {selectedClient.name.charAt(0).toUpperCase()}
+                  {selectedClient.name?.charAt(0)?.toUpperCase() || 'C'}
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">{selectedClient.name}</h2>
