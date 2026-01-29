@@ -23,6 +23,53 @@ import architectPrompt from './prompts/architect.md?raw';
 import pageBuilderPrompt from './prompts/page-builder.md?raw';
 
 /**
+ * Robust JSON extraction from AI responses
+ * Handles markdown wrappers, extra text, and malformed responses
+ */
+function extractJSON(text: string): string {
+  // Remove markdown code blocks
+  let cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+  
+  // Find the first { and last } that form valid JSON
+  const firstBrace = cleaned.indexOf('{');
+  const firstBracket = cleaned.indexOf('[');
+  
+  if (firstBrace === -1 && firstBracket === -1) {
+    throw new Error('No JSON object or array found in response');
+  }
+  
+  // Determine if we're looking for object {} or array []
+  const isObject = firstBracket === -1 || (firstBrace !== -1 && firstBrace < firstBracket);
+  const startChar = isObject ? '{' : '[';
+  const endChar = isObject ? '}' : ']';
+  const startIndex = isObject ? firstBrace : firstBracket;
+  
+  // Find matching closing brace/bracket by counting depth
+  let depth = 0;
+  let endIndex = -1;
+  
+  for (let i = startIndex; i < cleaned.length; i++) {
+    const char = cleaned[i];
+    
+    if (char === startChar) {
+      depth++;
+    } else if (char === endChar) {
+      depth--;
+      if (depth === 0) {
+        endIndex = i;
+        break;
+      }
+    }
+  }
+  
+  if (endIndex === -1) {
+    throw new Error('No matching closing brace/bracket found');
+  }
+  
+  return cleaned.substring(startIndex, endIndex + 1);
+}
+
+/**
  * Site Blueprint Schema
  * This is the structured data output from the Architect agent
  */
@@ -91,16 +138,18 @@ export async function generateSiteBlueprint(userPrompt: string): Promise<SiteBlu
   const text = result.text.trim();
   console.log('[Architect Agent] Raw response:', text.substring(0, 200) + '...');
   
-  // Extract JSON from response (in case Gemini adds markdown)
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('Failed to extract JSON from architect response');
+  // Extract JSON from response using robust extraction
+  try {
+    const jsonText = extractJSON(text);
+    const blueprint = JSON.parse(jsonText);
+    console.log('[Architect Agent] Blueprint created:', blueprint.brand.name);
+    return blueprint;
+  } catch (error) {
+    console.error('[Architect Agent] JSON extraction failed');
+    console.error('[Architect Agent] Full response:', text);
+    console.error('[Architect Agent] Error:', error);
+    throw new Error('Failed to parse architect response: ' + (error as Error).message);
   }
-  
-  const blueprint = JSON.parse(jsonMatch[0]);
-  console.log('[Architect Agent] Blueprint created:', blueprint.brand.name);
-  
-  return blueprint;
 }
 
 /**
@@ -127,17 +176,18 @@ export async function generatePageContent(
   const text = result.text.trim();
   console.log(`[Page Builder Agent] Raw response length: ${text.length} chars`);
   
-  // Extract JSON array
-  const jsonMatch = text.match(/\[[\s\S]*\]/);
-  if (!jsonMatch) {
-    console.error('[Page Builder Agent] Failed to extract JSON array. Response:', text);
-    throw new Error('Failed to extract JSON array from page builder response');
+  // Extract JSON array using robust extraction
+  try {
+    const jsonText = extractJSON(text);
+    const blocks = JSON.parse(jsonText);
+    console.log(`[Page Builder Agent] Created ${blocks.length} blocks for ${pageName}`);
+    return blocks;
+  } catch (error) {
+    console.error('[Page Builder Agent] JSON extraction failed');
+    console.error('[Page Builder Agent] Full response:', text);
+    console.error('[Page Builder Agent] Error:', error);
+    throw new Error('Failed to parse page builder response: ' + (error as Error).message);
   }
-  
-  const blocks = JSON.parse(jsonMatch[0]);
-  console.log(`[Page Builder Agent] Created ${blocks.length} blocks for ${pageName}`);
-  
-  return blocks;
 }
 
 /**
