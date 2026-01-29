@@ -39,6 +39,7 @@ import WebsiteMigration from './WebsiteMigration';
 import LoveableImport from './LoveableImport';
 import AISiteGenerator from './AISiteGenerator';
 import Customers from './Customers';
+import { DesignWizard } from './DesignWizard';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
 import { GoogleGenAI } from '@google/genai';
@@ -614,6 +615,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [editingTaxRegionId, setEditingTaxRegionId] = useState<string | null>(null);
   const [hasUnsavedSettings, setHasUnsavedSettings] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
+
+  // Design Wizard State
+  const [isDesignWizardOpen, setIsDesignWizardOpen] = useState(false);
 
   // Wrapper for config changes to track unsaved state
   const handleConfigChange = (newConfig: StoreConfig) => {
@@ -14849,17 +14853,33 @@ Return ONLY the JSON object, no markdown.`;
         return <CollectionManager />;
 
       case AdminTab.DESIGN_LIBRARY:
-        return <DesignLibrary 
-          storeId={storeId || ''} 
-          onDesignActivated={(design) => {
-            // Update active design name when design is activated
-            setActiveDesignName(design.name);
-          }}
-          onNavigateToDesignStudio={() => {
-            // Switch to Design Studio tab to customize the new design
-            onTabChange(AdminTab.DESIGN);
-          }}
-        />;
+        return (
+          <>
+            <DesignLibrary 
+              storeId={storeId || ''} 
+              onDesignActivated={(design) => {
+                // Update active design name when design is activated
+                setActiveDesignName(design.name);
+              }}
+              onNavigateToDesignStudio={() => {
+                // Switch to Design Studio tab to customize the new design
+                onTabChange(AdminTab.DESIGN);
+              }}
+              onOpenWizard={() => setIsDesignWizardOpen(true)}
+            />
+            {isDesignWizardOpen && (
+              <DesignWizard
+                storeId={storeId || ''}
+                onComplete={() => {
+                  setIsDesignWizardOpen(false);
+                  // Refresh the design library
+                  onRefreshData();
+                }}
+                onClose={() => setIsDesignWizardOpen(false)}
+              />
+            )}
+          </>
+        );
 
       case AdminTab.COLLECTION_ANALYTICS:
         return <CollectionAnalytics storeId={storeId || ''} />;

@@ -7,9 +7,10 @@ interface DesignLibraryProps {
   storeId: string;
   onDesignActivated?: (design: StoreDesign) => void;
   onNavigateToDesignStudio?: () => void;
+  onOpenWizard?: () => void;
 }
 
-export const DesignLibrary: React.FC<DesignLibraryProps> = ({ storeId, onDesignActivated, onNavigateToDesignStudio }) => {
+export const DesignLibrary: React.FC<DesignLibraryProps> = ({ storeId, onDesignActivated, onNavigateToDesignStudio, onOpenWizard }) => {
   const [designs, setDesigns] = useState<StoreDesign[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -183,13 +184,24 @@ export const DesignLibrary: React.FC<DesignLibraryProps> = ({ storeId, onDesignA
             Create and manage multiple website designs. Switch between themes instantly.
           </p>
         </div>
-        <button
-          onClick={createNewDesign}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-        >
-          <Plus size={16} />
-          New Design
-        </button>
+        <div className="flex items-center gap-2">
+          {onOpenWizard && (
+            <button
+              onClick={onOpenWizard}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:from-purple-600 hover:to-pink-700 transition-colors"
+            >
+              <Palette size={16} />
+              Design Wizard
+            </button>
+          )}
+          <button
+            onClick={createNewDesign}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            <Plus size={16} />
+            New Design
+          </button>
+        </div>
       </div>
 
       {/* Designs Grid */}
