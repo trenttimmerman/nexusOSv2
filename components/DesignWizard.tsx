@@ -179,7 +179,23 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
       if (aiBlueprint && generatedPages.length > 0) {
         console.log('[DesignWizard] Saving AI-generated content...');
         
-        // Insert pages
+        // Delete ALL existing AI-generated pages for this store to avoid duplicates
+        const { data: existingPages } = await supabase
+          .from('pages')
+          .select('id')
+          .eq('store_id', storeId)
+          .like('id', 'ai_page_%');
+        
+        if (existingPages && existingPages.length > 0) {
+          console.log(`[DesignWizard] Deleting ${existingPages.length} old AI pages`);
+          await supabase
+            .from('pages')
+            .delete()
+            .eq('store_id', storeId)
+            .like('id', 'ai_page_%');
+        }
+        
+        // Insert NEW pages
         for (let i = 0; i < generatedPages.length; i++) {
           const page = generatedPages[i];
           await supabase.from('pages').insert({
@@ -192,7 +208,23 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
           });
         }
 
-        // Insert products
+        // Delete existing AI products
+        const { data: existingProducts } = await supabase
+          .from('products')
+          .select('id')
+          .eq('store_id', storeId)
+          .like('id', 'ai_product_%');
+        
+        if (existingProducts && existingProducts.length > 0) {
+          console.log(`[DesignWizard] Deleting ${existingProducts.length} old AI products`);
+          await supabase
+            .from('products')
+            .delete()
+            .eq('store_id', storeId)
+            .like('id', 'ai_product_%');
+        }
+
+        // Insert NEW products
         for (let i = 0; i < generatedProducts.length; i++) {
           const product = generatedProducts[i];
           await supabase.from('products').insert({
