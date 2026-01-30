@@ -62,13 +62,13 @@ async function componentExists(
 ): Promise<boolean> {
   const { type, variant } = getComponentIdentifier(block);
   
-  // Check exact type+variant match first
-  const { data: exactMatch } = await supabase
+  // Check exact type+variant match first (maybeSingle handles 0 results gracefully)
+  const { data: exactMatch, error: exactError } = await supabase
     .from('component_library')
     .select('id')
     .eq('type', type)
     .eq('variant_id', variant)
-    .single();
+    .maybeSingle();
   
   if (exactMatch) {
     return true; // Exact match exists
