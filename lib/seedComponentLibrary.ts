@@ -7,6 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 import { extractFieldsFromDefaults, extractFieldsFromFieldsArray, EditableField } from './fieldInference';
 
 // Create Supabase client for Node.js environment
+// Uses anon key - requires RLS policy to allow anon inserts for seeding
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
 
@@ -14,7 +15,12 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
 // Category mapping
 const CATEGORY_MAP: Record<string, string> = {
