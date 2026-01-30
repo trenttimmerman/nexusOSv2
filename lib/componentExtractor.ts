@@ -168,6 +168,12 @@ export async function extractComponentsFromGeneration(
   let skipped = 0;
   const errors: string[] = [];
   
+  // Safety check: ensure pages is valid array
+  if (!pages || !Array.isArray(pages)) {
+    console.warn('[componentExtractor] Invalid pages array:', pages);
+    return { extracted: 0, skipped: 0, errors: ['Invalid pages array'] };
+  }
+  
   // Collect all blocks from all pages
   const allBlocks: any[] = [];
   pages.forEach(page => {
