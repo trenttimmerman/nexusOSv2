@@ -256,34 +256,39 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
 
       // Clean up old AI-generated content IMMEDIATELY to prevent mixed navigation
       console.log('[DesignWizard] Cleaning up old AI-generated content...');
-      const { data: existingPages } = await supabase
-        .from('pages')
-        .select('id')
-        .eq('store_id', storeId)
-        .like('id', 'ai_page_%');
-      
-      if (existingPages && existingPages.length > 0) {
-        console.log(`[DesignWizard] Deleting ${existingPages.length} old AI pages`);
-        await supabase
+      try {
+        const { data: existingPages } = await supabase
           .from('pages')
-          .delete()
+          .select('id')
           .eq('store_id', storeId)
           .like('id', 'ai_page_%');
-      }
+        
+        if (existingPages && existingPages.length > 0) {
+          console.log(`[DesignWizard] Deleting ${existingPages.length} old AI pages`);
+          await supabase
+            .from('pages')
+            .delete()
+            .eq('store_id', storeId)
+            .like('id', 'ai_page_%');
+        }
 
-      const { data: existingProducts } = await supabase
-        .from('products')
-        .select('id')
-        .eq('store_id', storeId)
-        .like('id', 'ai_product_%');
-      
-      if (existingProducts && existingProducts.length > 0) {
-        console.log(`[DesignWizard] Deleting ${existingProducts.length} old AI products`);
-        await supabase
+        const { data: existingProducts } = await supabase
           .from('products')
-          .delete()
+          .select('id')
           .eq('store_id', storeId)
           .like('id', 'ai_product_%');
+        
+        if (existingProducts && existingProducts.length > 0) {
+          console.log(`[DesignWizard] Deleting ${existingProducts.length} old AI products`);
+          await supabase
+            .from('products')
+            .delete()
+            .eq('store_id', storeId)
+            .like('id', 'ai_product_%');
+        }
+      } catch (cleanupErr: any) {
+        console.error('[DesignWizard] Cleanup error:', cleanupErr);
+        // Continue anyway - cleanup failure shouldn't block generation
       }
 
       // Extract unique components to library (runs in background)
