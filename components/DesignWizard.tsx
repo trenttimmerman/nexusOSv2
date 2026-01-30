@@ -242,12 +242,17 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
 
       const result = await generateCompleteSite(userPrompt, 3);
       
+      // Validate result structure
+      if (!result || !result.blueprint || !result.pages || !Array.isArray(result.pages)) {
+        throw new Error('Invalid AI generation result structure');
+      }
+      
       console.log('[DesignWizard] AI generation complete:', result.blueprint.brand.name);
       setAiProgress(100);
       
       setAiBlueprint(result.blueprint);
       setGeneratedPages(result.pages);
-      setGeneratedProducts(result.products);
+      setGeneratedProducts(result.products || []);
 
       // Extract unique components to library (runs in background)
       console.log('[DesignWizard] Extracting components to library...');
@@ -265,18 +270,21 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
       });
 
       // Auto-select design based on AI suggestions
-      const vibe = result.blueprint.brand.vibe.toLowerCase();
+      const vibe = result.blueprint?.brand?.vibe?.toLowerCase() || 'modern';
       setSelectedVibe(vibe);
       
       // Find closest color palette
       const closestPalette = findClosestPalette(result.blueprint);
       setSelectedPalette(closestPalette);
       
-      // Set component styles from AI
-      setSelectedHeader(result.blueprint.styles.headerStyle as HeaderStyleId);
-      setSelectedHero(result.blueprint.styles.heroStyle as HeroStyleId);
-      setSelectedProductCard(result.blueprint.styles.productCardStyle as ProductCardStyleId);
-      setSelectedFooter(result.blueprint.styles.footerStyle as FooterStyleId);
+      // Set component styles from AI (with fallbacks)
+      if (result.blueprint?.styles) {
+        setSelectedHeader((result.blueprint.styles.headerStyle as HeaderStyleId) || 'modern');
+        setSelectedHero((result.blueprint.styles.heroStyle as HeroStyleId) || 'minimal');
+        setSelectedProductCard((result.blueprint.styles.productCardStyle as ProductCardStyleId) || 'modern');
+        setSelectedFooter((result.blueprint.styles.footerStyle as FooterStyleId) || 'modern');
+      }
+
 
       // Brief delay to show completion
       setTimeout(() => {
