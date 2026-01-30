@@ -89,9 +89,46 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
 
   const stepIndex = steps.findIndex(s => s.id === currentStep);
 
-  // Load database components on mount
+  // Load database components on mount AND clean up old AI-generated content
   useEffect(() => {
-    const loadDbComponents = async () => {
+    const initializeWizard = async () => {
+      // STEP 1: Clean slate - Delete all old AI-generated content
+      console.log('[DesignWizard] Initializing clean slate...');
+      try {
+        const { data: existingPages } = await supabase
+          .from('pages')
+          .select('id')
+          .eq('store_id', storeId)
+          .like('id', 'ai_page_%');
+        
+        if (existingPages && existingPages.length > 0) {
+          console.log(`[DesignWizard] Deleting ${existingPages.length} old AI pages`);
+          await supabase
+            .from('pages')
+            .delete()
+            .eq('store_id', storeId)
+            .like('id', 'ai_page_%');
+        }
+
+        const { data: existingProducts } = await supabase
+          .from('products')
+          .select('id')
+          .eq('store_id', storeId)
+          .like('id', 'ai_product_%');
+        
+        if (existingProducts && existingProducts.length > 0) {
+          console.log(`[DesignWizard] Deleting ${existingProducts.length} old AI products`);
+          await supabase
+            .from('products')
+            .delete()
+            .eq('store_id', storeId)
+            .like('id', 'ai_product_%');
+        }
+      } catch (cleanupErr: any) {
+        console.error('[DesignWizard] Cleanup error:', cleanupErr);
+      }
+
+      // STEP 2: Load database components for selection
       try {
         const [headers, heroes, footers, productCards] = await Promise.all([
           fetchComponentLibrary({ type: 'header', limit: 50 }),
@@ -111,8 +148,8 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
       }
     };
     
-    loadDbComponents();
-  }, []);
+    initializeWizard();
+  }, [storeId]);
 
   const handleNext = () => {
     const nextIndex = stepIndex + 1;
@@ -253,43 +290,6 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
       setAiBlueprint(result.blueprint);
       setGeneratedPages(result.pages);
       setGeneratedProducts(result.products || []);
-
-      // Clean up old AI-generated content IMMEDIATELY to prevent mixed navigation
-      console.log('[DesignWizard] Cleaning up old AI-generated content...');
-      try {
-        const { data: existingPages } = await supabase
-          .from('pages')
-          .select('id')
-          .eq('store_id', storeId)
-          .like('id', 'ai_page_%');
-        
-        if (existingPages && existingPages.length > 0) {
-          console.log(`[DesignWizard] Deleting ${existingPages.length} old AI pages`);
-          await supabase
-            .from('pages')
-            .delete()
-            .eq('store_id', storeId)
-            .like('id', 'ai_page_%');
-        }
-
-        const { data: existingProducts } = await supabase
-          .from('products')
-          .select('id')
-          .eq('store_id', storeId)
-          .like('id', 'ai_product_%');
-        
-        if (existingProducts && existingProducts.length > 0) {
-          console.log(`[DesignWizard] Deleting ${existingProducts.length} old AI products`);
-          await supabase
-            .from('products')
-            .delete()
-            .eq('store_id', storeId)
-            .like('id', 'ai_product_%');
-        }
-      } catch (cleanupErr: any) {
-        console.error('[DesignWizard] Cleanup error:', cleanupErr);
-        // Continue anyway - cleanup failure shouldn't block generation
-      }
 
       // Extract unique components to library (runs in background)
       console.log('[DesignWizard] Extracting components to library...');
