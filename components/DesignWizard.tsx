@@ -7,7 +7,7 @@ import { FOOTER_OPTIONS, FOOTER_COMPONENTS } from './FooterLibrary';
 import { HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId } from '../types';
 import { Sparkles, Palette, Layout, Layers, Package, ArrowRight, ArrowLeft, Check, X, Wand2, Loader2, AlertCircle } from 'lucide-react';
 import { generateCompleteSite, SiteBlueprint } from '../ai/agents';
-import { extractComponentsFromGeneration } from '../lib/componentExtractor';
+import { extractComponentsFromGeneration, fetchComponentLibrary } from '../lib/componentExtractor';
 
 interface DesignWizardProps {
   storeId: string;
@@ -69,6 +69,12 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
   const [selectedProductCard, setSelectedProductCard] = useState<ProductCardStyleId>('classic');
   const [selectedFooter, setSelectedFooter] = useState<FooterStyleId>('columns');
   const [isApplying, setIsApplying] = useState(false);
+  const [dbComponents, setDbComponents] = useState<{header: any[], hero: any[], footer: any[], productCard: any[]}>({
+    header: [],
+    hero: [],
+    footer: [],
+    productCard: []
+  });
 
   const steps: { id: WizardStep; label: string; icon: any }[] = [
     { id: 'prompt', label: 'AI Prompt', icon: Wand2 },
@@ -82,6 +88,31 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
   ];
 
   const stepIndex = steps.findIndex(s => s.id === currentStep);
+
+  // Load database components on mount
+  useEffect(() => {
+    const loadDbComponents = async () => {
+      try {
+        const [headers, heroes, footers, productCards] = await Promise.all([
+          fetchComponentLibrary({ type: 'header', limit: 50 }),
+          fetchComponentLibrary({ type: 'hero', limit: 50 }),
+          fetchComponentLibrary({ type: 'footer', limit: 50 }),
+          fetchComponentLibrary({ type: 'product-card', limit: 50 })
+        ]);
+        
+        setDbComponents({
+          header: headers,
+          hero: heroes,
+          footer: footers,
+          productCard: productCards
+        });
+      } catch (error) {
+        console.error('[DesignWizard] Error loading database components:', error);
+      }
+    };
+    
+    loadDbComponents();
+  }, []);
 
   const handleNext = () => {
     const nextIndex = stepIndex + 1;
@@ -533,7 +564,7 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">Choose Your Header Style</h3>
-                <p className="text-neutral-400">Select the navigation style for your store</p>
+                <p className="text-neutral-400">Select the navigation style for your store {dbComponents.header.length > 0 && `(${HEADER_OPTIONS.length + dbComponents.header.length} options)`}</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -570,9 +601,35 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
                       {option.description && (
                         <p className="text-neutral-400 text-sm mt-1">{option.description}</p>
                       )}
+                      <div className="mt-2 text-xs text-purple-400">Platform Default</div>
                     </button>
                   );
                 })}
+                
+                {/* Database Components from AI Generations */}
+                {dbComponents.header.map((component: any) => (
+                  <button
+                    key={component.id}
+                    onClick={() => setSelectedHeader(component.variant_id)}
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${
+                      selectedHeader === component.variant_id
+                        ? 'border-green-500 bg-green-500/10'
+                        : 'border-white/10 bg-white/5 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
+                      <div className="text-white/40 text-sm">Preview</div>
+                    </div>
+                    <h4 className="text-white font-bold">{component.name}</h4>
+                    {component.metadata?.description && (
+                      <p className="text-neutral-400 text-sm mt-1">{component.metadata.description}</p>
+                    )}
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="text-xs text-green-400">From AI ✨</span>
+                      <span className="text-xs text-neutral-500">Used {component.metadata?.usage_count || 0}×</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           )}
