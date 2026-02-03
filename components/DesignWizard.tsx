@@ -167,10 +167,13 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
   // Generate AI vibes when vibe step is reached
   useEffect(() => {
     const generateVibes = async () => {
+      console.log('[DesignWizard] Vibe step check:', { currentStep, generatedVibes: generatedVibes.length, userPrompt: userPrompt.substring(0, 50) });
       if (currentStep === 'vibe' && generatedVibes.length === 0 && userPrompt.trim()) {
+        console.log('[DesignWizard] Generating AI vibes...');
         setVibeLoading(true);
         try {
           const vibes = await generateVibeVariants(userPrompt);
+          console.log('[DesignWizard] Generated vibes:', vibes);
           
           // Save ALL 3 to database
           for (const vibe of vibes) {
@@ -205,10 +208,13 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
   // Generate AI color palettes when color step is reached
   useEffect(() => {
     const generatePalettes = async () => {
+      console.log('[DesignWizard] Palette step check:', { currentStep, generatedPalettes: generatedPalettes.length, selectedVibe, generatedVibesCount: generatedVibes.length });
       if (currentStep === 'colors' && generatedPalettes.length === 0 && userPrompt.trim() && selectedVibe) {
+        console.log('[DesignWizard] Generating AI palettes...');
         setPaletteLoading(true);
         try {
           const selectedVibeData = generatedVibes.find(v => v.id === selectedVibe);
+          console.log('[DesignWizard] Selected vibe data:', selectedVibeData);
           const palettes = await generateColorPaletteVariants(userPrompt, selectedVibeData);
           
           // Save ALL 3 to database
@@ -251,10 +257,13 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
   // Generate AI header variants when header step is reached
   useEffect(() => {
     const generateHeaders = async () => {
+      console.log('[DesignWizard] Header step check:', { currentStep, generatedHeaders: generatedHeaders.length, selectedVibe, selectedPalette: !!selectedPalette });
       if (currentStep === 'header' && generatedHeaders.length === 0 && userPrompt.trim() && selectedVibe && selectedPalette) {
+        console.log('[DesignWizard] Generating AI headers...');
         setHeaderLoading(true);
         try {
           const selectedVibeData = generatedVibes.find(v => v.id === selectedVibe);
+          console.log('[DesignWizard] Selected vibe for headers:', selectedVibeData);
           const headers = await generateComponentVariants('header', userPrompt, selectedVibeData, selectedPalette);
           
           // Save ALL 3 to component library
