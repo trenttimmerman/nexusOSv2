@@ -177,7 +177,65 @@ export async function generateComponentVariants(
     'product-card': `Product display card with image, name, price. Focus on commerce optimization, visual appeal.`
   };
   
-  const prompt = `You are a UI/UX design expert. Generate 3 DISTINCT ${componentType} variants for:
+  let prompt = '';
+  
+  if (componentType === 'header') {
+    // Enhanced header-specific prompt for maximum visual distinction
+    prompt = `You are a UI/UX design expert. Generate 3 EXTREMELY DIFFERENT header navigation variants for:
+
+Business: "${userPrompt}"
+Vibe: ${selectedVibe.name} - ${selectedVibe.description}
+Colors: Primary ${selectedPalette.primary}, Secondary ${selectedPalette.secondary}, Background ${selectedPalette.background}
+
+Create 3 variants with MAXIMUM visual contrast:
+
+VARIANT 1 - MINIMAL/MODERN:
+- Clean, minimal approach with maximum negative space
+- Subtle logo, understated navigation
+- Modern sans-serif feel
+- Layout: "minimal" (traditional horizontal layout)
+
+VARIANT 2 - PROFESSIONAL/RICH:
+- Feature-rich with utility bar, search, account features
+- Professional, all business features visible
+- Premium feel with glassmorphism or spotlight effects
+- Layout: "professional" (full-featured modern)
+
+VARIANT 3 - BOLD/UNIQUE:
+- Creative, unconventional layout (centered, floating, asymmetric)
+- Strong visual personality matching vibe
+- Eye-catching, memorable design
+- Layout: "creative" (innovative layout approach)
+
+Return ONLY valid JSON array (no markdown):
+[
+  {
+    "variantName": "The[BusinessName]_[Style]",
+    "layout": "minimal|professional|creative",
+    "componentType": "canvas|nexus-elite|quantum|orbit|neon",
+    "style": {
+      "backgroundColor": "${selectedPalette.background}",
+      "primaryColor": "${selectedPalette.primary}",
+      "secondaryColor": "${selectedPalette.secondary}",
+      "accentColor": "${selectedPalette.secondary}",
+      "borderRadius": "0|4|8|16",
+      "showAnnouncementBar": true|false,
+      "showUtilityBar": true|false,
+      "enableGlassmorphism": true|false,
+      "enableSpotlightBorders": true|false
+    },
+    "data": {
+      "logo": "${userPrompt.split(' ')[0] || 'Store'}",
+      "announcementText": "relevant announcement",
+      "utilityLinks": [...]
+    }
+  }
+]
+
+Make each variant look COMPLETELY DIFFERENT when rendered.`;
+  } else {
+    // Original prompt for other component types
+    prompt = `You are a UI/UX design expert. Generate 3 DISTINCT ${componentType} variants for:
 
 Business: "${userPrompt}"
 Vibe: ${selectedVibe.name}
@@ -211,6 +269,7 @@ Return ONLY valid JSON array (no markdown):
 ]
 
 Make each variant VISUALLY and STRUCTURALLY different.`;
+  }
 
   const model = genAI.models;
   const result = await model.generateContent({

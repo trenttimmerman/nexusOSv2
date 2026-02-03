@@ -977,13 +977,20 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* AI Generated Headers - Priority Display */}
                   {generatedHeaders.map((header) => {
-                    // Map AI layout to header component
+                    // Use AI-specified component type, or map layout to component
                     const layoutMap: Record<string, keyof typeof HEADER_COMPONENTS> = {
+                      'minimal': 'canvas',
+                      'professional': 'nexus-elite',
+                      'creative': 'quantum',
                       'compact': 'canvas',
-                      'spacious': 'modern',
-                      'asymmetric': 'bold'
+                      'spacious': 'nexus-elite',
+                      'asymmetric': 'orbit'
                     };
-                    const componentKey = layoutMap[header.layout?.toLowerCase()] || 'canvas';
+                    
+                    // Prefer AI-specified componentType, fallback to layout mapping
+                    const componentKey = (header.componentType && HEADER_COMPONENTS[header.componentType as keyof typeof HEADER_COMPONENTS]) 
+                      ? header.componentType as keyof typeof HEADER_COMPONENTS
+                      : layoutMap[header.layout?.toLowerCase()] || 'canvas';
                     const HeaderComponent = HEADER_COMPONENTS[componentKey];
                     
                     return (
@@ -1000,8 +1007,8 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
                           {HeaderComponent && (
                             <div className="scale-50 origin-top-left w-[200%]">
                               <HeaderComponent
-                                logo={aiBlueprint?.brand.name || "Your Store"}
-                                links={[
+                                logo={header.data?.logo || aiBlueprint?.brand.name || "Your Store"}
+                                links={header.data?.links || [
                                   { label: 'Shop', href: '/shop' },
                                   { label: 'About', href: '/about' },
                                   { label: 'Contact', href: '/contact' },
@@ -1009,6 +1016,18 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
                                 primaryColor={header.style?.primaryColor || selectedPalette?.primary || '#3B82F6'}
                                 secondaryColor={header.style?.secondaryColor || selectedPalette?.secondary || '#8B5CF6'}
                                 backgroundColor={header.style?.backgroundColor || selectedPalette?.background || '#FFFFFF'}
+                                data={{
+                                  announcementText: header.data?.announcementText || header.style?.showAnnouncementBar ? "Free shipping on orders over $50" : undefined,
+                                  showAnnouncementBar: header.style?.showAnnouncementBar,
+                                  showUtilityBar: header.style?.showUtilityBar,
+                                  enableGlassmorphism: header.style?.enableGlassmorphism,
+                                  enableSpotlightBorders: header.style?.enableSpotlightBorders,
+                                  accentColor: header.style?.accentColor,
+                                  utilityLinks: header.data?.utilityLinks || [
+                                    { label: 'Support', href: '/support' },
+                                    { label: 'Account', href: '/account' }
+                                  ]
+                                }}
                               />
                             </div>
                           )}
