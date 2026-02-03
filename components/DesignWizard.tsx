@@ -976,26 +976,51 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* AI Generated Headers - Priority Display */}
-                  {generatedHeaders.map((header) => (
-                    <button
-                      key={header.variantId}
-                      onClick={() => setSelectedHeader(header.variantId)}
-                      className={`p-4 rounded-xl border-2 text-left transition-all ${
-                        selectedHeader === header.variantId
-                          ? 'border-purple-500 bg-purple-500/10'
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
-                        <div className="text-white/40 text-sm">AI Generated Preview</div>
-                      </div>
-                      <h4 className="text-white font-bold">{header.variantName}</h4>
-                      <p className="text-neutral-400 text-sm mt-1 capitalize">{header.layout} layout</p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="text-xs text-purple-400">AI Generated ✨</span>
-                      </div>
-                    </button>
-                  ))}
+                  {generatedHeaders.map((header) => {
+                    // Map AI layout to header component
+                    const layoutMap: Record<string, keyof typeof HEADER_COMPONENTS> = {
+                      'compact': 'canvas',
+                      'spacious': 'modern',
+                      'asymmetric': 'bold'
+                    };
+                    const componentKey = layoutMap[header.layout?.toLowerCase()] || 'canvas';
+                    const HeaderComponent = HEADER_COMPONENTS[componentKey];
+                    
+                    return (
+                      <button
+                        key={header.variantId}
+                        onClick={() => setSelectedHeader(header.variantId)}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          selectedHeader === header.variantId
+                            ? 'border-purple-500 bg-purple-500/10'
+                            : 'border-white/10 bg-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden">
+                          {HeaderComponent && (
+                            <div className="scale-50 origin-top-left w-[200%]">
+                              <HeaderComponent
+                                logo={aiBlueprint?.brand.name || "Your Store"}
+                                links={[
+                                  { label: 'Shop', href: '/shop' },
+                                  { label: 'About', href: '/about' },
+                                  { label: 'Contact', href: '/contact' },
+                                ]}
+                                primaryColor={header.style?.primaryColor || selectedPalette?.primary || '#3B82F6'}
+                                secondaryColor={header.style?.secondaryColor || selectedPalette?.secondary || '#8B5CF6'}
+                                backgroundColor={header.style?.backgroundColor || selectedPalette?.background || '#FFFFFF'}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="text-white font-bold">{header.variantName}</h4>
+                        <p className="text-neutral-400 text-sm mt-1 capitalize">{header.layout} layout</p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-xs text-purple-400">AI Generated ✨</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                   
                   {/* Platform Default Headers */}
                   {HEADER_OPTIONS.map(option => {
@@ -1094,26 +1119,55 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* AI Generated Heroes - Priority Display */}
-                  {generatedHeroes.map((hero) => (
-                    <button
-                      key={hero.variantId}
-                      onClick={() => setSelectedHero(hero.variantId)}
-                      className={`p-4 rounded-xl border-2 text-left transition-all ${
-                        selectedHero === hero.variantId
-                          ? 'border-purple-500 bg-purple-500/10'
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
-                        <div className="text-white/40 text-sm">AI Generated Preview</div>
-                      </div>
-                      <h4 className="text-white font-bold">{hero.variantName}</h4>
-                      <p className="text-neutral-400 text-sm mt-1 capitalize">{hero.layout} layout</p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="text-xs text-purple-400">AI Generated ✨</span>
-                      </div>
-                    </button>
-                  ))}
+                  {generatedHeroes.map((hero) => {
+                    // Map AI layout to hero component - default to impact for full previews
+                    const layoutMap: Record<string, keyof typeof HERO_COMPONENTS> = {
+                      'compact': 'impact',
+                      'spacious': 'bento',
+                      'asymmetric': 'split'
+                    };
+                    const componentKey = layoutMap[hero.layout?.toLowerCase()] || 'impact';
+                    const HeroComponent = HERO_COMPONENTS[componentKey];
+                    
+                    return (
+                      <button
+                        key={hero.variantId}
+                        onClick={() => setSelectedHero(hero.variantId)}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          selectedHero === hero.variantId
+                            ? 'border-purple-500 bg-purple-500/10'
+                            : 'border-white/10 bg-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden">
+                          {HeroComponent && (
+                            <div className="scale-[0.25] origin-top-left w-[400%]">
+                              <HeroComponent
+                                storeName={aiBlueprint?.brand.name || "Your Store"}
+                                primaryColor={hero.style?.primaryColor || selectedPalette?.primary || '#3B82F6'}
+                                data={{
+                                  heading: hero.data?.heading || aiBlueprint?.brand.tagline || "Welcome to Your Store",
+                                  subheading: hero.data?.subheading || aiBlueprint?.brand.description || "Discover amazing products",
+                                  buttonText: hero.data?.buttonText || "Shop Now",
+                                  style: {
+                                    backgroundColor: hero.style?.backgroundColor || selectedPalette?.background,
+                                    textColor: hero.style?.textColor,
+                                    padding: hero.style?.padding || 'l',
+                                    alignment: hero.style?.alignment || 'center'
+                                  }
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="text-white font-bold">{hero.variantName}</h4>
+                        <p className="text-neutral-400 text-sm mt-1 capitalize">{hero.layout} layout</p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-xs text-purple-400">AI Generated ✨</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                   
                   {/* Platform Default Heroes */}
                   {HERO_OPTIONS.slice(0, 8).map(option => {
@@ -1205,26 +1259,51 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* AI Generated Product Cards - Priority Display */}
-                  {generatedProductCards.map((card) => (
-                    <button
-                      key={card.variantId}
-                      onClick={() => setSelectedProductCard(card.variantId)}
-                      className={`p-4 rounded-xl border-2 text-left transition-all ${
-                        selectedProductCard === card.variantId
-                          ? 'border-purple-500 bg-purple-500/10'
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="aspect-[3/4] bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
-                        <div className="text-white/40 text-sm">AI Generated Preview</div>
-                      </div>
-                      <h4 className="text-white font-bold">{card.variantName}</h4>
-                      <p className="text-neutral-400 text-sm mt-1 capitalize">{card.layout} layout</p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="text-xs text-purple-400">AI Generated ✨</span>
-                      </div>
-                    </button>
-                  ))}
+                  {generatedProductCards.map((card) => {
+                    // Map AI layout to product card component
+                    const layoutMap: Record<string, keyof typeof PRODUCT_CARD_COMPONENTS> = {
+                      'compact': 'minimal',
+                      'spacious': 'modern',
+                      'asymmetric': 'bold'
+                    };
+                    const componentKey = layoutMap[card.layout?.toLowerCase()] || 'classic';
+                    const CardComponent = PRODUCT_CARD_COMPONENTS[componentKey];
+                    
+                    return (
+                      <button
+                        key={card.variantId}
+                        onClick={() => setSelectedProductCard(card.variantId)}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          selectedProductCard === card.variantId
+                            ? 'border-purple-500 bg-purple-500/10'
+                            : 'border-white/10 bg-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="aspect-[3/4] bg-neutral-900 rounded-lg mb-3 overflow-hidden">
+                          {CardComponent && (
+                            <div className="scale-75 origin-top">
+                              <CardComponent
+                                product={{
+                                  id: 'preview',
+                                  name: card.data?.productName || 'Sample Product',
+                                  price: card.data?.price || 49.99,
+                                  images: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400'],
+                                  description: card.data?.description || 'Product description'
+                                }}
+                                primaryColor={card.style?.primaryColor || selectedPalette?.primary || '#3B82F6'}
+                                secondaryColor={card.style?.secondaryColor || selectedPalette?.secondary || '#8B5CF6'}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="text-white font-bold">{card.variantName}</h4>
+                        <p className="text-neutral-400 text-sm mt-1 capitalize">{card.layout} layout</p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-xs text-purple-400">AI Generated ✨</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                   
                   {/* Platform Default Product Cards */}
                   {PRODUCT_CARD_OPTIONS.map(option => {
@@ -1323,26 +1402,46 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* AI Generated Footers - Priority Display */}
-                  {generatedFooters.map((footer) => (
-                    <button
-                      key={footer.variantId}
-                      onClick={() => setSelectedFooter(footer.variantId)}
-                      className={`p-4 rounded-xl border-2 text-left transition-all ${
-                        selectedFooter === footer.variantId
-                          ? 'border-purple-500 bg-purple-500/10'
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
-                        <div className="text-white/40 text-sm">AI Generated Preview</div>
-                      </div>
-                      <h4 className="text-white font-bold">{footer.variantName}</h4>
-                      <p className="text-neutral-400 text-sm mt-1 capitalize">{footer.layout} layout</p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="text-xs text-purple-400">AI Generated ✨</span>
-                      </div>
-                    </button>
-                  ))}
+                  {generatedFooters.map((footer) => {
+                    // Map AI layout to footer component
+                    const layoutMap: Record<string, keyof typeof FOOTER_COMPONENTS> = {
+                      'compact': 'minimal',
+                      'spacious': 'columns',
+                      'asymmetric': 'centered'
+                    };
+                    const componentKey = layoutMap[footer.layout?.toLowerCase()] || 'columns';
+                    const FooterComponent = FOOTER_COMPONENTS[componentKey];
+                    
+                    return (
+                      <button
+                        key={footer.variantId}
+                        onClick={() => setSelectedFooter(footer.variantId)}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          selectedFooter === footer.variantId
+                            ? 'border-purple-500 bg-purple-500/10'
+                            : 'border-white/10 bg-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden">
+                          {FooterComponent && (
+                            <div className="scale-[0.3] origin-top-left w-[333%]">
+                              <FooterComponent
+                                logo={aiBlueprint?.brand.name || "Your Store"}
+                                primaryColor={footer.style?.primaryColor || selectedPalette?.primary || '#3B82F6'}
+                                secondaryColor={footer.style?.secondaryColor || selectedPalette?.secondary || '#8B5CF6'}
+                                backgroundColor={footer.style?.backgroundColor || selectedPalette?.background}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="text-white font-bold">{footer.variantName}</h4>
+                        <p className="text-neutral-400 text-sm mt-1 capitalize">{footer.layout} layout</p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-xs text-purple-400">AI Generated ✨</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                   
                   {/* Platform Default Footers */}
                   {FOOTER_OPTIONS.slice(0, 8).map(option => {
