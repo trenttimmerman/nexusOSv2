@@ -102,9 +102,12 @@ Return ONLY valid JSON array (no markdown, no explanation):
 
 Make each vibe DISTINCTLY different. One bold, one refined, one unexpected.`;
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
+  const model = genAI.models;
+  const result = await model.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: prompt,
+  });
+  const text = result.text.trim();
   
   const json = extractJSON(text);
   return JSON.parse(json);
@@ -145,9 +148,12 @@ Return ONLY valid JSON array (no markdown):
 
 One palette should be bold, one refined, one unexpected.`;
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
+  const model = genAI.models;
+  const result = await model.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: prompt,
+  });
+  const text = result.text.trim();
   
   const json = extractJSON(text);
   return JSON.parse(json);
@@ -206,9 +212,12 @@ Return ONLY valid JSON array (no markdown):
 
 Make each variant VISUALLY and STRUCTURALLY different.`;
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
+  const model = genAI.models;
+  const result = await model.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: prompt,
+  });
+  const text = result.text.trim();
   
   const json = extractJSON(text);
   const variants = JSON.parse(json);
