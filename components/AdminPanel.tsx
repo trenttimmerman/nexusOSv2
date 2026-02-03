@@ -15491,10 +15491,6 @@ Return ONLY the JSON object, no markdown.`;
                     .preview-container [class*="sticky"] {
                       position: absolute !important;
                     }
-                    .preview-container {
-                      position: relative;
-                      overflow: hidden;
-                    }
                   `}</style>
                   <div className={`preview-container w-full h-full overflow-y-auto overflow-x-hidden bg-white scrollbar-${config.scrollbarStyle} relative`}>
                     <div className="relative" style={{ contain: 'layout style paint' }}>
