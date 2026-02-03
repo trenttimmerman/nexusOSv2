@@ -292,7 +292,9 @@ export async function generateCompleteSite(userPrompt: string, numPages: number 
   }
   
   // Step 4: Enhance products with images
-  const products = await generateProductImages(blueprint.products);
+  const products = blueprint.products && Array.isArray(blueprint.products)
+    ? await generateProductImages(blueprint.products)
+    : [];
   
   console.log('[AI Generator] Site generation complete!');
   
