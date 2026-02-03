@@ -272,13 +272,15 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
               type: 'header',
               variant_id: header.variantId,
               name: header.variantName,
-              data: header.data,
+              template: header.data || {},
+              editable_fields: [],
               metadata: {
                 layout: header.layout,
                 style: header.style,
                 vibe_id: selectedVibe,
                 palette_id: selectedPalette.id,
-                generated_from_prompt: userPrompt
+                generated_from_prompt: userPrompt,
+                source: 'ai-generated'
               }
             }).select();
           }
@@ -311,13 +313,15 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
               type: 'hero',
               variant_id: hero.variantId,
               name: hero.variantName,
-              data: hero.data,
+              template: hero.data || {},
+              editable_fields: [],
               metadata: {
                 layout: hero.layout,
                 style: hero.style,
                 vibe_id: selectedVibe,
                 palette_id: selectedPalette.id,
-                generated_from_prompt: userPrompt
+                generated_from_prompt: userPrompt,
+                source: 'ai-generated'
               }
             }).select();
           }
@@ -350,13 +354,15 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
               type: 'product-card',
               variant_id: card.variantId,
               name: card.variantName,
-              data: card.data,
+              template: card.data || {},
+              editable_fields: [],
               metadata: {
                 layout: card.layout,
                 style: card.style,
                 vibe_id: selectedVibe,
                 palette_id: selectedPalette.id,
-                generated_from_prompt: userPrompt
+                generated_from_prompt: userPrompt,
+                source: 'ai-generated'
               }
             }).select();
           }
@@ -389,13 +395,15 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
               type: 'footer',
               variant_id: footer.variantId,
               name: footer.variantName,
-              data: footer.data,
+              template: footer.data || {},
+              editable_fields: [],
               metadata: {
                 layout: footer.layout,
                 style: footer.style,
                 vibe_id: selectedVibe,
                 palette_id: selectedPalette.id,
-                generated_from_prompt: userPrompt
+                generated_from_prompt: userPrompt,
+                source: 'ai-generated'
               }
             }).select();
           }
