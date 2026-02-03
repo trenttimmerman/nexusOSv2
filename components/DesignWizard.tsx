@@ -307,26 +307,42 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
           const selectedVibeData = generatedVibes.find(v => v.id === selectedVibe);
           const heroes = await generateComponentVariants('hero', userPrompt, selectedVibeData, selectedPalette);
           
+          // Sanitize AI data - extract strings from objects if needed
+          const sanitizedHeroes = heroes.map(hero => ({
+            ...hero,
+            data: {
+              ...hero.data,
+              heading: typeof hero.data?.heading === 'object' ? hero.data.heading.text || String(hero.data.heading) : hero.data?.heading,
+              subheading: typeof hero.data?.subheading === 'object' ? hero.data.subheading.text || String(hero.data.subheading) : hero.data?.subheading,
+              buttonText: typeof hero.data?.buttonText === 'object' ? hero.data.buttonText.text || String(hero.data.buttonText) : hero.data?.buttonText
+            }
+          }));
+          
           // Save ALL 3 to component library
-          for (const hero of heroes) {
-            await supabase.from('component_library').insert({
-              type: 'hero',
-              variant_id: hero.variantId,
-              name: hero.variantName,
-              template: hero.data || {},
-              editable_fields: [],
-              metadata: {
-                layout: hero.layout,
-                style: hero.style,
-                vibe_id: selectedVibe,
-                palette_id: selectedPalette.id,
-                generated_from_prompt: userPrompt,
-                source: 'ai-generated'
-              }
-            }).select();
+          for (const hero of sanitizedHeroes) {
+            try {
+              await supabase.from('component_library').insert({
+                type: 'hero',
+                variant_id: hero.variantId,
+                name: hero.variantName,
+                template: hero.data || {},
+                editable_fields: [],
+                metadata: {
+                  layout: hero.layout,
+                  style: hero.style,
+                  vibe_id: selectedVibe,
+                  palette_id: selectedPalette.id,
+                  generated_from_prompt: userPrompt,
+                  source: 'ai-generated'
+                }
+              }).select();
+            } catch (dbError) {
+              console.error('Database insert error for hero:', dbError);
+              // Continue anyway - don't block UX
+            }
           }
           
-          setGeneratedHeroes(heroes);
+          setGeneratedHeroes(sanitizedHeroes);
         } catch (error) {
           console.error('Hero generation failed:', error);
           setError('Failed to generate heroes. Using default options.');
@@ -348,26 +364,40 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
           const selectedVibeData = generatedVibes.find(v => v.id === selectedVibe);
           const productCards = await generateComponentVariants('product-card', userPrompt, selectedVibeData, selectedPalette);
           
+          // Sanitize AI data - extract strings from objects if needed
+          const sanitizedCards = productCards.map(card => ({
+            ...card,
+            data: {
+              ...card.data,
+              productName: typeof card.data?.productName === 'object' ? card.data.productName.text || String(card.data.productName) : card.data?.productName,
+              description: typeof card.data?.description === 'object' ? card.data.description.text || String(card.data.description) : card.data?.description
+            }
+          }));
+          
           // Save ALL 3 to component library
-          for (const card of productCards) {
-            await supabase.from('component_library').insert({
-              type: 'product-card',
-              variant_id: card.variantId,
-              name: card.variantName,
-              template: card.data || {},
-              editable_fields: [],
-              metadata: {
-                layout: card.layout,
-                style: card.style,
-                vibe_id: selectedVibe,
-                palette_id: selectedPalette.id,
-                generated_from_prompt: userPrompt,
-                source: 'ai-generated'
-              }
-            }).select();
+          for (const card of sanitizedCards) {
+            try {
+              await supabase.from('component_library').insert({
+                type: 'product-card',
+                variant_id: card.variantId,
+                name: card.variantName,
+                template: card.data || {},
+                editable_fields: [],
+                metadata: {
+                  layout: card.layout,
+                  style: card.style,
+                  vibe_id: selectedVibe,
+                  palette_id: selectedPalette.id,
+                  generated_from_prompt: userPrompt,
+                  source: 'ai-generated'
+                }
+              }).select();
+            } catch (dbError) {
+              console.error('Database insert error for product card:', dbError);
+            }
           }
           
-          setGeneratedProductCards(productCards);
+          setGeneratedProductCards(sanitizedCards);
         } catch (error) {
           console.error('Product card generation failed:', error);
           setError('Failed to generate product cards. Using default options.');
@@ -389,26 +419,40 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
           const selectedVibeData = generatedVibes.find(v => v.id === selectedVibe);
           const footers = await generateComponentVariants('footer', userPrompt, selectedVibeData, selectedPalette);
           
+          // Sanitize AI data - extract strings from objects if needed
+          const sanitizedFooters = footers.map(footer => ({
+            ...footer,
+            data: {
+              ...footer.data,
+              copyright: typeof footer.data?.copyright === 'object' ? footer.data.copyright.text || String(footer.data.copyright) : footer.data?.copyright,
+              description: typeof footer.data?.description === 'object' ? footer.data.description.text || String(footer.data.description) : footer.data?.description
+            }
+          }));
+          
           // Save ALL 3 to component library
-          for (const footer of footers) {
-            await supabase.from('component_library').insert({
-              type: 'footer',
-              variant_id: footer.variantId,
-              name: footer.variantName,
-              template: footer.data || {},
-              editable_fields: [],
-              metadata: {
-                layout: footer.layout,
-                style: footer.style,
-                vibe_id: selectedVibe,
-                palette_id: selectedPalette.id,
-                generated_from_prompt: userPrompt,
-                source: 'ai-generated'
-              }
-            }).select();
+          for (const footer of sanitizedFooters) {
+            try {
+              await supabase.from('component_library').insert({
+                type: 'footer',
+                variant_id: footer.variantId,
+                name: footer.variantName,
+                template: footer.data || {},
+                editable_fields: [],
+                metadata: {
+                  layout: footer.layout,
+                  style: footer.style,
+                  vibe_id: selectedVibe,
+                  palette_id: selectedPalette.id,
+                  generated_from_prompt: userPrompt,
+                  source: 'ai-generated'
+                }
+              }).select();
+            } catch (dbError) {
+              console.error('Database insert error for footer:', dbError);
+            }
           }
           
-          setGeneratedFooters(footers);
+          setGeneratedFooters(sanitizedFooters);
         } catch (error) {
           console.error('Footer generation failed:', error);
           setError('Failed to generate footers. Using default options.');
