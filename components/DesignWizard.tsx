@@ -8,6 +8,7 @@ import { HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId } from '.
 import { Sparkles, Palette, Layout, Layers, Package, ArrowRight, ArrowLeft, Check, X, Wand2, Loader2, AlertCircle } from 'lucide-react';
 import { generateCompleteSite, SiteBlueprint } from '../ai/agents';
 import { extractComponentsFromGeneration, fetchComponentLibrary } from '../lib/componentExtractor';
+import { generateVibeVariants, generateColorPaletteVariants, generateComponentVariants } from '../ai/variantGenerators';
 
 interface DesignWizardProps {
   storeId: string;
@@ -75,6 +76,18 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
     footer: [],
     productCard: []
   });
+  const [generatedVibes, setGeneratedVibes] = useState<any[]>([]);
+  const [vibeLoading, setVibeLoading] = useState(false);
+  const [generatedPalettes, setGeneratedPalettes] = useState<any[]>([]);
+  const [paletteLoading, setPaletteLoading] = useState(false);
+  const [generatedHeaders, setGeneratedHeaders] = useState<any[]>([]);
+  const [headerLoading, setHeaderLoading] = useState(false);
+  const [generatedHeroes, setGeneratedHeroes] = useState<any[]>([]);
+  const [heroLoading, setHeroLoading] = useState(false);
+  const [generatedProductCards, setGeneratedProductCards] = useState<any[]>([]);
+  const [productCardLoading, setProductCardLoading] = useState(false);
+  const [generatedFooters, setGeneratedFooters] = useState<any[]>([]);
+  const [footerLoading, setFooterLoading] = useState(false);
 
   const steps: { id: WizardStep; label: string; icon: any }[] = [
     { id: 'prompt', label: 'AI Prompt', icon: Wand2 },
@@ -150,6 +163,246 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
     
     initializeWizard();
   }, [storeId]);
+
+  // Generate AI vibes when vibe step is reached
+  useEffect(() => {
+    const generateVibes = async () => {
+      if (currentStep === 'vibe' && generatedVibes.length === 0 && userPrompt.trim()) {
+        setVibeLoading(true);
+        try {
+          const vibes = await generateVibeVariants(userPrompt);
+          
+          // Save ALL 3 to database
+          for (const vibe of vibes) {
+            await supabase.from('store_vibes').insert({
+              vibe_id: vibe.id,
+              name: vibe.name,
+              description: vibe.description,
+              mood: vibe.mood,
+              color_direction: vibe.colorDirection,
+              typography: vibe.typography,
+              target_audience: vibe.targetAudience
+            }).select();
+          }
+          
+          setGeneratedVibes(vibes);
+          // Auto-select first vibe
+          if (vibes.length > 0) {
+            setSelectedVibe(vibes[0].id);
+          }
+        } catch (error) {
+          console.error('Vibe generation failed:', error);
+          setError('Failed to generate vibes. Using default options.');
+        } finally {
+          setVibeLoading(false);
+        }
+      }
+    };
+    
+    generateVibes();
+  }, [currentStep, userPrompt, generatedVibes.length]);
+
+  // Generate AI color palettes when color step is reached
+  useEffect(() => {
+    const generatePalettes = async () => {
+      if (currentStep === 'colors' && generatedPalettes.length === 0 && userPrompt.trim() && selectedVibe) {
+        setPaletteLoading(true);
+        try {
+          const selectedVibeData = generatedVibes.find(v => v.id === selectedVibe);
+          const palettes = await generateColorPaletteVariants(userPrompt, selectedVibeData);
+          
+          // Save ALL 3 to database
+          for (const palette of palettes) {
+            await supabase.from('color_palettes').insert({
+              palette_id: palette.id,
+              name: palette.name,
+              vibe_id: selectedVibe,
+              primary_color: palette.primary,
+              secondary_color: palette.secondary,
+              background_color: palette.background,
+              mood: palette.mood
+            }).select();
+          }
+          
+          setGeneratedPalettes(palettes);
+          // Auto-select first palette
+          if (palettes.length > 0) {
+            setSelectedPalette({
+              id: palettes[0].id,
+              name: palettes[0].name,
+              primary: palettes[0].primary,
+              secondary: palettes[0].secondary,
+              background: palettes[0].background,
+              vibe: selectedVibe
+            });
+          }
+        } catch (error) {
+          console.error('Palette generation failed:', error);
+          setError('Failed to generate palettes. Using default options.');
+        } finally {
+          setPaletteLoading(false);
+        }
+      }
+    };
+    
+    generatePalettes();
+  }, [currentStep, userPrompt, selectedVibe, generatedPalettes.length, generatedVibes]);
+
+  // Generate AI header variants when header step is reached
+  useEffect(() => {
+    const generateHeaders = async () => {
+      if (currentStep === 'header' && generatedHeaders.length === 0 && userPrompt.trim() && selectedVibe && selectedPalette) {
+        setHeaderLoading(true);
+        try {
+          const selectedVibeData = generatedVibes.find(v => v.id === selectedVibe);
+          const headers = await generateComponentVariants('header', userPrompt, selectedVibeData, selectedPalette);
+          
+          // Save ALL 3 to component library
+          for (const header of headers) {
+            await supabase.from('component_library').insert({
+              type: 'header',
+              variant_id: header.variantId,
+              name: header.variantName,
+              data: header.data,
+              metadata: {
+                layout: header.layout,
+                style: header.style,
+                vibe_id: selectedVibe,
+                palette_id: selectedPalette.id,
+                generated_from_prompt: userPrompt
+              }
+            }).select();
+          }
+          
+          setGeneratedHeaders(headers);
+        } catch (error) {
+          console.error('Header generation failed:', error);
+          setError('Failed to generate headers. Using default options.');
+        } finally {
+          setHeaderLoading(false);
+        }
+      }
+    };
+    
+    generateHeaders();
+  }, [currentStep, userPrompt, selectedVibe, selectedPalette, generatedHeaders.length, generatedVibes]);
+
+  // Generate AI hero variants when hero step is reached
+  useEffect(() => {
+    const generateHeroes = async () => {
+      if (currentStep === 'hero' && generatedHeroes.length === 0 && userPrompt.trim() && selectedVibe && selectedPalette) {
+        setHeroLoading(true);
+        try {
+          const selectedVibeData = generatedVibes.find(v => v.id === selectedVibe);
+          const heroes = await generateComponentVariants('hero', userPrompt, selectedVibeData, selectedPalette);
+          
+          // Save ALL 3 to component library
+          for (const hero of heroes) {
+            await supabase.from('component_library').insert({
+              type: 'hero',
+              variant_id: hero.variantId,
+              name: hero.variantName,
+              data: hero.data,
+              metadata: {
+                layout: hero.layout,
+                style: hero.style,
+                vibe_id: selectedVibe,
+                palette_id: selectedPalette.id,
+                generated_from_prompt: userPrompt
+              }
+            }).select();
+          }
+          
+          setGeneratedHeroes(heroes);
+        } catch (error) {
+          console.error('Hero generation failed:', error);
+          setError('Failed to generate heroes. Using default options.');
+        } finally {
+          setHeroLoading(false);
+        }
+      }
+    };
+    
+    generateHeroes();
+  }, [currentStep, userPrompt, selectedVibe, selectedPalette, generatedHeroes.length, generatedVibes]);
+
+  // Generate AI product card variants when products step is reached
+  useEffect(() => {
+    const generateProductCards = async () => {
+      if (currentStep === 'products' && generatedProductCards.length === 0 && userPrompt.trim() && selectedVibe && selectedPalette) {
+        setProductCardLoading(true);
+        try {
+          const selectedVibeData = generatedVibes.find(v => v.id === selectedVibe);
+          const productCards = await generateComponentVariants('product-card', userPrompt, selectedVibeData, selectedPalette);
+          
+          // Save ALL 3 to component library
+          for (const card of productCards) {
+            await supabase.from('component_library').insert({
+              type: 'product-card',
+              variant_id: card.variantId,
+              name: card.variantName,
+              data: card.data,
+              metadata: {
+                layout: card.layout,
+                style: card.style,
+                vibe_id: selectedVibe,
+                palette_id: selectedPalette.id,
+                generated_from_prompt: userPrompt
+              }
+            }).select();
+          }
+          
+          setGeneratedProductCards(productCards);
+        } catch (error) {
+          console.error('Product card generation failed:', error);
+          setError('Failed to generate product cards. Using default options.');
+        } finally {
+          setProductCardLoading(false);
+        }
+      }
+    };
+    
+    generateProductCards();
+  }, [currentStep, userPrompt, selectedVibe, selectedPalette, generatedProductCards.length, generatedVibes]);
+
+  // Generate AI footer variants when footer step is reached
+  useEffect(() => {
+    const generateFooters = async () => {
+      if (currentStep === 'footer' && generatedFooters.length === 0 && userPrompt.trim() && selectedVibe && selectedPalette) {
+        setFooterLoading(true);
+        try {
+          const selectedVibeData = generatedVibes.find(v => v.id === selectedVibe);
+          const footers = await generateComponentVariants('footer', userPrompt, selectedVibeData, selectedPalette);
+          
+          // Save ALL 3 to component library
+          for (const footer of footers) {
+            await supabase.from('component_library').insert({
+              type: 'footer',
+              variant_id: footer.variantId,
+              name: footer.variantName,
+              data: footer.data,
+              metadata: {
+                layout: footer.layout,
+                style: footer.style,
+                vibe_id: selectedVibe,
+                palette_id: selectedPalette.id,
+                generated_from_prompt: userPrompt
+              }
+            }).select();
+          }
+          
+          setGeneratedFooters(footers);
+        } catch (error) {
+          console.error('Footer generation failed:', error);
+          setError('Failed to generate footers. Using default options.');
+        } finally {
+          setFooterLoading(false);
+        }
+      }
+    };
+    
+    generateFooters();
+  }, [currentStep, userPrompt, selectedVibe, selectedPalette, generatedFooters.length, generatedVibes]);
 
   const handleNext = () => {
     const nextIndex = stepIndex + 1;
@@ -380,9 +633,11 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
     } : null;
   };
 
-  const filteredPalettes = selectedVibe 
-    ? COLOR_PALETTES.filter(p => p.vibe === selectedVibe)
-    : COLOR_PALETTES;
+  const filteredPalettes = generatedPalettes.length > 0 
+    ? generatedPalettes 
+    : (selectedVibe 
+        ? COLOR_PALETTES.filter(p => p.vibe === selectedVibe)
+        : COLOR_PALETTES);
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
@@ -521,11 +776,15 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">Choose Your Store Vibe</h3>
                 <p className="text-neutral-400">
-                  {aiBlueprint ? (
+                  {vibeLoading ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                      AI is generating 3 unique vibe options for your business...
+                    </span>
+                  ) : generatedVibes.length > 0 ? (
                     <span className="flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-purple-400" />
-                      AI suggested: <span className="text-purple-400 font-medium capitalize">{selectedVibe}</span> 
-                      <span className="text-neutral-500 ml-2">(you can change it)</span>
+                      AI generated 3 unique vibes - select your favorite
                     </span>
                   ) : (
                     'Select the overall personality and aesthetic for your store'
@@ -533,31 +792,69 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  { id: 'modern', name: 'Modern', desc: 'Clean, contemporary, and tech-forward', color: 'blue' },
-                  { id: 'classic', name: 'Classic', desc: 'Timeless, elegant, and sophisticated', color: 'amber' },
-                  { id: 'bold', name: 'Bold', desc: 'Energetic, vibrant, and attention-grabbing', color: 'pink' },
-                  { id: 'minimal', name: 'Minimal', desc: 'Simple, clean, and focused', color: 'slate' },
-                ].map(vibe => (
-                  <button
-                    key={vibe.id}
-                    onClick={() => setSelectedVibe(vibe.id)}
-                    className={`p-6 rounded-xl border-2 text-left transition-all ${
-                      selectedVibe === vibe.id
-                        ? `border-${vibe.color}-500 bg-${vibe.color}-500/10`
-                        : 'border-white/10 bg-white/5 hover:border-white/20'
-                    }`}
-                  >
-                    <h4 className={`text-lg font-bold mb-2 ${
-                      selectedVibe === vibe.id ? `text-${vibe.color}-400` : 'text-white'
-                    }`}>
-                      {vibe.name}
-                    </h4>
-                    <p className="text-neutral-400 text-sm">{vibe.desc}</p>
-                  </button>
-                ))}
-              </div>
+              {vibeLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                </div>
+              ) : generatedVibes.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {generatedVibes.map(vibe => (
+                    <button
+                      key={vibe.id}
+                      onClick={() => setSelectedVibe(vibe.id)}
+                      className={`p-6 rounded-xl border-2 text-left transition-all ${
+                        selectedVibe === vibe.id
+                          ? 'border-purple-500 bg-purple-500/10'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <h4 className={`text-lg font-bold mb-2 ${
+                        selectedVibe === vibe.id ? 'text-purple-400' : 'text-white'
+                      }`}>
+                        {vibe.name}
+                      </h4>
+                      <p className="text-neutral-400 text-sm mb-3">{vibe.description}</p>
+                      <div className="space-y-1">
+                        <p className="text-xs text-neutral-500">
+                          <span className="text-neutral-400 font-medium">Mood:</span> {vibe.mood.join(', ')}
+                        </p>
+                        <p className="text-xs text-neutral-500">
+                          <span className="text-neutral-400 font-medium">Colors:</span> {vibe.colorDirection}
+                        </p>
+                        <p className="text-xs text-neutral-500">
+                          <span className="text-neutral-400 font-medium">Typography:</span> {vibe.typography}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { id: 'modern', name: 'Modern', desc: 'Clean, contemporary, and tech-forward', color: 'blue' },
+                    { id: 'classic', name: 'Classic', desc: 'Timeless, elegant, and sophisticated', color: 'amber' },
+                    { id: 'bold', name: 'Bold', desc: 'Energetic, vibrant, and attention-grabbing', color: 'pink' },
+                    { id: 'minimal', name: 'Minimal', desc: 'Simple, clean, and focused', color: 'slate' },
+                  ].map(vibe => (
+                    <button
+                      key={vibe.id}
+                      onClick={() => setSelectedVibe(vibe.id)}
+                      className={`p-6 rounded-xl border-2 text-left transition-all ${
+                        selectedVibe === vibe.id
+                          ? `border-${vibe.color}-500 bg-${vibe.color}-500/10`
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <h4 className={`text-lg font-bold mb-2 ${
+                        selectedVibe === vibe.id ? `text-${vibe.color}-400` : 'text-white'
+                      }`}>
+                        {vibe.name}
+                      </h4>
+                      <p className="text-neutral-400 text-sm">{vibe.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -567,40 +864,69 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">Choose Your Color Palette</h3>
                 <p className="text-neutral-400">
-                  {selectedVibe && selectedVibe.length > 0 ? `${selectedVibe.charAt(0).toUpperCase() + selectedVibe.slice(1)} palettes` : 'All available color schemes'}
+                  {paletteLoading ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                      AI is generating 3 color palettes for {generatedVibes.find(v => v.id === selectedVibe)?.name || 'your'} vibe...
+                    </span>
+                  ) : generatedPalettes.length > 0 ? (
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-400" />
+                      AI generated 3 color palettes - select your favorite
+                    </span>
+                  ) : (
+                    selectedVibe && selectedVibe.length > 0 ? `${selectedVibe.charAt(0).toUpperCase() + selectedVibe.slice(1)} palettes` : 'All available color schemes'
+                  )}
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {filteredPalettes.map(palette => (
-                  <button
-                    key={palette.id}
-                    onClick={() => setSelectedPalette(palette)}
-                    className={`p-4 rounded-xl border-2 text-left transition-all ${
-                      selectedPalette?.id === palette.id
-                        ? 'border-purple-500 bg-purple-500/10'
-                        : 'border-white/10 bg-white/5 hover:border-white/20'
-                    }`}
-                  >
-                    <div className="flex gap-2 mb-3">
-                      <div 
-                        className="w-12 h-12 rounded-lg"
-                        style={{ backgroundColor: palette.primary }}
-                      />
-                      <div 
-                        className="w-12 h-12 rounded-lg"
-                        style={{ backgroundColor: palette.secondary }}
-                      />
-                      <div 
-                        className="w-12 h-12 rounded-lg border border-white/20"
-                        style={{ backgroundColor: palette.background }}
-                      />
-                    </div>
-                    <h4 className="text-white font-bold">{palette.name}</h4>
-                    <p className="text-neutral-400 text-xs mt-1 capitalize">{palette.vibe}</p>
-                  </button>
-                ))}
-              </div>
+              {paletteLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {filteredPalettes.map(palette => (
+                    <button
+                      key={palette.id}
+                      onClick={() => generatedPalettes.length > 0 ? setSelectedPalette({
+                        id: palette.id,
+                        name: palette.name,
+                        primary: palette.primary,
+                        secondary: palette.secondary,
+                        background: palette.background,
+                        vibe: selectedVibe
+                      }) : setSelectedPalette(palette)}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        selectedPalette?.id === palette.id
+                          ? 'border-purple-500 bg-purple-500/10'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex gap-2 mb-3">
+                        <div 
+                          className="w-12 h-12 rounded-lg"
+                          style={{ backgroundColor: palette.primary }}
+                        />
+                        <div 
+                          className="w-12 h-12 rounded-lg"
+                          style={{ backgroundColor: palette.secondary }}
+                        />
+                        <div 
+                          className="w-12 h-12 rounded-lg border border-white/20"
+                          style={{ backgroundColor: palette.background }}
+                        />
+                      </div>
+                      <h4 className="text-white font-bold">{palette.name}</h4>
+                      {generatedPalettes.length > 0 ? (
+                        <p className="text-neutral-400 text-xs mt-1">{palette.mood}</p>
+                      ) : (
+                        <p className="text-neutral-400 text-xs mt-1 capitalize">{palette.vibe}</p>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -609,73 +935,116 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">Choose Your Header Style</h3>
-                <p className="text-neutral-400">Select the navigation style for your store {dbComponents.header.length > 0 && `(${HEADER_OPTIONS.length + dbComponents.header.length} options)`}</p>
+                <p className="text-neutral-400">
+                  {headerLoading ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                      AI is generating 3 unique header variants...
+                    </span>
+                  ) : generatedHeaders.length > 0 ? (
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-400" />
+                      AI generated 3 headers - select your favorite
+                    </span>
+                  ) : (
+                    `Select the navigation style for your store ${dbComponents.header.length > 0 ? `(${HEADER_OPTIONS.length + dbComponents.header.length} options)` : ''}`
+                  )}
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {HEADER_OPTIONS.map(option => {
-                  const HeaderComponent = HEADER_COMPONENTS[option.id];
-                  
-                  return (
+              {headerLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* AI Generated Headers - Priority Display */}
+                  {generatedHeaders.map((header) => (
                     <button
-                      key={option.id}
-                      onClick={() => setSelectedHeader(option.id)}
+                      key={header.variantId}
+                      onClick={() => setSelectedHeader(header.variantId)}
                       className={`p-4 rounded-xl border-2 text-left transition-all ${
-                        selectedHeader === option.id
+                        selectedHeader === header.variantId
                           ? 'border-purple-500 bg-purple-500/10'
                           : 'border-white/10 bg-white/5 hover:border-white/20'
                       }`}
                     >
-                      <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden">
-                        {HeaderComponent && (
-                          <div className="scale-50 origin-top-left w-[200%]">
-                            <HeaderComponent
-                              logo="Your Store"
-                              links={[
-                                { label: 'Shop', href: '/shop' },
-                                { label: 'About', href: '/about' },
-                              ]}
-                              primaryColor={selectedPalette?.primary || '#3B82F6'}
-                              secondaryColor={selectedPalette?.secondary || '#8B5CF6'}
-                              backgroundColor={selectedPalette?.background || '#FFFFFF'}
-                            />
-                          </div>
-                        )}
+                      <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
+                        <div className="text-white/40 text-sm">AI Generated Preview</div>
                       </div>
-                      <h4 className="text-white font-bold">{option.name}</h4>
-                      {option.description && (
-                        <p className="text-neutral-400 text-sm mt-1">{option.description}</p>
-                      )}
-                      <div className="mt-2 text-xs text-purple-400">Platform Default</div>
+                      <h4 className="text-white font-bold">{header.variantName}</h4>
+                      <p className="text-neutral-400 text-sm mt-1 capitalize">{header.layout} layout</p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xs text-purple-400">AI Generated ✨</span>
+                      </div>
                     </button>
-                  );
-                })}
-                
-                {/* Database Components from AI Generations */}
-                {dbComponents.header.map((component: any) => (
-                  <button
-                    key={component.id}
-                    onClick={() => setSelectedHeader(component.variant_id)}
-                    className={`p-4 rounded-xl border-2 text-left transition-all ${
-                      selectedHeader === component.variant_id
-                        ? 'border-green-500 bg-green-500/10'
-                        : 'border-white/10 bg-white/5 hover:border-white/20'
-                    }`}
-                  >
-                    <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
-                      <div className="text-white/40 text-sm">Preview</div>
-                    </div>
-                    <h4 className="text-white font-bold">{component.name}</h4>
-                    {component.metadata?.description && (
-                      <p className="text-neutral-400 text-sm mt-1">{component.metadata.description}</p>
-                    )}
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="text-xs text-green-400">From AI ✨</span>
-                      <span className="text-xs text-neutral-500">Used {component.metadata?.usage_count || 0}×</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
+                  ))}
+                  
+                  {/* Platform Default Headers */}
+                  {HEADER_OPTIONS.map(option => {
+                    const HeaderComponent = HEADER_COMPONENTS[option.id];
+                    
+                    return (
+                      <button
+                        key={option.id}
+                        onClick={() => setSelectedHeader(option.id)}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          selectedHeader === option.id
+                            ? 'border-purple-500 bg-purple-500/10'
+                            : 'border-white/10 bg-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden">
+                          {HeaderComponent && (
+                            <div className="scale-50 origin-top-left w-[200%]">
+                              <HeaderComponent
+                                logo="Your Store"
+                                links={[
+                                  { label: 'Shop', href: '/shop' },
+                                  { label: 'About', href: '/about' },
+                                ]}
+                                primaryColor={selectedPalette?.primary || '#3B82F6'}
+                                secondaryColor={selectedPalette?.secondary || '#8B5CF6'}
+                                backgroundColor={selectedPalette?.background || '#FFFFFF'}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="text-white font-bold">{option.name}</h4>
+                        {option.description && (
+                          <p className="text-neutral-400 text-sm mt-1">{option.description}</p>
+                        )}
+                        <div className="mt-2 text-xs text-purple-400">Platform Default</div>
+                      </button>
+                    );
+                  })}
+                  
+                  {/* Database Components from Previous AI Generations */}
+                  {dbComponents.header.map((component: any) => (
+                    <button
+                      key={component.id}
+                      onClick={() => setSelectedHeader(component.variant_id)}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        selectedHeader === component.variant_id
+                          ? 'border-green-500 bg-green-500/10'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
+                        <div className="text-white/40 text-sm">Preview</div>
+                      </div>
+                      <h4 className="text-white font-bold">{component.name}</h4>
+                      {component.metadata?.description && (
+                        <p className="text-neutral-400 text-sm mt-1">{component.metadata.description}</p>
+                      )}
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xs text-green-400">From Library ✨</span>
+                        <span className="text-xs text-neutral-500">Used {component.metadata?.usage_count || 0}×</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -684,41 +1053,109 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">Choose Your Hero Style</h3>
-                <p className="text-neutral-400">Select the main banner style for your homepage</p>
+                <p className="text-neutral-400">
+                  {heroLoading ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                      AI is generating 3 unique hero variants...
+                    </span>
+                  ) : generatedHeroes.length > 0 ? (
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-400" />
+                      AI generated 3 heroes - select your favorite
+                    </span>
+                  ) : (
+                    'Select the main banner style for your homepage'
+                  )}
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {HERO_OPTIONS.slice(0, 8).map(option => {
-                  const HeroComponent = HERO_COMPONENTS[option.id];
-                  
-                  return (
+              {heroLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* AI Generated Heroes - Priority Display */}
+                  {generatedHeroes.map((hero) => (
                     <button
-                      key={option.id}
-                      onClick={() => setSelectedHero(option.id)}
+                      key={hero.variantId}
+                      onClick={() => setSelectedHero(hero.variantId)}
                       className={`p-4 rounded-xl border-2 text-left transition-all ${
-                        selectedHero === option.id
+                        selectedHero === hero.variantId
                           ? 'border-purple-500 bg-purple-500/10'
                           : 'border-white/10 bg-white/5 hover:border-white/20'
                       }`}
                     >
-                      <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden">
-                        {HeroComponent && (
-                          <div className="scale-[0.25] origin-top-left w-[400%]">
-                            <HeroComponent
-                              heading="Welcome to Your Store"
-                              subheading="Discover amazing products"
-                              buttonText="Shop Now"
-                              primaryColor={selectedPalette?.primary || '#3B82F6'}
-                              secondaryColor={selectedPalette?.secondary || '#8B5CF6'}
-                            />
-                          </div>
-                        )}
+                      <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
+                        <div className="text-white/40 text-sm">AI Generated Preview</div>
                       </div>
-                      <h4 className="text-white font-bold">{option.name}</h4>
+                      <h4 className="text-white font-bold">{hero.variantName}</h4>
+                      <p className="text-neutral-400 text-sm mt-1 capitalize">{hero.layout} layout</p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xs text-purple-400">AI Generated ✨</span>
+                      </div>
                     </button>
-                  );
-                })}
-              </div>
+                  ))}
+                  
+                  {/* Platform Default Heroes */}
+                  {HERO_OPTIONS.slice(0, 8).map(option => {
+                    const HeroComponent = HERO_COMPONENTS[option.id];
+                    
+                    return (
+                      <button
+                        key={option.id}
+                        onClick={() => setSelectedHero(option.id)}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          selectedHero === option.id
+                            ? 'border-purple-500 bg-purple-500/10'
+                            : 'border-white/10 bg-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden">
+                          {HeroComponent && (
+                            <div className="scale-[0.25] origin-top-left w-[400%]">
+                              <HeroComponent
+                                heading="Welcome to Your Store"
+                                subheading="Discover amazing products"
+                                buttonText="Shop Now"
+                                primaryColor={selectedPalette?.primary || '#3B82F6'}
+                                secondaryColor={selectedPalette?.secondary || '#8B5CF6'}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="text-white font-bold">{option.name}</h4>
+                      </button>
+                    );
+                  })}
+                  
+                  {/* Database Components from Previous AI Generations */}
+                  {dbComponents.hero.map((component: any) => (
+                    <button
+                      key={component.id}
+                      onClick={() => setSelectedHero(component.variant_id)}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        selectedHero === component.variant_id
+                          ? 'border-green-500 bg-green-500/10'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
+                        <div className="text-white/40 text-sm">Preview</div>
+                      </div>
+                      <h4 className="text-white font-bold">{component.name}</h4>
+                      {component.metadata?.description && (
+                        <p className="text-neutral-400 text-sm mt-1">{component.metadata.description}</p>
+                      )}
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xs text-green-400">From Library ✨</span>
+                        <span className="text-xs text-neutral-500">Used {component.metadata?.usage_count || 0}×</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -727,48 +1164,116 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">Choose Your Product Card Style</h3>
-                <p className="text-neutral-400">Select how products will be displayed</p>
+                <p className="text-neutral-400">
+                  {productCardLoading ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                      AI is generating 3 unique product card variants...
+                    </span>
+                  ) : generatedProductCards.length > 0 ? (
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-400" />
+                      AI generated 3 product cards - select your favorite
+                    </span>
+                  ) : (
+                    'Select how products will be displayed'
+                  )}
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {PRODUCT_CARD_OPTIONS.map(option => {
-                  const CardComponent = PRODUCT_CARD_COMPONENTS[option.id];
-                  
-                  return (
+              {productCardLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* AI Generated Product Cards - Priority Display */}
+                  {generatedProductCards.map((card) => (
                     <button
-                      key={option.id}
-                      onClick={() => setSelectedProductCard(option.id)}
+                      key={card.variantId}
+                      onClick={() => setSelectedProductCard(card.variantId)}
                       className={`p-4 rounded-xl border-2 text-left transition-all ${
-                        selectedProductCard === option.id
+                        selectedProductCard === card.variantId
                           ? 'border-purple-500 bg-purple-500/10'
                           : 'border-white/10 bg-white/5 hover:border-white/20'
                       }`}
                     >
-                      <div className="aspect-[3/4] bg-neutral-900 rounded-lg mb-3 overflow-hidden">
-                        {CardComponent && (
-                          <div className="scale-75 origin-top">
-                            <CardComponent
-                              product={{
-                                id: 'preview',
-                                name: 'Sample Product',
-                                price: 2999,
-                                images: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30'],
-                                category: 'Preview',
-                                description: 'Preview item',
-                                stock: 10,
-                                store_id: storeId
-                              }}
-                              primaryColor={selectedPalette?.primary || '#3B82F6'}
-                              onAddToCart={() => {}}
-                            />
-                          </div>
-                        )}
+                      <div className="aspect-[3/4] bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
+                        <div className="text-white/40 text-sm">AI Generated Preview</div>
                       </div>
-                      <h4 className="text-white font-bold">{option.name}</h4>
+                      <h4 className="text-white font-bold">{card.variantName}</h4>
+                      <p className="text-neutral-400 text-sm mt-1 capitalize">{card.layout} layout</p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xs text-purple-400">AI Generated ✨</span>
+                      </div>
                     </button>
-                  );
-                })}
-              </div>
+                  ))}
+                  
+                  {/* Platform Default Product Cards */}
+                  {PRODUCT_CARD_OPTIONS.map(option => {
+                    const CardComponent = PRODUCT_CARD_COMPONENTS[option.id];
+                    
+                    return (
+                      <button
+                        key={option.id}
+                        onClick={() => setSelectedProductCard(option.id)}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          selectedProductCard === option.id
+                            ? 'border-purple-500 bg-purple-500/10'
+                            : 'border-white/10 bg-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="aspect-[3/4] bg-neutral-900 rounded-lg mb-3 overflow-hidden">
+                          {CardComponent && (
+                            <div className="scale-75 origin-top">
+                              <CardComponent
+                                product={{
+                                  id: 'preview',
+                                  name: 'Sample Product',
+                                  price: 2999,
+                                  images: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30'],
+                                  category: 'Preview',
+                                  description: 'Preview item',
+                                  stock: 10,
+                                  store_id: storeId
+                                }}
+                                primaryColor={selectedPalette?.primary || '#3B82F6'}
+                                onAddToCart={() => {}}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="text-white font-bold">{option.name}</h4>
+                      </button>
+                    );
+                  })}
+                  
+                  {/* Database Components from Previous AI Generations */}
+                  {dbComponents.productCard.map((component: any) => (
+                    <button
+                      key={component.id}
+                      onClick={() => setSelectedProductCard(component.variant_id)}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        selectedProductCard === component.variant_id
+                          ? 'border-green-500 bg-green-500/10'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="aspect-[3/4] bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
+                        <div className="text-white/40 text-sm">Preview</div>
+                      </div>
+                      <h4 className="text-white font-bold">{component.name}</h4>
+                      {component.metadata?.description && (
+                        <p className="text-neutral-400 text-sm mt-1">{component.metadata.description}</p>
+                      )}
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xs text-green-400">From Library ✨</span>
+                        <span className="text-xs text-neutral-500">Used {component.metadata?.usage_count || 0}×</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -777,39 +1282,107 @@ export const DesignWizard: React.FC<DesignWizardProps> = ({
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">Choose Your Footer Style</h3>
-                <p className="text-neutral-400">Select the bottom section style</p>
+                <p className="text-neutral-400">
+                  {footerLoading ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                      AI is generating 3 unique footer variants...
+                    </span>
+                  ) : generatedFooters.length > 0 ? (
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-400" />
+                      AI generated 3 footers - select your favorite
+                    </span>
+                  ) : (
+                    'Select the bottom section style'
+                  )}
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {FOOTER_OPTIONS.slice(0, 8).map(option => {
-                  const FooterComponent = FOOTER_COMPONENTS[option.id];
-                  
-                  return (
+              {footerLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* AI Generated Footers - Priority Display */}
+                  {generatedFooters.map((footer) => (
                     <button
-                      key={option.id}
-                      onClick={() => setSelectedFooter(option.id)}
+                      key={footer.variantId}
+                      onClick={() => setSelectedFooter(footer.variantId)}
                       className={`p-4 rounded-xl border-2 text-left transition-all ${
-                        selectedFooter === option.id
+                        selectedFooter === footer.variantId
                           ? 'border-purple-500 bg-purple-500/10'
                           : 'border-white/10 bg-white/5 hover:border-white/20'
                       }`}
                     >
-                      <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden">
-                        {FooterComponent && (
-                          <div className="scale-[0.3] origin-top-left w-[333%]">
-                            <FooterComponent
-                              logo="Your Store"
-                              primaryColor={selectedPalette?.primary || '#3B82F6'}
-                              secondaryColor={selectedPalette?.secondary || '#8B5CF6'}
-                            />
-                          </div>
-                        )}
+                      <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
+                        <div className="text-white/40 text-sm">AI Generated Preview</div>
                       </div>
-                      <h4 className="text-white font-bold">{option.name}</h4>
+                      <h4 className="text-white font-bold">{footer.variantName}</h4>
+                      <p className="text-neutral-400 text-sm mt-1 capitalize">{footer.layout} layout</p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xs text-purple-400">AI Generated ✨</span>
+                      </div>
                     </button>
-                  );
-                })}
-              </div>
+                  ))}
+                  
+                  {/* Platform Default Footers */}
+                  {FOOTER_OPTIONS.slice(0, 8).map(option => {
+                    const FooterComponent = FOOTER_COMPONENTS[option.id];
+                    
+                    return (
+                      <button
+                        key={option.id}
+                        onClick={() => setSelectedFooter(option.id)}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          selectedFooter === option.id
+                            ? 'border-purple-500 bg-purple-500/10'
+                            : 'border-white/10 bg-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden">
+                          {FooterComponent && (
+                            <div className="scale-[0.3] origin-top-left w-[333%]">
+                              <FooterComponent
+                                logo="Your Store"
+                                primaryColor={selectedPalette?.primary || '#3B82F6'}
+                                secondaryColor={selectedPalette?.secondary || '#8B5CF6'}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="text-white font-bold">{option.name}</h4>
+                      </button>
+                    );
+                  })}
+                  
+                  {/* Database Components from Previous AI Generations */}
+                  {dbComponents.footer.map((component: any) => (
+                    <button
+                      key={component.id}
+                      onClick={() => setSelectedFooter(component.variant_id)}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        selectedFooter === component.variant_id
+                          ? 'border-green-500 bg-green-500/10'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="aspect-video bg-neutral-900 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
+                        <div className="text-white/40 text-sm">Preview</div>
+                      </div>
+                      <h4 className="text-white font-bold">{component.name}</h4>
+                      {component.metadata?.description && (
+                        <p className="text-neutral-400 text-sm mt-1">{component.metadata.description}</p>
+                      )}
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xs text-green-400">From Library ✨</span>
+                        <span className="text-xs text-neutral-500">Used {component.metadata?.usage_count || 0}×</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
