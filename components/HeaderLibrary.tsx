@@ -827,7 +827,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
       
       {/* Main Header */}
       <header
-        className={`w-full ${settings.sticky ? 'fixed top-0 left-0 right-0' : ''} z-[100] transition-transform duration-${settings.smartScrollDuration || 300}`}
+        className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-[100] transition-transform duration-${settings.smartScrollDuration || 300}`}
         style={{
           ...glassStyles,
           backgroundColor: settings.enableGlassmorphism ? glassStyles.backgroundColor : settings.backgroundColor,
@@ -1762,10 +1762,10 @@ export const HeaderQuantum: React.FC<HeaderProps> = ({
 
   return (
     <header 
-      className={`w-full ${settings.enableFloating ? 'fixed top-0 left-0 right-0 z-50' : 'relative'}`}
+      className={`w-full ${settings.sticky ? 'sticky top-0 z-50' : settings.enableFloating ? 'fixed top-0 left-0 right-0 z-50' : 'relative'}`}
       style={{ 
         backgroundColor: settings.backgroundColor,
-        padding: settings.enableFloating ? '1rem 0' : '1rem 0'
+        padding: settings.enableFloating || settings.sticky ? '1rem 0' : '1rem 0'
       }}
     >
       <div className="max-w-7xl mx-auto px-6">
@@ -1904,7 +1904,7 @@ export const HeaderOrbit: React.FC<HeaderProps> = ({
   }, [isExpanded, settings.orbitSpeed]);
 
   return (
-    <header className="w-full relative" style={{ backgroundColor: settings.backgroundColor, padding: '2rem 0' }}>
+    <header className={`w-full ${settings.sticky ? 'sticky top-0 z-50' : 'relative'}`} style={{ backgroundColor: settings.backgroundColor, padding: '2rem 0' }}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between">
           {/* Left Actions */}
@@ -2063,7 +2063,7 @@ export const HeaderNeon: React.FC<HeaderProps> = ({
 
   return (
     <header 
-      className="w-full relative overflow-hidden"
+      className={`w-full ${settings.sticky ? 'sticky top-0 z-50' : 'relative'} overflow-hidden`}
       style={{ backgroundColor: settings.backgroundColor }}
     >
       {/* Cyberpunk Grid Background */}

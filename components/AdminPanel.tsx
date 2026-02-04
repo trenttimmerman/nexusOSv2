@@ -15485,13 +15485,6 @@ Return ONLY the JSON object, no markdown.`;
                   ) :
                   'w-full h-full max-w-[1400px] rounded-lg border border-neutral-800'
                 }`}>
-                  <style>{`
-                    /* Fix for sticky/fixed headers in preview - make them position relative to container */
-                    .preview-container [class*="fixed"],
-                    .preview-container [class*="sticky"] {
-                      position: absolute !important;
-                    }
-                  `}</style>
                   <div className={`preview-container w-full h-full overflow-y-auto overflow-x-hidden bg-white scrollbar-${config.scrollbarStyle} relative`}>
                     <div className="relative" style={{ contain: 'layout style paint' }}>
                       <Storefront
