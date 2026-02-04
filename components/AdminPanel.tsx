@@ -10180,7 +10180,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <input
                               type="color"
                               value={heroData.style?.backgroundColor || '#000000'}
-                              onChange={(e) => updateHeroData({ style: { ...heroData.style, backgroundColor: e.target.value } })}
+                              onChange={(e) => updateHeroData({ style: { backgroundColor: e.target.value } })}
                               className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
                             <span className="text-[10px] text-neutral-300 leading-tight">Background</span>
@@ -10193,7 +10193,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <input
                               type="color"
                               value={heroData.style?.headingColor || heroData.style?.textColor || '#ffffff'}
-                              onChange={(e) => updateHeroData({ style: { ...heroData.style, headingColor: e.target.value } })}
+                              onChange={(e) => updateHeroData({ style: { headingColor: e.target.value } })}
                               className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
                             <span className="text-[10px] text-neutral-300 leading-tight">Heading</span>
@@ -10206,7 +10206,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <input
                               type="color"
                               value={heroData.style?.subheadingColor || '#9ca3af'}
-                              onChange={(e) => updateHeroData({ style: { ...heroData.style, subheadingColor: e.target.value } })}
+                              onChange={(e) => updateHeroData({ style: { subheadingColor: e.target.value } })}
                               className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
                             <span className="text-[10px] text-neutral-300 leading-tight">Subheading</span>
@@ -10220,7 +10220,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.badgeColor || '#ffffff'}
-                                onChange={(e) => updateHeroData({ style: { ...heroData.style, badgeColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { badgeColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">Badge Text</span>
@@ -10229,7 +10229,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.badgeBorderColor || '#ffffff'}
-                                onChange={(e) => updateHeroData({ style: { ...heroData.style, badgeBorderColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { badgeBorderColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">Badge Border</span>
@@ -10243,7 +10243,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <input
                               type="color"
                               value={heroData.style?.topBadgeColor || '#ffffff'}
-                              onChange={(e) => updateHeroData({ style: { ...heroData.style, topBadgeColor: e.target.value } })}
+                              onChange={(e) => updateHeroData({ style: { topBadgeColor: e.target.value } })}
                               className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
                             <span className="text-[10px] text-neutral-300 leading-tight">Top Badge</span>
@@ -10257,7 +10257,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.buttonBgColor || '#ffffff'}
-                                onChange={(e) => updateHeroData({ style: { ...heroData.style, buttonBgColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { buttonBgColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">Button BG</span>
@@ -10266,7 +10266,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.buttonTextColor || '#000000'}
-                                onChange={(e) => updateHeroData({ style: { ...heroData.style, buttonTextColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { buttonTextColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">Button Text</span>
@@ -10281,7 +10281,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.secondaryButtonBgColor || 'transparent'}
-                                onChange={(e) => updateHeroData({ style: { ...heroData.style, secondaryButtonBgColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { secondaryButtonBgColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">2nd Btn BG</span>
@@ -10290,7 +10290,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.secondaryButtonTextColor || '#ffffff'}
-                                onChange={(e) => updateHeroData({ style: { ...heroData.style, secondaryButtonTextColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { secondaryButtonTextColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">2nd Btn Text</span>
@@ -10299,7 +10299,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.secondaryButtonBorderColor || '#ffffff'}
-                                onChange={(e) => updateHeroData({ style: { ...heroData.style, secondaryButtonBorderColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { secondaryButtonBorderColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">2nd Btn Border</span>
@@ -10313,7 +10313,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <input
                               type="color"
                               value={heroData.style?.marqueeColor || '#ccff00'}
-                              onChange={(e) => updateHeroData({ style: { ...heroData.style, marqueeColor: e.target.value } })}
+                              onChange={(e) => updateHeroData({ style: { marqueeColor: e.target.value } })}
                               className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
                             <span className="text-[10px] text-neutral-300 leading-tight">Marquee</span>
@@ -10326,7 +10326,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <input
                               type="color"
                               value={heroData.style?.linkColor || '#ffffff'}
-                              onChange={(e) => updateHeroData({ style: { ...heroData.style, linkColor: e.target.value } })}
+                              onChange={(e) => updateHeroData({ style: { linkColor: e.target.value } })}
                               className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
                             <span className="text-[10px] text-neutral-300 leading-tight">Nav Links</span>
@@ -10399,7 +10399,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           ].map(({ value, icon: Icon, label }) => (
                             <button
                               key={value}
-                              onClick={() => updateHeroData({ style: { ...heroData.style, alignment: value } })}
+                              onClick={() => updateHeroData({ style: { alignment: value } })}
                               className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-colors ${
                                 (heroData.style?.alignment || 'center') === value
                                   ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
@@ -10453,7 +10453,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           ].map(({ value, label }) => (
                             <button
                               key={value}
-                              onClick={() => updateHeroData({ style: { ...heroData.style, padding: value } })}
+                              onClick={() => updateHeroData({ style: { padding: value } })}
                               className={`p-2 rounded-lg border text-xs font-medium transition-colors ${
                                 (heroData.style?.padding || 'm') === value
                                   ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
