@@ -9619,14 +9619,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     // Update hero data field
     const updateHeroData = (updates: any) => {
       if (selectedBlockId) {
-        setLocalPages(prev => prev.map(p => {
-          if (p.id !== activePage.id) return p;
-          return {
-            ...p,
-            blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, data: { ...b.data, ...updates } } : b)
-          };
-        }));
-        setHasUnsavedChanges(true);
+        updateActiveBlockData(selectedBlockId, updates);
       } else {
         // Update global hero data
         onConfigChange({ 
