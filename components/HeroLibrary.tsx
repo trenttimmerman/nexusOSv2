@@ -515,8 +515,16 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data,
           </span>
         </div>
         <div 
-          className="text-6xl md:text-9xl font-black mb-8 leading-none tracking-tighter animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150 uppercase" 
-          style={{ color: headingColor }}
+          className="mb-8 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150" 
+          style={{ 
+            color: headingColor,
+            fontFamily: style.headingFont || 'Inter',
+            fontSize: style.headingSize || '6rem',
+            fontWeight: style.headingWeight || '900',
+            letterSpacing: style.letterSpacing || '-0.02em',
+            lineHeight: style.lineHeight || '1.1',
+            textTransform: style.textTransform || 'uppercase'
+          }}
         >
           <EditableText 
              elementId={`editable-${blockId}-heading`}
@@ -633,7 +641,15 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
     <section className={`w-full min-h-[80vh] flex flex-col ${contentPosition === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'} relative group/hero`} style={{ backgroundColor }}>
        <div className={`w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center items-start border-b md:border-b-0 ${contentPosition === 'right' ? 'md:border-l' : 'md:border-r'} ${animClass}`} style={{ borderColor: dividerColor }}>
           <div className="mb-8">
-             <div className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-6" style={{ color: headingColor }}>
+             <div className="mb-6" style={{ 
+               color: headingColor,
+               fontFamily: style.headingFont || 'Inter',
+               fontSize: style.headingSize || '5rem',
+               fontWeight: style.headingWeight || '700',
+               letterSpacing: style.letterSpacing || '-0.03em',
+               lineHeight: style.lineHeight || '0.9',
+               textTransform: style.textTransform || 'none'
+             }}>
                 <EditableText 
                  tagName="h1" 
                  value={heading} 
@@ -645,7 +661,13 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
                  onSelect={() => handleSelect('heading')}
                />
              </div>
-             <div className="text-xl max-w-md leading-relaxed" style={{ color: subheadingColor }}>
+             <div className="max-w-md" style={{ 
+               color: subheadingColor,
+               fontFamily: style.subheadingFont || 'Inter',
+               fontSize: style.subheadingSize || '1.25rem',
+               fontWeight: style.subheadingWeight || '400',
+               lineHeight: '1.5'
+             }}>
                 <EditableText 
                  tagName="p" 
                  value={subheading} 
@@ -764,7 +786,15 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, primaryColor, data
       </div>
 
       <div className="flex-1 flex items-center justify-center relative z-10">
-         <div className="text-[12vw] font-black leading-none tracking-tighter mix-blend-multiply text-center uppercase relative z-20 pointer-events-none md:pointer-events-auto" style={{ color: headingColor }}>
+         <div className="mix-blend-multiply text-center uppercase relative z-20 pointer-events-none md:pointer-events-auto" style={{ 
+           color: headingColor,
+           fontFamily: style.headingFont || 'Inter',
+           fontSize: style.headingSize || '12vw',
+           fontWeight: style.headingWeight || '900',
+           letterSpacing: style.letterSpacing || '-0.03em',
+           lineHeight: style.lineHeight || '1',
+           textTransform: style.textTransform || 'uppercase'
+         }}>
             <EditableText 
              tagName="h1" 
              value={heading} 
@@ -879,7 +909,15 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, primaryColor, data, i
                 >
                    <ArrowRight className="-rotate-45" />
                 </div>
-                <div className="text-5xl font-bold tracking-tight mb-4" style={{ color: headingColor }}>
+                <div className="mb-4" style={{ 
+                  color: headingColor,
+                  fontFamily: style.headingFont || 'Inter',
+                  fontSize: style.headingSize || '3rem',
+                  fontWeight: style.headingWeight || '700',
+                  letterSpacing: style.letterSpacing || '-0.025em',
+                  lineHeight: style.lineHeight || '1.1',
+                  textTransform: style.textTransform || 'none'
+                }}>
                      <EditableText 
                      tagName="h1" 
                      value={heading} 
@@ -891,7 +929,13 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, primaryColor, data, i
                      onSelect={() => handleSelect('heading')}
                    />
                 </div>
-                <div className="font-medium" style={{ color: subheadingColor }}>
+                <div style={{ 
+                  color: subheadingColor,
+                  fontFamily: style.subheadingFont || 'Inter',
+                  fontSize: style.subheadingSize || '1rem',
+                  fontWeight: style.subheadingWeight || '500',
+                  lineHeight: '1.5'
+                }}>
                    <EditableText 
                      tagName="p" 
                      value={subheading} 
@@ -1094,7 +1138,15 @@ export const HeroTypographic: React.FC<HeroProps> = ({
              <Star size={12} style={{ color: badgeColor, opacity: 0.4 }} />
           </div>
           
-          <div className="text-5xl md:text-8xl font-black tracking-tighter mb-8 leading-[0.9] uppercase" style={{ color: headingColor }}>
+          <div className="mb-8" style={{ 
+            color: headingColor,
+            fontFamily: style.headingFont || 'Inter',
+            fontSize: style.headingSize || '5rem',
+            fontWeight: style.headingWeight || '900',
+            letterSpacing: style.letterSpacing || '-0.03em',
+            lineHeight: style.lineHeight || '0.9',
+            textTransform: style.textTransform || 'uppercase'
+          }}>
              <EditableText 
                  tagName="h1" 
                  value={heading} 
@@ -1107,7 +1159,14 @@ export const HeroTypographic: React.FC<HeroProps> = ({
              />
           </div>
 
-          <div className="max-w-xl mx-auto text-lg mb-12" style={{ color: subheadingColor, opacity: 0.5 }}>
+          <div className="max-w-xl mx-auto mb-12" style={{ 
+            color: subheadingColor, 
+            opacity: 0.5,
+            fontFamily: style.subheadingFont || 'Inter',
+            fontSize: style.subheadingSize || '1.125rem',
+            fontWeight: style.subheadingWeight || '400',
+            lineHeight: '1.5'
+          }}>
              <EditableText 
                  tagName="p" 
                  value={subheading} 
@@ -1261,6 +1320,9 @@ const HeroVideoMask: React.FC<HeroProps> = ({ storeName, primaryColor, data, isE
   const buttonLink = data?.buttonLink || '#';
   const secondaryButtonLink = data?.secondaryButtonLink || '#';
 
+  // Extract style values
+  const style = data?.style || {};
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
       {/* Background Video */}
@@ -1312,7 +1374,7 @@ const HeroVideoMask: React.FC<HeroProps> = ({ storeName, primaryColor, data, isE
           <DisplayText
             tagName="h1"
             value=""
-            className="relative text-9xl font-black leading-none py-8"
+            className="relative py-8"
             style={{
               background: `url(${videoUrl})`,
               backgroundSize: 'cover',
@@ -1320,6 +1382,12 @@ const HeroVideoMask: React.FC<HeroProps> = ({ storeName, primaryColor, data, isE
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
+              fontFamily: style.headingFont || 'Inter',
+              fontSize: style.headingSize || '9rem',
+              fontWeight: style.headingWeight || '900',
+              letterSpacing: style.letterSpacing || '-0.03em',
+              lineHeight: style.lineHeight || '1',
+              textTransform: style.textTransform || 'none',
               ...(textStroke ? {
                 WebkitTextStroke: `2px ${accentColor}`,
               } : {})
@@ -1346,7 +1414,13 @@ const HeroVideoMask: React.FC<HeroProps> = ({ storeName, primaryColor, data, isE
         <DisplayText
           tagName="p"
           value={subheading}
-          className="text-2xl md:text-3xl text-white/90 mb-12 max-w-3xl mx-auto font-light tracking-wide"
+          className="mb-12 max-w-3xl mx-auto text-white/90"
+          style={{
+            fontFamily: style.subheadingFont || 'Inter',
+            fontSize: style.subheadingSize || '2rem',
+            fontWeight: style.subheadingWeight || '300',
+            lineHeight: '1.4'
+          }}
         />
 
         {/* Feature Pills */}
@@ -1451,6 +1525,9 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
   const videoUrl = data?.videoUrl || '';
   const showParticles = data?.showParticles !== false; // Default to true
   const secondaryButtonLink = data?.secondaryButtonLink || '#demo';
+  
+  // Extract style values
+  const style = data?.style || {};
   
   // Bottom stats
   const stat1Number = data?.stat1Number || '50K+';
@@ -1665,7 +1742,15 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
         <DisplayText
           tagName="h1"
           value=""
-          className="text-8xl font-black mb-8 leading-none"
+          className="mb-8"
+          style={{
+            fontFamily: style.headingFont || 'Inter',
+            fontSize: style.headingSize || '6rem',
+            fontWeight: style.headingWeight || '900',
+            letterSpacing: style.letterSpacing || '-0.03em',
+            lineHeight: style.lineHeight || '1',
+            textTransform: style.textTransform || 'none'
+          }}
         >
           {heading.split('').map((char, i) => (
             <span
@@ -1688,7 +1773,13 @@ const HeroParticleField: React.FC<HeroProps> = ({ storeName, primaryColor, data,
         <DisplayText
           tagName="p"
           value={subheading}
-          className="text-2xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed"
+          className="mb-12 max-w-2xl mx-auto text-gray-300"
+          style={{
+            fontFamily: style.subheadingFont || 'Inter',
+            fontSize: style.subheadingSize || '1.5rem',
+            fontWeight: style.subheadingWeight || '400',
+            lineHeight: '1.6'
+          }}
         />
 
         {/* CTA Buttons */}
@@ -1820,6 +1911,9 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
   const glassOpacity = data?.glassOpacity || 10;
   const splineUrl = data?.splineUrl || '';
 
+  // Extract style values
+  const style = data?.style || {};
+
   // Mouse spotlight effect state
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const heroRef = useRef<HTMLDivElement>(null);
@@ -1890,13 +1984,27 @@ const HeroBento: React.FC<HeroProps> = ({ storeName, primaryColor, data, isEdita
           <DisplayText
             tagName="h1"
             value={heading}
-            className="text-7xl font-black text-white mb-6 leading-tight"
+            className="mb-6 text-white"
+            style={{
+              fontFamily: style.headingFont || 'Inter',
+              fontSize: style.headingSize || '4.5rem',
+              fontWeight: style.headingWeight || '900',
+              letterSpacing: style.letterSpacing || '-0.02em',
+              lineHeight: style.lineHeight || '1.15',
+              textTransform: style.textTransform || 'none'
+            }}
           />
 
           <DisplayText
             tagName="p"
             value={subheading}
-            className="text-2xl text-gray-300 mb-10 leading-relaxed"
+            className="mb-10 text-gray-300"
+            style={{
+              fontFamily: style.subheadingFont || 'Inter',
+              fontSize: style.subheadingSize || '1.5rem',
+              fontWeight: style.subheadingWeight || '400',
+              lineHeight: '1.6'
+            }}
           />
 
           <div className="flex gap-4">

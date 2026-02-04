@@ -10387,6 +10387,211 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </div>
                     )}
 
+                    {/* Typography Controls */}
+                    <div className="space-y-3 border-t border-neutral-800 pt-4 mt-4">
+                      <p className="text-xs text-neutral-400 font-bold">Typography</p>
+                      
+                      {/* Heading Font Family */}
+                      {availableFields.includes('heading') && (
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-neutral-400">Heading Font</label>
+                          <select
+                            value={heroData.style?.headingFont || 'Inter'}
+                            onChange={(e) => updateHeroData({ style: { headingFont: e.target.value } })}
+                            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                            style={{ color: '#000000' }}
+                          >
+                            <option value="Inter">Inter (Modern Sans)</option>
+                            <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                            <option value="DM Sans">DM Sans</option>
+                            <option value="Manrope">Manrope</option>
+                            <option value="Outfit">Outfit</option>
+                            <option value="Space Grotesk">Space Grotesk</option>
+                            <option value="Sora">Sora</option>
+                            <option value="Poppins">Poppins</option>
+                            <option value="Playfair Display">Playfair Display (Serif)</option>
+                            <option value="Cormorant Garamond">Cormorant Garamond</option>
+                            <option value="Libre Baskerville">Libre Baskerville</option>
+                            <option value="Merriweather">Merriweather</option>
+                            <option value="JetBrains Mono">JetBrains Mono (Mono)</option>
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Heading Font Size */}
+                      {availableFields.includes('heading') && (
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between items-center">
+                            <label className="text-xs text-neutral-400">Heading Size</label>
+                            <span className="text-xs text-neutral-500">{heroData.style?.headingSize || '4rem'}</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="1"
+                            max="10"
+                            step="0.5"
+                            value={parseFloat(heroData.style?.headingSize || '4')}
+                            onChange={(e) => updateHeroData({ style: { headingSize: `${e.target.value}rem` } })}
+                            className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                          />
+                        </div>
+                      )}
+
+                      {/* Heading Font Weight */}
+                      {availableFields.includes('heading') && (
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-neutral-400">Heading Weight</label>
+                          <div className="grid grid-cols-4 gap-1">
+                            {[
+                              { value: '300', label: 'Light' },
+                              { value: '400', label: 'Normal' },
+                              { value: '700', label: 'Bold' },
+                              { value: '900', label: 'Black' }
+                            ].map(({ value, label }) => (
+                              <button
+                                key={value}
+                                onClick={() => updateHeroData({ style: { headingWeight: value } })}
+                                className={`p-2 rounded-lg border text-xs font-medium transition-colors ${
+                                  (heroData.style?.headingWeight || '700') === value
+                                    ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                                    : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Heading Letter Spacing */}
+                      {availableFields.includes('heading') && (
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between items-center">
+                            <label className="text-xs text-neutral-400">Letter Spacing</label>
+                            <span className="text-xs text-neutral-500">{heroData.style?.letterSpacing || '0em'}</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="-0.1"
+                            max="0.3"
+                            step="0.01"
+                            value={parseFloat(heroData.style?.letterSpacing || '0')}
+                            onChange={(e) => updateHeroData({ style: { letterSpacing: `${e.target.value}em` } })}
+                            className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                          />
+                        </div>
+                      )}
+
+                      {/* Heading Line Height */}
+                      {availableFields.includes('heading') && (
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between items-center">
+                            <label className="text-xs text-neutral-400">Line Height</label>
+                            <span className="text-xs text-neutral-500">{heroData.style?.lineHeight || '1.2'}</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0.8"
+                            max="2"
+                            step="0.1"
+                            value={parseFloat(heroData.style?.lineHeight || '1.2')}
+                            onChange={(e) => updateHeroData({ style: { lineHeight: e.target.value } })}
+                            className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                          />
+                        </div>
+                      )}
+
+                      {/* Text Transform */}
+                      {availableFields.includes('heading') && (
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-neutral-400">Text Transform</label>
+                          <div className="grid grid-cols-3 gap-1">
+                            {[
+                              { value: 'none', label: 'None' },
+                              { value: 'uppercase', label: 'UPPER' },
+                              { value: 'capitalize', label: 'Title' }
+                            ].map(({ value, label }) => (
+                              <button
+                                key={value}
+                                onClick={() => updateHeroData({ style: { textTransform: value } })}
+                                className={`p-2 rounded-lg border text-xs font-medium transition-colors ${
+                                  (heroData.style?.textTransform || 'none') === value
+                                    ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                                    : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Subheading Font (if subheading exists) */}
+                      {availableFields.includes('subheading') && (
+                        <>
+                          <div className="border-t border-neutral-700 my-2 pt-2">
+                            <p className="text-xs text-neutral-500 font-bold mb-2">Subheading Typography</p>
+                          </div>
+                          
+                          <div className="space-y-1.5">
+                            <label className="text-xs text-neutral-400">Subheading Font</label>
+                            <select
+                              value={heroData.style?.subheadingFont || 'Inter'}
+                              onChange={(e) => updateHeroData({ style: { subheadingFont: e.target.value } })}
+                              className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
+                              style={{ color: '#000000' }}
+                            >
+                              <option value="Inter">Inter</option>
+                              <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                              <option value="DM Sans">DM Sans</option>
+                              <option value="Poppins">Poppins</option>
+                            </select>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <div className="flex justify-between items-center">
+                              <label className="text-xs text-neutral-400">Subheading Size</label>
+                              <span className="text-xs text-neutral-500">{heroData.style?.subheadingSize || '1.25rem'}</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0.75"
+                              max="3"
+                              step="0.25"
+                              value={parseFloat(heroData.style?.subheadingSize || '1.25')}
+                              onChange={(e) => updateHeroData({ style: { subheadingSize: `${e.target.value}rem` } })}
+                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-xs text-neutral-400">Subheading Weight</label>
+                            <div className="grid grid-cols-3 gap-1">
+                              {[
+                                { value: '300', label: 'Light' },
+                                { value: '400', label: 'Normal' },
+                                { value: '600', label: 'Semi' }
+                              ].map(({ value, label }) => (
+                                <button
+                                  key={value}
+                                  onClick={() => updateHeroData({ style: { subheadingWeight: value } })}
+                                  className={`p-2 rounded-lg border text-xs font-medium transition-colors ${
+                                    (heroData.style?.subheadingWeight || '400') === value
+                                      ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                                      : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
+                                  }`}
+                                >
+                                  {label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
                     {/* Text Alignment (Impact) */}
                     {availableFields.includes('alignment') && (
                       <div className="space-y-2" id="editor-field-alignment">
