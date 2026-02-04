@@ -1557,6 +1557,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const updateActiveBlockData = (blockId: string, data: any) => {
     if (!blockId) return;
     
+    console.log('🔄 updateActiveBlockData START:', { blockId, updates: data });
+    
     // Basic validation
     if (data.heading && data.heading.length > 200) {
       showToast('Heading is too long', 'error');
@@ -1568,6 +1570,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       
       const updatedBlocks = p.blocks.map(b => {
         if (b.id !== blockId) return b;
+        
+        console.log('📦 Block BEFORE update:', { id: b.id, data: b.data, style: b.data?.style });
         
         // Handle top-level properties vs data properties
         const { variant, ...restData } = data;
@@ -1582,10 +1586,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                  ...restData, 
                  style: { ...b.data.style, ...restData.style } 
                };
+               console.log('✅ Deep merged style:', newBlock.data.style);
             } else {
                newBlock.data = { ...b.data, ...restData };
+               console.log('✅ Simple merge, new data:', newBlock.data);
             }
         }
+        console.log('📦 Block AFTER update:', { id: newBlock.id, data: newBlock.data, style: newBlock.data?.style });
         return newBlock;
       });
       return { ...p, blocks: updatedBlocks };
@@ -9574,6 +9581,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       ? activeBlock?.data || {}
       : config.heroData || { heading: 'Hero Headline', subheading: 'Your amazing subheading goes here' };
 
+    console.log('📋 [renderHeroModal] Data check:', {
+      selectedBlockId,
+      'activeBlock?.type': activeBlock?.type,
+      'activeBlock?.data': activeBlock?.data,
+      'activeBlock?.data.style': activeBlock?.data?.style,
+      heroData,
+      'heroData.style': heroData.style
+    });
+
     const HeroComponent = HERO_COMPONENTS[currentHeroVariant as HeroStyleId] || HERO_COMPONENTS['impact'];
 
     // Get available fields for the current hero variant
@@ -9618,6 +9634,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
     // Update hero data field
     const updateHeroData = (updates: any) => {
+      console.log('🎨 updateHeroData called:', { updates, selectedBlockId, activeBlockDataBefore: activeBlock?.data });
       if (selectedBlockId) {
         updateActiveBlockData(selectedBlockId, updates);
       } else {

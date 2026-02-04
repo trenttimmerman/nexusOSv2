@@ -396,7 +396,16 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         case 'system-hero':
           const heroStyle = (block.variant as HeroStyleId) || config.heroStyle || 'impact';
           const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
-          console.log('[Storefront] Hero block:', { heroStyle, hasComponent: !!HeroComponent });
+          console.log('[Storefront] Hero block:', { 
+            heroStyle, 
+            hasComponent: !!HeroComponent,
+            blockId: block.id,
+            'block.data': block.data,
+            'block.data.style': block.data?.style,
+            'block.data.style.headingFont': block.data?.style?.headingFont,
+            'block.data.style.headingSize': block.data?.style?.headingSize,
+            isEditable
+          });
           return HeroComponent ? (
             <HeroComponent
               key={block.id}

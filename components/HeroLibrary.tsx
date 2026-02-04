@@ -447,6 +447,17 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data,
   const secondaryButtonText = data?.secondaryButtonText || "View Lookbook";
   
   const style = data?.style || {};
+  console.log('🎯 HeroImpact render:', { blockId, hasData: !!data, style, dataKeys: Object.keys(data || {}) });
+  
+  console.log('🎯 HeroImpact render:', { 
+    isEditable, 
+    blockId,
+    'data.style': data?.style,
+    'style.headingFont': style.headingFont,
+    'style.headingSize': style.headingSize,
+    'style.headingWeight': style.headingWeight
+  });
+  
   const bgColor = style.backgroundColor || '#000000';
   const headingColor = style.headingColor || style.textColor || '#ffffff';
   const badgeColor = style.badgeColor || '#ffffff';
