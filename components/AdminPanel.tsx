@@ -9572,7 +9572,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     // Get the hero data from the active block or use defaults
     const heroData = selectedBlockId && activeBlock?.type === 'system-hero'
       ? activeBlock?.data || {}
-      : { heading: 'Hero Headline', subheading: 'Your amazing subheading goes here' };
+      : config.heroData || { heading: 'Hero Headline', subheading: 'Your amazing subheading goes here' };
 
     const HeroComponent = HERO_COMPONENTS[currentHeroVariant as HeroStyleId] || HERO_COMPONENTS['impact'];
 
