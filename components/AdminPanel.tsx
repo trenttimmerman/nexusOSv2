@@ -1282,11 +1282,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   useEffect(() => {
     if (activeTab === AdminTab.DESIGN && !hasSeenWelcome) {
       setShowWelcomeWizard(true);
-      setActiveTab(AdminTab.AI_SITE_GENERATOR);
+      onTabChange(AdminTab.AI_SITE_GENERATOR);
       setHasSeenWelcome(true);
       localStorage.setItem('webpilot_seen_welcome', 'true');
     }
-  }, [activeTab, hasSeenWelcome]);
+  }, [activeTab, hasSeenWelcome, onTabChange]);
   const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
