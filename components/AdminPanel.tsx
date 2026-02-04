@@ -269,6 +269,56 @@ const PAGE_TYPE_OPTIONS = [
   { id: 'custom', name: 'Custom Page', description: 'Start with a blank canvas', icon: FileText, slug: '/new-page' },
 ];
 
+// AI Wizard Questions for website generation
+const AI_WIZARD_QUESTIONS = [
+  {
+    id: 'business_name',
+    question: "What's your business name?",
+    type: 'text',
+    placeholder: 'e.g., Acme Coffee Co.'
+  },
+  {
+    id: 'business_type',
+    question: "What type of business are you?",
+    type: 'choice',
+    options: [
+      { value: 'retail', label: '🛍️ Retail Store', description: 'Sell physical products' },
+      { value: 'service', label: '💼 Service Business', description: 'Offer services' },
+      { value: 'restaurant', label: '🍽️ Restaurant/Cafe', description: 'Food & beverage' },
+      { value: 'portfolio', label: '🎨 Portfolio/Creative', description: 'Showcase work' },
+      { value: 'blog', label: '📝 Blog/Content', description: 'Share content' },
+      { value: 'other', label: '✨ Other', description: 'Something unique' }
+    ]
+  },
+  {
+    id: 'business_description',
+    question: "Tell us about your business in one sentence",
+    type: 'text',
+    placeholder: 'e.g., We make artisanal coffee and pastries with locally-sourced ingredients'
+  },
+  {
+    id: 'target_audience',
+    question: "Who are your customers?",
+    type: 'choice',
+    options: [
+      { value: 'b2c', label: '👤 Consumers', description: 'Sell to individuals' },
+      { value: 'b2b', label: '🏢 Businesses', description: 'Sell to companies' },
+      { value: 'both', label: '🌐 Both', description: 'Mixed audience' }
+    ]
+  },
+  {
+    id: 'style_preference',
+    question: "What style do you prefer?",
+    type: 'choice',
+    options: [
+      { value: 'modern', label: '✨ Modern', description: 'Clean and minimal' },
+      { value: 'bold', label: '🔥 Bold', description: 'Eye-catching and vibrant' },
+      { value: 'elegant', label: '💎 Elegant', description: 'Sophisticated and refined' },
+      { value: 'playful', label: '🎉 Playful', description: 'Fun and energetic' }
+    ]
+  }
+];
+
 // Section Preview Thumbnail Component
 const SectionPreview: React.FC<{ category: string; variantId: string }> = ({ category, variantId }) => {
   const renderPreview = () => {
