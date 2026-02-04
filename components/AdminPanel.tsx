@@ -10399,7 +10399,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             value={heroData.style?.headingFont || 'Inter'}
                             onChange={(e) => updateHeroData({ style: { headingFont: e.target.value } })}
                             className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
-                            style={{ color: '#000000' }}
                           >
                             <option value="Inter">Inter (Modern Sans)</option>
                             <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
@@ -10541,7 +10540,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               value={heroData.style?.subheadingFont || 'Inter'}
                               onChange={(e) => updateHeroData({ style: { subheadingFont: e.target.value } })}
                               className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
-                              style={{ color: '#000000' }}
                             >
                               <option value="Inter">Inter</option>
                               <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>

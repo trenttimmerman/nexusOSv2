@@ -516,15 +516,6 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data,
         </div>
         <div 
           className="mb-8 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150" 
-          style={{ 
-            color: headingColor,
-            fontFamily: style.headingFont || 'Inter',
-            fontSize: style.headingSize || '6rem',
-            fontWeight: style.headingWeight || '900',
-            letterSpacing: style.letterSpacing || '-0.02em',
-            lineHeight: style.lineHeight || '1.1',
-            textTransform: style.textTransform || 'uppercase'
-          }}
         >
           <EditableText 
              elementId={`editable-${blockId}-heading`}
@@ -532,7 +523,16 @@ export const HeroImpact: React.FC<HeroProps> = ({ storeName, primaryColor, data,
              value={heading} 
              onChange={(val) => onUpdate && onUpdate({ heading: val })} 
              onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
-             style={data?.heading_style}
+             style={{
+               ...data?.heading_style,
+               color: headingColor,
+               fontFamily: style.headingFont || 'Inter',
+               fontSize: style.headingSize || '6rem',
+               fontWeight: style.headingWeight || '900',
+               letterSpacing: style.letterSpacing || '-0.02em',
+               lineHeight: style.lineHeight || '1.1',
+               textTransform: style.textTransform as any || 'uppercase'
+             }}
              isEditable={isEditable} 
              placeholder="Enter Headline"
              onSelect={() => handleSelect('heading')}
@@ -641,39 +641,41 @@ export const HeroSplit: React.FC<HeroProps> = ({ storeName, primaryColor, data, 
     <section className={`w-full min-h-[80vh] flex flex-col ${contentPosition === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'} relative group/hero`} style={{ backgroundColor }}>
        <div className={`w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center items-start border-b md:border-b-0 ${contentPosition === 'right' ? 'md:border-l' : 'md:border-r'} ${animClass}`} style={{ borderColor: dividerColor }}>
           <div className="mb-8">
-             <div className="mb-6" style={{ 
-               color: headingColor,
-               fontFamily: style.headingFont || 'Inter',
-               fontSize: style.headingSize || '5rem',
-               fontWeight: style.headingWeight || '700',
-               letterSpacing: style.letterSpacing || '-0.03em',
-               lineHeight: style.lineHeight || '0.9',
-               textTransform: style.textTransform || 'none'
-             }}>
+             <div className="mb-6">
                 <EditableText 
                  tagName="h1" 
                  value={heading} 
                  onChange={(val) => onUpdate && onUpdate({ heading: val })} 
                  onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
-                 style={data?.heading_style}
+                 style={{
+                   ...data?.heading_style,
+                   color: headingColor,
+                   fontFamily: style.headingFont || 'Inter',
+                   fontSize: style.headingSize || '5rem',
+                   fontWeight: style.headingWeight || '700',
+                   letterSpacing: style.letterSpacing || '-0.03em',
+                   lineHeight: style.lineHeight || '0.9',
+                   textTransform: style.textTransform as any || 'none'
+                 }}
                  isEditable={isEditable} 
                  elementId={blockId ? `editable-${blockId}-heading` : undefined}
                  onSelect={() => handleSelect('heading')}
                />
              </div>
-             <div className="max-w-md" style={{ 
-               color: subheadingColor,
-               fontFamily: style.subheadingFont || 'Inter',
-               fontSize: style.subheadingSize || '1.25rem',
-               fontWeight: style.subheadingWeight || '400',
-               lineHeight: '1.5'
-             }}>
+             <div className="max-w-md">
                 <EditableText 
                  tagName="p" 
                  value={subheading} 
                  onChange={(val) => onUpdate && onUpdate({ subheading: val })} 
                  onStyleChange={(style) => onUpdate && onUpdate({ subheading_style: style })}
-                 style={data?.subheading_style}
+                 style={{
+                   ...data?.subheading_style,
+                   color: subheadingColor,
+                   fontFamily: style.subheadingFont || 'Inter',
+                   fontSize: style.subheadingSize || '1.25rem',
+                   fontWeight: style.subheadingWeight || '400',
+                   lineHeight: '1.5'
+                 }}
                  isEditable={isEditable} 
                  elementId={blockId ? `editable-${blockId}-subheading` : undefined}
                  onSelect={() => handleSelect('subheading')}
@@ -786,21 +788,22 @@ export const HeroKinetik: React.FC<HeroProps> = ({ storeName, primaryColor, data
       </div>
 
       <div className="flex-1 flex items-center justify-center relative z-10">
-         <div className="mix-blend-multiply text-center uppercase relative z-20 pointer-events-none md:pointer-events-auto" style={{ 
-           color: headingColor,
-           fontFamily: style.headingFont || 'Inter',
-           fontSize: style.headingSize || '12vw',
-           fontWeight: style.headingWeight || '900',
-           letterSpacing: style.letterSpacing || '-0.03em',
-           lineHeight: style.lineHeight || '1',
-           textTransform: style.textTransform || 'uppercase'
-         }}>
+         <div className="mix-blend-multiply text-center uppercase relative z-20 pointer-events-none md:pointer-events-auto">
             <EditableText 
              tagName="h1" 
              value={heading} 
              onChange={(val) => onUpdate && onUpdate({ heading: val })} 
              onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
-             style={data?.heading_style}
+             style={{
+               ...data?.heading_style,
+               color: headingColor,
+               fontFamily: style.headingFont || 'Inter',
+               fontSize: style.headingSize || '12vw',
+               fontWeight: style.headingWeight || '900',
+               letterSpacing: style.letterSpacing || '-0.03em',
+               lineHeight: style.lineHeight || '1',
+               textTransform: style.textTransform as any || 'uppercase'
+             }}
              isEditable={isEditable} 
              className="block"
              elementId={blockId ? `editable-${blockId}-heading` : undefined}
@@ -909,39 +912,41 @@ export const HeroGrid: React.FC<HeroProps> = ({ storeName, primaryColor, data, i
                 >
                    <ArrowRight className="-rotate-45" />
                 </div>
-                <div className="mb-4" style={{ 
-                  color: headingColor,
-                  fontFamily: style.headingFont || 'Inter',
-                  fontSize: style.headingSize || '3rem',
-                  fontWeight: style.headingWeight || '700',
-                  letterSpacing: style.letterSpacing || '-0.025em',
-                  lineHeight: style.lineHeight || '1.1',
-                  textTransform: style.textTransform || 'none'
-                }}>
+                <div className="mb-4">
                      <EditableText 
                      tagName="h1" 
                      value={heading} 
                      onChange={(val) => onUpdate && onUpdate({ heading: val })} 
                      onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
-                     style={data?.heading_style}
+                     style={{
+                       ...data?.heading_style,
+                       color: headingColor,
+                       fontFamily: style.headingFont || 'Inter',
+                       fontSize: style.headingSize || '3rem',
+                       fontWeight: style.headingWeight || '700',
+                       letterSpacing: style.letterSpacing || '-0.025em',
+                       lineHeight: style.lineHeight || '1.1',
+                       textTransform: style.textTransform as any || 'none'
+                     }}
                      isEditable={isEditable} 
                      elementId={blockId ? `editable-${blockId}-heading` : undefined}
                      onSelect={() => handleSelect('heading')}
                    />
                 </div>
-                <div style={{ 
-                  color: subheadingColor,
-                  fontFamily: style.subheadingFont || 'Inter',
-                  fontSize: style.subheadingSize || '1rem',
-                  fontWeight: style.subheadingWeight || '500',
-                  lineHeight: '1.5'
-                }}>
+                <div>
                    <EditableText 
                      tagName="p" 
                      value={subheading} 
                      onChange={(val) => onUpdate && onUpdate({ subheading: val })} 
                      onStyleChange={(style) => onUpdate && onUpdate({ subheading_style: style })}
-                     style={data?.subheading_style}
+                     style={{
+                       ...data?.subheading_style,
+                       color: subheadingColor,
+                       fontFamily: style.subheadingFont || 'Inter',
+                       fontSize: style.subheadingSize || '1rem',
+                       fontWeight: style.subheadingWeight || '500',
+                       lineHeight: '1.5'
+                     }}
                      isEditable={isEditable} 
                      elementId={blockId ? `editable-${blockId}-subheading` : undefined}
                      onSelect={() => handleSelect('subheading')}
@@ -1138,41 +1143,43 @@ export const HeroTypographic: React.FC<HeroProps> = ({
              <Star size={12} style={{ color: badgeColor, opacity: 0.4 }} />
           </div>
           
-          <div className="mb-8" style={{ 
-            color: headingColor,
-            fontFamily: style.headingFont || 'Inter',
-            fontSize: style.headingSize || '5rem',
-            fontWeight: style.headingWeight || '900',
-            letterSpacing: style.letterSpacing || '-0.03em',
-            lineHeight: style.lineHeight || '0.9',
-            textTransform: style.textTransform || 'uppercase'
-          }}>
+          <div className="mb-8">
              <EditableText 
                  tagName="h1" 
                  value={heading} 
                  onChange={(val) => onUpdate && onUpdate({ heading: val })} 
                  onStyleChange={(style) => onUpdate && onUpdate({ heading_style: style })}
-                 style={data?.heading_style}
+                 style={{
+                   ...data?.heading_style,
+                   color: headingColor,
+                   fontFamily: style.headingFont || 'Inter',
+                   fontSize: style.headingSize || '5rem',
+                   fontWeight: style.headingWeight || '900',
+                   letterSpacing: style.letterSpacing || '-0.03em',
+                   lineHeight: style.lineHeight || '0.9',
+                   textTransform: style.textTransform as any || 'uppercase'
+                 }}
                  isEditable={isEditable} 
                  elementId={blockId ? `editable-${blockId}-heading` : undefined}
                  onSelect={() => handleSelect('heading')}
              />
           </div>
 
-          <div className="max-w-xl mx-auto mb-12" style={{ 
-            color: subheadingColor, 
-            opacity: 0.5,
-            fontFamily: style.subheadingFont || 'Inter',
-            fontSize: style.subheadingSize || '1.125rem',
-            fontWeight: style.subheadingWeight || '400',
-            lineHeight: '1.5'
-          }}>
+          <div className="max-w-xl mx-auto mb-12">
              <EditableText 
                  tagName="p" 
                  value={subheading} 
                  onChange={(val) => onUpdate && onUpdate({ subheading: val })} 
                  onStyleChange={(style) => onUpdate && onUpdate({ subheading_style: style })}
-                 style={data?.subheading_style}
+                 style={{
+                   ...data?.subheading_style,
+                   color: subheadingColor, 
+                   opacity: 0.5,
+                   fontFamily: style.subheadingFont || 'Inter',
+                   fontSize: style.subheadingSize || '1.125rem',
+                   fontWeight: style.subheadingWeight || '400',
+                   lineHeight: '1.5'
+                 }}
                  isEditable={isEditable} 
                  elementId={blockId ? `editable-${blockId}-subheading` : undefined}
                  onSelect={() => handleSelect('subheading')}
