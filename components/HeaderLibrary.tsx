@@ -1762,7 +1762,7 @@ export const HeaderQuantum: React.FC<HeaderProps> = ({
 
   return (
     <header 
-      className={`w-full ${settings.sticky ? 'sticky top-0 z-50' : settings.enableFloating ? 'fixed top-0 left-0 right-0 z-50' : 'relative'}`}
+      className={`w-full ${settings.sticky || settings.enableFloating ? 'sticky top-0 z-50' : 'relative'}`}
       style={{ 
         backgroundColor: settings.backgroundColor,
         padding: settings.enableFloating || settings.sticky ? '1rem 0' : '1rem 0'
