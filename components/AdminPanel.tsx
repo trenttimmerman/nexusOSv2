@@ -9627,6 +9627,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           };
         }));
         setHasUnsavedChanges(true);
+      } else {
+        // Update global hero data
+        onConfigChange({ 
+          ...config, 
+          heroData: { ...config.heroData, ...updates } 
+        });
+        setHasUnsavedChanges(true);
       }
     };
 
