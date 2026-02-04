@@ -296,18 +296,286 @@ const FooterMinimal: React.FC<FooterProps> = ({
 // VARIANT 3: NEWSLETTER FOOTER
 // ============================================================================
 
-const FooterNewsletter: React.FC<FooterProps> = (props) => {
-  // TODO: Add newsletter signup form
-  return <FooterStandard {...props} />;
+const FooterNewsletter: React.FC<FooterProps> = ({
+  content,
+  style,
+  editMode = false,
+  onContentUpdate
+}) => {
+  const [email, setEmail] = React.useState('');
+  const [isSubscribed, setIsSubscribed] = React.useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: Implement newsletter subscription
+    console.log('Subscribe:', email);
+    setIsSubscribed(true);
+    setTimeout(() => setIsSubscribed(false), 3000);
+    setEmail('');
+  };
+
+  return (
+    <footer>
+      {/* Newsletter Section */}
+      <Section
+        background={style?.newsletterBackground || 'bg-gradient-to-r from-blue-600 to-purple-600'}
+        padding="py-16 px-4"
+      >
+        <Container maxWidth="lg">
+          <div className="text-center">
+            <Heading
+              level={3}
+              style={style?.newsletterHeading || { color: 'text-white', fontSize: 'text-3xl', fontWeight: 'font-bold' }}
+              className="mb-4"
+            >
+              {content.newsletterHeading || 'Stay Updated'}
+            </Heading>
+            <Text
+              style={style?.newsletterSubheading || { color: 'text-white/90', fontSize: 'text-lg' }}
+              className="mb-8 max-w-2xl mx-auto"
+            >
+              {content.newsletterSubheading || 'Get the latest news and exclusive offers delivered to your inbox.'}
+            </Text>
+
+            <form onSubmit={handleSubmit} className="flex gap-3 max-w-md mx-auto">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                required
+                className="flex-1 px-6 py-3 rounded-lg border-2 border-white/20 bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:outline-none focus:border-white/40"
+              />
+              <button
+                type="submit"
+                className="px-8 py-3 bg-white text-purple-600 font-bold rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                {isSubscribed ? '✓ Subscribed!' : 'Subscribe'}
+              </button>
+            </form>
+
+            <Text
+              style={{ color: 'text-white/60', fontSize: 'text-xs' }}
+              className="mt-4"
+            >
+              We respect your privacy. Unsubscribe at any time.
+            </Text>
+          </div>
+        </Container>
+      </Section>
+
+      {/* Footer Content */}
+      <Section
+        background={style?.background || 'bg-gray-900'}
+        padding="py-12 px-4"
+      >
+        <Container maxWidth="xl">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            {/* Brand Column */}
+            <div className="md:col-span-1">
+              <Heading
+                level={3}
+                style={style?.storeName || { color: 'text-white', fontSize: 'text-xl', fontWeight: 'font-bold' }}
+                className="mb-4"
+              >
+                {content.storeName}
+              </Heading>
+              {content.tagline && (
+                <Text
+                  style={style?.tagline || { color: 'text-gray-400', fontSize: 'text-sm' }}
+                >
+                  {content.tagline}
+                </Text>
+              )}
+            </div>
+
+            {/* Link Columns */}
+            {content.columns.map((column, index) => (
+              <div key={index}>
+                <Heading
+                  level={4}
+                  style={style?.columnHeading || { color: 'text-white', fontSize: 'text-sm', fontWeight: 'font-semibold' }}
+                  className="mb-4 uppercase tracking-wider"
+                >
+                  {column.title}
+                </Heading>
+                <ul className="space-y-2">
+                  {column.links.map((link, linkIndex) => (
+                    <li key={linkIndex}>
+                      <a
+                        href={link.href}
+                        className="text-gray-400 hover:text-white transition-colors text-sm"
+                      >
+                        {link.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom Row */}
+          <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+            {content.copyright && (
+              <Text style={style?.copyright || { color: 'text-gray-400', fontSize: 'text-sm' }}>
+                {content.copyright}
+              </Text>
+            )}
+
+            {/* Social Links */}
+            {content.socialLinks && content.socialLinks.length > 0 && (
+              <div className="flex gap-4">
+                {content.socialLinks.map((social, index) => (
+                  <a
+                    key={index}
+                    href={social.href}
+                    className="text-gray-400 hover:text-white transition-colors"
+                    aria-label={social.platform}
+                  >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" />
+                    </svg>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </Container>
+      </Section>
+    </footer>
+  );
 };
 
 // ============================================================================
 // VARIANT 4: CENTERED FOOTER
 // ============================================================================
 
-const FooterCentered: React.FC<FooterProps> = (props) => {
-  // TODO: Centered layout variant
-  return <FooterStandard {...props} />;
+const FooterCentered: React.FC<FooterProps> = ({
+  content,
+  style,
+  editMode = false,
+  onContentUpdate
+}) => {
+  return (
+    <footer>
+      <Section
+        background={style?.background || 'bg-white'}
+        padding="py-16 px-4"
+      >
+        <Container maxWidth="lg" className="text-center">
+          {/* Logo/Brand */}
+          <div className="mb-8">
+            {content.logo && (
+              <div className="mb-4">
+                <Image
+                  src={content.logo}
+                  alt={content.storeName}
+                  className="h-12 w-auto mx-auto"
+                  objectFit="contain"
+                  loading="lazy"
+                />
+              </div>
+            )}
+            <Heading
+              level={3}
+              style={style?.storeName || { fontSize: 'text-2xl', fontWeight: 'font-bold' }}
+              className="mb-2"
+            >
+              {content.storeName}
+            </Heading>
+            {content.tagline && (
+              <Text
+                style={style?.tagline || { color: 'text-gray-600', fontSize: 'text-base' }}
+                className="max-w-md mx-auto"
+              >
+                {content.tagline}
+              </Text>
+            )}
+          </div>
+
+          {/* Navigation Links */}
+          {content.columns.length > 0 && (
+            <nav className="mb-8">
+              <ul className="flex flex-wrap justify-center gap-x-8 gap-y-4">
+                {content.columns.flatMap(column => 
+                  column.links.map((link, index) => (
+                    <li key={`${column.title}-${index}`}>
+                      <a
+                        href={link.href}
+                        className={[
+                          style?.navLink?.fontFamily || 'font-inter',
+                          style?.navLink?.fontSize || 'text-base',
+                          style?.navLink?.fontWeight || 'font-medium',
+                          style?.navLink?.color || 'text-gray-700',
+                          'hover:text-gray-900 transition-colors'
+                        ].join(' ')}
+                      >
+                        {link.text}
+                      </a>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </nav>
+          )}
+
+          {/* Social Links */}
+          {content.socialLinks && content.socialLinks.length > 0 && (
+            <div className="flex justify-center gap-6 mb-8">
+              {content.socialLinks.map((social, index) => (
+                <a
+                  key={index}
+                  href={social.href}
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+                  aria-label={social.platform}
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    {/* Generic social icon - in production, use actual icons */}
+                    <circle cx="12" cy="12" r="10" />
+                  </svg>
+                </a>
+              ))}
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="border-t border-gray-200 pt-8">
+            {/* Copyright */}
+            {content.copyright && (
+              <Text
+                style={style?.copyright || { color: 'text-gray-500', fontSize: 'text-sm' }}
+              >
+                {content.copyright}
+              </Text>
+            )}
+
+            {/* Additional Links (Privacy, Terms, etc.) */}
+            <div className="mt-4 flex justify-center gap-6">
+              <a
+                href="/privacy"
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                Privacy Policy
+              </a>
+              <a
+                href="/terms"
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                Terms of Service
+              </a>
+              <a
+                href="/cookies"
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                Cookie Policy
+              </a>
+            </div>
+          </div>
+        </Container>
+      </Section>
+    </footer>
+  );
 };
 
 export default FooterSection;
