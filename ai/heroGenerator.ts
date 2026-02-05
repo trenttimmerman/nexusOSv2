@@ -64,48 +64,72 @@ function extractJSON(text: string): string {
  * Build the prompt for Gemini based on design requirements
  */
 function buildHeroPrompt(requirements: DesignRequirements): string {
-  return `You are an expert web designer and frontend developer. Generate 3 unique, professional hero section designs for a website.
+  return `You are an award-winning 2026 web designer creating CUTTING-EDGE, visually stunning hero sections. These designs must be SO DIFFERENT from each other that customers would pay $99 to own one exclusively.
 
 **Client Requirements:**
 - Industry: ${requirements.industry}
 - Design Style: ${requirements.style}
-- Features Requested: ${requirements.features.length > 0 ? requirements.features.join(', ') : 'Standard hero with heading, subheading, and call-to-action'}
+- Features: ${requirements.features.length > 0 ? requirements.features.join(', ') : 'Full hero experience'}
 - Color Mood: ${requirements.colorMood}
-- Additional Context: ${requirements.additionalContext || 'None provided'}
+- Context: ${requirements.additionalContext || 'Premium quality expected'}
 
-**Your Task:**
-Generate 3 distinct hero designs that fit these requirements. Each design should have:
-1. A unique visual approach (different color schemes, imagery styles)
-2. Professional, conversion-optimized copy
-3. Cohesive color palette that matches the mood
-4. Appropriate imagery (provide Unsplash URLs)
+**CRITICAL: Each design must be RADICALLY DIFFERENT:**
 
-**Important Guidelines:**
-- Headings should be 3-8 words, punchy and benefit-driven
-- Subheadings should be 8-15 words, expanding on the value proposition
-- Button text should be 1-3 words, action-oriented (e.g., "Get Started", "Learn More", "Shop Now")
-- Colors must be in HEX format (#RRGGBB)
-- Background images must be high-quality Unsplash URLs (https://images.unsplash.com/photo-...)
-- Overlay opacity should be 0.3-0.7 (30-70%) for optimal text readability
-- Each design should feel distinctly different from the others
+**Design 1: DARK & BOLD** 
+- Pure black or very dark background (#000000, #0A0A0A, #111111)
+- Electric, vibrant neon button colors (#00FF00, #FF00FF, #00FFFF, #FF0066)
+- WHITE text (#FFFFFF) for maximum contrast
+- Dark/moody background image with HIGH overlay (0.6-0.8 opacity)
+- Aggressive, punchy copy
 
-Return ONLY a valid JSON array (no markdown, no explanation) with this exact structure:
+**Design 2: LIGHT & AIRY**
+- Light/white overlay (#FFFFFF, #F8F9FA, #E8E8E8)  
+- LOW overlay opacity (0.2-0.35) to show beautiful imagery
+- Dark text (#000000, #1A1A1A, #2D2D2D) on light overlay
+- Vibrant, saturated button colors (#FF3366, #7C3AED, #0EA5E9, #10B981)
+- Bright, uplifting background images (nature, sky, lifestyle)
+- Elegant, benefit-focused copy
+
+**Design 3: GRADIENT FUTURISTIC**
+- Gradient overlay colors (e.g., overlayColor: "#8B5CF6" for purple gradient effect)
+- Medium overlay (0.45-0.6)
+- Bold accent button with gradient-feel colors (#F59E0B, #EF4444, #8B5CF6, #EC4899)
+- Ultra-modern sci-fi or abstract backgrounds
+- Forward-thinking, innovative copy
+
+**Copy Guidelines:**
+- Headings: 2-6 words, POWERFUL and specific to ${requirements.industry}
+- Subheadings: 10-18 words, clear value proposition
+- Buttons: 1-3 words, action-driven
+
+**Image Selection (CRITICAL - Pick visually DISTINCT images):**
+- Design 1: Dark/moody/urban scenes (night cities, industrial, dramatic)
+- Design 2: Bright/vibrant/lifestyle (sunlight, nature, people, energy)
+- Design 3: Abstract/futuristic/unique perspectives (architecture, tech, art)
+
+**Color Psychology:**
+- ${requirements.colorMood === 'Energetic & Bold' ? 'Use neon greens, hot pinks, electric blues' : ''}
+- ${requirements.colorMood === 'Professional & Trustworthy' ? 'Use deep blues, rich purples, modern forest greens' : ''}
+- ${requirements.colorMood === 'Calm & Minimal' ? 'Use soft pastels, warm earth tones, muted blues' : ''}
+- ${requirements.colorMood === 'Luxurious & Premium' ? 'Use gold accents, deep purples, rich blacks' : ''}
+
+**RETURN ONLY THIS JSON (no markdown, no explanation):**
 [
   {
-    "name": "Bold & Modern",
-    "description": "High-contrast design with bold typography and vibrant accents",
+    "name": "Unique Design Name",
+    "description": "Specific visual description highlighting what makes this unique",
     "data": {
-      "heading": "Transform Your Business Today",
-      "subheading": "Join thousands of companies using our platform to scale faster",
-      "buttonText": "Get Started",
+      "heading": "Industry-Specific Heading",
+      "subheading": "Clear value proposition for ${requirements.industry}",
+      "buttonText": "Action Word",
       "buttonLink": "#",
-      "backgroundImage": "https://images.unsplash.com/photo-1441986300917-64674bd600d8",
-      "textColor": "#FFFFFF",
-      "buttonBackgroundColor": "#000000",
-      "buttonTextColor": "#FFFFFF",
-      "buttonHoverColor": "#333333",
-      "overlayColor": "#000000",
-      "overlayOpacity": 0.5,
+      "backgroundImage": "https://images.unsplash.com/photo-[unique-id]",
+      "textColor": "#FFFFFF or #000000",
+      "buttonBackgroundColor": "#VIBRANT_HEX",
+      "buttonTextColor": "#FFFFFF or #000000", 
+      "buttonHoverColor": "#DARKER_VERSION",
+      "overlayColor": "#HEX_COLOR",
+      "overlayOpacity": 0.2-0.8,
       "showSubheading": true,
       "showButton": true
     }
