@@ -81,27 +81,33 @@ ${featureGuidance}
 
 **CRITICAL: Each design must be RADICALLY DIFFERENT:**
 
-**Design 1: DARK & BOLD** 
-- Pure black or very dark background (#000000, #0A0A0A, #111111)
-- Electric, vibrant neon button colors (#00FF00, #FF00FF, #00FFFF, #FF0066)
-- WHITE text (#FFFFFF) for maximum contrast
-- Dark/moody background image with HIGH overlay (0.6-0.8 opacity)
-- Aggressive, punchy copy
+**Design 1: PURE DARKNESS - Neon Cyberpunk** 
+- Background: Pitch black (#000000), very dark urban/night imagery
+- Overlay: BLACK (#000000) with 0.7-0.85 opacity for ultra-dark mood
+- Text: Pure WHITE (#FFFFFF) 
+- Button: ELECTRIC NEON - Must use (#00FF00 lime, #FF00FF magenta, #00FFFF cyan, or #FFFF00 yellow)
+- Button Hover: Slightly darker neon
+- ${requirements.features.includes('particles') ? 'Particles: Matching neon color\n' : ''}${requirements.features.includes('animation') ? 'Animation: "glitch" or "slide-up"\n' : ''}- Copy: Aggressive, edgy, urban tone
 
-**Design 2: LIGHT & AIRY**
-- Light/white overlay (#FFFFFF, #F8F9FA, #E8E8E8)  
-- LOW overlay opacity (0.2-0.35) to show beautiful imagery
-- Dark text (#000000, #1A1A1A, #2D2D2D) on light overlay
-- Vibrant, saturated button colors (#FF3366, #7C3AED, #0EA5E9, #10B981)
-- Bright, uplifting background images (nature, sky, lifestyle)
-- Elegant, benefit-focused copy
+**Design 2: ULTRA BRIGHT - Lifestyle Energy**
+- Background: Bright, sunny, energetic imagery (beaches, nature, people, sky)
+- Overlay: WHITE or LIGHT (#FFFFFF, #F5F5F5) with 0.15-0.25 opacity (shows image clearly!)
+- Text: PURE BLACK (#000000) or very dark (#1A1A1A)
+- Button: BOLD SATURATED - Must use (#FF3366 hot pink, #7C3AED purple, #0EA5E9 sky blue, #10B981 emerald, or #F59E0B amber)
+- Button Hover: Darker shade of button color
+- ${requirements.features.includes('particles') ? 'Particles: Soft white or matching button color\n' : ''}${requirements.features.includes('animation') ? 'Animation: "fade-in" or "float"\n' : ''}- Copy: Uplifting, aspirational, positive tone
 
-**Design 3: GRADIENT FUTURISTIC**
-- Gradient overlay colors (e.g., overlayColor: "#8B5CF6" for purple gradient effect)
-- Medium overlay (0.45-0.6)
-- Bold accent button with gradient-feel colors (#F59E0B, #EF4444, #8B5CF6, #EC4899)
-- Ultra-modern sci-fi or abstract backgrounds
-- Forward-thinking, innovative copy
+**Design 3: GRADIENT FUTURISTIC - Sci-Fi Dream**
+- Background: Abstract, futuristic, or tech imagery (architecture, space, geometric)
+- Overlay: MUST use gradientOverlay with bold combinations:
+  * "from-purple-900/75 to-pink-900/75" (purple to pink)
+  * "from-blue-900/70 to-cyan-900/70" (blue to cyan)
+  * "from-orange-900/75 to-red-900/75" (orange to red)
+  * "from-emerald-900/70 to-teal-900/70" (green to teal)
+- Text: WHITE (#FFFFFF)
+- Button: Complementary to gradient - use (#EC4899 pink, #8B5CF6 purple, #06B6D4 cyan, #EF4444 red, or #F59E0B orange)
+- Button Hover: Darker shade
+- ${requirements.features.includes('particles') ? 'Particles: White or gradient-matching color\n' : ''}${requirements.features.includes('animation') ? 'Animation: "zoom-in" or "float"\n' : ''}- Copy: Innovative, future-forward, tech-savvy tone
 
 **Copy Guidelines:**
 - Headings: 2-6 words, POWERFUL and specific to ${requirements.industry} (e.g., "Unleash The Night", "Ride Free, Live Bold")
@@ -109,16 +115,23 @@ ${featureGuidance}
 - Buttons: 1-3 words, action-driven (e.g., "Shop Now", "Explore Pro", "Discover Innovation")
 - **CRITICAL**: Do NOT write meta-descriptions like "A hero section featuring..." - write actual customer-facing marketing copy!
 
-**Image Selection (CRITICAL - Pick visually DISTINCT images based on features):**
-${requirements.features.includes('particles') ? '- Prioritize images with bokeh, light particles, sparks, stars, or atmospheric effects\n' : ''}${requirements.features.includes('video') ? '- Choose dynamic, cinematic scenes with motion blur or action (sports, cities, nature in motion)\n' : ''}${requirements.features.includes('3d') ? '- Select images with 3D objects, architecture, geometric shapes, or strong perspective\n' : ''}${requirements.features.includes('parallax') ? '- Find images with clear depth layers (mountains with sky, buildings with clouds)\n' : ''}${requirements.features.includes('animation') ? '- Pick images with visual rhythm, patterns, or elements that suggest movement\n' : ''}${requirements.features.includes('carousel') ? '- Ensure strong visual hierarchy and clear focal points\n' : ''}- Design 1: Dark/moody/urban scenes (night cities, industrial, dramatic${requirements.features.includes('particles') ? ', with bokeh or light trails' : ''})
-- Design 2: Bright/vibrant/lifestyle (sunlight, nature, people, energy${requirements.features.includes('video') ? ', action shots' : ''})
-- Design 3: Abstract/futuristic/unique perspectives (architecture, tech, art${requirements.features.includes('3d') ? ', 3D renders or geometric shapes' : ''})
+**Image Selection (CRITICAL - Pick EXTREMELY DISTINCT images):**
+${requirements.features.includes('particles') ? '- Prioritize images with bokeh, light particles, sparks, stars, or atmospheric effects\n' : ''}${requirements.features.includes('video') ? '- Choose dynamic, cinematic scenes with motion blur or action (sports, cities, nature in motion)\n' : ''}${requirements.features.includes('3d') ? '- Select images with 3D objects, architecture, geometric shapes, or strong perspective\n' : ''}${requirements.features.includes('parallax') ? '- Find images with clear depth layers (mountains with sky, buildings with clouds)\n' : ''}${requirements.features.includes('animation') ? '- Pick images with visual rhythm, patterns, or elements that suggest movement\n' : ''}${requirements.features.includes('carousel') ? '- Ensure strong visual hierarchy and clear focal points\n' : ''}- **Design 1**: Night cityscapes, industrial warehouses, dark streets, neon-lit alleys, urban underground${requirements.features.includes('particles') ? ', with light trails or bokeh' : ''}
+- **Design 2**: Sunrise/sunset beaches, mountain peaks with blue sky, vibrant festivals, people in action, bright modern interiors${requirements.features.includes('video') ? ', action sports' : ''}  
+- **Design 3**: Futuristic architecture, space nebulas, abstract 3D renders, holographic effects, geometric patterns${requirements.features.includes('3d') ? ', 3D geometric shapes' : ''}
 
-**Color Psychology:**
-- ${requirements.colorMood === 'Energetic & Bold' ? 'Use neon greens, hot pinks, electric blues' : ''}
-- ${requirements.colorMood === 'Professional & Trustworthy' ? 'Use deep blues, rich purples, modern forest greens' : ''}
-- ${requirements.colorMood === 'Calm & Minimal' ? 'Use soft pastels, warm earth tones, muted blues' : ''}
-- ${requirements.colorMood === 'Luxurious & Premium' ? 'Use gold accents, deep purples, rich blacks' : ''}
+**FORCE MAXIMUM VISUAL CONTRAST:**
+- If Design 1 uses #00FF00 green button, Design 2 MUST use #FF3366 pink, and Design 3 MUST use #8B5CF6 purple
+- Design 1 = DARK image + BLACK overlay, Design 2 = BRIGHT image + WHITE overlay, Design 3 = ABSTRACT image + GRADIENT overlay
+- NO TWO DESIGNS can use similar button colors - they must be completely different hues
+- Overlay opacities must vary dramatically: ~0.75 (dark), ~0.2 (light), gradient (medium)
+
+**MANDATORY COLOR REQUIREMENTS (NO EXCEPTIONS):**
+- Design 1 button: Choose ONE from (#00FF00 lime green, #FF00FF magenta, #00FFFF cyan, #FFFF00 yellow)
+- Design 2 button: Choose ONE from (#FF3366 hot pink, #7C3AED purple, #0EA5E9 sky blue, #10B981 emerald, #F59E0B amber)  
+- Design 3 button: MUST match gradient theme - use (#EC4899 pink, #8B5CF6 purple, #06B6D4 cyan, #EF4444 red, #F59E0B orange)
+- All 3 button colors MUST be different hues (no pink + magenta, no purple + purple, etc.)
+- Text contrast: Design 1 & 3 use #FFFFFF white, Design 2 uses #000000 black
 
 **Effect-Specific Guidelines:**
 ${requirements.features.includes('particles') ? `- PARTICLES: Set "enableParticles": true and choose particle colors (#FFFFFF for white, #00FFFF for cyan, #FF00FF for magenta, #00FF00 for green). Make each design use DIFFERENT particle colors.\n` : ''}${requirements.features.includes('animation') ? `- ANIMATIONS: Choose from: "fade-in" (classic), "slide-up" (modern), "zoom-in" (bold), "glitch" (edgy), "float" (smooth). Make each design use DIFFERENT animations.\n` : ''}${requirements.features.includes('parallax') ? `- PARALLAX: Set "enableParallax": true with speed 0.3-0.7 (lower = slower, higher = faster). Vary speeds across designs.\n` : ''}${requirements.features.includes('3d') || requirements.features.includes('video') ? `- GRADIENT OVERLAYS: Set "gradientOverlay": true with Tailwind gradient classes like "from-purple-900/70 to-pink-900/70", "from-blue-900/60 to-cyan-900/60", or "from-amber-900/70 to-red-900/70". Each design should use DIFFERENT gradient combinations.\n` : ''}
@@ -160,7 +173,13 @@ ${requirements.features.includes('particles') ? `- PARTICLES: Set "enableParticl
 ❌ BAD subheading: "Features dark overlay and neon accents for an urban aesthetic"
 ✅ GOOD subheading: "Experience unmatched freedom and explore new horizons with boards designed for the open road"
 
-**IMPORTANT:** Each design MUST have different ${requirements.features.length > 0 ? 'animation types and particle colors' : 'visual approaches'} to justify $99 exclusive pricing.`;
+**EXTREME DIVERSITY EXAMPLE:**
+If all 3 designs look similar, you FAILED. They must look like completely different websites:
+- Design 1: Dark + Neon Green Button = Cyberpunk/Underground vibe
+- Design 2: Bright + Hot Pink Button = Modern/Lifestyle vibe  
+- Design 3: Purple Gradient + Purple Button = Futuristic/Tech vibe
+
+**IMPORTANT:** Each design MUST have different ${requirements.features.length > 0 ? 'animation types, particle colors, and button colors' : 'button colors, overlays, and visual approaches'} to justify $99 exclusive pricing. NO SIMILAR DESIGNS ALLOWED!`;
 }
 
 /**
