@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { EditableText } from './HeroLibrary';
+import { EditableText } from './editor';
 import { ArrowRight, Calendar, User, Clock, ChevronRight, ChevronLeft, Tag, Share2, MessageCircle } from 'lucide-react';
 
 export const BLOG_OPTIONS = [

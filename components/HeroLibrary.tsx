@@ -1,83 +1,156 @@
-// TEMPORARY COMPATIBILITY LAYER
-// This file bridges legacy imports to new component system
-// TODO: Remove once all files are migrated to new imports
+// SINGLE HERO VARIANT - Full Image with Text Overlay
+// Building one perfect component before expanding
 
-import React from 'react';
-import { EditableText, EditableImage } from './editor';
-import { HeroSection, HeroContent, HeroStyle } from './sections/HeroSections';
+import React, { useState } from 'react';
 
-// Re-export editor components for legacy compatibility
-export { EditableText, EditableImage };
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
 
-// Adapter function: converts legacy props to new HeroSection props
-const createHeroAdapter = (variant: 'centered' | 'split' | 'minimal') => {
-  return ({ data, isEditable, onUpdate, storeName, primaryColor, ...props }: any) => {
-    // Map legacy data structure to new HeroContent
-    const content: HeroContent = {
-      heading: data?.heading || storeName || 'Welcome',
-      subheading: data?.subheading,
-      body: data?.body,
-      cta: data?.cta,
-      secondaryCta: data?.secondaryCta,
-      image: data?.image,
-      backgroundImage: data?.backgroundImage,
-    };
+export interface HeroData {
+  // Content
+  heading?: string;
+  subheading?: string;
+  buttonText?: string;
+  buttonLink?: string;
+  backgroundImage?: string;
+  
+  // Colors
+  textColor?: string;
+  buttonBackgroundColor?: string;
+  buttonTextColor?: string;
+  buttonHoverColor?: string;
+  overlayColor?: string;
+  overlayOpacity?: number;
+  
+  // Visibility toggles
+  showSubheading?: boolean;
+  showButton?: boolean;
+}
 
-    // Map legacy style to new HeroStyle
-    const style: HeroStyle = {
-      heading: data?.style?.heading ? {
-        fontFamily: data.style.heading.fontFamily,
-        fontSize: data.style.heading.fontSize,
-        fontWeight: data.style.heading.fontWeight,
-        color: data.style.heading.color,
-      } : undefined,
-      subheading: data?.style?.subheading,
-      body: data?.style?.body,
-      background: data?.style?.background || 'bg-white',
-      padding: data?.style?.padding || 'py-20 px-4',
-    };
+interface HeroProps {
+  data: HeroData;
+  onUpdate?: (data: HeroData) => void;
+}
 
-    return (
-      <HeroSection
-        variant={variant}
-        content={content}
-        style={style}
-        editMode={isEditable}
-        onContentUpdate={(newContent) => {
-          if (onUpdate) {
-            onUpdate({ ...data, ...newContent });
-          }
+// ============================================================================
+// DEFAULT VALUES
+// ============================================================================
+
+const FULLIMAGE_DEFAULTS: HeroData = {
+  heading: 'Welcome to Our Store',
+  subheading: 'Discover amazing products at incredible prices',
+  buttonText: 'Shop Now',
+  buttonLink: '/products',
+  backgroundImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8',
+  textColor: '#FFFFFF',
+  buttonBackgroundColor: '#000000',
+  buttonTextColor: '#FFFFFF',
+  buttonHoverColor: '#333333',
+  overlayColor: '#000000',
+  overlayOpacity: 0.4,
+  showSubheading: true,
+  showButton: true,
+};
+
+// ============================================================================
+// FULL IMAGE HERO COMPONENT
+// ============================================================================
+
+const HeroFullImage: React.FC<HeroProps> = ({ data, onUpdate }) => {
+  const merged = { ...FULLIMAGE_DEFAULTS, ...data };
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div 
+      className="relative w-full h-screen flex items-center justify-center"
+      style={{
+        backgroundImage: `url(${merged.backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Overlay */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          backgroundColor: merged.overlayColor,
+          opacity: merged.overlayOpacity,
         }}
       />
-    );
-  };
+
+      {/* Content */}
+      <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+        {/* Heading */}
+        <h1 
+          className="text-5xl md:text-7xl font-bold mb-6"
+          style={{ color: merged.textColor }}
+        >
+          {merged.heading}
+        </h1>
+
+        {/* Subheading */}
+        {merged.showSubheading && merged.subheading && (
+          <p 
+            className="text-xl md:text-2xl mb-10"
+            style={{ color: merged.textColor }}
+          >
+            {merged.subheading}
+          </p>
+        )}
+
+        {/* CTA Button */}
+        {merged.showButton && merged.buttonText && (
+          <a
+            href={merged.buttonLink}
+            className="inline-block px-8 py-4 text-lg font-semibold rounded-lg transition-colors"
+            style={{
+              backgroundColor: isHovered ? merged.buttonHoverColor : merged.buttonBackgroundColor,
+              color: merged.buttonTextColor,
+            }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            {merged.buttonText}
+          </a>
+        )}
+      </div>
+    </div>
+  );
 };
 
-// Legacy component constants - map to new components
-export const HERO_COMPONENTS: Record<string, any> = {
-  // New v2 components
-  'centered': createHeroAdapter('centered'),
-  'split': createHeroAdapter('split'),
-  'minimal': createHeroAdapter('minimal'),
-  
-  // Legacy fallbacks (use centered for now)
-  'impact': createHeroAdapter('centered'),
-  'gradient': createHeroAdapter('centered'),
-  'overlay': createHeroAdapter('centered'),
+// ============================================================================
+// EXPORTS
+// ============================================================================
+
+export const HERO_COMPONENTS: Record<string, React.FC<HeroProps>> = {
+  fullimage: HeroFullImage,
 };
 
-export const HERO_OPTIONS: any[] = [
-  { id: 'centered', name: 'Centered Hero', preview: '/previews/hero-centered.jpg' },
-  { id: 'split', name: 'Split Hero', preview: '/previews/hero-split.jpg' },
-  { id: 'minimal', name: 'Minimal Hero', preview: '/previews/hero-minimal.jpg' },
+export const HERO_OPTIONS = [
+  { 
+    id: 'fullimage', 
+    name: 'Full Image', 
+    description: 'Full-screen background image with centered text overlay',
+    popularity: 100,
+    recommended: true
+  },
 ];
 
-export const HERO_FIELDS: Record<string, any> = {
-  heading: { type: 'text', label: 'Heading' },
-  subheading: { type: 'text', label: 'Subheading' },
-  body: { type: 'textarea', label: 'Body Text' },
-  image: { type: 'image', label: 'Hero Image' },
+export const HERO_FIELDS: Record<string, string[]> = {
+  fullimage: [
+    'heading',
+    'subheading',
+    'buttonText',
+    'buttonLink',
+    'backgroundImage',
+    'textColor',
+    'buttonBackgroundColor',
+    'buttonTextColor',
+    'buttonHoverColor',
+    'overlayColor',
+    'overlayOpacity',
+    'showSubheading',
+    'showButton',
+  ],
 };
-
-// Stub for HeroCanvas component
-export const HeroCanvas = () => null;

@@ -4,6 +4,7 @@ import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
 import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
+import { HeroEditor } from './HeroEditor';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
 import { SOCIAL_OPTIONS, SOCIAL_COMPONENTS } from './SocialLibrary';
@@ -18385,7 +18386,20 @@ Return ONLY the JSON object, no markdown.`;
       {renderInterfaceModal()}
       {renderBlockArchitect()}
       {renderHeaderModal()}
-      {renderHeroModal()}
+      {isHeroModalOpen && (
+        <HeroEditor
+          data={selectedBlockId && activeBlock?.type === 'system-hero' ? activeBlock?.data || {} : config.heroData || {}}
+          onChange={(updates) => {
+            if (selectedBlockId) {
+              updateActiveBlockData(selectedBlockId, updates);
+            } else {
+              onConfigChange({ ...config, heroData: { ...config.heroData, ...updates } });
+            }
+            setHasUnsavedChanges(true);
+          }}
+          onClose={() => setIsHeroModalOpen(false)}
+        />
+      )}
       {renderGridModal()}
       {renderCollectionModal()}
       {renderCategoryModal()}

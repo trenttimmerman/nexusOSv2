@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { EditableText } from './HeroLibrary';
+import { EditableText } from './editor';
 import { Send, MapPin, Phone, Mail, Clock, MessageSquare, HelpCircle, Twitter, Instagram, Facebook, Linkedin, ArrowRight } from 'lucide-react';
 
 export const CONTACT_OPTIONS = [

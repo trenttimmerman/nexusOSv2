@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { EditableText } from './HeroLibrary';
+import { EditableText } from './editor';
 import { Plus, Minus, ChevronDown, ChevronUp, Mail, ArrowRight, Check, Star } from 'lucide-react';
 import { subscribeEmail, getUTMParams } from '../lib/emailService';
 import ThankYouPopup from './ThankYouPopup';
