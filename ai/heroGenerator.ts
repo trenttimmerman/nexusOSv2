@@ -121,16 +121,11 @@ export async function generateHeroDesigns(requirements: DesignRequirements): Pro
     const genAI = getGenAI();
     const prompt = buildHeroPrompt(requirements);
     
-    // Generate with Gemini (using gemini-2.0-flash-exp model)
-    const result = await genAI.models.generate({
-      model: 'gemini-2.0-flash-exp',
+    // Generate with Gemini
+    const model = genAI.models;
+    const result = await model.generateContent({
+      model: 'gemini-2.5-flash',
       contents: prompt,
-      config: {
-        temperature: 0.8, // Higher creativity for diverse designs
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 2048,
-      }
     });
     
     // Extract and parse the response
