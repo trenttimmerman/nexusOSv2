@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Image as ImageIcon, Type, Palette, Eye, EyeOff, Upload } from 'lucide-react';
+import { X, Image as ImageIcon, Type, Palette, Eye, EyeOff, Upload, Sparkles } from 'lucide-react';
 import { HeroData, HERO_COMPONENTS } from './HeroLibrary';
+import { HeroDesignerModal, DesignRequirements } from './HeroDesignerModal';
 
 interface HeroEditorProps {
   data: HeroData;
@@ -10,6 +11,8 @@ interface HeroEditorProps {
 
 export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose }) => {
   const [activeTab, setActiveTab] = useState<'content' | 'colors' | 'settings'>('content');
+  const [showDesigner, setShowDesigner] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const updateField = (field: keyof HeroData, value: any) => {
     onChange({ ...data, [field]: value });
@@ -30,6 +33,19 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
     }
   };
 
+  const handleGenerateHeroes = async (requirements: DesignRequirements) => {
+    setIsGenerating(true);
+    // TODO: Call Gemini API to generate 3 heroes
+    console.log('Generating heroes with requirements:', requirements);
+    
+    // Placeholder - will implement API call next
+    setTimeout(() => {
+      setIsGenerating(false);
+      setShowDesigner(false);
+      // TODO: Show preview of 3 generated heroes
+    }, 3000);
+  };
+
   const HeroComponent = HERO_COMPONENTS['fullimage'];
 
   return (
@@ -45,6 +61,20 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
           >
             <X size={20} />
           </button>
+        </div>
+
+        {/* AI Designer Button */}
+        <div className="p-4 border-b border-neutral-800">
+          <button
+            onClick={() => setShowDesigner(true)}
+            className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20"
+          >
+            <Sparkles size={18} />
+            Design with AI
+          </button>
+          <p className="text-xs text-neutral-500 text-center mt-2">
+            Generate 3 custom hero designs instantly
+          </p>
         </div>
 
         {/* Tabs */}
@@ -333,6 +363,15 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
           <HeroComponent data={data} />
         </div>
       </div>
+
+      {/* AI Designer Modal */}
+      {showDesigner && (
+        <HeroDesignerModal
+          onClose={() => setShowDesigner(false)}
+          onGenerate={handleGenerateHeroes}
+          isGenerating={isGenerating}
+        />
+      )}
     </div>
   );
 };
