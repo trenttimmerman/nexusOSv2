@@ -8,6 +8,9 @@ import React, { useState } from 'react';
 // ============================================================================
 
 export interface HeroData {
+  // Layout Variant
+  variant?: 'centered' | 'split-left' | 'split-right' | 'minimal-corner' | 'bottom-aligned';
+  
   // Content
   heading?: string;
   subheading?: string;
@@ -405,13 +408,169 @@ const HeroDiagonal: React.FC<HeroProps> = ({ data, onUpdate }) => {
 };
 
 // ============================================================================
+// MINIMAL CORNER HERO - Top-Left Positioned
+// ============================================================================
+
+const HeroMinimalCorner: React.FC<HeroProps> = ({ data, onUpdate }) => {
+  const merged = { ...FULLIMAGE_DEFAULTS, ...data };
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div className="relative w-full h-screen overflow-hidden">
+      {/* Background */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url(${merged.backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
+
+      {/* Gradient Overlay */}
+      {merged.gradientOverlay ? (
+        <div className={`absolute inset-0 bg-gradient-to-br ${merged.gradientColors || 'from-black/60 to-transparent'}`} />
+      ) : (
+        <div className="absolute inset-0" style={{ backgroundColor: merged.overlayColor, opacity: merged.overlayOpacity }} />
+      )}
+
+      {/* Top-Left Content */}
+      <div className="relative z-10 pt-32 pl-20 max-w-3xl">
+        <h1 className="text-6xl md:text-8xl font-black mb-6 leading-none tracking-tight" style={{ color: merged.textColor }}>
+          {merged.heading}
+        </h1>
+        
+        {merged.showSubheading && merged.subheading && (
+          <p className="text-lg md:text-xl mb-8 max-w-xl" style={{ color: merged.textColor, opacity: 0.95 }}>
+            {merged.subheading}
+          </p>
+        )}
+
+        {merged.showButton && merged.buttonText && (
+          <a
+            href={merged.buttonLink}
+            className="inline-block px-8 py-4 text-sm font-bold uppercase tracking-widest border-2 transition-all duration-300 hover:scale-105"
+            style={{
+              backgroundColor: isHovered ? merged.buttonBackgroundColor : 'transparent',
+              borderColor: merged.buttonBackgroundColor,
+              color: isHovered ? merged.buttonTextColor : merged.buttonBackgroundColor,
+            }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            {merged.buttonText}
+          </a>
+        )}
+      </div>
+
+      {/* Particles */}
+      {merged.enableParticles && (
+        <>
+          <style>{`
+            @keyframes particle-rise { 0% { transform: translateY(100vh); opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.8; } 100% { transform: translateY(-20vh); opacity: 0; } }
+            .particle-corner { position: absolute; left: 0; width: 3px; height: 3px; background: ${merged.particleColor || '#ffffff'}; border-radius: 50%; }
+            .particle-corner:nth-child(odd) { animation: particle-rise 15s infinite; }
+            .particle-corner:nth-child(even) { animation: particle-rise 18s infinite; animation-delay: 5s; }
+          `}</style>
+          <div className="absolute inset-0 pointer-events-none">
+            {[...Array(5)].map((_, i) => (<div key={i} className="particle-corner" style={{ left: `${i * 15}%` }} />))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
+// BOTTOM-ALIGNED HERO - Content at Bottom
+// ============================================================================
+
+const HeroBottomAligned: React.FC<HeroProps> = ({ data, onUpdate }) => {
+  const merged = { ...FULLIMAGE_DEFAULTS, ...data };
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div className="relative w-full h-screen flex items-end overflow-hidden">
+      {/* Background */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url(${merged.backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
+
+      {/* Gradient from bottom */}
+      {merged.gradientOverlay ? (
+        <div className={`absolute inset-0 bg-gradient-to-t ${merged.gradientColors || 'from-black via-black/50 to-transparent'}`} />
+      ) : (
+        <>
+          <div className="absolute inset-0" style={{ backgroundColor: merged.overlayColor, opacity: merged.overlayOpacity }} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+        </>
+      )}
+
+      {/* Bottom Content */}
+      <div className="relative z-10 w-full pb-20 px-20">
+        <div className="max-w-5xl">
+          <h1 className="text-7xl md:text-9xl font-black mb-4 leading-none" style={{ color: merged.textColor }}>
+            {merged.heading}
+          </h1>
+          
+          <div className="flex items-center gap-8 mt-8">
+            {merged.showSubheading && merged.subheading && (
+              <p className="text-xl md:text-2xl max-w-2xl flex-1" style={{ color: merged.textColor }}>
+                {merged.subheading}
+              </p>
+            )}
+
+            {merged.showButton && merged.buttonText && (
+              <a
+                href={merged.buttonLink}
+                className="px-10 py-5 text-lg font-black rounded-none transition-all duration-300 hover:scale-110 hover:shadow-2xl whitespace-nowrap"
+                style={{
+                  backgroundColor: isHovered ? merged.buttonHoverColor : merged.buttonBackgroundColor,
+                  color: merged.buttonTextColor,
+                }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+              >
+                {merged.buttonText}
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Particles */}
+      {merged.enableParticles && (
+        <>
+          <style>{`
+            @keyframes particle-bottom { 0% { transform: translateY(0) scale(0); opacity: 0; } 20% { opacity: 1; transform: translateY(-30vh) scale(1); } 100% { transform: translateY(-100vh) scale(0); opacity: 0; } }
+            .particle-bottom { position: absolute; bottom: 0; width: 5px; height: 5px; background: ${merged.particleColor || '#ffffff'}; border-radius: 50%; box-shadow: 0 0 20px ${merged.particleColor || '#ffffff'}; }
+          `}</style>
+          <div className="absolute inset-0 pointer-events-none">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="particle-bottom" style={{ left: `${i * 12}%`, animationDelay: `${i * 1.5}s`, animation: 'particle-bottom 12s infinite' }} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
 // EXPORTS
 // ============================================================================
 
 export const HERO_COMPONENTS: Record<string, React.FC<HeroProps>> = {
-  fullimage: HeroFullImage,
-  split: HeroSplitLayout,
+  centered: HeroFullImage,
+  'split-left': HeroSplitLayout,
   diagonal: HeroDiagonal,
+  'minimal-corner': HeroMinimalCorner,
+  'bottom-aligned': HeroBottomAligned,
 };
 
 export const HERO_OPTIONS = [

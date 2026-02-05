@@ -37,7 +37,7 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
     setShowDesigner(false);
   };
 
-  const HeroComponent = HERO_COMPONENTS['fullimage'];
+  const HeroComponent = HERO_COMPONENTS[data.variant || 'centered'] || HERO_COMPONENTS['centered'];
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex">

@@ -82,12 +82,40 @@ ${featureGuidance}
 
 **CRITICAL: Each design must use a COMPLETELY DIFFERENT LAYOUT STRUCTURE:**
 
-**Design 1: FULL IMAGE CENTERED - Neon Cyberpunk**
-- **Layout**: "fullimage" (centered text overlay on full background image)
+**Design 1: FULL CENTERED or MINIMAL CORNER - Dark Cyberpunk**
+- **Layout**: "centered" OR "minimal-corner" (pick ONE)
 - Background: Pitch black (#000000), very dark urban/night imagery
 - Overlay: BLACK (#000000) with 0.7-0.85 opacity for ultra-dark mood
-- Text: Pure WHITE (#FFFFFF) centered
+- Text: Pure WHITE (#FFFFFF)
 - Button: ELECTRIC NEON - Must use (#00FF00 lime, #FF00FF magenta, #00FFFF cyan, or #FFFF00 yellow)
+- Button Hover: Slightly darker neon
+- ${requirements.features.includes('particles') ? 'Particles: Matching neon color\n' : ''}${requirements.features.includes('animation') ? 'Animation: "glitch" or "slide-up"\n' : ''}- Copy: Aggressive, edgy, urban tone
+
+**Design 2: SPLIT or BOTTOM - Bright Lifestyle**
+- **Layout**: "split-left" OR "bottom-aligned" (pick ONE, must be DIFFERENT from Design 1)
+- Background: Bright, sunny, energetic imagery (beaches, nature, people, sky)
+- Overlay: WHITE (#FFFFFF, #F5F5F5) with 0.15-0.25 opacity (shows image clearly!)
+- Text: PURE BLACK (#000000) or very dark (#1A1A1A)
+- Button: BOLD SATURATED - Must use (#FF3366 hot pink, #7C3AED purple, #0EA5E9 sky blue, #10B981 emerald, or #F59E0B amber)
+- Button Hover: Darker shade
+- ${requirements.features.includes('particles') ? 'Particles: Soft white or matching button color\n' : ''}${requirements.features.includes('animation') ? 'Animation: "fade-in" or "float"\n' : ''}- Copy: Uplifting, aspirational, positive tone
+
+**Design 3: DIAGONAL - Futuristic Gradient**
+- **Layout**: "diagonal" (MANDATORY - dramatically angled, skewed elements)
+- Background: Abstract, futuristic, or tech imagery (architecture, space, geometric)
+- Overlay: MUST use gradientOverlay with bold combinations like "from-purple-900/75 to-pink-900/75"
+- Text: WHITE (#FFFFFF) with skew effects  
+- Button: Gradient-matching - use (#EC4899 pink, #8B5CF6 purple, #06B6D4 cyan, #EF4444 red, #F59E0B orange)
+- Button Hover: Darker shade
+- ${requirements.features.includes('particles') ? 'Particles: White or gradient-matching\n' : ''}${requirements.features.includes('animation') ? 'Animation: "zoom-in" or "float"\n' : ''}- Copy: Innovative, future-forward tone
+
+**LAYOUT REQUIREMENTS (CRITICAL):**
+- All 3 designs MUST use DIFFERENT layouts
+- Available layouts: "centered", "split-left", "diagonal", "minimal-corner", "bottom-aligned"
+- Design 1: Pick centered or minimal-corner
+- Design 2: Pick split-left or bottom-aligned  
+- Design 3: MUST use diagonal
+- This creates 3 COMPLETELY DIFFERENT hero structures!
 - Button Hover: Slightly darker neon
 - ${requirements.features.includes('particles') ? 'Particles: Matching neon color\n' : ''}${requirements.features.includes('animation') ? 'Animation: "glitch" or "slide-up"\n' : ''}- Copy: Aggressive, edgy, urban tone
 
@@ -144,8 +172,9 @@ ${requirements.features.includes('particles') ? `- PARTICLES: Set "enableParticl
   {
     "name": "Design Name (2-4 words)",
     "description": "Technical description of the visual style ONLY for the design card (mention colors, effects, mood) - NOT shown to customers",
-    "layout": "fullimage" | "split" | "diagonal",
+    "layout": "centered" | "split-left" | "diagonal" | "minimal-corner" | "bottom-aligned",
     "data": {
+      "variant": SAME AS LAYOUT VALUE,
       "heading": "Customer-Facing Marketing Headline",
       "subheading": "Customer-facing benefit statement that sells the product/service to ${requirements.industry} customers",
       "buttonText": "Action Verb",
