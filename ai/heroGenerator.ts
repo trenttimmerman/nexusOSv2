@@ -104,9 +104,10 @@ ${featureGuidance}
 - Forward-thinking, innovative copy
 
 **Copy Guidelines:**
-- Headings: 2-6 words, POWERFUL and specific to ${requirements.industry}
-- Subheadings: 10-18 words, clear value proposition${requirements.features.includes('video') || requirements.features.includes('animation') ? ' with dynamic, action-oriented language' : ''}${requirements.features.includes('particles') || requirements.features.includes('3d') ? ' emphasizing visual impact and innovation' : ''}
-- Buttons: 1-3 words, action-driven
+- Headings: 2-6 words, POWERFUL and specific to ${requirements.industry} (e.g., "Unleash The Night", "Ride Free, Live Bold")
+- Subheadings: 10-18 words, clear CUSTOMER-FACING value proposition for ${requirements.industry} customers${requirements.features.includes('video') || requirements.features.includes('animation') ? ' with dynamic, action-oriented language' : ''}${requirements.features.includes('particles') || requirements.features.includes('3d') ? ' emphasizing visual impact and innovation' : ''}
+- Buttons: 1-3 words, action-driven (e.g., "Shop Now", "Explore Pro", "Discover Innovation")
+- **CRITICAL**: Do NOT write meta-descriptions like "A hero section featuring..." - write actual customer-facing marketing copy!
 
 **Image Selection (CRITICAL - Pick visually DISTINCT images based on features):**
 ${requirements.features.includes('particles') ? '- Prioritize images with bokeh, light particles, sparks, stars, or atmospheric effects\n' : ''}${requirements.features.includes('video') ? '- Choose dynamic, cinematic scenes with motion blur or action (sports, cities, nature in motion)\n' : ''}${requirements.features.includes('3d') ? '- Select images with 3D objects, architecture, geometric shapes, or strong perspective\n' : ''}${requirements.features.includes('parallax') ? '- Find images with clear depth layers (mountains with sky, buildings with clouds)\n' : ''}${requirements.features.includes('animation') ? '- Pick images with visual rhythm, patterns, or elements that suggest movement\n' : ''}${requirements.features.includes('carousel') ? '- Ensure strong visual hierarchy and clear focal points\n' : ''}- Design 1: Dark/moody/urban scenes (night cities, industrial, dramatic${requirements.features.includes('particles') ? ', with bokeh or light trails' : ''})
@@ -124,12 +125,12 @@ ${requirements.features.includes('particles') ? `- PARTICLES: Set "enableParticl
 **RETURN ONLY THIS JSON (no markdown, no explanation):**
 [
   {
-    "name": "Unique Design Name",
-    "description": "Specific visual description of visual effects and style",
+    "name": "Design Name (2-4 words)",
+    "description": "Technical description of the visual style ONLY for the design card (mention colors, effects, mood) - NOT shown to customers",
     "data": {
-      "heading": "Industry-Specific Heading",
-      "subheading": "Clear value proposition for ${requirements.industry}",
-      "buttonText": "Action Word",
+      "heading": "Customer-Facing Marketing Headline",
+      "subheading": "Customer-facing benefit statement that sells the product/service to ${requirements.industry} customers",
+      "buttonText": "Action Verb",
       "buttonLink": "#",
       "backgroundImage": "https://images.unsplash.com/photo-[unique-id]",
       "textColor": "#FFFFFF or #000000",
@@ -151,6 +152,13 @@ ${requirements.features.includes('particles') ? `- PARTICLES: Set "enableParticl
     }
   }
 ]
+
+**EXAMPLES OF GOOD vs BAD:**
+❌ BAD subheading: "A modern hero section with bold typography and particle effects"
+✅ GOOD subheading: "Transform your skateboarding with premium boards designed for ultimate performance"
+
+❌ BAD subheading: "Features dark overlay and neon accents for an urban aesthetic"
+✅ GOOD subheading: "Experience unmatched freedom and explore new horizons with boards designed for the open road"
 
 **IMPORTANT:** Each design MUST have different ${requirements.features.length > 0 ? 'animation types and particle colors' : 'visual approaches'} to justify $99 exclusive pricing.`;
 }
