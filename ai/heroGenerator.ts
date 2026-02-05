@@ -64,14 +64,20 @@ function extractJSON(text: string): string {
  * Build the prompt for Gemini based on design requirements
  */
 function buildHeroPrompt(requirements: DesignRequirements): string {
+  const featureGuidance = requirements.features.length > 0 
+    ? `\n**Selected Features to Emphasize:**
+${requirements.features.includes('video') ? '- Use dynamic, cinematic background imagery that suggests motion/video quality\n' : ''}${requirements.features.includes('animation') ? '- Choose imagery with visual rhythm and energy that implies movement\n' : ''}${requirements.features.includes('particles') ? '- Select backgrounds with particle-like elements (bokeh, dust, sparks, stars)\n' : ''}${requirements.features.includes('3d') ? '- Pick images with depth, 3D objects, or architectural elements\n' : ''}${requirements.features.includes('parallax') ? '- Choose layered, depth-rich imagery (foreground/background separation)\n' : ''}${requirements.features.includes('carousel') ? '- Ensure strong focal points that work well in carousel transitions\n' : ''}` 
+    : '';
+
   return `You are an award-winning 2026 web designer creating CUTTING-EDGE, visually stunning hero sections. These designs must be SO DIFFERENT from each other that customers would pay $99 to own one exclusively.
 
 **Client Requirements:**
 - Industry: ${requirements.industry}
 - Design Style: ${requirements.style}
-- Features: ${requirements.features.length > 0 ? requirements.features.join(', ') : 'Full hero experience'}
+- Selected Features: ${requirements.features.length > 0 ? requirements.features.join(', ') : 'Standard hero'}
 - Color Mood: ${requirements.colorMood}
 - Context: ${requirements.additionalContext || 'Premium quality expected'}
+${featureGuidance}
 
 **CRITICAL: Each design must be RADICALLY DIFFERENT:**
 
@@ -99,13 +105,13 @@ function buildHeroPrompt(requirements: DesignRequirements): string {
 
 **Copy Guidelines:**
 - Headings: 2-6 words, POWERFUL and specific to ${requirements.industry}
-- Subheadings: 10-18 words, clear value proposition
+- Subheadings: 10-18 words, clear value proposition${requirements.features.includes('video') || requirements.features.includes('animation') ? ' with dynamic, action-oriented language' : ''}${requirements.features.includes('particles') || requirements.features.includes('3d') ? ' emphasizing visual impact and innovation' : ''}
 - Buttons: 1-3 words, action-driven
 
-**Image Selection (CRITICAL - Pick visually DISTINCT images):**
-- Design 1: Dark/moody/urban scenes (night cities, industrial, dramatic)
-- Design 2: Bright/vibrant/lifestyle (sunlight, nature, people, energy)
-- Design 3: Abstract/futuristic/unique perspectives (architecture, tech, art)
+**Image Selection (CRITICAL - Pick visually DISTINCT images based on features):**
+${requirements.features.includes('particles') ? '- Prioritize images with bokeh, light particles, sparks, stars, or atmospheric effects\n' : ''}${requirements.features.includes('video') ? '- Choose dynamic, cinematic scenes with motion blur or action (sports, cities, nature in motion)\n' : ''}${requirements.features.includes('3d') ? '- Select images with 3D objects, architecture, geometric shapes, or strong perspective\n' : ''}${requirements.features.includes('parallax') ? '- Find images with clear depth layers (mountains with sky, buildings with clouds)\n' : ''}${requirements.features.includes('animation') ? '- Pick images with visual rhythm, patterns, or elements that suggest movement\n' : ''}${requirements.features.includes('carousel') ? '- Ensure strong visual hierarchy and clear focal points\n' : ''}- Design 1: Dark/moody/urban scenes (night cities, industrial, dramatic${requirements.features.includes('particles') ? ', with bokeh or light trails' : ''})
+- Design 2: Bright/vibrant/lifestyle (sunlight, nature, people, energy${requirements.features.includes('video') ? ', action shots' : ''})
+- Design 3: Abstract/futuristic/unique perspectives (architecture, tech, art${requirements.features.includes('3d') ? ', 3D renders or geometric shapes' : ''})
 
 **Color Psychology:**
 - ${requirements.colorMood === 'Energetic & Bold' ? 'Use neon greens, hot pinks, electric blues' : ''}
@@ -116,8 +122,8 @@ function buildHeroPrompt(requirements: DesignRequirements): string {
 **RETURN ONLY THIS JSON (no markdown, no explanation):**
 [
   {
-    "name": "Unique Design Name",
-    "description": "Specific visual description highlighting what makes this unique",
+    "name": "Unique Design Name${requirements.features.length > 0 ? ' (incorporating ' + requirements.features.join('/') + ')' : ''}",
+    "description": "Specific visual description highlighting what makes this unique${requirements.features.length > 0 ? ' with emphasis on ' + requirements.features.join(', ') + ' effects' : ''}",
     "data": {
       "heading": "Industry-Specific Heading",
       "subheading": "Clear value proposition for ${requirements.industry}",
