@@ -119,11 +119,13 @@ ${requirements.features.includes('particles') ? '- Prioritize images with bokeh,
 - ${requirements.colorMood === 'Calm & Minimal' ? 'Use soft pastels, warm earth tones, muted blues' : ''}
 - ${requirements.colorMood === 'Luxurious & Premium' ? 'Use gold accents, deep purples, rich blacks' : ''}
 
+**Effect-Specific Guidelines:**
+${requirements.features.includes('particles') ? `- PARTICLES: Set "enableParticles": true and choose particle colors (#FFFFFF for white, #00FFFF for cyan, #FF00FF for magenta, #00FF00 for green). Make each design use DIFFERENT particle colors.\n` : ''}${requirements.features.includes('animation') ? `- ANIMATIONS: Choose from: "fade-in" (classic), "slide-up" (modern), "zoom-in" (bold), "glitch" (edgy), "float" (smooth). Make each design use DIFFERENT animations.\n` : ''}${requirements.features.includes('parallax') ? `- PARALLAX: Set "enableParallax": true with speed 0.3-0.7 (lower = slower, higher = faster). Vary speeds across designs.\n` : ''}${requirements.features.includes('3d') || requirements.features.includes('video') ? `- GRADIENT OVERLAYS: Set "gradientOverlay": true with Tailwind gradient classes like "from-purple-900/70 to-pink-900/70", "from-blue-900/60 to-cyan-900/60", or "from-amber-900/70 to-red-900/70". Each design should use DIFFERENT gradient combinations.\n` : ''}
 **RETURN ONLY THIS JSON (no markdown, no explanation):**
 [
   {
-    "name": "Unique Design Name${requirements.features.length > 0 ? ' (incorporating ' + requirements.features.join('/') + ')' : ''}",
-    "description": "Specific visual description highlighting what makes this unique${requirements.features.length > 0 ? ' with emphasis on ' + requirements.features.join(', ') + ' effects' : ''}",
+    "name": "Unique Design Name",
+    "description": "Specific visual description of visual effects and style",
     "data": {
       "heading": "Industry-Specific Heading",
       "subheading": "Clear value proposition for ${requirements.industry}",
@@ -137,10 +139,20 @@ ${requirements.features.includes('particles') ? '- Prioritize images with bokeh,
       "overlayColor": "#HEX_COLOR",
       "overlayOpacity": 0.2-0.8,
       "showSubheading": true,
-      "showButton": true
+      "showButton": true,${requirements.features.includes('particles') ? `
+      "enableParticles": true,
+      "particleColor": "#FFFFFF or neon color",` : ''}${requirements.features.includes('animation') ? `
+      "enableAnimation": true,
+      "animationType": "fade-in" | "slide-up" | "zoom-in" | "glitch" | "float",` : ''}${requirements.features.includes('parallax') ? `
+      "enableParallax": true,
+      "parallaxSpeed": 0.3-0.7,` : ''}${requirements.features.includes('3d') || requirements.features.includes('video') ? `
+      "gradientOverlay": true,
+      "gradientColors": "from-purple-900/70 to-pink-900/70" or similar,` : ''}
     }
   }
-]`;
+]
+
+**IMPORTANT:** Each design MUST have different ${requirements.features.length > 0 ? 'animation types and particle colors' : 'visual approaches'} to justify $99 exclusive pricing.`;
 }
 
 /**
