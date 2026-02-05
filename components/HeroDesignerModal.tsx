@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Sparkles, ChevronRight, Loader2 } from 'lucide-react';
+import { X, Sparkles, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
 import AIHeroPreview from './AIHeroPreview';
 import { HeroData } from './HeroLibrary';
+import { generateHeroDesigns } from '../ai/heroGenerator';
 
 interface HeroDesignerModalProps {
   onClose: () => void;
@@ -32,6 +33,7 @@ export const HeroDesignerModal: React.FC<HeroDesignerModalProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedHeroes, setGeneratedHeroes] = useState<GeneratedHero[]>([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [requirements, setRequirements] = useState<DesignRequirements>({
     industry: '',
     style: '',
@@ -64,53 +66,25 @@ export const HeroDesignerModal: React.FC<HeroDesignerModalProps> = ({
     }
   };
 
-  const generateMockHeroes = (reqs: DesignRequirements): GeneratedHero[] => {
-    // Mock generation - will be replaced with Gemini API
-    const baseImages = [
-      'https://images.unsplash.com/photo-1441986300917-64674bd600d8',
-      'https://images.unsplash.com/photo-1472851294608-062f824d29cc',
-      'https://images.unsplash.com/photo-1519389950473-47ba0277781c'
-    ];
-
-    const colorSchemes = [
-      { text: '#FFFFFF', button: '#000000', buttonText: '#FFFFFF', overlay: '#000000' },
-      { text: '#1F2937', button: '#10B981', buttonText: '#FFFFFF', overlay: '#FFFFFF' },
-      { text: '#FFFFFF', button: '#8B5CF6', buttonText: '#FFFFFF', overlay: '#000000' }
-    ];
-
-    return baseImages.map((image, index) => ({
-      id: `hero-${index + 1}`,
-      name: `${reqs.style} Hero ${index + 1}`,
-      description: `A ${reqs.colorMood.toLowerCase()} ${reqs.style.toLowerCase()} design for ${reqs.industry}`,
-      exclusivePrice: 99,
-      data: {
-        heading: `Transform Your ${reqs.industry}`,
-        subheading: `Experience the power of ${reqs.style.toLowerCase()} design`,
-        buttonText: 'Get Started',
-        buttonLink: '#',
-        backgroundImage: image,
-        textColor: colorSchemes[index].text,
-        buttonBackgroundColor: colorSchemes[index].button,
-        buttonTextColor: colorSchemes[index].buttonText,
-        buttonHoverColor: colorSchemes[index].button,
-        overlayColor: colorSchemes[index].overlay,
-        overlayOpacity: index === 1 ? 0.3 : 0.5,
-        showSubheading: reqs.features.includes('subheading'),
-        showButton: reqs.features.includes('cta')
-      }
-    }));
-  };
-
   const handleGenerate = async () => {
     setIsGenerating(true);
+    setError(null);
     
-    // Simulate AI generation delay
-    setTimeout(() => {
-      const heroes = generateMockHeroes(requirements);
+    try {
+      // Call Gemini API to generate real hero designs
+      const heroes = await generateHeroDesigns(requirements);
       setGeneratedHeroes(heroes);
-      setIsGenerating(false);
       setShowPreview(true);
-    }, 2000);
+    } catch (err) {
+      console.error('Failed to generate heroes:', err);
+      setError(
+        err instanceof Error 
+          ? err.message 
+          : 'Failed to generate heroes. Please try again.'
+      );
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleHeroSelect = (hero: GeneratedHero, makeExclusive: boolean) => {
@@ -352,6 +326,23 @@ export const HeroDesignerModal: React.FC<HeroDesignerModalProps> = ({
             </div>
           )}
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mx-6 mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-red-400 text-sm font-medium">Generation Failed</p>
+              <p className="text-red-300 text-xs mt-1">{error}</p>
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="p-1 hover:bg-red-500/10 rounded transition-colors"
+            >
+              <X className="w-4 h-4 text-red-400" />
+            </button>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="p-6 border-t border-neutral-800 flex items-center justify-between">
