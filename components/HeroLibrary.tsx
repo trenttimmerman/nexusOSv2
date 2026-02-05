@@ -254,11 +254,164 @@ const HeroFullImage: React.FC<HeroProps> = ({ data, onUpdate }) => {
 };
 
 // ============================================================================
+// SPLIT LAYOUT HERO - Text Left, Image Right
+// ============================================================================
+
+const HeroSplitLayout: React.FC<HeroProps> = ({ data, onUpdate }) => {
+  const merged = { ...FULLIMAGE_DEFAULTS, ...data };
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div className="relative w-full h-screen flex items-center overflow-hidden">
+      {/* Left Side - Content */}
+      <div className="w-1/2 h-full flex items-center justify-center px-16 relative z-10" style={{ backgroundColor: merged.overlayColor }}>
+        <div className="max-w-xl">
+          <h1 className="text-6xl font-black mb-6 leading-tight" style={{ color: merged.textColor }}>
+            {merged.heading}
+          </h1>
+          
+          {merged.showSubheading && merged.subheading && (
+            <p className="text-xl mb-8 leading-relaxed" style={{ color: merged.textColor, opacity: 0.9 }}>
+              {merged.subheading}
+            </p>
+          )}
+
+          {merged.showButton && merged.buttonText && (
+            <a
+              href={merged.buttonLink}
+              className="inline-block px-10 py-5 text-lg font-bold rounded-full transition-all duration-300 hover:scale-110 hover:shadow-2xl"
+              style={{
+                backgroundColor: isHovered ? merged.buttonHoverColor : merged.buttonBackgroundColor,
+                color: merged.buttonTextColor,
+              }}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
+              {merged.buttonText}
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* Right Side - Image */}
+      <div 
+        className="w-1/2 h-full"
+        style={{
+          backgroundImage: `url(${merged.backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
+
+      {/* Particles */}
+      {merged.enableParticles && (
+        <>
+          <style>{`
+            @keyframes particle-float { 0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-100vh) translateX(50px); opacity: 0; } }
+            .particle { position: absolute; bottom: -10px; width: 4px; height: 4px; background: ${merged.particleColor || '#ffffff'}; border-radius: 50%; pointer-events: none; box-shadow: 0 0 10px ${merged.particleColor || '#ffffff'}; }
+            .particle:nth-child(1) { left: 10%; animation: particle-float 8s infinite; }
+            .particle:nth-child(2) { left: 20%; animation: particle-float 10s infinite; animation-delay: 2s; }
+            .particle:nth-child(3) { left: 30%; animation: particle-float 12s infinite; animation-delay: 4s; }
+          `}</style>
+          <div className="absolute inset-0 pointer-events-none">
+            {[...Array(3)].map((_, i) => (<div key={i} className="particle" />))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
+// DIAGONAL HERO - Dramatic Angled Split
+// ============================================================================
+
+const HeroDiagonal: React.FC<HeroProps> = ({ data, onUpdate }) => {
+  const merged = { ...FULLIMAGE_DEFAULTS, ...data };
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div className="relative w-full h-screen flex items-center justify-center overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url(${merged.backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
+
+      {/* Diagonal Overlay */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: merged.gradientOverlay 
+            ? `linear-gradient(135deg, ${merged.overlayColor || '#000000'} 0%, transparent 100%)`
+            : merged.overlayColor,
+          opacity: merged.gradientOverlay ? 1 : merged.overlayOpacity,
+        }}
+      />
+
+      {/* Diagonal Content Container */}
+      <div className="relative z-10 w-full h-full flex items-center">
+        <div className="w-3/5 px-20">
+          <div className="transform -skew-y-2">
+            <h1 className="text-7xl font-black mb-6 leading-none" style={{ color: merged.textColor }}>
+              {merged.heading}
+            </h1>
+          </div>
+          
+          {merged.showSubheading && merged.subheading && (
+            <p className="text-2xl mb-10 max-w-2xl" style={{ color: merged.textColor }}>
+              {merged.subheading}
+            </p>
+          )}
+
+          {merged.showButton && merged.buttonText && (
+            <a
+              href={merged.buttonLink}
+              className="inline-block px-12 py-6 text-xl font-black uppercase tracking-wider transform hover:-skew-x-12 transition-all duration-300"
+              style={{
+                backgroundColor: isHovered ? merged.buttonHoverColor : merged.buttonBackgroundColor,
+                color: merged.buttonTextColor,
+              }}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
+              {merged.buttonText}
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* Particles */}
+      {merged.enableParticles && (
+        <>
+          <style>{`
+            @keyframes particle-diagonal { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translate(-100vw, -100vh); opacity: 0; } }
+            .particle-diag { position: absolute; top: 100%; right: 0; width: 6px; height: 6px; background: ${merged.particleColor || '#ffffff'}; border-radius: 50%; box-shadow: 0 0 15px ${merged.particleColor || '#ffffff'}; }
+            .particle-diag:nth-child(1) { animation: particle-diagonal 10s infinite; }
+            .particle-diag:nth-child(2) { animation: particle-diagonal 12s infinite; animation-delay: 3s; }
+            .particle-diag:nth-child(3) { animation: particle-diagonal 15s infinite; animation-delay: 6s; }
+          `}</style>
+          <div className="absolute inset-0 pointer-events-none">
+            {[...Array(3)].map((_, i) => (<div key={i} className="particle-diag" />))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
 // EXPORTS
 // ============================================================================
 
 export const HERO_COMPONENTS: Record<string, React.FC<HeroProps>> = {
   fullimage: HeroFullImage,
+  split: HeroSplitLayout,
+  diagonal: HeroDiagonal,
 };
 
 export const HERO_OPTIONS = [
@@ -268,6 +421,20 @@ export const HERO_OPTIONS = [
     description: 'Full-screen background image with centered text overlay',
     popularity: 100,
     recommended: true
+  },
+  { 
+    id: 'split', 
+    name: 'Split Layout', 
+    description: 'Text on left, image on right split design',
+    popularity: 90,
+    recommended: false
+  },
+  { 
+    id: 'diagonal', 
+    name: 'Diagonal', 
+    description: 'Dramatic angled split with skewed elements',
+    popularity: 85,
+    recommended: false
   },
 ];
 

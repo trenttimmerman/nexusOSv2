@@ -11,6 +11,7 @@ interface GeneratedHero {
   id: string;
   name: string;
   description: string;
+  layout: 'fullimage' | 'split' | 'diagonal';
   data: HeroData;
   exclusivePrice?: number;
 }
@@ -79,32 +80,35 @@ ${requirements.features.includes('video') ? '- Use dynamic, cinematic background
 - Context: ${requirements.additionalContext || 'Premium quality expected'}
 ${featureGuidance}
 
-**CRITICAL: Each design must be RADICALLY DIFFERENT:**
+**CRITICAL: Each design must use a COMPLETELY DIFFERENT LAYOUT STRUCTURE:**
 
-**Design 1: PURE DARKNESS - Neon Cyberpunk** 
+**Design 1: FULL IMAGE CENTERED - Neon Cyberpunk**
+- **Layout**: "fullimage" (centered text overlay on full background image)
 - Background: Pitch black (#000000), very dark urban/night imagery
 - Overlay: BLACK (#000000) with 0.7-0.85 opacity for ultra-dark mood
-- Text: Pure WHITE (#FFFFFF) 
+- Text: Pure WHITE (#FFFFFF) centered
 - Button: ELECTRIC NEON - Must use (#00FF00 lime, #FF00FF magenta, #00FFFF cyan, or #FFFF00 yellow)
 - Button Hover: Slightly darker neon
 - ${requirements.features.includes('particles') ? 'Particles: Matching neon color\n' : ''}${requirements.features.includes('animation') ? 'Animation: "glitch" or "slide-up"\n' : ''}- Copy: Aggressive, edgy, urban tone
 
-**Design 2: ULTRA BRIGHT - Lifestyle Energy**
+**Design 2: SPLIT LAYOUT - Bold Modern**
+- **Layout**: "split" (text on left half, image on right half - completely different structure!)
 - Background: Bright, sunny, energetic imagery (beaches, nature, people, sky)
-- Overlay: WHITE or LIGHT (#FFFFFF, #F5F5F5) with 0.15-0.25 opacity (shows image clearly!)
-- Text: PURE BLACK (#000000) or very dark (#1A1A1A)
+- Left side: Solid color panel, Right side: Full image
+- Text: PURE BLACK (#000000) or very dark (#1A1A1A) on solid left panel
 - Button: BOLD SATURATED - Must use (#FF3366 hot pink, #7C3AED purple, #0EA5E9 sky blue, #10B981 emerald, or #F59E0B amber)
 - Button Hover: Darker shade of button color
 - ${requirements.features.includes('particles') ? 'Particles: Soft white or matching button color\n' : ''}${requirements.features.includes('animation') ? 'Animation: "fade-in" or "float"\n' : ''}- Copy: Uplifting, aspirational, positive tone
 
-**Design 3: GRADIENT FUTURISTIC - Sci-Fi Dream**
+**Design 3: DIAGONAL HERO - Sci-Fi Edge**
+- **Layout**: "diagonal" (dramatic angled/skewed design - totally unique structure!)
 - Background: Abstract, futuristic, or tech imagery (architecture, space, geometric)
 - Overlay: MUST use gradientOverlay with bold combinations:
   * "from-purple-900/75 to-pink-900/75" (purple to pink)
   * "from-blue-900/70 to-cyan-900/70" (blue to cyan)
   * "from-orange-900/75 to-red-900/75" (orange to red)
   * "from-emerald-900/70 to-teal-900/70" (green to teal)
-- Text: WHITE (#FFFFFF)
+- Text: WHITE (#FFFFFF) with skew effects
 - Button: Complementary to gradient - use (#EC4899 pink, #8B5CF6 purple, #06B6D4 cyan, #EF4444 red, or #F59E0B orange)
 - Button Hover: Darker shade
 - ${requirements.features.includes('particles') ? 'Particles: White or gradient-matching color\n' : ''}${requirements.features.includes('animation') ? 'Animation: "zoom-in" or "float"\n' : ''}- Copy: Innovative, future-forward, tech-savvy tone
@@ -140,6 +144,7 @@ ${requirements.features.includes('particles') ? `- PARTICLES: Set "enableParticl
   {
     "name": "Design Name (2-4 words)",
     "description": "Technical description of the visual style ONLY for the design card (mention colors, effects, mood) - NOT shown to customers",
+    "layout": "fullimage" | "split" | "diagonal",
     "data": {
       "heading": "Customer-Facing Marketing Headline",
       "subheading": "Customer-facing benefit statement that sells the product/service to ${requirements.industry} customers",
@@ -212,6 +217,7 @@ export async function generateHeroDesigns(requirements: DesignRequirements): Pro
       id: `hero-${Date.now()}-${index}`,
       name: design.name || `Design ${index + 1}`,
       description: design.description || 'A unique hero design',
+      layout: design.layout || 'fullimage',
       data: {
         heading: design.data?.heading || 'Welcome',
         subheading: design.data?.subheading || 'Discover something amazing',

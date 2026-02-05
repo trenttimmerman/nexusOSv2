@@ -6,6 +6,7 @@ interface GeneratedHero {
   id: string;
   name: string;
   description: string;
+  layout: string;
   data: HeroData;
   exclusivePrice?: number;
 }
@@ -25,8 +26,6 @@ export default function AIHeroPreview({
 }: AIHeroPreviewProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [exclusiveFlags, setExclusiveFlags] = useState<Record<string, boolean>>({});
-  
-  const HeroComponent = HERO_COMPONENTS['fullimage'];
 
   const handleSelect = (hero: GeneratedHero) => {
     const makeExclusive = exclusiveFlags[hero.id] || false;
@@ -84,25 +83,28 @@ export default function AIHeroPreview({
 
         {/* Hero Grid */}
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {heroes.map((hero, index) => (
               <div
                 key={hero.id}
-                className={`relative border-2 rounded-lg overflow-hidden transition-all ${
+                className={`relative border-4 rounded-xl overflow-hidden transition-all ${
                   selectedId === hero.id
-                    ? 'border-purple-600 shadow-lg shadow-purple-200'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-purple-600 shadow-2xl shadow-purple-300 scale-105'
+                    : 'border-gray-300 hover:border-purple-400 hover:shadow-xl'
                 }`}
               >
                 {/* Badge */}
-                <div className="absolute top-3 left-3 z-10 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold text-gray-700 shadow-sm">
+                <div className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full text-base font-bold text-gray-800 shadow-lg">
                   Design {index + 1}
                 </div>
 
-                {/* Preview */}
-                <div className="relative bg-gray-50" style={{ height: '300px' }}>
-                  <div className="absolute inset-0 scale-[0.4] origin-top-left" style={{ width: '250%', height: '250%' }}>
-                    <HeroComponent data={hero.data} />
+                {/* Preview - MUCH BIGGER */}
+                <div className="relative bg-gray-50 overflow-hidden" style={{ height: '500px' }}>
+                  <div className="absolute inset-0 scale-[0.75] origin-top" style={{ width: '133%', height: '133%', left: '-16.5%' }}>
+                    {(() => {
+                      const HeroComponent = HERO_COMPONENTS[hero.layout] || HERO_COMPONENTS['fullimage'];
+                      return <HeroComponent data={hero.data} />;
+                    })()}
                   </div>
                 </div>
 
