@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
 import { X, Sparkles, ChevronRight, Loader2 } from 'lucide-react';
+import AIHeroPreview from './AIHeroPreview';
+import { HeroData } from './HeroLibrary';
 
 interface HeroDesignerModalProps {
   onClose: () => void;
-  onGenerate: (requirements: DesignRequirements) => void;
-  isGenerating?: boolean;
+  onSelect: (heroData: HeroData) => void;
+}
+
+interface GeneratedHero {
+  id: string;
+  name: string;
+  description: string;
+  data: HeroData;
+  exclusivePrice?: number;
 }
 
 export interface DesignRequirements {
@@ -17,10 +26,12 @@ export interface DesignRequirements {
 
 export const HeroDesignerModal: React.FC<HeroDesignerModalProps> = ({ 
   onClose, 
-  onGenerate,
-  isGenerating = false 
+  onSelect
 }) => {
   const [step, setStep] = useState(1);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedHeroes, setGeneratedHeroes] = useState<GeneratedHero[]>([]);
+  const [showPreview, setShowPreview] = useState(false);
   const [requirements, setRequirements] = useState<DesignRequirements>({
     industry: '',
     style: '',
@@ -53,8 +64,64 @@ export const HeroDesignerModal: React.FC<HeroDesignerModalProps> = ({
     }
   };
 
-  const handleGenerate = () => {
-    onGenerate(requirements);
+  const generateMockHeroes = (reqs: DesignRequirements): GeneratedHero[] => {
+    // Mock generation - will be replaced with Gemini API
+    const baseImages = [
+      'https://images.unsplash.com/photo-1441986300917-64674bd600d8',
+      'https://images.unsplash.com/photo-1472851294608-062f824d29cc',
+      'https://images.unsplash.com/photo-1519389950473-47ba0277781c'
+    ];
+
+    const colorSchemes = [
+      { text: '#FFFFFF', button: '#000000', buttonText: '#FFFFFF', overlay: '#000000' },
+      { text: '#1F2937', button: '#10B981', buttonText: '#FFFFFF', overlay: '#FFFFFF' },
+      { text: '#FFFFFF', button: '#8B5CF6', buttonText: '#FFFFFF', overlay: '#000000' }
+    ];
+
+    return baseImages.map((image, index) => ({
+      id: `hero-${index + 1}`,
+      name: `${reqs.style} Hero ${index + 1}`,
+      description: `A ${reqs.colorMood.toLowerCase()} ${reqs.style.toLowerCase()} design for ${reqs.industry}`,
+      exclusivePrice: 99,
+      data: {
+        heading: `Transform Your ${reqs.industry}`,
+        subheading: `Experience the power of ${reqs.style.toLowerCase()} design`,
+        buttonText: 'Get Started',
+        buttonLink: '#',
+        backgroundImage: image,
+        textColor: colorSchemes[index].text,
+        buttonBackgroundColor: colorSchemes[index].button,
+        buttonTextColor: colorSchemes[index].buttonText,
+        buttonHoverColor: colorSchemes[index].button,
+        overlayColor: colorSchemes[index].overlay,
+        overlayOpacity: index === 1 ? 0.3 : 0.5,
+        showSubheading: reqs.features.includes('subheading'),
+        showButton: reqs.features.includes('cta')
+      }
+    }));
+  };
+
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+    
+    // Simulate AI generation delay
+    setTimeout(() => {
+      const heroes = generateMockHeroes(requirements);
+      setGeneratedHeroes(heroes);
+      setIsGenerating(false);
+      setShowPreview(true);
+    }, 2000);
+  };
+
+  const handleHeroSelect = (hero: GeneratedHero, makeExclusive: boolean) => {
+    // TODO: Handle makeExclusive (save to database with exclusive flag)
+    onSelect(hero.data);
+    onClose();
+  };
+
+  const handleClosePreview = () => {
+    setShowPreview(false);
+    setGeneratedHeroes([]);
   };
 
   return (
@@ -326,6 +393,16 @@ export const HeroDesignerModal: React.FC<HeroDesignerModalProps> = ({
           )}
         </div>
       </div>
+
+      {/* AI Hero Preview */}
+      {showPreview && (
+        <AIHeroPreview
+          heroes={generatedHeroes}
+          onSelect={handleHeroSelect}
+          onClose={handleClosePreview}
+          isGenerating={isGenerating}
+        />
+      )}
     </div>
   );
 };
