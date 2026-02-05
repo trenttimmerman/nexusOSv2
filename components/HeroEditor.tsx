@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, Image as ImageIcon, Type, Palette, Eye, EyeOff } from 'lucide-react';
-import { HeroData } from './HeroLibrary';
+import { X, Image as ImageIcon, Type, Palette, Eye, EyeOff, Upload } from 'lucide-react';
+import { HeroData, HERO_COMPONENTS } from './HeroLibrary';
 
 interface HeroEditorProps {
   data: HeroData;
@@ -19,9 +19,23 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
     onChange({ ...data, [field]: !data[field] });
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateField('backgroundImage', reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const HeroComponent = HERO_COMPONENTS['fullimage'];
+
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center">
-      <div className="bg-neutral-900 border border-neutral-700 rounded-xl shadow-2xl w-[500px] max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex">
+      {/* Left Panel - Editor */}
+      <div className="w-[400px] bg-neutral-900 border-r border-neutral-700 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b border-neutral-800 flex justify-between items-center">
           <h3 className="text-white font-bold text-lg">Hero Editor</h3>
@@ -234,14 +248,26 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
             <>
               {/* Background Image */}
               <div className="space-y-2">
-                <label className="text-sm text-neutral-300 font-medium">Background Image URL</label>
-                <input
-                  type="text"
-                  value={data.backgroundImage || ''}
-                  onChange={(e) => updateField('backgroundImage', e.target.value)}
-                  className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2.5 text-white text-sm focus:border-blue-500 outline-none"
-                  placeholder="https://images.unsplash.com/..."
-                />
+                <label className="text-sm text-neutral-300 font-medium">Background Image</label>
+                <label className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition-colors">
+                  <Upload size={16} />
+                  Upload Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={data.backgroundImage || ''}
+                    onChange={(e) => updateField('backgroundImage', e.target.value)}
+                    className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2.5 text-white text-sm focus:border-blue-500 outline-none"
+                    placeholder="Or paste image URL..."
+                  />
+                </div>
                 {data.backgroundImage && (
                   <div className="mt-2 rounded-lg overflow-hidden border border-neutral-700">
                     <img 
@@ -283,6 +309,28 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
           >
             Done
           </button>
+        </div>
+      </div>
+
+      {/* Right Panel - Live Preview */}
+      <div className="flex-1 bg-neutral-950 flex flex-col">
+        {/* Preview Header */}
+        <div className="p-4 border-b border-neutral-800 flex items-center justify-between bg-neutral-900">
+          <div className="flex items-center gap-2">
+            <Eye size={16} className="text-neutral-400" />
+            <span className="text-sm text-neutral-400 font-medium">Live Preview</span>
+          </div>
+          <button 
+            onClick={onClose}
+            className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Preview Content */}
+        <div className="flex-1 overflow-auto">
+          <HeroComponent data={data} />
         </div>
       </div>
     </div>
