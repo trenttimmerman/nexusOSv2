@@ -606,12 +606,21 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
       }
     };
 
+    // Guard against invalid component types crashing the tree
+    let content: React.ReactNode = null;
+    try {
+      content = renderContent();
+    } catch (err) {
+      console.error('[Storefront] renderBlock error', { id: block.id, type: block.type, variant: block.variant, err });
+      content = null;
+    }
+
     const styleClasses = getBlockStyleClasses(block.data?.style);
 
     if (!isEditable) {
       return (
         <div key={block.id} className={styleClasses}>
-          {renderContent()}
+          {content}
         </div>
       );
     }
@@ -628,7 +637,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
         onDuplicate={() => onDuplicateBlock && onDuplicateBlock(block.id)}
       >
         <div className={styleClasses}>
-          {renderContent()}
+          {content}
         </div>
       </SectionWrapper>
     );
