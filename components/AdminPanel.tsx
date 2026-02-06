@@ -11238,7 +11238,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
               <div className="flex-1 overflow-auto bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px] p-6">
-                <div className="bg-white rounded-lg shadow-2xl overflow-hidden border border-neutral-600">
+                <div className="bg-white rounded-lg shadow-2xl overflow-hidden border border-neutral-600" style={{ transform: 'translateZ(0)' }}>
                   <HeaderComponent
                     storeName={config.name || 'Your Store'}
                     logoUrl={config.logoUrl}
@@ -11866,7 +11866,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 {/* Quick Preview */}
                 <div className="bg-neutral-800/30 p-6 rounded-xl border border-neutral-700/50 mb-6">
                   <p className="text-xs text-neutral-400 uppercase tracking-wide mb-3">Current Header</p>
-                  <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100 shadow-lg">
+                  <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100 shadow-lg" style={{ transform: 'translateZ(0)' }}>
                     {(() => {
                       const HeaderComponent = HEADER_COMPONENTS[config.headerStyle || 'canvas'] || HEADER_COMPONENTS.canvas;
                       return (
@@ -15555,7 +15555,9 @@ Return ONLY the JSON object, no markdown.`;
                 </div>
               </div>
               <div className="flex-1 overflow-hidden flex items-center justify-center p-8 bg-[radial-gradient(#222_1px,transparent_1px)] [background-size:16px_16px]">
-                <div className={`bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shadow-2xl overflow-hidden relative ${
+                <div 
+                style={{ transform: 'translateZ(0)' }}
+                className={`bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shadow-2xl overflow-hidden relative ${
                   previewDevice === 'mobile' ? (
                     previewOrientation === 'landscape' ? 'w-[812px] h-[375px] rounded-[40px] border-[8px] border-neutral-900' : 'w-[375px] h-[812px] rounded-[40px] border-[8px] border-neutral-900'
                   ) : 
