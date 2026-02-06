@@ -481,12 +481,10 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
           if (aiHeroData || isAIHeroVariant(variant)) {
             const aiVariant = (aiHeroData?.variant as any) || (variant as any) || 'centered';
             const AIComponent = AI_HERO_COMPONENTS[aiVariant] || AI_HERO_COMPONENTS['centered'];
-            return AIComponent ? (
-              <AIComponent
-                key={block.id}
-                data={aiHeroData || ({ ...block.data, variant: aiVariant } as AIHeroData)}
-              />
-            ) : null;
+            return renderSafe(AIComponent, {
+              key: block.id,
+              data: aiHeroData || ({ ...block.data, variant: aiVariant } as AIHeroData),
+            }, `ai-hero-${aiVariant}`);
           }
 
           const heroStyle = (variant as HeroStyleId) || config.heroStyle || 'impact';
