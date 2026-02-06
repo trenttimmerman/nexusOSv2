@@ -6,15 +6,9 @@
 import { GoogleGenAI } from '@google/genai';
 import { HeroData } from '../components/AiHeroLibrary';
 import { DesignRequirements } from '../components/HeroDesignerModal';
+import { normalizeGeneratedHero, NormalizedHero } from './heroValidator';
 
-interface GeneratedHero {
-  id: string;
-  name: string;
-  description: string;
-  layout: NonNullable<HeroData['variant']>;
-  data: HeroData;
-  exclusivePrice?: number;
-}
+type GeneratedHero = NormalizedHero;
 
 const getGenAI = () => {
   // Support both VITE_GEMINI_API_KEY and VITE_GOOGLE_AI_API_KEY
@@ -153,42 +147,8 @@ export async function generateHeroDesigns(requirements: DesignRequirements): Pro
       throw new Error('AI did not return valid design array');
     }
     
-    // Add IDs and exclusive pricing to each design
-    const heroes: GeneratedHero[] = designs.slice(0, 3).map((design, index) => {
-      const layout: NonNullable<HeroData['variant']> = design.layout || design.data?.variant || 'centered';
-
-      return {
-        id: `hero-${Date.now()}-${index}`,
-        name: design.name || `Design ${index + 1}`,
-        description: design.description || 'A unique hero design',
-        layout,
-        data: {
-          variant: layout,
-          heading: design.data?.heading || 'Welcome',
-          subheading: design.data?.subheading || 'Discover something amazing',
-          buttonText: design.data?.buttonText || 'Get Started',
-          buttonLink: design.data?.buttonLink || '#',
-          backgroundImage: design.data?.backgroundImage || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8',
-          textColor: design.data?.textColor || '#FFFFFF',
-          buttonBackgroundColor: design.data?.buttonBackgroundColor || '#000000',
-          buttonTextColor: design.data?.buttonTextColor || '#FFFFFF',
-          buttonHoverColor: design.data?.buttonHoverColor || '#333333',
-          overlayColor: design.data?.overlayColor || '#000000',
-          overlayOpacity: design.data?.overlayOpacity ?? 0.5,
-          showSubheading: design.data?.showSubheading ?? true,
-          showButton: design.data?.showButton ?? true,
-          enableParticles: design.data?.enableParticles ?? false,
-          particleColor: design.data?.particleColor || '#FFFFFF',
-          enableAnimation: design.data?.enableAnimation ?? false,
-          animationType: design.data?.animationType || 'fade-in',
-          enableParallax: design.data?.enableParallax ?? false,
-          parallaxSpeed: design.data?.parallaxSpeed ?? 0.4,
-          gradientOverlay: design.data?.gradientOverlay ?? false,
-          gradientColors: design.data?.gradientColors,
-        },
-        exclusivePrice: 99, // Standard exclusive pricing
-      };
-    });
+    // Add IDs and normalize fields for each design
+    const heroes: GeneratedHero[] = designs.slice(0, 3).map((design, index) => normalizeGeneratedHero(design, index));
     
     return heroes;
     

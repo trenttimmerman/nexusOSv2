@@ -16,6 +16,7 @@ interface GeneratedHero {
   layout?: HeroData['variant'];
   data: HeroData;
   exclusivePrice?: number;
+  createdAt?: string;
 }
 
 export interface DesignRequirements {
@@ -42,6 +43,21 @@ export const HeroDesignerModal: React.FC<HeroDesignerModalProps> = ({
     colorMood: '',
     additionalContext: '',
   });
+
+  const persistGeneratedHeroes = (heroes: GeneratedHero[]) => {
+    if (typeof window === 'undefined') return;
+    try {
+      const existingRaw = localStorage.getItem('aiHeroLibrary');
+      const existing: GeneratedHero[] = existingRaw ? JSON.parse(existingRaw) : [];
+      const mergedMap = new Map<string, GeneratedHero>();
+      [...existing, ...heroes].forEach((h) => {
+        mergedMap.set(h.id, h.createdAt ? h : { ...h, createdAt: new Date().toISOString() });
+      });
+      localStorage.setItem('aiHeroLibrary', JSON.stringify(Array.from(mergedMap.values())));
+    } catch (err) {
+      console.warn('Failed to persist AI hero library', err);
+    }
+  };
 
   const updateRequirement = (field: keyof DesignRequirements, value: any) => {
     setRequirements(prev => ({ ...prev, [field]: value }));
@@ -76,6 +92,7 @@ export const HeroDesignerModal: React.FC<HeroDesignerModalProps> = ({
       const heroes = await generateHeroDesigns(requirements);
       setGeneratedHeroes(heroes);
       setShowPreview(true);
+      persistGeneratedHeroes(heroes);
     } catch (err) {
       console.error('Failed to generate heroes:', err);
       setError(
