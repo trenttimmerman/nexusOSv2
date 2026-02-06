@@ -271,9 +271,9 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
     '--heading-scale-h3': `${headingScale.h3}rem`,
   } as React.CSSProperties;
 
-  const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
+  const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'] || (() => null);
   // Hero, Card, Footer components are now determined dynamically in renderBlock to allow for variants
-  const FooterComponent = FOOTER_COMPONENTS[config.footerStyle] || FOOTER_COMPONENTS['columns'];
+  const FooterComponent = FOOTER_COMPONENTS[config.footerStyle] || FOOTER_COMPONENTS['columns'] || (() => null);
 
   const isSidebar = config.headerStyle === 'studio';
 
@@ -301,7 +301,8 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
   if (activeProductSlug) {
       const product = products.find(p => p.seo.slug === activeProductSlug || p.id === activeProductSlug);
       if (product) {
-          const ProductComponent = PRODUCT_PAGE_COMPONENTS[product.template || 'standard'] || PRODUCT_PAGE_COMPONENTS['standard'];
+        const ProductComponent = PRODUCT_PAGE_COMPONENTS[product.template || 'standard'] || PRODUCT_PAGE_COMPONENTS['standard'] || (() => null);
+        if (!ProductComponent) return null;
           return (
               <div 
                 className={`min-h-screen flex flex-col selection:text-white storefront-typography ${isSidebar ? 'md:pl-64' : ''} ${getVibeClasses()} scrollbar-${config.scrollbarStyle || 'native'}`}
@@ -593,13 +594,15 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
             />
           ) : null;
         case 'section':
-        default:
+        default: {
+          const safeHtml = typeof block.content === 'string' ? block.content : '';
           return (
             <div
-              dangerouslySetInnerHTML={{ __html: block.content }}
+              dangerouslySetInnerHTML={{ __html: safeHtml }}
               className="w-full prose prose-xl prose-neutral max-w-none text-neutral-600 font-serif leading-relaxed prose-img:rounded-2xl prose-headings:font-sans prose-headings:font-bold prose-headings:tracking-tight"
             />
           );
+        }
       }
     };
 
