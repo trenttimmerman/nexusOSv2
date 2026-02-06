@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { StorefrontProps, Product, PageBlock, HeroStyleId, ProductCardStyleId } from '../types';
 import { HEADER_COMPONENTS } from './HeaderLibrary';
-import { HERO_COMPONENTS, HERO_OPTIONS, HERO_FIELDS } from './HeroLibrary';
-import { EditableText, EditableImage } from './editor';
+import { HERO_COMPONENTS, HERO_OPTIONS, EditableText, EditableImage, HERO_FIELDS } from './HeroLibrary';
+import { AI_HERO_COMPONENTS, HeroData as AIHeroData } from './AiHeroLibrary';
 import { PRODUCT_CARD_COMPONENTS, PRODUCT_CARD_OPTIONS } from './ProductCardLibrary';
 import { PRODUCT_PAGE_COMPONENTS } from './ProductPageLibrary';
 import { FOOTER_COMPONENTS } from './FooterLibrary';
@@ -392,21 +392,28 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
     const isEditable = !!onUpdateBlock;
     console.log('[Storefront] Rendering block:', { id: block.id, type: block.type, variant: block.variant });
 
+    const AI_VARIANTS: Array<NonNullable<AIHeroData['variant']>> = ['centered', 'split-left', 'diagonal', 'minimal-corner', 'bottom-aligned'];
+    const isAIHeroVariant = (variant?: string) => AI_VARIANTS.includes((variant as any));
+
     const renderContent = () => {
       switch (block.type) {
         case 'system-hero':
-          const heroStyle = (block.variant as HeroStyleId) || config.heroStyle || 'impact';
+          const aiHeroData = (block.data as any)?.aiHero as AIHeroData | undefined;
+          const variant = block.variant as string | undefined;
+          if (aiHeroData || isAIHeroVariant(variant)) {
+            const aiVariant = (aiHeroData?.variant as any) || (variant as any) || 'centered';
+            const AIComponent = AI_HERO_COMPONENTS[aiVariant] || AI_HERO_COMPONENTS['centered'];
+            return AIComponent ? (
+              <AIComponent
+                key={block.id}
+                data={aiHeroData || ({ ...block.data, variant: aiVariant } as AIHeroData)}
+              />
+            ) : null;
+          }
+
+          const heroStyle = (variant as HeroStyleId) || config.heroStyle || 'impact';
           const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
-          console.log('[Storefront] Hero block:', { 
-            heroStyle, 
-            hasComponent: !!HeroComponent,
-            blockId: block.id,
-            'block.data': block.data,
-            'block.data.style': block.data?.style,
-            'block.data.style.headingFont': block.data?.style?.headingFont,
-            'block.data.style.headingSize': block.data?.style?.headingSize,
-            isEditable
-          });
+          console.log('[Storefront] Hero block:', { heroStyle, hasComponent: !!HeroComponent });
           return HeroComponent ? (
             <HeroComponent
               key={block.id}

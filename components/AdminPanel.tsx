@@ -4,7 +4,7 @@ import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
 import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
-import { HeroEditor } from './HeroEditor';
+import { AI_HERO_COMPONENTS, HeroData as AIHeroData } from './AiHeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
 import { SOCIAL_OPTIONS, SOCIAL_COMPONENTS } from './SocialLibrary';
@@ -35,13 +35,8 @@ import EmailSubscribers from './EmailSubscribers';
 import EmailSettings from './EmailSettings';
 import ShopifyMigration from './ShopifyMigration';
 import ShopifyDataImport from './ShopifyDataImport';
-import ShopifyImportWizard from './ShopifyImportWizard';
 import WebsiteMigration from './WebsiteMigration';
-import LoveableImport from './LoveableImport';
-import AISiteGenerator from './AISiteGenerator';
 import Customers from './Customers';
-import { DesignWizard } from './DesignWizard';
-import { UnifiedWebsiteGenerator } from './UnifiedWebsiteGenerator';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
 import { GoogleGenAI } from '@google/genai';
@@ -158,6 +153,7 @@ import {
   EyeOff,
   X,
   LayoutTemplate,
+  ChevronDown,
   ArrowDownAZ,
   Calendar,
   Flame,
@@ -256,8 +252,7 @@ import {
   Languages,
   Settings2,
   PackageOpen,
-  Hash,
-  Heart
+  Hash
 } from 'lucide-react';
 
 // Page type options for creating new pages
@@ -268,56 +263,6 @@ const PAGE_TYPE_OPTIONS = [
   { id: 'faq', name: 'FAQ', description: 'Answer common questions', icon: HelpCircle, slug: '/faq' },
   { id: 'blog', name: 'Blog', description: 'Share news and updates', icon: BookOpen, slug: '/blog' },
   { id: 'custom', name: 'Custom Page', description: 'Start with a blank canvas', icon: FileText, slug: '/new-page' },
-];
-
-// AI Wizard Questions for website generation
-const AI_WIZARD_QUESTIONS = [
-  {
-    id: 'business_name',
-    question: "What's your business name?",
-    type: 'text',
-    placeholder: 'e.g., Acme Coffee Co.'
-  },
-  {
-    id: 'business_type',
-    question: "What type of business are you?",
-    type: 'choice',
-    options: [
-      { value: 'retail', label: '🛍️ Retail Store', description: 'Sell physical products' },
-      { value: 'service', label: '💼 Service Business', description: 'Offer services' },
-      { value: 'restaurant', label: '🍽️ Restaurant/Cafe', description: 'Food & beverage' },
-      { value: 'portfolio', label: '🎨 Portfolio/Creative', description: 'Showcase work' },
-      { value: 'blog', label: '📝 Blog/Content', description: 'Share content' },
-      { value: 'other', label: '✨ Other', description: 'Something unique' }
-    ]
-  },
-  {
-    id: 'business_description',
-    question: "Tell us about your business in one sentence",
-    type: 'text',
-    placeholder: 'e.g., We make artisanal coffee and pastries with locally-sourced ingredients'
-  },
-  {
-    id: 'target_audience',
-    question: "Who are your customers?",
-    type: 'choice',
-    options: [
-      { value: 'b2c', label: '👤 Consumers', description: 'Sell to individuals' },
-      { value: 'b2b', label: '🏢 Businesses', description: 'Sell to companies' },
-      { value: 'both', label: '🌐 Both', description: 'Mixed audience' }
-    ]
-  },
-  {
-    id: 'style_preference',
-    question: "What style do you prefer?",
-    type: 'choice',
-    options: [
-      { value: 'modern', label: '✨ Modern', description: 'Clean and minimal' },
-      { value: 'bold', label: '🔥 Bold', description: 'Eye-catching and vibrant' },
-      { value: 'elegant', label: '💎 Elegant', description: 'Sophisticated and refined' },
-      { value: 'playful', label: '🎉 Playful', description: 'Fun and energetic' }
-    ]
-  }
 ];
 
 // Section Preview Thumbnail Component
@@ -592,7 +537,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   userRole,
   storeId,
   onSwitchStore,
-  onRefreshData,
   categories = [],
   collections = []
 }) => {
@@ -646,7 +590,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         .select('name')
         .eq('store_id', storeId)
         .eq('is_active', true)
-        .maybeSingle();
+        .single();
       if (data) {
         setActiveDesignName(data.name);
       }
@@ -667,9 +611,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [editingTaxRegionId, setEditingTaxRegionId] = useState<string | null>(null);
   const [hasUnsavedSettings, setHasUnsavedSettings] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
-
-  // Design Wizard State
-  const [isDesignWizardOpen, setIsDesignWizardOpen] = useState(false);
 
   // Wrapper for config changes to track unsaved state
   const handleConfigChange = (newConfig: StoreConfig) => {
@@ -1137,7 +1078,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
   const [isSpacerModalOpen, setIsSpacerModalOpen] = useState(false);
-  const [isShopifyWizardOpen, setIsShopifyWizardOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Auto-focus field in Hero Studio when activeField changes
@@ -1201,35 +1141,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Editor Resize State
   const [editorWidth, setEditorWidth] = useState(320);
   
-  // Design Studio Welcome - Now redirects to AI Generator
+  // Design Studio Welcome Wizard State
   const [showWelcomeWizard, setShowWelcomeWizard] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(() => localStorage.getItem('webpilot_seen_welcome') === 'true');
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false); // Start false, check in useEffect
-  
-  // Check if user should see welcome modal (for new accounts)
-  useEffect(() => {
-    if (!storeId) return;
-    
-    // Only show for new users: less than 3 pages (default home + about = 2)
-    // and haven't seen it before for THIS store
-    const storageKey = `webpilot_seen_welcome_${storeId}`;
-    const hasSeenInBrowser = localStorage.getItem(storageKey) === 'true';
-    const isNewAccount = localPages.length <= 2 && localPages.length > 0;
-    
-    console.log('[WelcomeModal] Check:', {
-      hasSeenInBrowser,
-      pageCount: localPages.length,
-      isNewAccount,
-      storeId,
-      storageKey,
-      willShow: !hasSeenInBrowser && isNewAccount
-    });
-    
-    if (!hasSeenInBrowser && isNewAccount) {
-      console.log('[WelcomeModal] Showing welcome modal!');
-      setShowWelcomeModal(true);
-    }
-  }, [localPages.length, storeId]);
+  const [wizardMode, setWizardMode] = useState<'select' | 'ai-questions' | 'ai-generating' | 'templates'>('select');
+  const [aiWizardStep, setAiWizardStep] = useState(0);
+  const [aiWizardAnswers, setAiWizardAnswers] = useState<Record<string, string>>({});
   
   // AI Section Recommendations State
   const [showSectionRecommendations, setShowSectionRecommendations] = useState(false);
@@ -1329,15 +1246,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [newPageName, setNewPageName] = useState('');
   const [newPageSlug, setNewPageSlug] = useState('');
   
-  // Show AI website generator when entering Design Studio for first time
+  // Show welcome wizard when entering Design Studio for first time
   useEffect(() => {
     if (activeTab === AdminTab.DESIGN && !hasSeenWelcome) {
       setShowWelcomeWizard(true);
-      onTabChange(AdminTab.AI_SITE_GENERATOR);
-      setHasSeenWelcome(true);
-      localStorage.setItem('webpilot_seen_welcome', 'true');
     }
-  }, [activeTab, hasSeenWelcome, onTabChange]);
+  }, [activeTab, hasSeenWelcome]);;
   const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
@@ -1608,8 +1522,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const updateActiveBlockData = (blockId: string, data: any) => {
     if (!blockId) return;
     
-    console.log('🔄 updateActiveBlockData START:', { blockId, updates: data });
-    
     // Basic validation
     if (data.heading && data.heading.length > 200) {
       showToast('Heading is too long', 'error');
@@ -1621,8 +1533,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       
       const updatedBlocks = p.blocks.map(b => {
         if (b.id !== blockId) return b;
-        
-        console.log('📦 Block BEFORE update:', { id: b.id, data: b.data, style: b.data?.style });
         
         // Handle top-level properties vs data properties
         const { variant, ...restData } = data;
@@ -1637,13 +1547,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                  ...restData, 
                  style: { ...b.data.style, ...restData.style } 
                };
-               console.log('✅ Deep merged style:', newBlock.data.style);
             } else {
                newBlock.data = { ...b.data, ...restData };
-               console.log('✅ Simple merge, new data:', newBlock.data);
             }
         }
-        console.log('📦 Block AFTER update:', { id: newBlock.id, data: newBlock.data, style: newBlock.data?.style });
         return newBlock;
       });
       return { ...p, blocks: updatedBlocks };
@@ -1994,8 +1901,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           { id: AdminTab.SHOPIFY_MIGRATION, icon: Upload, label: 'Shopify Import' },
           { id: AdminTab.SHOPIFY_DATA_IMPORT, icon: Database, label: 'Shopify Data' },
           { id: AdminTab.WEBSITE_MIGRATION, icon: Globe, label: 'Website Import' },
-          { id: AdminTab.LOVEABLE_IMPORT, icon: Heart, label: 'Loveable Import' },
-          { id: AdminTab.AI_SITE_GENERATOR, icon: Wand2, label: 'Design Wizard' },
           { id: AdminTab.SETTINGS, icon: Settings, label: 'Settings' }
         ]
       }
@@ -4832,7 +4737,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const generateGridCopy = async (field: string) => {
       if (!genAI) return;
       try {
-        const model = (genAI as any).getGenerativeModel({ model: "gemini-3-flash" });
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-2.0-flash-exp" });
         const variant = PRODUCT_CARD_OPTIONS.find(o => o.id === currentVariant)?.name || "product grid";
         const industry = config.theme_primary || "modern retail";
         
@@ -5710,7 +5615,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const generateCollectionCopy = async (field: 'heading' | 'subheading') => {
       if (!genAI) return;
       try {
-        const model = (genAI as any).getGenerativeModel({ model: "gemini-3-flash" });
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-2.0-flash-exp" });
         const industry = config.theme_primary || "modern retail";
         const variant = COLLECTION_OPTIONS.find(o => o.id === currentVariant)?.name || "product collection";
         
@@ -7723,7 +7628,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         return;
       }
       try {
-        const model = (genAI as any).getGenerativeModel({ model: "gemini-3-flash" });
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-2.0-flash-exp" });
         
         const prompts: Record<string, string> = {
           heading: `Generate a catchy, short email signup heading for an ecommerce newsletter (5-8 words max). Return ONLY the text, no quotes or extra formatting.`,
@@ -9622,26 +9527,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const renderHeroModal = () => {
     if (!isHeroModalOpen) return null;
 
+    const AI_VARIANTS: Array<NonNullable<AIHeroData['variant']>> = ['centered', 'split-left', 'diagonal', 'minimal-corner', 'bottom-aligned'];
+    const isAIHeroVariant = (variant?: string) => AI_VARIANTS.includes((variant as any));
+
     // Get the current hero variant - from selected block or global config
     const currentHeroVariant = selectedBlockId && activeBlock?.type === 'system-hero' 
       ? activeBlock?.variant || config.heroStyle 
       : config.heroStyle;
+
+    const aiHeroData = (activeBlock?.data as any)?.aiHero as AIHeroData | undefined;
+    const previewVariant = (aiHeroData?.variant as any) || currentHeroVariant;
     
     // Get the hero data from the active block or use defaults
     const heroData = selectedBlockId && activeBlock?.type === 'system-hero'
       ? activeBlock?.data || {}
-      : config.heroData || { heading: 'Hero Headline', subheading: 'Your amazing subheading goes here' };
+      : { heading: 'Hero Headline', subheading: 'Your amazing subheading goes here' };
 
-    console.log('📋 [renderHeroModal] Data check:', {
-      selectedBlockId,
-      'activeBlock?.type': activeBlock?.type,
-      'activeBlock?.data': activeBlock?.data,
-      'activeBlock?.data.style': activeBlock?.data?.style,
-      heroData,
-      'heroData.style': heroData.style
-    });
-
-    const HeroComponent = HERO_COMPONENTS[currentHeroVariant as HeroStyleId] || HERO_COMPONENTS['impact'];
+    const isAI = !!aiHeroData || isAIHeroVariant(previewVariant as string);
+    const HeroComponent = isAI
+      ? AI_HERO_COMPONENTS[(previewVariant as any) || 'centered'] || AI_HERO_COMPONENTS['centered']
+      : HERO_COMPONENTS[previewVariant as HeroStyleId] || HERO_COMPONENTS['impact'];
 
     // Get available fields for the current hero variant
     const availableFields = HERO_FIELDS[currentHeroVariant] || [];
@@ -9685,15 +9590,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
     // Update hero data field
     const updateHeroData = (updates: any) => {
-      console.log('🎨 updateHeroData called:', { updates, selectedBlockId, activeBlockDataBefore: activeBlock?.data });
       if (selectedBlockId) {
-        updateActiveBlockData(selectedBlockId, updates);
-      } else {
-        // Update global hero data
-        onConfigChange({ 
-          ...config, 
-          heroData: { ...config.heroData, ...updates } 
-        });
+        setLocalPages(prev => prev.map(p => {
+          if (p.id !== activePage.id) return p;
+          return {
+            ...p,
+            blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, data: { ...b.data, ...updates } } : b)
+          };
+        }));
         setHasUnsavedChanges(true);
       }
     };
@@ -9701,7 +9605,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const generateHeroCopy = async (field: string) => {
       if (!genAI) return;
       try {
-        const model = (genAI as any).getGenerativeModel({ model: "gemini-3-flash" });
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-2.0-flash-exp" });
         const variant = HERO_OPTIONS.find(o => o.id === currentHeroVariant)?.name || "hero section";
         const industry = config.theme_primary || "modern e-commerce";
         
@@ -10248,7 +10152,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <input
                               type="color"
                               value={heroData.style?.backgroundColor || '#000000'}
-                              onChange={(e) => updateHeroData({ style: { backgroundColor: e.target.value } })}
+                              onChange={(e) => updateHeroData({ style: { ...heroData.style, backgroundColor: e.target.value } })}
                               className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
                             <span className="text-[10px] text-neutral-300 leading-tight">Background</span>
@@ -10261,7 +10165,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <input
                               type="color"
                               value={heroData.style?.headingColor || heroData.style?.textColor || '#ffffff'}
-                              onChange={(e) => updateHeroData({ style: { headingColor: e.target.value } })}
+                              onChange={(e) => updateHeroData({ style: { ...heroData.style, headingColor: e.target.value } })}
                               className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
                             <span className="text-[10px] text-neutral-300 leading-tight">Heading</span>
@@ -10274,7 +10178,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <input
                               type="color"
                               value={heroData.style?.subheadingColor || '#9ca3af'}
-                              onChange={(e) => updateHeroData({ style: { subheadingColor: e.target.value } })}
+                              onChange={(e) => updateHeroData({ style: { ...heroData.style, subheadingColor: e.target.value } })}
                               className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
                             <span className="text-[10px] text-neutral-300 leading-tight">Subheading</span>
@@ -10288,7 +10192,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.badgeColor || '#ffffff'}
-                                onChange={(e) => updateHeroData({ style: { badgeColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, badgeColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">Badge Text</span>
@@ -10297,7 +10201,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.badgeBorderColor || '#ffffff'}
-                                onChange={(e) => updateHeroData({ style: { badgeBorderColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, badgeBorderColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">Badge Border</span>
@@ -10311,7 +10215,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <input
                               type="color"
                               value={heroData.style?.topBadgeColor || '#ffffff'}
-                              onChange={(e) => updateHeroData({ style: { topBadgeColor: e.target.value } })}
+                              onChange={(e) => updateHeroData({ style: { ...heroData.style, topBadgeColor: e.target.value } })}
                               className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
                             <span className="text-[10px] text-neutral-300 leading-tight">Top Badge</span>
@@ -10325,7 +10229,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.buttonBgColor || '#ffffff'}
-                                onChange={(e) => updateHeroData({ style: { buttonBgColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, buttonBgColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">Button BG</span>
@@ -10334,7 +10238,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.buttonTextColor || '#000000'}
-                                onChange={(e) => updateHeroData({ style: { buttonTextColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, buttonTextColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">Button Text</span>
@@ -10349,7 +10253,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.secondaryButtonBgColor || 'transparent'}
-                                onChange={(e) => updateHeroData({ style: { secondaryButtonBgColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, secondaryButtonBgColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">2nd Btn BG</span>
@@ -10358,7 +10262,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.secondaryButtonTextColor || '#ffffff'}
-                                onChange={(e) => updateHeroData({ style: { secondaryButtonTextColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, secondaryButtonTextColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">2nd Btn Text</span>
@@ -10367,7 +10271,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <input
                                 type="color"
                                 value={heroData.style?.secondaryButtonBorderColor || '#ffffff'}
-                                onChange={(e) => updateHeroData({ style: { secondaryButtonBorderColor: e.target.value } })}
+                                onChange={(e) => updateHeroData({ style: { ...heroData.style, secondaryButtonBorderColor: e.target.value } })}
                                 className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                               />
                               <span className="text-[10px] text-neutral-300 leading-tight">2nd Btn Border</span>
@@ -10381,7 +10285,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <input
                               type="color"
                               value={heroData.style?.marqueeColor || '#ccff00'}
-                              onChange={(e) => updateHeroData({ style: { marqueeColor: e.target.value } })}
+                              onChange={(e) => updateHeroData({ style: { ...heroData.style, marqueeColor: e.target.value } })}
                               className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
                             <span className="text-[10px] text-neutral-300 leading-tight">Marquee</span>
@@ -10394,7 +10298,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <input
                               type="color"
                               value={heroData.style?.linkColor || '#ffffff'}
-                              onChange={(e) => updateHeroData({ style: { linkColor: e.target.value } })}
+                              onChange={(e) => updateHeroData({ style: { ...heroData.style, linkColor: e.target.value } })}
                               className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
                             />
                             <span className="text-[10px] text-neutral-300 leading-tight">Nav Links</span>
@@ -10455,209 +10359,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </div>
                     )}
 
-                    {/* Typography Controls */}
-                    <div className="space-y-3 border-t border-neutral-800 pt-4 mt-4">
-                      <p className="text-xs text-neutral-400 font-bold">Typography</p>
-                      
-                      {/* Heading Font Family */}
-                      {availableFields.includes('heading') && (
-                        <div className="space-y-1.5">
-                          <label className="text-xs text-neutral-400">Heading Font</label>
-                          <select
-                            value={heroData.style?.headingFont || 'Inter'}
-                            onChange={(e) => updateHeroData({ style: { headingFont: e.target.value } })}
-                            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
-                          >
-                            <option value="Inter">Inter (Modern Sans)</option>
-                            <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
-                            <option value="DM Sans">DM Sans</option>
-                            <option value="Manrope">Manrope</option>
-                            <option value="Outfit">Outfit</option>
-                            <option value="Space Grotesk">Space Grotesk</option>
-                            <option value="Sora">Sora</option>
-                            <option value="Poppins">Poppins</option>
-                            <option value="Playfair Display">Playfair Display (Serif)</option>
-                            <option value="Cormorant Garamond">Cormorant Garamond</option>
-                            <option value="Libre Baskerville">Libre Baskerville</option>
-                            <option value="Merriweather">Merriweather</option>
-                            <option value="JetBrains Mono">JetBrains Mono (Mono)</option>
-                          </select>
-                        </div>
-                      )}
-
-                      {/* Heading Font Size */}
-                      {availableFields.includes('heading') && (
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between items-center">
-                            <label className="text-xs text-neutral-400">Heading Size</label>
-                            <span className="text-xs text-neutral-500">{heroData.style?.headingSize || '4rem'}</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="1"
-                            max="10"
-                            step="0.5"
-                            value={parseFloat(heroData.style?.headingSize || '4')}
-                            onChange={(e) => updateHeroData({ style: { headingSize: `${e.target.value}rem` } })}
-                            className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                          />
-                        </div>
-                      )}
-
-                      {/* Heading Font Weight */}
-                      {availableFields.includes('heading') && (
-                        <div className="space-y-1.5">
-                          <label className="text-xs text-neutral-400">Heading Weight</label>
-                          <div className="grid grid-cols-4 gap-1">
-                            {[
-                              { value: '300', label: 'Light' },
-                              { value: '400', label: 'Normal' },
-                              { value: '700', label: 'Bold' },
-                              { value: '900', label: 'Black' }
-                            ].map(({ value, label }) => (
-                              <button
-                                key={value}
-                                onClick={() => updateHeroData({ style: { headingWeight: value } })}
-                                className={`p-2 rounded-lg border text-xs font-medium transition-colors ${
-                                  (heroData.style?.headingWeight || '700') === value
-                                    ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
-                                    : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
-                                }`}
-                              >
-                                {label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Heading Letter Spacing */}
-                      {availableFields.includes('heading') && (
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between items-center">
-                            <label className="text-xs text-neutral-400">Letter Spacing</label>
-                            <span className="text-xs text-neutral-500">{heroData.style?.letterSpacing || '0em'}</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="-0.1"
-                            max="0.3"
-                            step="0.01"
-                            value={parseFloat(heroData.style?.letterSpacing || '0')}
-                            onChange={(e) => updateHeroData({ style: { letterSpacing: `${e.target.value}em` } })}
-                            className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                          />
-                        </div>
-                      )}
-
-                      {/* Heading Line Height */}
-                      {availableFields.includes('heading') && (
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between items-center">
-                            <label className="text-xs text-neutral-400">Line Height</label>
-                            <span className="text-xs text-neutral-500">{heroData.style?.lineHeight || '1.2'}</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="0.8"
-                            max="2"
-                            step="0.1"
-                            value={parseFloat(heroData.style?.lineHeight || '1.2')}
-                            onChange={(e) => updateHeroData({ style: { lineHeight: e.target.value } })}
-                            className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                          />
-                        </div>
-                      )}
-
-                      {/* Text Transform */}
-                      {availableFields.includes('heading') && (
-                        <div className="space-y-1.5">
-                          <label className="text-xs text-neutral-400">Text Transform</label>
-                          <div className="grid grid-cols-3 gap-1">
-                            {[
-                              { value: 'none', label: 'None' },
-                              { value: 'uppercase', label: 'UPPER' },
-                              { value: 'capitalize', label: 'Title' }
-                            ].map(({ value, label }) => (
-                              <button
-                                key={value}
-                                onClick={() => updateHeroData({ style: { textTransform: value } })}
-                                className={`p-2 rounded-lg border text-xs font-medium transition-colors ${
-                                  (heroData.style?.textTransform || 'none') === value
-                                    ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
-                                    : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
-                                }`}
-                              >
-                                {label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Subheading Font (if subheading exists) */}
-                      {availableFields.includes('subheading') && (
-                        <>
-                          <div className="border-t border-neutral-700 my-2 pt-2">
-                            <p className="text-xs text-neutral-500 font-bold mb-2">Subheading Typography</p>
-                          </div>
-                          
-                          <div className="space-y-1.5">
-                            <label className="text-xs text-neutral-400">Subheading Font</label>
-                            <select
-                              value={heroData.style?.subheadingFont || 'Inter'}
-                              onChange={(e) => updateHeroData({ style: { subheadingFont: e.target.value } })}
-                              className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none"
-                            >
-                              <option value="Inter">Inter</option>
-                              <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
-                              <option value="DM Sans">DM Sans</option>
-                              <option value="Poppins">Poppins</option>
-                            </select>
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <div className="flex justify-between items-center">
-                              <label className="text-xs text-neutral-400">Subheading Size</label>
-                              <span className="text-xs text-neutral-500">{heroData.style?.subheadingSize || '1.25rem'}</span>
-                            </div>
-                            <input
-                              type="range"
-                              min="0.75"
-                              max="3"
-                              step="0.25"
-                              value={parseFloat(heroData.style?.subheadingSize || '1.25')}
-                              onChange={(e) => updateHeroData({ style: { subheadingSize: `${e.target.value}rem` } })}
-                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                            />
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <label className="text-xs text-neutral-400">Subheading Weight</label>
-                            <div className="grid grid-cols-3 gap-1">
-                              {[
-                                { value: '300', label: 'Light' },
-                                { value: '400', label: 'Normal' },
-                                { value: '600', label: 'Semi' }
-                              ].map(({ value, label }) => (
-                                <button
-                                  key={value}
-                                  onClick={() => updateHeroData({ style: { subheadingWeight: value } })}
-                                  className={`p-2 rounded-lg border text-xs font-medium transition-colors ${
-                                    (heroData.style?.subheadingWeight || '400') === value
-                                      ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
-                                      : 'bg-neutral-900 border-neutral-700 text-neutral-500 hover:border-neutral-600'
-                                  }`}
-                                >
-                                  {label}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-
                     {/* Text Alignment (Impact) */}
                     {availableFields.includes('alignment') && (
                       <div className="space-y-2" id="editor-field-alignment">
@@ -10670,7 +10371,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           ].map(({ value, icon: Icon, label }) => (
                             <button
                               key={value}
-                              onClick={() => updateHeroData({ style: { alignment: value } })}
+                              onClick={() => updateHeroData({ style: { ...heroData.style, alignment: value } })}
                               className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-colors ${
                                 (heroData.style?.alignment || 'center') === value
                                   ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
@@ -10724,7 +10425,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           ].map(({ value, label }) => (
                             <button
                               key={value}
-                              onClick={() => updateHeroData({ style: { padding: value } })}
+                              onClick={() => updateHeroData({ style: { ...heroData.style, padding: value } })}
                               className={`p-2 rounded-lg border text-xs font-medium transition-colors ${
                                 (heroData.style?.padding || 'm') === value
                                   ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
@@ -11657,7 +11358,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     if (systemModalType === 'hero') {
       options = HERO_OPTIONS;
       // If a block is selected, use its variant, otherwise global
-      currentSelection = selectedBlockId ? activeBlock?.variant || config.heroStyle : config.heroStyle;
+      currentSelection = aiHeroData?.variant || (selectedBlockId ? activeBlock?.variant || config.heroStyle : config.heroStyle);
       title = 'Hero Engine';
       setSelection = (id) => {
         if (selectedBlockId) {
@@ -11697,16 +11398,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     // Get the preview component based on modal type
     const getPreviewComponent = () => {
       if (systemModalType === 'hero') {
-        const HeroComponent = HERO_COMPONENTS[currentSelection as HeroStyleId] || HERO_COMPONENTS['impact'];
-        return HeroComponent ? (
+        const heroIsAI = !!aiHeroData || isAIHeroVariant(currentSelection as string);
+        const HeroComponent = heroIsAI
+          ? AI_HERO_COMPONENTS[(currentSelection as any) || 'centered'] || AI_HERO_COMPONENTS['centered']
+          : HERO_COMPONENTS[currentSelection as HeroStyleId] || HERO_COMPONENTS['impact'];
+        if (!HeroComponent) return null;
+        const heroDataForPreview = heroIsAI
+          ? (aiHeroData || { heading: 'Hero Headline', subheading: 'Your amazing subheading goes here' })
+          : (activeBlock?.data || { heading: 'Hero Headline', subheading: 'Your amazing subheading goes here' });
+
+        return (
           <>
             {/* Hero Section */}
-            <HeroComponent
-              storeName={config.name || 'Your Store'}
-              primaryColor={config.primaryColor}
-              data={activeBlock?.data || { heading: 'Hero Headline', subheading: 'Your amazing subheading goes here' }}
-              isEditable={false}
-            />
+            {heroIsAI ? (
+              <HeroComponent data={heroDataForPreview} />
+            ) : (
+              <HeroComponent
+                storeName={config.name || 'Your Store'}
+                primaryColor={config.primaryColor}
+                data={heroDataForPreview}
+                isEditable={false}
+              />
+            )}
             
             {/* Scrollable Content Below Hero for Full Page Context */}
             <div className="bg-white">
@@ -12737,7 +12450,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       }
                       setIsGeneratingSEO(true);
                       try {
-                        const model = (genAI as any).getGenerativeModel({ model: "gemini-3-flash" });
+                        const model = (genAI as any).getGenerativeModel({ model: "gemini-1.5-flash" });
                         const prompt = `You are an expert SEO specialist. Generate comprehensive SEO metadata for an online store.
 
 Store Name: ${config.name || 'Online Store'}
@@ -13292,8 +13005,243 @@ Return ONLY the JSON object, no markdown.`;
     );
   };
 
-  // AI Generator replaces old wizard - redirects to AI_SITE_GENERATOR tab
-  const WelcomeWizard = () => null;
+  // AI Website Builder Questions
+  const AI_WIZARD_QUESTIONS = [
+    {
+      id: 'business_type',
+      question: "What type of business is this website for?",
+      options: [
+        { value: 'ecommerce', label: '🛍️ Online Store', description: 'Sell products online' },
+        { value: 'portfolio', label: '🎨 Portfolio', description: 'Showcase your work' },
+        { value: 'service', label: '💼 Service Business', description: 'Offer services' },
+        { value: 'restaurant', label: '🍽️ Restaurant/Food', description: 'Food & dining' },
+        { value: 'blog', label: '📝 Blog/Content', description: 'Share articles & content' },
+        { value: 'agency', label: '🏢 Agency', description: 'Marketing/Creative agency' },
+      ]
+    },
+    {
+      id: 'style_preference',
+      question: "What style best matches your brand?",
+      options: [
+        { value: 'minimal', label: '✨ Minimal', description: 'Clean and simple' },
+        { value: 'bold', label: '💪 Bold', description: 'Strong and impactful' },
+        { value: 'playful', label: '🎉 Playful', description: 'Fun and energetic' },
+        { value: 'luxury', label: '💎 Luxury', description: 'Premium and elegant' },
+        { value: 'modern', label: '🚀 Modern', description: 'Contemporary and sleek' },
+        { value: 'cozy', label: '🏡 Cozy', description: 'Warm and inviting' },
+      ]
+    },
+    {
+      id: 'primary_goal',
+      question: "What's the main goal of your website?",
+      options: [
+        { value: 'sell', label: '💰 Sell Products', description: 'Drive purchases' },
+        { value: 'leads', label: '📧 Get Leads', description: 'Collect contact info' },
+        { value: 'showcase', label: '🖼️ Showcase Work', description: 'Display portfolio' },
+        { value: 'inform', label: '📚 Inform Visitors', description: 'Share information' },
+        { value: 'bookings', label: '📅 Get Bookings', description: 'Schedule appointments' },
+        { value: 'brand', label: '🏷️ Build Brand', description: 'Establish presence' },
+      ]
+    },
+    {
+      id: 'color_preference',
+      question: "Choose your primary brand color:",
+      options: [
+        { value: '#3B82F6', label: '💙 Blue', description: 'Trust & professionalism' },
+        { value: '#10B981', label: '💚 Green', description: 'Growth & nature' },
+        { value: '#8B5CF6', label: '💜 Purple', description: 'Creativity & luxury' },
+        { value: '#EF4444', label: '❤️ Red', description: 'Energy & passion' },
+        { value: '#F59E0B', label: '🧡 Orange', description: 'Friendly & optimistic' },
+        { value: '#000000', label: '🖤 Black', description: 'Sophisticated & bold' },
+      ]
+    },
+    {
+      id: 'business_name',
+      question: "What's your business name?",
+      type: 'text',
+      placeholder: 'Enter your business name...'
+    }
+  ];
+
+  // Generate AI Website based on answers
+  const generateAIWebsite = async () => {
+    setWizardMode('ai-generating');
+    
+    const { business_type, style_preference, primary_goal, color_preference, business_name } = aiWizardAnswers;
+    let sectionsToAdd: PageBlock[] = [];
+
+    try {
+      if (genAI) {
+        const model = (genAI as any).getGenerativeModel({ model: "gemini-1.5-flash" });
+        const prompt = `You are an expert website builder. Generate a JSON array of section configurations for a new website.
+        Business Name: ${business_name}
+        Business Type: ${business_type}
+        Style Preference: ${style_preference}
+        Primary Goal: ${primary_goal}
+        
+        Return a JSON array of objects with this structure:
+        {
+          "type": "system-hero" | "system-collection" | "system-gallery" | "system-social" | "system-contact" | "system-email",
+          "variant": "string",
+          "data": { ...relevant fields for that section... }
+        }
+        
+        Include at least 5 sections: Hero, Features/Collection, Social Proof, Contact, and Email Signup.
+        Make the content specific to the business name and type.
+        Just return the JSON array, no markdown formatting.`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text().trim();
+        
+        try {
+          // Clean up potential markdown formatting if AI included it
+          const jsonStr = text.replace(/```json\n?|\n?```/g, '');
+          const generatedSections = JSON.parse(jsonStr);
+          sectionsToAdd = generatedSections.map((s: any, i: number) => ({
+            ...s,
+            id: `${s.type}-${Date.now()}-${i}`
+          }));
+        } catch (e) {
+          console.error('Failed to parse AI generated sections, falling back to template', e);
+        }
+      }
+
+      // Fallback or default logic if AI failed or not available
+      if (sectionsToAdd.length === 0) {
+    const heroTexts: Record<string, { heading: string, subheading: string }> = {
+      ecommerce: { heading: `Welcome to ${business_name || 'Our Store'}`, subheading: 'Discover our curated collection of premium products.' },
+      portfolio: { heading: `${business_name || 'Creative Studio'}`, subheading: 'Crafting beautiful digital experiences since day one.' },
+      service: { heading: `${business_name || 'Expert Services'}`, subheading: 'Professional solutions tailored to your needs.' },
+      restaurant: { heading: `${business_name || 'Delicious Eats'}`, subheading: 'Fresh ingredients, unforgettable flavors.' },
+      blog: { heading: `${business_name || 'The Blog'}`, subheading: 'Stories, insights, and ideas worth sharing.' },
+      agency: { heading: `${business_name || 'Creative Agency'}`, subheading: 'We turn bold ideas into remarkable results.' },
+    };
+    
+    const heroContent = heroTexts[business_type] || heroTexts.ecommerce;
+    
+    sectionsToAdd.push({
+      id: `hero-${Date.now()}`,
+      type: 'system-hero',
+      name: 'Hero',
+      content: '',
+      variant: style_preference === 'minimal' ? 'centered-gradient' : style_preference === 'bold' ? 'impact' : 'editorial',
+      data: {
+        heading: heroContent.heading,
+        subheading: heroContent.subheading,
+        buttonText: primary_goal === 'sell' ? 'Shop Now' : primary_goal === 'leads' ? 'Get Started' : 'Learn More',
+        buttonLink: primary_goal === 'sell' ? '/shop' : '#contact',
+      }
+    });
+    
+    // Add sections based on business type
+    if (business_type === 'ecommerce' || primary_goal === 'sell') {
+      sectionsToAdd.push({
+        id: `products-${Date.now()}`,
+        type: 'system-collection',
+        name: 'Featured Products',
+        content: '',
+        variant: 'minimal-grid',
+        data: {
+          heading: 'Featured Products',
+          subheading: 'Our most popular items',
+          productCount: 8,
+          gridColumns: '4',
+        }
+      });
+    }
+    
+    if (business_type === 'portfolio' || primary_goal === 'showcase') {
+      sectionsToAdd.push({
+        id: `gallery-${Date.now()}`,
+        type: 'system-gallery',
+        name: 'Gallery',
+        content: '',
+        variant: 'masonry',
+        data: {
+          heading: 'Our Work',
+          subheading: 'A selection of our best projects',
+        }
+      });
+    }
+    
+    // Add social proof section
+    sectionsToAdd.push({
+      id: `social-${Date.now()}`,
+      type: 'system-social',
+      name: 'Testimonials',
+      content: '',
+      variant: 'testimonial-cards',
+      data: {
+        heading: 'What People Say',
+        subheading: 'Trusted by customers worldwide',
+      }
+    });
+    
+    // Add contact section for lead generation
+    if (primary_goal === 'leads' || primary_goal === 'bookings') {
+      sectionsToAdd.push({
+        id: `contact-${Date.now()}`,
+        type: 'system-contact',
+        name: 'Contact',
+        content: '',
+        variant: 'split',
+        data: {
+          heading: 'Get in Touch',
+          subheading: 'We\'d love to hear from you',
+          submitButtonText: 'Send Message',
+          successMessage: 'Thanks! We\'ll be in touch soon.',
+        }
+      });
+    }
+    
+    // Add email signup
+    sectionsToAdd.push({
+      id: `email-${Date.now()}`,
+      type: 'system-email',
+      name: 'Newsletter',
+      content: '',
+      variant: 'centered',
+      data: {
+        heading: 'Stay Updated',
+        subheading: 'Subscribe to our newsletter for the latest news and offers.',
+        buttonText: 'Subscribe',
+      }
+    });
+    
+    // Update the page with generated sections
+    onUpdatePage(activePageId, { blocks: sectionsToAdd });
+    
+    // Update store config with color preference
+    if (color_preference) {
+      onConfigChange({ ...config, primaryColor: color_preference });
+    }
+    if (business_name) {
+      onConfigChange({ ...config, name: business_name });
+    }
+    
+    // Close wizard
+    setShowWelcomeWizard(false);
+    setHasSeenWelcome(true);
+    localStorage.setItem('webpilot_seen_welcome', 'true');
+    setWizardMode('select');
+    setAiWizardStep(0);
+    setAiWizardAnswers({});
+    
+    showToast('🎉 Your website has been generated! Customize each section as needed.', 'success');
+    
+    // Show tutorial after generation
+    if (!hasSeenTutorial) {
+      setTimeout(() => setShowTutorial(true), 500);
+    }
+    }
+    } catch (err) {
+      console.error('Error generating AI website:', err);
+      showToast('Failed to generate website. Please try again.', 'error');
+    } finally {
+      setWizardMode('select');
+    }
+  };
 
   // Page Templates
   const PAGE_TEMPLATES = [
@@ -13703,130 +13651,6 @@ Return ONLY the JSON object, no markdown.`;
             <button onClick={dismissWizard} className="text-sm text-neutral-500 hover:text-white transition-colors">
               Skip for now
             </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // New Customer Welcome Modal
-  const renderWelcomeModal = () => {
-    if (!showWelcomeModal) return null;
-
-    const handleLaunchAI = () => {
-      setShowWelcomeModal(false);
-      setHasSeenWelcome(true);
-      if (storeId) {
-        localStorage.setItem(`webpilot_seen_welcome_${storeId}`, 'true');
-      }
-      onTabChange(AdminTab.AI_SITE_GENERATOR);
-    };
-
-    const handleExploreDashboard = () => {
-      setShowWelcomeModal(false);
-      setHasSeenWelcome(true);
-      if (storeId) {
-        localStorage.setItem(`webpilot_seen_welcome_${storeId}`, 'true');
-      }
-    };
-
-    return (
-      <div className="fixed inset-0 z-[350] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-        <div className="bg-gradient-to-br from-neutral-900 via-neutral-900 to-blue-900/20 border border-neutral-700 rounded-3xl shadow-2xl w-full max-w-3xl animate-in zoom-in-95 duration-500 overflow-hidden">
-          {/* Header */}
-          <div className="relative p-12 text-center border-b border-neutral-800/50 bg-gradient-to-br from-blue-600/10 to-purple-600/10">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 animate-pulse" />
-            <div className="relative">
-              <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/20 animate-in zoom-in duration-700">
-                <Sparkles size={48} className="text-white" />
-              </div>
-              <h1 className="text-4xl font-black text-white mb-3 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Welcome to WebPilot! 🎉
-              </h1>
-              <p className="text-lg text-neutral-300 max-w-xl mx-auto">
-                We're thrilled to have you here. Let's create something amazing together!
-              </p>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="p-8 space-y-6">
-            {/* Value Props */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="text-center p-4 bg-neutral-800/30 rounded-2xl border border-neutral-700/50">
-                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <Wand2 className="w-6 h-6 text-blue-400" />
-                </div>
-                <h4 className="text-sm font-bold text-white mb-1">AI-Powered</h4>
-                <p className="text-xs text-neutral-400">Generate beautiful sites in seconds</p>
-              </div>
-              <div className="text-center p-4 bg-neutral-800/30 rounded-2xl border border-neutral-700/50">
-                <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <Palette className="w-6 h-6 text-purple-400" />
-                </div>
-                <h4 className="text-sm font-bold text-white mb-1">Fully Customizable</h4>
-                <p className="text-xs text-neutral-400">Every pixel under your control</p>
-              </div>
-              <div className="text-center p-4 bg-neutral-800/30 rounded-2xl border border-neutral-700/50">
-                <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <ShoppingBag className="w-6 h-6 text-green-400" />
-                </div>
-                <h4 className="text-sm font-bold text-white mb-1">E-commerce Ready</h4>
-                <p className="text-xs text-neutral-400">Start selling immediately</p>
-              </div>
-            </div>
-
-            {/* Main CTA */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-center relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative">
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  ✨ Let AI Build Your Website
-                </h3>
-                <p className="text-blue-50 mb-6 max-w-lg mx-auto">
-                  Describe your business and watch as our AI creates a complete, professional website tailored just for you - in under 30 seconds.
-                </p>
-                <button
-                  onClick={handleLaunchAI}
-                  className="px-8 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg hover:scale-105 transition-all duration-200 shadow-xl hover:shadow-2xl flex items-center gap-3 mx-auto"
-                >
-                  <Wand2 className="w-5 h-5" />
-                  Launch AI Website Generator
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Alternative Option */}
-            <div className="text-center">
-              <p className="text-sm text-neutral-500 mb-3">or</p>
-              <button
-                onClick={handleExploreDashboard}
-                className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl font-medium transition-all border border-neutral-700 hover:border-neutral-600"
-              >
-                I'll explore the dashboard first
-              </button>
-            </div>
-
-            {/* Quick Stats / Trust Signals */}
-            <div className="pt-6 border-t border-neutral-800/50">
-              <div className="flex items-center justify-center gap-8 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-white">30s</div>
-                  <div className="text-xs text-neutral-400">Average Build Time</div>
-                </div>
-                <div className="w-px h-8 bg-neutral-700" />
-                <div>
-                  <div className="text-2xl font-bold text-white">100%</div>
-                  <div className="text-xs text-neutral-400">Customizable</div>
-                </div>
-                <div className="w-px h-8 bg-neutral-700" />
-                <div>
-                  <div className="text-2xl font-bold text-white">0</div>
-                  <div className="text-xs text-neutral-400">Coding Required</div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -15125,33 +14949,17 @@ Return ONLY the JSON object, no markdown.`;
         return <CollectionManager />;
 
       case AdminTab.DESIGN_LIBRARY:
-        return (
-          <>
-            <DesignLibrary 
-              storeId={storeId || ''} 
-              onDesignActivated={(design) => {
-                // Update active design name when design is activated
-                setActiveDesignName(design.name);
-              }}
-              onNavigateToDesignStudio={() => {
-                // Switch to Design Studio tab to customize the new design
-                onTabChange(AdminTab.DESIGN);
-              }}
-              onOpenWizard={() => setIsDesignWizardOpen(true)}
-            />
-            {isDesignWizardOpen && (
-              <DesignWizard
-                storeId={storeId || ''}
-                onComplete={() => {
-                  setIsDesignWizardOpen(false);
-                  // Refresh the design library
-                  onRefreshData();
-                }}
-                onClose={() => setIsDesignWizardOpen(false)}
-              />
-            )}
-          </>
-        );
+        return <DesignLibrary 
+          storeId={storeId || ''} 
+          onDesignActivated={(design) => {
+            // Update active design name when design is activated
+            setActiveDesignName(design.name);
+          }}
+          onNavigateToDesignStudio={() => {
+            // Switch to Design Studio tab to customize the new design
+            onTabChange(AdminTab.DESIGN);
+          }}
+        />;
 
       case AdminTab.COLLECTION_ANALYTICS:
         return <CollectionAnalytics storeId={storeId || ''} />;
@@ -15747,7 +15555,7 @@ Return ONLY the JSON object, no markdown.`;
                 </div>
               </div>
               <div className="flex-1 overflow-hidden flex items-center justify-center p-8 bg-[radial-gradient(#222_1px,transparent_1px)] [background-size:16px_16px]">
-                <div className={`bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shadow-2xl relative isolate ${
+                <div className={`bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shadow-2xl overflow-hidden relative ${
                   previewDevice === 'mobile' ? (
                     previewOrientation === 'landscape' ? 'w-[812px] h-[375px] rounded-[40px] border-[8px] border-neutral-900' : 'w-[375px] h-[812px] rounded-[40px] border-[8px] border-neutral-900'
                   ) : 
@@ -15756,9 +15564,8 @@ Return ONLY the JSON object, no markdown.`;
                   ) :
                   'w-full h-full max-w-[1400px] rounded-lg border border-neutral-800'
                 }`}>
-                  <div className={`preview-container w-full h-full overflow-y-auto overflow-x-hidden bg-white scrollbar-${config.scrollbarStyle} relative`}>
-                    <div className="relative" style={{ contain: 'layout style paint' }}>
-                      <Storefront
+                  <div className={`w-full h-full overflow-y-auto bg-white scrollbar-${config.scrollbarStyle}`}>
+                    <Storefront
                       config={config}
                       products={products}
                       pages={localPages}
@@ -15866,7 +15673,6 @@ Return ONLY the JSON object, no markdown.`;
                       }}
                       showCartDrawer={false}
                     />
-                    </div>
                   </div>
                   <CartDrawer variant="absolute" />
                 </div>
@@ -16085,32 +15891,16 @@ Return ONLY the JSON object, no markdown.`;
 
       case AdminTab.SHOPIFY_MIGRATION:
         return (
-          <div>
-            <div className="mb-6 p-6 bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-xl border border-blue-500/50">
-              <h2 className="text-2xl font-bold mb-3">🚀 New Comprehensive Import Wizard</h2>
-              <p className="text-gray-300 mb-4">
-                Experience our new step-by-step wizard with visual previews and granular control over every section.
-              </p>
-              <button
-                onClick={() => setIsShopifyWizardOpen(true)}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 font-semibold flex items-center gap-2"
-              >
-                <Upload className="w-5 h-5" />
-                Launch Import Wizard
-              </button>
-            </div>
-            
-            <ShopifyMigration 
-              storeId={storeId || ''} 
-              onNavigateToPage={(pageId) => {
-                onSetActivePage(pageId);
-                onTabChange(AdminTab.DESIGN);
-              }}
-              onComplete={() => {
-                onTabChange(AdminTab.DASHBOARD);
-              }} 
-            />
-          </div>
+          <ShopifyMigration 
+            storeId={storeId || ''} 
+            onNavigateToPage={(pageId) => {
+              onSetActivePage(pageId);
+              onTabChange(AdminTab.DESIGN);
+            }}
+            onComplete={() => {
+              onTabChange(AdminTab.DASHBOARD);
+            }} 
+          />
         );
 
       case AdminTab.SHOPIFY_DATA_IMPORT:
@@ -16135,35 +15925,6 @@ Return ONLY the JSON object, no markdown.`;
               onTabChange(AdminTab.DASHBOARD);
             }} 
           />
-        );
-
-      case AdminTab.LOVEABLE_IMPORT:
-        return (
-          <LoveableImport 
-            storeId={storeId || ''} 
-            onNavigateToPage={(pageId) => {
-              onSetActivePage(pageId);
-              onTabChange(AdminTab.DESIGN);
-            }}
-            onComplete={() => {
-              onTabChange(AdminTab.DASHBOARD);
-            }} 
-          />
-        );
-
-      case AdminTab.AI_SITE_GENERATOR:
-        return (
-          <div className="p-8">
-            <DesignWizard
-              storeId={storeId || ''}
-              onComplete={() => {
-                onRefreshData();
-                onTabChange(AdminTab.DASHBOARD);
-              }}
-              onClose={() => onTabChange(AdminTab.DASHBOARD)}
-              onRefreshData={onRefreshData}
-            />
-          </div>
         );
 
       case AdminTab.SETTINGS:
@@ -18386,20 +18147,7 @@ Return ONLY the JSON object, no markdown.`;
       {renderInterfaceModal()}
       {renderBlockArchitect()}
       {renderHeaderModal()}
-      {isHeroModalOpen && (
-        <HeroEditor
-          data={selectedBlockId && activeBlock?.type === 'system-hero' ? activeBlock?.data || {} : config.heroData || {}}
-          onChange={(updates) => {
-            if (selectedBlockId) {
-              updateActiveBlockData(selectedBlockId, updates);
-            } else {
-              onConfigChange({ ...config, heroData: { ...config.heroData, ...updates } });
-            }
-            setHasUnsavedChanges(true);
-          }}
-          onClose={() => setIsHeroModalOpen(false)}
-        />
-      )}
+      {renderHeroModal()}
       {renderGridModal()}
       {renderCollectionModal()}
       {renderCategoryModal()}
@@ -18419,7 +18167,6 @@ Return ONLY the JSON object, no markdown.`;
       {renderLayoutModal()}
       {renderSpacerModal()}
       {renderAddSectionLibrary()}
-      {renderWelcomeModal()}
       {renderWelcomeWizard()}
       {renderAddPageModal()}
       {renderTutorial()}
@@ -18489,17 +18236,6 @@ Return ONLY the JSON object, no markdown.`;
           )}
           <span className="text-sm font-medium whitespace-nowrap">{toast.message}</span>
         </div>
-      )}
-
-      {/* Shopify Import Wizard */}
-      {isShopifyWizardOpen && (
-        <ShopifyImportWizard
-          onClose={() => setIsShopifyWizardOpen(false)}
-          onComplete={() => {
-            setIsShopifyWizardOpen(false);
-            onTabChange(AdminTab.DASHBOARD);
-          }}
-        />
       )}
     </div>
   );

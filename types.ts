@@ -24,8 +24,6 @@ export enum AdminTab {
   SHOPIFY_MIGRATION = 'SHOPIFY_MIGRATION',
   SHOPIFY_DATA_IMPORT = 'SHOPIFY_DATA_IMPORT',
   WEBSITE_MIGRATION = 'WEBSITE_MIGRATION',
-  LOVEABLE_IMPORT = 'LOVEABLE_IMPORT',
-  AI_SITE_GENERATOR = 'AI_SITE_GENERATOR',
   FAVICON = 'FAVICON',
   SETTINGS = 'SETTINGS',
   PLATFORM = 'PLATFORM'
@@ -601,6 +599,8 @@ export interface PageBlock {
       alignment?: 'left' | 'center' | 'right';
       fullWidth?: boolean;
     };
+    // AI hero payload (new AI layouts)
+    aiHero?: Record<string, any>;
     [key: string]: any;
   };
 }
@@ -673,7 +673,6 @@ export interface AdminPanelProps {
   userRole?: string | null;
   storeId?: string | null;
   onSwitchStore?: (storeId: string) => Promise<void>;
-  onRefreshData?: () => Promise<void>;
   categories?: Category[];
   collections?: Collection[];
 }
