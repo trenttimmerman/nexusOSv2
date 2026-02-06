@@ -87,6 +87,15 @@ const EditableImage: React.FC<{ src?: string; alt?: string; className?: string }
   <img src={src} alt={alt} className={className} />
 );
 
+// Safe renderer to avoid React element type errors
+const renderSafe = (Component: any, props: any, context: string) => {
+  if (typeof Component !== 'function') {
+    console.error('[Storefront] Missing component for context:', context, { Component });
+    return null;
+  }
+  return <Component {...props} />;
+};
+
 // Style classes generator for block.data.style
 const getBlockStyleClasses = (style?: { padding?: string; paddingX?: string; maxWidth?: string; height?: string; background?: string; alignment?: string; imageFit?: string }) => {
   if (!style) return '';
@@ -384,6 +393,11 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
       '5': 'lg:grid-cols-5',
     }[columns] || 'lg:grid-cols-4';
 
+    if (typeof CardComponent !== 'function') {
+      console.error('[Storefront] Missing product card component', { styleId });
+      return null;
+    }
+
     return (
       <section 
         style={{ backgroundColor: data?.backgroundColor || '#ffffff' }}
@@ -435,14 +449,14 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
               </div>
             ) : (
               filteredProducts.map((product) => (
-                <CardComponent
-                  key={product.id}
-                  product={product}
-                  onAddToCart={addToCart}
-                  onNavigate={() => onNavigate && onNavigate(`/products/${product.seo.slug || product.id}`)}
-                  primaryColor={config.primaryColor}
-                  data={data}
-                />
+                renderSafe(CardComponent, {
+                  key: product.id,
+                  product,
+                  onAddToCart: addToCart,
+                  onNavigate: () => onNavigate && onNavigate(`/products/${product.seo.slug || product.id}`),
+                  primaryColor: config.primaryColor,
+                  data,
+                }, `product-card-${styleId}`)
               ))
             )}
           </div>
@@ -478,121 +492,133 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
           const heroStyle = (variant as HeroStyleId) || config.heroStyle || 'impact';
           const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
           console.log('[Storefront] Hero block:', { heroStyle, hasComponent: !!HeroComponent });
-          return HeroComponent ? (
-            <HeroComponent
-              key={block.id}
-              storeName={config.name}
-              primaryColor={config.primaryColor}
-              data={block.data}
-              products={products}
-              isEditable={isEditable}
-              onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
-              onSelectField={onSelectField}
-              onEditBlock={onEditBlock}
-              blockId={block.id}
-            />
-          ) : null;
+          return renderSafe(HeroComponent, {
+            key: block.id,
+            storeName: config.name,
+            primaryColor: config.primaryColor,
+            data: block.data,
+            products,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+            onSelectField,
+            onEditBlock,
+            blockId: block.id,
+          }, `hero-${heroStyle}`);
         case 'system-grid':
           return renderProductGrid(block.variant, block.data, block.id, isEditable, onEditBlock);
         case 'system-scroll':
           const ScrollComponent = SCROLL_COMPONENTS[block.variant || 'logo-marquee'];
-          return ScrollComponent ? (
-            <ScrollComponent 
-              data={block.data} 
-              isEditable={isEditable}
-              onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
-            />
-          ) : null;
+          return renderSafe(ScrollComponent, {
+            data: block.data,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+          }, `scroll-${block.variant || 'logo-marquee'}`);
         case 'system-social':
           const SocialComponent = SOCIAL_COMPONENTS[block.variant || 'grid-classic'];
-          return SocialComponent ? (
-            <SocialComponent 
-              storeName={config.name}
-              primaryColor={config.primaryColor}
-              data={block.data} 
-              isEditable={isEditable}
-              onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
-            />
-          ) : null;
+          return renderSafe(SocialComponent, {
+            storeName: config.name,
+            primaryColor: config.primaryColor,
+            data: block.data,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+          }, `social-${block.variant || 'grid-classic'}`);
         case 'system-rich-text':
           const RichTextComponent = RICH_TEXT_COMPONENTS[block.variant || 'rt-centered'];
-          return RichTextComponent ? (
-            <RichTextComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          ) : null;
+          return renderSafe(RichTextComponent, {
+            data: block.data,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+          }, `rich-text-${block.variant || 'rt-centered'}`);
         case 'system-email':
           const EmailComponent = EMAIL_SIGNUP_COMPONENTS[block.variant || 'email-minimal'];
-          return EmailComponent ? (
-            <EmailComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          ) : null;
+          return renderSafe(EmailComponent, {
+            data: block.data,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+          }, `email-${block.variant || 'email-minimal'}`);
         case 'system-collapsible':
           const CollapsibleComponent = COLLAPSIBLE_COMPONENTS[block.variant || 'col-simple'];
-          return CollapsibleComponent ? (
-            <CollapsibleComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          ) : null;
+          return renderSafe(CollapsibleComponent, {
+            data: block.data,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+          }, `collapsible-${block.variant || 'col-simple'}`);
         case 'system-logo-list':
           const LogoListComponent = LOGO_LIST_COMPONENTS[block.variant || 'logo-grid'];
-          return LogoListComponent ? (
-            <LogoListComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          ) : null;
+          return renderSafe(LogoListComponent, {
+            data: block.data,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+          }, `logo-${block.variant || 'logo-grid'}`);
         case 'system-promo':
           const PromoComponent = PROMO_BANNER_COMPONENTS[block.variant || 'promo-top'];
-          return PromoComponent ? (
-            <PromoComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          ) : null;
+          return renderSafe(PromoComponent, {
+            data: block.data,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+          }, `promo-${block.variant || 'promo-top'}`);
         case 'system-spacer':
           const SpacerComponent = SPACER_COMPONENTS[block.variant || 'spacer-simple'];
-          return SpacerComponent ? (
-            <SpacerComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          ) : null;
+          return renderSafe(SpacerComponent, {
+            data: block.data,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+          }, `spacer-${block.variant || 'spacer-simple'}`);
         case 'system-gallery':
           const GalleryComponent = GALLERY_COMPONENTS[block.variant || 'gal-grid'];
-          return GalleryComponent ? (
-            <GalleryComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          ) : null;
+          return renderSafe(GalleryComponent, {
+            data: block.data,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+          }, `gallery-${block.variant || 'gal-grid'}`);
         case 'system-blog':
           const BlogComponent = BLOG_COMPONENTS[block.variant || 'blog-grid'];
-          return BlogComponent ? (
-            <BlogComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          ) : null;
+          return renderSafe(BlogComponent, {
+            data: block.data,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+          }, `blog-${block.variant || 'blog-grid'}`);
         case 'system-video':
           const VideoComponent = VIDEO_COMPONENTS[block.variant || 'vid-full'];
-          return VideoComponent ? (
-            <VideoComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          ) : null;
+          return renderSafe(VideoComponent, {
+            data: block.data,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+          }, `video-${block.variant || 'vid-full'}`);
         case 'system-contact':
           const ContactComponent = CONTACT_COMPONENTS[block.variant || 'contact-simple'];
-          return ContactComponent ? (
-            <ContactComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          ) : null;
+          return renderSafe(ContactComponent, {
+            data: block.data,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+          }, `contact-${block.variant || 'contact-simple'}`);
         case 'system-layout':
           const LayoutComponent = LAYOUT_COMPONENTS[block.variant || 'layout-image-text'];
-          return LayoutComponent ? (
-            <LayoutComponent data={block.data} isEditable={isEditable} onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)} />
-          ) : null;
+          return renderSafe(LayoutComponent, {
+            data: block.data,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+          }, `layout-${block.variant || 'layout-image-text'}`);
         case 'system-collection':
           const CollectionComponent = COLLECTION_COMPONENTS[block.variant || 'collection-list'];
-          return CollectionComponent ? (
-            <CollectionComponent 
-              data={block.data} 
-              products={getFilteredProducts(block.data)} 
-              isEditable={isEditable} 
-              onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
-              onEditBlock={onEditBlock}
-              blockId={block.id}
-            />
-          ) : null;
+          return renderSafe(CollectionComponent, {
+            data: block.data,
+            products: getFilteredProducts(block.data),
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+            onEditBlock,
+            blockId: block.id,
+          }, `collection-${block.variant || 'collection-list'}`);
         case 'system-category':
           const CategoryComponent = CATEGORY_COMPONENTS[block.variant || 'category-grid'];
-          return CategoryComponent ? (
-            <CategoryComponent 
-              data={block.data} 
-              categories={categories} 
-              isEditable={isEditable} 
-              onUpdate={(data) => onUpdateBlock && onUpdateBlock(block.id, data)}
-              onEditBlock={onEditBlock}
-              blockId={block.id}
-            />
-          ) : null;
+          return renderSafe(CategoryComponent, {
+            data: block.data,
+            categories,
+            isEditable,
+            onUpdate: (data: any) => onUpdateBlock && onUpdateBlock(block.id, data),
+            onEditBlock,
+            blockId: block.id,
+          }, `category-${block.variant || 'category-grid'}`);
         case 'section':
         default: {
           const safeHtml = typeof block.content === 'string' ? block.content : '';
