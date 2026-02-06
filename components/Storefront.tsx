@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { StorefrontProps, Product, PageBlock, HeroStyleId, ProductCardStyleId } from '../types';
 import { HEADER_COMPONENTS } from './HeaderLibrary';
-import { HERO_COMPONENTS, HERO_OPTIONS, EditableText, EditableImage, HERO_FIELDS } from './HeroLibrary';
+import { HERO_COMPONENTS, HERO_OPTIONS, HERO_FIELDS } from './HeroLibrary';
 import { AI_HERO_COMPONENTS, HeroData as AIHeroData } from './AiHeroLibrary';
 import { PRODUCT_CARD_COMPONENTS, PRODUCT_CARD_OPTIONS } from './ProductCardLibrary';
 import { PRODUCT_PAGE_COMPONENTS } from './ProductPageLibrary';
@@ -23,6 +23,69 @@ import { getFilteredProducts as getFilteredProductsUtil } from '../lib/productUt
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
 import { CartDrawer } from './CartDrawer';
+
+// Lightweight editable helpers (avoids dependency on HeroLibrary exports)
+type EditableTextProps = {
+  value: string;
+  onChange: (val: string) => void;
+  onStyleChange?: (style: any) => void;
+  style?: any;
+  isEditable?: boolean;
+  className?: string;
+  tagName?: 'h1' | 'h2' | 'h3' | 'p' | 'span' | 'div';
+  placeholder?: string;
+  elementId?: string;
+  onSelect?: () => void;
+};
+
+const EditableText: React.FC<EditableTextProps> = ({
+  value,
+  onChange,
+  onStyleChange,
+  style,
+  isEditable,
+  className,
+  tagName = 'span',
+  placeholder,
+  onSelect
+}) => {
+  const Tag: any = tagName;
+
+  if (!isEditable) {
+    return (
+      <Tag className={className} style={style}>
+        {value || placeholder || ''}
+      </Tag>
+    );
+  }
+
+  return (
+    <Tag
+      className={`${className || ''} outline-none border-b border-dashed border-gray-300`}
+      contentEditable
+      suppressContentEditableWarning
+      style={style}
+      onFocus={() => onSelect && onSelect()}
+      onInput={(e: React.FormEvent<HTMLElement>) => {
+        const next = (e.currentTarget as HTMLElement).innerText;
+        onChange(next);
+        if (onStyleChange) onStyleChange(style);
+      }}
+      onBlur={(e: React.FocusEvent<HTMLElement>) => {
+        const next = (e.currentTarget as HTMLElement).innerText;
+        onChange(next);
+      }}
+      data-element-id={placeholder}
+    >
+      {value || placeholder || ''}
+    </Tag>
+  );
+};
+
+// Placeholder for API parity; not used in this file but kept for completeness
+const EditableImage: React.FC<{ src?: string; alt?: string; className?: string }> = ({ src, alt = '', className }) => (
+  <img src={src} alt={alt} className={className} />
+);
 
 // Style classes generator for block.data.style
 const getBlockStyleClasses = (style?: { padding?: string; paddingX?: string; maxWidth?: string; height?: string; background?: string; alignment?: string; imageFit?: string }) => {
