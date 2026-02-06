@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Image as ImageIcon, Type, Palette, Eye, EyeOff, Upload, Sparkles } from 'lucide-react';
-import { HeroData, HERO_COMPONENTS } from './HeroLibrary';
+import { HeroData, AI_HERO_COMPONENTS } from './AiHeroLibrary';
 import { HeroDesignerModal } from './HeroDesignerModal';
 
 interface HeroEditorProps {
@@ -37,7 +37,7 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
     setShowDesigner(false);
   };
 
-  const HeroComponent = HERO_COMPONENTS[data.variant || 'centered'] || HERO_COMPONENTS['centered'];
+  const HeroComponent = AI_HERO_COMPONENTS[data.variant || 'centered'] || AI_HERO_COMPONENTS['centered'];
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex">
@@ -103,6 +103,7 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
                   value={data.heading || ''}
                   onChange={(e) => updateField('heading', e.target.value)}
                   className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2.5 text-white focus:border-blue-500 outline-none"
+                  style={{ color: '#000000' }}
                   placeholder="Enter headline..."
                 />
               </div>
@@ -127,6 +128,7 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
                   value={data.subheading || ''}
                   onChange={(e) => updateField('subheading', e.target.value)}
                   className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2.5 text-white focus:border-blue-500 outline-none resize-none"
+                  style={{ color: '#000000' }}
                   rows={3}
                   placeholder="Enter subheading..."
                 />
@@ -153,6 +155,7 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
                   value={data.buttonText || ''}
                   onChange={(e) => updateField('buttonText', e.target.value)}
                   className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2.5 text-white focus:border-blue-500 outline-none"
+                  style={{ color: '#000000' }}
                   placeholder="e.g., Shop Now"
                 />
                 <input
@@ -160,6 +163,7 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
                   value={data.buttonLink || ''}
                   onChange={(e) => updateField('buttonLink', e.target.value)}
                   className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2.5 text-white text-sm focus:border-blue-500 outline-none"
+                  style={{ color: '#000000' }}
                   placeholder="Button link (e.g., /products)"
                 />
               </div>
@@ -184,6 +188,7 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
                     value={data.textColor || '#FFFFFF'}
                     onChange={(e) => updateField('textColor', e.target.value)}
                     className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2 text-white text-sm font-mono focus:border-blue-500 outline-none"
+                    style={{ color: '#000000' }}
                   />
                 </div>
               </div>
@@ -203,6 +208,7 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
                     value={data.buttonBackgroundColor || '#000000'}
                     onChange={(e) => updateField('buttonBackgroundColor', e.target.value)}
                     className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2 text-white text-sm font-mono focus:border-blue-500 outline-none"
+                    style={{ color: '#000000' }}
                   />
                 </div>
               </div>
@@ -221,6 +227,7 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
                     value={data.buttonTextColor || '#FFFFFF'}
                     onChange={(e) => updateField('buttonTextColor', e.target.value)}
                     className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2 text-white text-sm font-mono focus:border-blue-500 outline-none"
+                    style={{ color: '#000000' }}
                   />
                 </div>
               </div>
@@ -239,6 +246,7 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
                     value={data.buttonHoverColor || '#333333'}
                     onChange={(e) => updateField('buttonHoverColor', e.target.value)}
                     className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2 text-white text-sm font-mono focus:border-blue-500 outline-none"
+                    style={{ color: '#000000' }}
                   />
                 </div>
               </div>
@@ -258,6 +266,7 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
                     value={data.overlayColor || '#000000'}
                     onChange={(e) => updateField('overlayColor', e.target.value)}
                     className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2 text-white text-sm font-mono focus:border-blue-500 outline-none"
+                    style={{ color: '#000000' }}
                   />
                 </div>
               </div>
@@ -267,6 +276,151 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
           {/* SETTINGS TAB */}
           {activeTab === 'settings' && (
             <>
+              {/* Layout Variant */}
+              <div className="space-y-2">
+                <label className="text-sm text-neutral-300 font-medium">Layout Variant</label>
+                <select
+                  value={data.variant || 'centered'}
+                  onChange={(e) => updateField('variant', e.target.value as HeroData['variant'])}
+                  className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2.5 text-white text-sm focus:border-blue-500 outline-none"
+                  style={{ color: '#000000' }}
+                >
+                  <option value="centered">Centered</option>
+                  <option value="split-left">Split Left</option>
+                  <option value="diagonal">Diagonal</option>
+                  <option value="minimal-corner">Minimal Corner</option>
+                  <option value="bottom-aligned">Bottom Aligned</option>
+                </select>
+              </div>
+
+              {/* Effects */}
+              <div className="space-y-4 p-4 rounded-lg border border-neutral-800 bg-neutral-900/40">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <label className="text-sm text-neutral-300 font-medium">Particle Effects</label>
+                    <p className="text-xs text-neutral-500">Animated particles for extra motion</p>
+                  </div>
+                  <button
+                    onClick={() => toggleField('enableParticles')}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-semibold border transition-colors ${
+                      data.enableParticles
+                        ? 'bg-blue-500/20 text-blue-300 border-blue-500/50'
+                        : 'bg-neutral-800 text-neutral-500 border-neutral-700'
+                    }`}
+                  >
+                    {data.enableParticles ? 'On' : 'Off'}
+                  </button>
+                </div>
+                {data.enableParticles && (
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={data.particleColor || '#FFFFFF'}
+                        onChange={(e) => updateField('particleColor', e.target.value)}
+                        className="w-12 h-12 rounded-lg cursor-pointer border-2 border-neutral-700"
+                      />
+                      <input
+                        type="text"
+                        value={data.particleColor || '#FFFFFF'}
+                        onChange={(e) => updateField('particleColor', e.target.value)}
+                        className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2 text-white text-sm font-mono focus:border-blue-500 outline-none"
+                        style={{ color: '#000000' }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <label className="text-sm text-neutral-300 font-medium">Content Animation</label>
+                      <p className="text-xs text-neutral-500">Entrance animation for text and buttons</p>
+                    </div>
+                    <button
+                      onClick={() => toggleField('enableAnimation')}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-semibold border transition-colors ${
+                        data.enableAnimation
+                          ? 'bg-blue-500/20 text-blue-300 border-blue-500/50'
+                          : 'bg-neutral-800 text-neutral-500 border-neutral-700'
+                      }`}
+                    >
+                      {data.enableAnimation ? 'On' : 'Off'}
+                    </button>
+                  </div>
+                  <select
+                    value={data.animationType || 'fade-in'}
+                    onChange={(e) => updateField('animationType', e.target.value as HeroData['animationType'])}
+                    disabled={!data.enableAnimation}
+                    className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2.5 text-white text-sm focus:border-blue-500 outline-none disabled:opacity-50"
+                    style={{ color: '#000000' }}
+                  >
+                    <option value="fade-in">Fade In</option>
+                    <option value="slide-up">Slide Up</option>
+                    <option value="zoom-in">Zoom In</option>
+                    <option value="glitch">Glitch</option>
+                    <option value="float">Float</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <label className="text-sm text-neutral-300 font-medium">Parallax</label>
+                      <p className="text-xs text-neutral-500">Best for centered layout</p>
+                    </div>
+                    <button
+                      onClick={() => toggleField('enableParallax')}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-semibold border transition-colors ${
+                        data.enableParallax
+                          ? 'bg-blue-500/20 text-blue-300 border-blue-500/50'
+                          : 'bg-neutral-800 text-neutral-500 border-neutral-700'
+                      }`}
+                    >
+                      {data.enableParallax ? 'On' : 'Off'}
+                    </button>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.2"
+                    max="0.8"
+                    step="0.05"
+                    value={data.parallaxSpeed || 0.4}
+                    onChange={(e) => updateField('parallaxSpeed', parseFloat(e.target.value))}
+                    disabled={!data.enableParallax}
+                    className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-blue-500 disabled:opacity-50"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <label className="text-sm text-neutral-300 font-medium">Gradient Overlay</label>
+                      <p className="text-xs text-neutral-500">Tailwind gradient classes for overlays</p>
+                    </div>
+                    <button
+                      onClick={() => toggleField('gradientOverlay')}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-semibold border transition-colors ${
+                        data.gradientOverlay
+                          ? 'bg-blue-500/20 text-blue-300 border-blue-500/50'
+                          : 'bg-neutral-800 text-neutral-500 border-neutral-700'
+                      }`}
+                    >
+                      {data.gradientOverlay ? 'On' : 'Off'}
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={data.gradientColors || ''}
+                    onChange={(e) => updateField('gradientColors', e.target.value)}
+                    disabled={!data.gradientOverlay}
+                    className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2.5 text-white text-sm focus:border-blue-500 outline-none disabled:opacity-50"
+                    style={{ color: '#000000' }}
+                    placeholder="e.g., from-purple-900/75 to-pink-900/75"
+                  />
+                </div>
+              </div>
+
               {/* Background Image */}
               <div className="space-y-2">
                 <label className="text-sm text-neutral-300 font-medium">Background Image</label>
@@ -286,6 +440,7 @@ export const HeroEditor: React.FC<HeroEditorProps> = ({ data, onChange, onClose 
                     value={data.backgroundImage || ''}
                     onChange={(e) => updateField('backgroundImage', e.target.value)}
                     className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-4 py-2.5 text-white text-sm focus:border-blue-500 outline-none"
+                    style={{ color: '#000000' }}
                     placeholder="Or paste image URL..."
                   />
                 </div>
