@@ -11420,7 +11420,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 isEditable={false}
               />
             )}
-            
+
             {/* Scrollable Content Below Hero for Full Page Context */}
             <div className="bg-white">
               {/* Features Section */}
@@ -11527,7 +11527,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
             </div>
           </>
-        ) : null;
+        );
       }
       if (systemModalType === 'grid') {
         const CardComponent = PRODUCT_CARD_COMPONENTS[currentSelection as ProductCardStyleId] || PRODUCT_CARD_COMPONENTS['classic'];
