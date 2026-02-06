@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Sparkles, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
 import AIHeroPreview from './AIHeroPreview';
-import { HeroData } from './HeroLibrary';
+import { HeroData } from './AiHeroLibrary';
 import { generateHeroDesigns } from '../ai/heroGenerator';
 
 interface HeroDesignerModalProps {
@@ -13,6 +13,7 @@ interface GeneratedHero {
   id: string;
   name: string;
   description: string;
+  layout?: HeroData['variant'];
   data: HeroData;
   exclusivePrice?: number;
 }
@@ -89,7 +90,7 @@ export const HeroDesignerModal: React.FC<HeroDesignerModalProps> = ({
 
   const handleHeroSelect = (hero: GeneratedHero, makeExclusive: boolean) => {
     // TODO: Handle makeExclusive (save to database with exclusive flag)
-    onSelect(hero.data);
+    onSelect({ ...hero.data, variant: hero.data.variant || hero.layout || 'centered' });
     onClose();
   };
 

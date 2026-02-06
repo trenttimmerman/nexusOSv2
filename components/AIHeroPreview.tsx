@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { X, Check, Crown, Sparkles } from 'lucide-react';
-import { HeroData, HERO_COMPONENTS } from './HeroLibrary';
+import { HeroData, AI_HERO_COMPONENTS } from './AiHeroLibrary';
 
 interface GeneratedHero {
   id: string;
   name: string;
   description: string;
-  layout: string;
+  layout: NonNullable<HeroData['variant']>;
   data: HeroData;
   exclusivePrice?: number;
 }
@@ -102,7 +102,7 @@ export default function AIHeroPreview({
                 <div className="relative bg-gray-50 overflow-hidden" style={{ height: '500px' }}>
                   <div className="absolute inset-0 scale-[0.75] origin-top" style={{ width: '133%', height: '133%', left: '-16.5%' }}>
                     {(() => {
-                      const HeroComponent = HERO_COMPONENTS[hero.layout] || HERO_COMPONENTS['fullimage'];
+                      const HeroComponent = AI_HERO_COMPONENTS[hero.layout] || AI_HERO_COMPONENTS['centered'];
                       return <HeroComponent data={hero.data} />;
                     })()}
                   </div>
