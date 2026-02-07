@@ -36,6 +36,7 @@ import EmailSettings from './EmailSettings';
 import ShopifyMigration from './ShopifyMigration';
 import ShopifyDataImport from './ShopifyDataImport';
 import WebsiteMigration from './WebsiteMigration';
+import { WelcomeFlow } from './WelcomeFlow';
 import Customers from './Customers';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
@@ -1141,6 +1142,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Editor Resize State
   const [editorWidth, setEditorWidth] = useState(320);
   
+  // Welcome Flow State (new user onboarding)
+  const [showWelcomeFlow, setShowWelcomeFlow] = useState(false);
+  const [hasSeenWelcomeFlow, setHasSeenWelcomeFlow] = useState(() => localStorage.getItem('webpilot_seen_welcome_flow') === 'true');
+
   // Design Studio Welcome Wizard State
   const [showWelcomeWizard, setShowWelcomeWizard] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(() => localStorage.getItem('webpilot_seen_welcome') === 'true');
@@ -1245,6 +1250,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [newPageType, setNewPageType] = useState<string>('custom');
   const [newPageName, setNewPageName] = useState('');
   const [newPageSlug, setNewPageSlug] = useState('');
+
+  // Show Welcome Flow on first admin load
+  useEffect(() => {
+    if (!hasSeenWelcomeFlow) {
+      setShowWelcomeFlow(true);
+    }
+  }, []);
   
   // Show welcome wizard when entering Design Studio for first time
   useEffect(() => {
@@ -16002,7 +16014,7 @@ Return ONLY the JSON object, no markdown.`;
                   </div>
                   
                   {/* Store Details */}
-                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                  <div data-welcome-target="welcome-store-details" className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
                     <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4">Store Details</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -16022,7 +16034,7 @@ Return ONLY the JSON object, no markdown.`;
                   </div>
 
                   {/* Company Information */}
-                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                  <div data-welcome-target="welcome-company-info" className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
                     <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
                       <Building2 size={18} className="text-blue-500"/>
                       Company Information
@@ -16053,7 +16065,7 @@ Return ONLY the JSON object, no markdown.`;
                   </div>
 
                   {/* Contact Information */}
-                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                  <div data-welcome-target="welcome-contact-info" className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
                     <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
                       <Mail size={18} className="text-green-500"/>
                       Contact Information
@@ -16080,7 +16092,7 @@ Return ONLY the JSON object, no markdown.`;
                   </div>
 
                   {/* Social Media Links */}
-                  <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+                  <div data-welcome-target="welcome-social-media" className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
                     <h4 className="font-bold text-white border-b border-neutral-800 pb-4 mb-4 flex items-center gap-2">
                       <Share2 size={18} className="text-pink-500"/>
                       Social Media & Online Presence
@@ -18177,6 +18189,22 @@ Return ONLY the JSON object, no markdown.`;
       {renderBrandSettings()}
       {renderNavBuilder()}
       {renderVersionHistory()}
+
+      {/* Welcome Flow - New user onboarding */}
+      {showWelcomeFlow && (
+        <WelcomeFlow
+          config={config}
+          onConfigChange={onConfigChange}
+          onTabChange={onTabChange}
+          onComplete={() => {
+            setShowWelcomeFlow(false);
+            setHasSeenWelcomeFlow(true);
+            localStorage.setItem('webpilot_seen_welcome_flow', 'true');
+          }}
+          activeSettingsTab={activeSettingsTab}
+          setActiveSettingsTab={setActiveSettingsTab}
+        />
+      )}
       
       {/* First Edit Hint - Shows when user clicks a section for the first time */}
       {showFirstEditHint && selectedBlockId && (
