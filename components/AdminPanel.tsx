@@ -52,6 +52,7 @@ try {
   if (geminiApiKey && typeof geminiApiKey === 'string' && geminiApiKey.trim().length > 10) {
     // GoogleGenAI will be imported dynamically when needed
     console.log('✅ Google AI key available');
+    console.log('[BUILD] Designer V3 - February 8, 2026 - 14:30 UTC');
   } else {
     console.warn('⚠️ VITE_GOOGLE_AI_API_KEY not set - AI features will be disabled');
   }
