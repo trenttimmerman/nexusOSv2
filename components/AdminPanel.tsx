@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getFilteredProducts as getFilteredProductsUtil } from '../lib/productUtils';
 import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
-import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas } from './HeaderLibrary';
+import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
