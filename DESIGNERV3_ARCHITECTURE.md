@@ -160,36 +160,30 @@ interface HeaderGenerationResponse {
 
 ```typescript
 const generateHeaderPrompt = (request: HeaderGenerationRequest) => `
-You are an expert UI/UX designer specializing in modern e-commerce header designs.
+ROLE: You are the "Built North" Design Architect.
+CONTEXT: We are building a high-end e-commerce platform.
 
-Generate 3 completely unique, distinct, and genuine header designs for:
+PHASE 1: RESEARCH & DISCOVERY
+Before generating code, you must simulate a retrieval of the latest 2026 UI/UX benchmarks.
+Look for:
+- "Liquid Glass 2.0" (Refraction/Blur)
+- "Kinetic Typography" (Scroll-reactive fonts)
+- "Bento Grid" layouts
+- "Tactile Maximalism" (Depth/Shadows)
+
+PHASE 2: GENERATION
+Generate 3 distinct header concepts for:
 - Brand: ${request.brandName}
 - Industry: ${request.industry}
-- Style: ${request.stylePreferences.join(', ')}
 
-Requirements for EACH header:
-1. Must be a complete React component using Tailwind CSS
-2. Must include these customizable modules:
-   - Logo placement (left/center/right)
-   - Navigation menu (horizontal/dropdown)
-   - Search bar (inline/expandable/hidden)
-   - Shopping cart icon with badge
-   - Account/user icon
-   - Mobile responsive (hamburger menu)
-3. Must support these features:
-   - Sticky scroll behavior
-   - Background gradients/animations
-   - Hover states and transitions
-   - Icon customization
-4. Each design must be COMPLETELY DIFFERENT from the others
-5. Use cutting-edge 2026 design trends:
-   - Glassmorphism
-   - Micro-interactions
-   - Fluid gradients
-   - Accessibility (WCAG AA)
+OPTION 1: MINIMALIST (Focus on Typography & Whitespace)
+OPTION 2: INTERACTIVE (Focus on Micro-animations & Hover states)
+OPTION 3: CONVERSION (Focus on Mobile Thumb-Zones & CTA)
 
-Return ONLY valid JSON matching HeaderGenerationResponse schema.
-Focus on modern, clean, professional e-commerce aesthetics.
+REQUIREMENTS:
+1. Output valid React code using Tailwind CSS.
+2. WIRE THE COMPONENT: You must use CSS Variables for dynamic control (e.g., var(--header-bg), var(--nav-gap)).
+3. Return ONLY valid JSON matching the HeaderGenerationResponse schema.
 `;
 ```
 
