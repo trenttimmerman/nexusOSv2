@@ -11079,7 +11079,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     if (!isHeaderModalOpen) return null;
 
     const currentHeaderVariant = config.headerStyle || 'canvas';
-    const HeaderComponent = HEADER_COMPONENTS[currentHeaderVariant] || HEADER_COMPONENTS.canvas;
+    const HeaderComponent = HEADER_COMPONENTS[currentHeaderVariant] || (() => null);
     const fields = HEADER_FIELDS[currentHeaderVariant] || [];
 
     // Handle header variant change
@@ -12105,7 +12105,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <p className="text-xs text-neutral-400 uppercase tracking-wide mb-3">Current Header</p>
                   <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100 shadow-lg">
                     {(() => {
-                      const HeaderComponent = HEADER_COMPONENTS[config.headerStyle || 'canvas'] || HEADER_COMPONENTS.canvas;
+                      const HeaderComponent = HEADER_COMPONENTS[config.headerStyle || 'canvas'] || (() => null);
                       return (
                         <HeaderComponent
                           storeName={config.name || 'Your Store'}

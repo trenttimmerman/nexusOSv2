@@ -207,9 +207,9 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
     '--heading-scale-h3': `${headingScale.h3}rem`,
   } as React.CSSProperties;
 
-  const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
+  const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || (() => null);
   // Hero, Card, Footer components are now determined dynamically in renderBlock to allow for variants
-  const FooterComponent = FOOTER_COMPONENTS[config.footerStyle] || FOOTER_COMPONENTS['columns'];
+  const FooterComponent = FOOTER_COMPONENTS[config.footerStyle] || (() => null);
 
   const isSidebar = config.headerStyle === 'studio';
 
@@ -395,7 +395,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
       switch (block.type) {
         case 'system-hero':
           const heroStyle = (block.variant as HeroStyleId) || config.heroStyle || 'impact';
-          const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
+          const HeroComponent = HERO_COMPONENTS[heroStyle] || (() => null);
           console.log('[Storefront] Hero block:', { 
             heroStyle, 
             hasComponent: !!HeroComponent,
