@@ -34,8 +34,40 @@ export const HEADER_COMPONENTS: Record<string, any> = {
 export const HEADER_OPTIONS: any[] = [
   { id: 'standard', name: 'Standard Header' },
   { id: 'centered', name: 'Centered Header' },
+  { id: 'canvas', name: 'Canvas 2026', description: 'Modern header with full customization', category: 'professional', popularity: 95, recommended: true },
 ];
 
-export const HEADER_FIELDS: Record<string, any> = {};
+// Field registry for Header Studio (Admin Panel dynamic controls)
+// Based on HeaderCanvas2026.tsx CANVAS_DEFAULTS (70+ fields)
+export const HEADER_FIELDS: Record<string, string[]> = {
+  canvas: [
+    // Visibility Toggles
+    'showSearch', 'showAccount', 'showCart', 'showMobileMenu',
+    'showAnnouncementBar', 'showUtilityBar', 'showCommandPalette',
+    'showCurrencySelector', 'showLanguageSelector',
+    // Feature Toggles
+    'enableSmartScroll', 'enableMegaMenu', 'enableSpotlightBorders',
+    'enableGlassmorphism', 'sticky', 'announcementDismissible', 'announcementMarquee',
+    // Select Fields
+    'navActiveStyle', 'megaMenuStyle', 'mobileMenuPosition', 'blurIntensity', 'maxWidth',
+    // Colors
+    'backgroundColor', 'borderColor', 'textColor', 'textHoverColor',
+    'accentColor', 'cartBadgeColor', 'cartBadgeTextColor', 'iconHoverBackgroundColor',
+    'announcementBackgroundColor', 'announcementTextColor',
+    'utilityBarBackgroundColor', 'utilityBarTextColor',
+    'mobileMenuBackgroundColor', 'mobileMenuTextColor',
+    'searchBackgroundColor', 'searchBorderColor', 'searchInputTextColor',
+    'ctaBackgroundColor', 'ctaHoverColor',
+    // Numbers
+    'iconSize', 'logoHeight', 'mobileMenuOverlayOpacity',
+    'glassBackgroundOpacity', 'smartScrollThreshold', 'smartScrollDuration',
+    // Sizes
+    'paddingX', 'paddingY', 'borderWidth', 'mobileMenuWidth',
+    // Text
+    'announcementText', 'searchPlaceholder', 'ctaText',
+  ],
+  standard: ['textColor', 'backgroundColor', 'sticky'],
+  centered: ['textColor', 'backgroundColor', 'sticky'],
+};
 
 export const HeaderCanvas = HeaderStub;
