@@ -6,7 +6,6 @@ import { AdminPanel } from './components/AdminPanel';
 import { Storefront } from './components/Storefront';
 import { Login } from './components/Login';
 import { SignUp } from './components/SignUp';
-import { OnboardingWizard } from './components/OnboardingWizard';
 import { AccountPage } from './components/AccountPage';
 import { Checkout } from './components/Checkout';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -385,7 +384,6 @@ export default function App() {
             {/* Admin Authentication - /start redirects to AI Website Generator */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/onboarding" element={<OnboardingWizard />} />
             <Route path="/start" element={<Navigate to="/admin" replace />} />
             
             {/* Fallback */}

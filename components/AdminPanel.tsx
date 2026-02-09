@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { getFilteredProducts as getFilteredProductsUtil } from '../lib/productUtils';
 import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
-import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS } from './HeaderLibrary';
+import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
+import { HeroEditor } from './HeroEditor';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
 import { SOCIAL_OPTIONS, SOCIAL_COMPONENTS } from './SocialLibrary';
@@ -34,13 +35,9 @@ import EmailSubscribers from './EmailSubscribers';
 import EmailSettings from './EmailSettings';
 import ShopifyMigration from './ShopifyMigration';
 import ShopifyDataImport from './ShopifyDataImport';
-import ShopifyImportWizard from './ShopifyImportWizard';
 import WebsiteMigration from './WebsiteMigration';
 import LoveableImport from './LoveableImport';
-import AISiteGenerator from './AISiteGenerator';
 import Customers from './Customers';
-import { DesignWizard } from './DesignWizard';
-import { UnifiedWebsiteGenerator } from './UnifiedWebsiteGenerator';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
 import { GoogleGenAI } from '@google/genai';
@@ -52,7 +49,6 @@ try {
   if (geminiApiKey && typeof geminiApiKey === 'string' && geminiApiKey.trim().length > 10) {
     // GoogleGenAI will be imported dynamically when needed
     console.log('✅ Google AI key available');
-    console.log('[BUILD] Designer V3 - February 8, 2026 - 14:30 UTC');
   } else {
     console.warn('⚠️ VITE_GOOGLE_AI_API_KEY not set - AI features will be disabled');
   }
@@ -268,6 +264,56 @@ const PAGE_TYPE_OPTIONS = [
   { id: 'faq', name: 'FAQ', description: 'Answer common questions', icon: HelpCircle, slug: '/faq' },
   { id: 'blog', name: 'Blog', description: 'Share news and updates', icon: BookOpen, slug: '/blog' },
   { id: 'custom', name: 'Custom Page', description: 'Start with a blank canvas', icon: FileText, slug: '/new-page' },
+];
+
+// AI Wizard Questions for website generation
+const AI_WIZARD_QUESTIONS = [
+  {
+    id: 'business_name',
+    question: "What's your business name?",
+    type: 'text',
+    placeholder: 'e.g., Acme Coffee Co.'
+  },
+  {
+    id: 'business_type',
+    question: "What type of business are you?",
+    type: 'choice',
+    options: [
+      { value: 'retail', label: '🛍️ Retail Store', description: 'Sell physical products' },
+      { value: 'service', label: '💼 Service Business', description: 'Offer services' },
+      { value: 'restaurant', label: '🍽️ Restaurant/Cafe', description: 'Food & beverage' },
+      { value: 'portfolio', label: '🎨 Portfolio/Creative', description: 'Showcase work' },
+      { value: 'blog', label: '📝 Blog/Content', description: 'Share content' },
+      { value: 'other', label: '✨ Other', description: 'Something unique' }
+    ]
+  },
+  {
+    id: 'business_description',
+    question: "Tell us about your business in one sentence",
+    type: 'text',
+    placeholder: 'e.g., We make artisanal coffee and pastries with locally-sourced ingredients'
+  },
+  {
+    id: 'target_audience',
+    question: "Who are your customers?",
+    type: 'choice',
+    options: [
+      { value: 'b2c', label: '👤 Consumers', description: 'Sell to individuals' },
+      { value: 'b2b', label: '🏢 Businesses', description: 'Sell to companies' },
+      { value: 'both', label: '🌐 Both', description: 'Mixed audience' }
+    ]
+  },
+  {
+    id: 'style_preference',
+    question: "What style do you prefer?",
+    type: 'choice',
+    options: [
+      { value: 'modern', label: '✨ Modern', description: 'Clean and minimal' },
+      { value: 'bold', label: '🔥 Bold', description: 'Eye-catching and vibrant' },
+      { value: 'elegant', label: '💎 Elegant', description: 'Sophisticated and refined' },
+      { value: 'playful', label: '🎉 Playful', description: 'Fun and energetic' }
+    ]
+  }
 ];
 
 // Section Preview Thumbnail Component
@@ -617,9 +663,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [editingTaxRegionId, setEditingTaxRegionId] = useState<string | null>(null);
   const [hasUnsavedSettings, setHasUnsavedSettings] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
-
-  // Design Wizard State
-  const [isDesignWizardOpen, setIsDesignWizardOpen] = useState(false);
 
   // Wrapper for config changes to track unsaved state
   const handleConfigChange = (newConfig: StoreConfig) => {
@@ -1087,7 +1130,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
   const [isSpacerModalOpen, setIsSpacerModalOpen] = useState(false);
-  const [isShopifyWizardOpen, setIsShopifyWizardOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Auto-focus field in Hero Studio when activeField changes
@@ -1287,7 +1329,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       setHasSeenWelcome(true);
       localStorage.setItem('webpilot_seen_welcome', 'true');
     }
-  }, [activeTab, hasSeenWelcome]);
+  }, [activeTab, hasSeenWelcome, onTabChange]);
   const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
@@ -11079,7 +11121,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     if (!isHeaderModalOpen) return null;
 
     const currentHeaderVariant = config.headerStyle || 'canvas';
-    const HeaderComponent = HEADER_COMPONENTS[currentHeaderVariant] || (() => null);
+    const HeaderComponent = HEADER_COMPONENTS[currentHeaderVariant] || HEADER_COMPONENTS.canvas;
     const fields = HEADER_FIELDS[currentHeaderVariant] || [];
 
     // Handle header variant change
@@ -12105,7 +12147,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <p className="text-xs text-neutral-400 uppercase tracking-wide mb-3">Current Header</p>
                   <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-100 shadow-lg">
                     {(() => {
-                      const HeaderComponent = HEADER_COMPONENTS[config.headerStyle || 'canvas'] || (() => null);
+                      const HeaderComponent = HEADER_COMPONENTS[config.headerStyle || 'canvas'] || HEADER_COMPONENTS.canvas;
                       return (
                         <HeaderComponent
                           storeName={config.name || 'Your Store'}
@@ -15087,19 +15129,7 @@ Return ONLY the JSON object, no markdown.`;
                 // Switch to Design Studio tab to customize the new design
                 onTabChange(AdminTab.DESIGN);
               }}
-              onOpenWizard={() => setIsDesignWizardOpen(true)}
             />
-            {isDesignWizardOpen && (
-              <DesignWizard
-                storeId={storeId || ''}
-                onComplete={() => {
-                  setIsDesignWizardOpen(false);
-                  // Refresh the design library
-                  onRefreshData();
-                }}
-                onClose={() => setIsDesignWizardOpen(false)}
-              />
-            )}
           </>
         );
 
@@ -16036,20 +16066,6 @@ Return ONLY the JSON object, no markdown.`;
       case AdminTab.SHOPIFY_MIGRATION:
         return (
           <div>
-            <div className="mb-6 p-6 bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-xl border border-blue-500/50">
-              <h2 className="text-2xl font-bold mb-3">🚀 New Comprehensive Import Wizard</h2>
-              <p className="text-gray-300 mb-4">
-                Experience our new step-by-step wizard with visual previews and granular control over every section.
-              </p>
-              <button
-                onClick={() => setIsShopifyWizardOpen(true)}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 font-semibold flex items-center gap-2"
-              >
-                <Upload className="w-5 h-5" />
-                Launch Import Wizard
-              </button>
-            </div>
-            
             <ShopifyMigration 
               storeId={storeId || ''} 
               onNavigateToPage={(pageId) => {
@@ -16104,15 +16120,10 @@ Return ONLY the JSON object, no markdown.`;
       case AdminTab.AI_SITE_GENERATOR:
         return (
           <div className="p-8">
-            <DesignWizard
-              storeId={storeId || ''}
-              onComplete={() => {
-                onRefreshData();
-                onTabChange(AdminTab.DASHBOARD);
-              }}
-              onClose={() => onTabChange(AdminTab.DASHBOARD)}
-              onRefreshData={onRefreshData}
-            />
+            <div className="text-center py-20">
+              <h2 className="text-2xl font-bold text-gray-400 mb-4">AI Site Generator</h2>
+              <p className="text-gray-500">Coming soon in Designer V3</p>
+            </div>
           </div>
         );
 
@@ -18336,7 +18347,20 @@ Return ONLY the JSON object, no markdown.`;
       {renderInterfaceModal()}
       {renderBlockArchitect()}
       {renderHeaderModal()}
-      {renderHeroModal()}
+      {isHeroModalOpen && (
+        <HeroEditor
+          data={selectedBlockId && activeBlock?.type === 'system-hero' ? activeBlock?.data || {} : config.heroData || {}}
+          onChange={(updates) => {
+            if (selectedBlockId) {
+              updateActiveBlockData(selectedBlockId, updates);
+            } else {
+              onConfigChange({ ...config, heroData: { ...config.heroData, ...updates } });
+            }
+            setHasUnsavedChanges(true);
+          }}
+          onClose={() => setIsHeroModalOpen(false)}
+        />
+      )}
       {renderGridModal()}
       {renderCollectionModal()}
       {renderCategoryModal()}
@@ -18426,17 +18450,6 @@ Return ONLY the JSON object, no markdown.`;
           )}
           <span className="text-sm font-medium whitespace-nowrap">{toast.message}</span>
         </div>
-      )}
-
-      {/* Shopify Import Wizard */}
-      {isShopifyWizardOpen && (
-        <ShopifyImportWizard
-          onClose={() => setIsShopifyWizardOpen(false)}
-          onComplete={() => {
-            setIsShopifyWizardOpen(false);
-            onTabChange(AdminTab.DASHBOARD);
-          }}
-        />
       )}
     </div>
   );

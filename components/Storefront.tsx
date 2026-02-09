@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { StorefrontProps, Product, PageBlock, HeroStyleId, ProductCardStyleId } from '../types';
 import { HEADER_COMPONENTS } from './HeaderLibrary';
-import { HERO_COMPONENTS, HERO_OPTIONS, EditableText, EditableImage, HERO_FIELDS } from './HeroLibrary';
+import { HERO_COMPONENTS, HERO_OPTIONS, HERO_FIELDS } from './HeroLibrary';
+import { EditableText, EditableImage } from './editor';
 import { PRODUCT_CARD_COMPONENTS, PRODUCT_CARD_OPTIONS } from './ProductCardLibrary';
 import { PRODUCT_PAGE_COMPONENTS } from './ProductPageLibrary';
 import { FOOTER_COMPONENTS } from './FooterLibrary';
@@ -207,9 +208,9 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
     '--heading-scale-h3': `${headingScale.h3}rem`,
   } as React.CSSProperties;
 
-  const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || (() => null);
+  const HeaderComponent = HEADER_COMPONENTS[config.headerStyle] || HEADER_COMPONENTS['canvas'];
   // Hero, Card, Footer components are now determined dynamically in renderBlock to allow for variants
-  const FooterComponent = FOOTER_COMPONENTS[config.footerStyle] || (() => null);
+  const FooterComponent = FOOTER_COMPONENTS[config.footerStyle] || FOOTER_COMPONENTS['columns'];
 
   const isSidebar = config.headerStyle === 'studio';
 
@@ -395,7 +396,7 @@ export const Storefront: React.FC<StorefrontProps & { onSelectField?: (field: st
       switch (block.type) {
         case 'system-hero':
           const heroStyle = (block.variant as HeroStyleId) || config.heroStyle || 'impact';
-          const HeroComponent = HERO_COMPONENTS[heroStyle] || (() => null);
+          const HeroComponent = HERO_COMPONENTS[heroStyle] || HERO_COMPONENTS['impact'];
           console.log('[Storefront] Hero block:', { 
             heroStyle, 
             hasComponent: !!HeroComponent,
