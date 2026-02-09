@@ -18380,7 +18380,7 @@ Return ONLY the JSON object, no markdown.`;
       {renderLayoutModal()}
       {renderSpacerModal()}
       {renderAddSectionLibrary()}
-      {renderWelcomeModal()}
+      {/* {renderWelcomeModal()} */}
       {renderWelcomeWizard()}
       {renderAddPageModal()}
       {renderTutorial()}
