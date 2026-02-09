@@ -26,6 +26,7 @@ import { OrderManager } from './OrderManager';
 import { DomainManager } from './DomainManager';
 import { DiscountManager } from './DiscountManager';
 import { ShippingManager } from './ShippingManager';
+import { DesignerWizard } from './DesignerWizard';
 import { CollectionManager } from './CollectionManager';
 import { CategoryManager } from './CategoryManager';
 import { ClientManagement } from './ClientManagement';
@@ -1199,6 +1200,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [showWelcomeModal, setShowWelcomeModal] = useState(false); // Start false, check in useEffect
   const [wizardMode, setWizardMode] = useState<'select' | 'ai-questions' | 'ai-generating' | 'templates'>('select');
   const [aiWizardStep, setAiWizardStep] = useState(0);
+  const [showDesignerWizard, setShowDesignerWizard] = useState(false);
   
   // Check if user should see welcome modal (for new accounts)
   useEffect(() => {
@@ -16120,11 +16122,111 @@ Return ONLY the JSON object, no markdown.`;
         );
 
       case AdminTab.AI_SITE_GENERATOR:
+        if (showDesignerWizard) {
+          return (
+            <DesignerWizard
+              storeId={storeId || ''}
+              storeName={config.storeName || 'My Store'}
+              onComplete={(headerConfig) => {
+                // Save header config to store settings
+                console.log('[Designer V3] Header config received:', headerConfig);
+                // TODO: Save to database or update config
+                setShowDesignerWizard(false);
+                onTabChange(AdminTab.DESIGN);
+              }}
+              onCancel={() => setShowDesignerWizard(false)}
+            />
+          );
+        }
+
         return (
-          <div className="p-8">
-            <div className="text-center py-20">
-              <h2 className="text-2xl font-bold text-gray-400 mb-4">AI Site Generator</h2>
-              <p className="text-gray-500">Coming soon in Designer V3</p>
+          <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-blue-950/20 to-purple-950/20 p-8">
+            <div className="max-w-4xl mx-auto">
+              {/* Header */}
+              <div className="text-center mb-12">
+                <div className="inline-block px-4 py-2 bg-purple-600/20 border border-purple-600/30 rounded-full text-purple-400 text-sm font-medium mb-4">
+                  ✨ New in Designer V3
+                </div>
+                <h1 className="text-5xl font-black text-white mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  AI-Powered Header Designer
+                </h1>
+                <p className="text-xl text-neutral-300 max-w-2xl mx-auto">
+                  Generate unique, professionally designed headers with Gemini AI. 
+                  Fully customizable, community-driven library.
+                </p>
+              </div>
+
+              {/* Features Grid */}
+              <div className="grid grid-cols-3 gap-6 mb-12">
+                <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6 text-center">
+                  <div className="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-white font-bold mb-2">AI Generation</h3>
+                  <p className="text-neutral-400 text-sm">3 unique designs in seconds</p>
+                </div>
+                <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6 text-center">
+                  <div className="w-12 h-12 bg-purple-600/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                    </svg>
+                  </div>
+                  <h3 className="text-white font-bold mb-2">Full Customization</h3>
+                  <p className="text-neutral-400 text-sm">70+ editable properties</p>
+                </div>
+                <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6 text-center">
+                  <div className="w-12 h-12 bg-green-600/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-white font-bold mb-2">Community Library</h3>
+                  <p className="text-neutral-400 text-sm">Share and discover designs</p>
+                </div>
+              </div>
+
+              {/* CTA Button */}
+              <div className="text-center">
+                <button
+                  onClick={() => setShowDesignerWizard(true)}
+                  className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold text-lg transition-all duration-200 shadow-xl hover:shadow-2xl hover:scale-105"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Launch Header Designer
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+                <p className="text-neutral-500 text-sm mt-4">
+                  Browse library, generate with AI, or customize from scratch
+                </p>
+              </div>
+
+              {/* Info Cards */}
+              <div className="mt-12 grid grid-cols-2 gap-6">
+                <div className="bg-blue-900/10 border border-blue-800/30 rounded-xl p-6">
+                  <h4 className="text-blue-400 font-bold mb-2">🎨 Design Process</h4>
+                  <ul className="text-neutral-300 text-sm space-y-2">
+                    <li>→ Choose from library or generate 3 AI designs</li>
+                    <li>→ Customize in full-screen editor</li>
+                    <li>→ Save to community library (optional)</li>
+                    <li>→ Apply to your store instantly</li>
+                  </ul>
+                </div>
+                <div className="bg-purple-900/10 border border-purple-800/30 rounded-xl p-6">
+                  <h4 className="text-purple-400 font-bold mb-2">⚡ Powered by Gemini</h4>
+                  <ul className="text-neutral-300 text-sm space-y-2">
+                    <li>→ Latest 2026 design trends</li>
+                    <li>→ 3 distinct variants per generation</li>
+                    <li>→ Minimal, professional, and creative styles</li>
+                    <li>→ Production-ready React components</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         );

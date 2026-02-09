@@ -82,7 +82,10 @@ export const DesignerWizard: React.FC<DesignerWizardProps> = ({
     setWizardState(prev => ({
       ...prev,
       selectedHeaderId: header.id,
-    
+      selectedHeaderConfig: header.config,
+    }));
+    handleNextStep();
+  };
 
   /**
    * Handle header config update
@@ -92,9 +95,6 @@ export const DesignerWizard: React.FC<DesignerWizardProps> = ({
       ...prev,
       customizedHeaderConfig: config,
     }));
-  };  selectedHeaderConfig: header.config,
-    }));
-    handleNextStep();
   };
 
   /**
@@ -139,7 +139,9 @@ export const DesignerWizard: React.FC<DesignerWizardProps> = ({
     }));
     handleNextStep();
   };
-Skip to complete (from editor or library save)
+
+  /**
+   * Skip to complete (from editor or library save)
    */
   const handleSkipToComplete = () => {
     handleCompleteWizard();
@@ -194,20 +196,7 @@ Skip to complete (from editor or library save)
             }}
             onBack={handlePreviousStep}
             onSkip={handleCompleteWizard}
-          / >
-                  Add to Library & Complete
-                </button>
-                
-                <button
-                  onClick={handleCompleteWizard}
-                  className="w-full px-6 py-4 border-2 border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
-                  style={{ color: '#000000' }}
-                >
-                  Skip & Complete
-                </button>
-              </div>
-            </div>
-          </div>
+          />
         );
 
       case DesignerStep.COMPLETE:
