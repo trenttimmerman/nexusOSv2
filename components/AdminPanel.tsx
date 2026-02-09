@@ -1197,6 +1197,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [showWelcomeWizard, setShowWelcomeWizard] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(() => localStorage.getItem('webpilot_seen_welcome') === 'true');
   const [showWelcomeModal, setShowWelcomeModal] = useState(false); // Start false, check in useEffect
+  const [wizardMode, setWizardMode] = useState<'select' | 'ai-questions' | 'ai-generating' | 'templates'>('select');
+  const [aiWizardStep, setAiWizardStep] = useState(0);
   
   // Check if user should see welcome modal (for new accounts)
   useEffect(() => {
