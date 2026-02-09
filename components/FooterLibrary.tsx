@@ -54,4 +54,4 @@ export const FOOTER_OPTIONS: any[] = [
 
 export const FOOTER_FIELDS: Record<string, any> = {};
 
-export const FooterCanvas = createFooterAdapter('standard');
+export const FooterCanvas = FooterStub;
