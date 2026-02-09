@@ -1,8 +1,11 @@
 // DesignerWizard.tsx - Designer V3 Main Wizard Container
-// Phase 1: Foundation shell for AI-powered header generation workflow
+// Integrated with all step components
 
 import React, { useState } from 'react';
 import { DesignerStep, DesignerWizardState, HeaderConfig, SharedHeaderLibrary } from '../types/designer';
+import { HeaderSelectionStep } from './designer/HeaderSelectionStep';
+import { HeaderEditorStep } from './designer/HeaderEditorStep';
+import { LibrarySaveStep } from './designer/LibrarySaveStep';
 
 /**
  * DesignerWizard component props
@@ -79,7 +82,17 @@ export const DesignerWizard: React.FC<DesignerWizardProps> = ({
     setWizardState(prev => ({
       ...prev,
       selectedHeaderId: header.id,
-      selectedHeaderConfig: header.config,
+    
+
+  /**
+   * Handle header config update
+   */
+  const handleUpdateConfig = (config: HeaderConfig) => {
+    setWizardState(prev => ({
+      ...prev,
+      customizedHeaderConfig: config,
+    }));
+  };  selectedHeaderConfig: header.config,
     }));
     handleNextStep();
   };
@@ -126,16 +139,10 @@ export const DesignerWizard: React.FC<DesignerWizardProps> = ({
     }));
     handleNextStep();
   };
-
-  /**
-   * Complete wizard and return to admin
+Skip to complete (from editor or library save)
    */
-  const handleCompleteWizard = () => {
-    if (wizardState.customizedHeaderConfig) {
-      onComplete(wizardState.customizedHeaderConfig);
-    } else if (wizardState.selectedHeaderConfig) {
-      onComplete(wizardState.selectedHeaderConfig);
-    }
+  const handleSkipToComplete = () => {
+    handleCompleteWizard();
   };
 
   /**
@@ -145,74 +152,49 @@ export const DesignerWizard: React.FC<DesignerWizardProps> = ({
     switch (wizardState.currentStep) {
       case DesignerStep.HEADER_SELECTION:
         return (
-          <div className="flex items-center justify-center min-h-screen bg-gray-50">
-            <div className="max-w-4xl w-full p-8">
-              <h1 className="text-4xl font-bold mb-4" style={{ color: '#000000' }}>Choose Your Header Design</h1>
-              <p className="text-gray-600 mb-8" style={{ color: '#000000' }}>
-                Select from our library or generate 3 unique designs with AI
-              </p>
-              
-              {/* Phase 2: HeaderSelectionStep component */}
-              <div className="space-y-4">
-                <button
-                  onClick={handleGenerateHeaders}
-                  disabled={wizardState.isGenerating}
-                  className="w-full px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                >
-                  {wizardState.isGenerating ? 'Generating...' : '🎨 Generate 3 AI Designs'}
-                </button>
-                
-                <div className="text-center text-gray-500" style={{ color: '#000000' }}>
-                  or
-                </div>
-                
-                <button
-                  onClick={() => {/* Phase 2: Show library */}}
-                  className="w-full px-6 py-4 border-2 border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
-                  style={{ color: '#000000' }}
-                >
-                  📚 Browse Shared Library
-                </button>
-              </div>
-            </div>
-          </div>
+          <HeaderSelectionStep
+            storeId={storeId}
+            storeName={storeName}
+            onSelectHeader={handleSelectHeader}
+            onBack={onCancel}
+          />
         );
 
       case DesignerStep.HEADER_CUSTOMIZATION:
+        if (!wizardState.selectedHeaderConfig) {
+          // Fallback: go back to selection
+          handlePreviousStep();
+          return null;
+        }
         return (
-          <div className="flex items-center justify-center min-h-screen bg-gray-50">
-            <div className="max-w-4xl w-full p-8">
-              <h1 className="text-4xl font-bold mb-4" style={{ color: '#000000' }}>Customize Your Header</h1>
-              <p className="text-gray-600 mb-8" style={{ color: '#000000' }}>
-                Full-screen editor coming in Phase 4
-              </p>
-              
-              {/* Phase 4: HeaderEditorStep component */}
-              <button
-                onClick={() => handleSaveCustomization(wizardState.selectedHeaderConfig!)}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                Save & Continue
-              </button>
-            </div>
-          </div>
+          <HeaderEditorStep
+            headerConfig={wizardState.customizedHeaderConfig || wizardState.selectedHeaderConfig}
+            headerVariant="canvas" // TODO: detect from selected header
+            onUpdateConfig={handleUpdateConfig}
+            onNext={handleNextStep}
+            onBack={handlePreviousStep}
+            onSkipToComplete={handleSkipToComplete}
+          />
         );
 
       case DesignerStep.SAVE_TO_LIBRARY:
+        const finalConfig = wizardState.customizedHeaderConfig || wizardState.selectedHeaderConfig;
+        if (!finalConfig) {
+          handlePreviousStep();
+          return null;
+        }
         return (
-          <div className="flex items-center justify-center min-h-screen bg-gray-50">
-            <div className="max-w-4xl w-full p-8">
-              <h1 className="text-4xl font-bold mb-4" style={{ color: '#000000' }}>Share Your Design?</h1>
-              <p className="text-gray-600 mb-8" style={{ color: '#000000' }}>
-                Add your custom header to the community library
-              </p>
-              
-              {/* Phase 5: LibrarySaveStep component */}
-              <div className="space-y-4">
-                <button
-                  onClick={handleCompleteWizard}
-                  className="w-full px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
+          <LibrarySaveStep
+            storeId={storeId}
+            headerConfig={finalConfig}
+            headerVariant="canvas" // TODO: detect from selected header
+            onComplete={(saved, headerId) => {
+              console.log('Library save complete:', { saved, headerId });
+              handleCompleteWizard();
+            }}
+            onBack={handlePreviousStep}
+            onSkip={handleCompleteWizard}
+          / >
                   Add to Library & Complete
                 </button>
                 
@@ -238,41 +220,8 @@ export const DesignerWizard: React.FC<DesignerWizardProps> = ({
   };
 
   return (
-    <div className="designer-wizard fixed inset-0 z-50 bg-white">
-      {/* Progress indicator */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gray-200">
-        <div 
-          className="h-full bg-blue-600 transition-all duration-300"
-          style={{ 
-            width: `${(Object.values(DesignerStep).indexOf(wizardState.currentStep) + 1) / 4 * 100}%` 
-          }}
-        />
-      </div>
-
-      {/* Cancel button */}
-      {onCancel && (
-        <button
-          onClick={onCancel}
-          className="absolute top-4 right-4 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
-          style={{ color: '#000000' }}
-        >
-          ✕ Cancel
-        </button>
-      )}
-
-      {/* Step content */}
+    <div className="designer-wizard">
       {renderStep()}
-
-      {/* Back button (except on first step) */}
-      {wizardState.currentStep !== DesignerStep.HEADER_SELECTION && (
-        <button
-          onClick={handlePreviousStep}
-          className="absolute bottom-8 left-8 px-6 py-3 border-2 border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
-          style={{ color: '#000000' }}
-        >
-          ← Back
-        </button>
-      )}
     </div>
   );
 };
