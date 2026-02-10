@@ -64,6 +64,34 @@ export const HeaderSelectionStep: React.FC<HeaderSelectionStepProps> = ({
     }
   };
 
+  // Normalize header data structure (database returns flat structure, we need nested metadata)
+  const normalizeHeader = (header: any): SharedHeaderLibrary => {
+    // If already has nested metadata structure, return as-is
+    if (header.metadata && typeof header.metadata === 'object') {
+      return header;
+    }
+
+    // Transform flat database structure to nested metadata
+    return {
+      id: header.id,
+      name: header.name,
+      description: header.description,
+      component: header.component,
+      config: header.config,
+      preview: header.preview,
+      metadata: {
+        createdBy: header.created_by || 'unknown',
+        createdAt: header.created_at,
+        timesUsed: header.times_used || 0,
+        averageRating: header.average_rating,
+        tags: header.tags || [],
+        aiGenerated: header.ai_generated || false,
+        designTrends: header.design_trends || []
+      },
+      status: header.status || 'private'
+    };
+  };
+
   const handleGenerateHeaders = async () => {
     setIsGenerating(true);
     setError(null);
@@ -114,14 +142,15 @@ export const HeaderSelectionStep: React.FC<HeaderSelectionStepProps> = ({
     }
   };
 
-  // Combine and filter headers
-  const allHeaders = [...generatedHeaders, ...libraryHeaders];
+  // Combine and filter headers (normalize library headers)
+  const normalizedLibraryHeaders = libraryHeaders.map(normalizeHeader);
+  const allHeaders = [...generatedHeaders, ...normalizedLibraryHeaders];
   const filteredHeaders = allHeaders.filter(header => {
     const matchesSearch = !searchQuery || 
       header.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       header.description?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesFilter = filterAI === null || header.metadata.aiGenerated === filterAI;
+    const matchesFilter = filterAI === null || header.metadata?.aiGenerated === filterAI;
     
     return matchesSearch && matchesFilter;
   });
@@ -311,6 +340,8 @@ const HeaderPreviewCard: React.FC<HeaderPreviewCardProps> = ({
   onSelect,
   isAIGenerated 
 }) => {
+  const isAI = isAIGenerated || header.metadata?.aiGenerated;
+  
   return (
     <div className="group bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden hover:border-blue-500 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20">
       {/* Preview Image */}
@@ -328,7 +359,7 @@ const HeaderPreviewCard: React.FC<HeaderPreviewCardProps> = ({
             </span>
           </div>
         )}
-        {isAIGenerated && (
+        {isAI && (
           <div className="absolute top-2 right-2">
             <span className="px-2 py-1 bg-purple-600 text-white text-xs font-bold rounded-full flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
@@ -348,7 +379,7 @@ const HeaderPreviewCard: React.FC<HeaderPreviewCardProps> = ({
         )}
 
         {/* Tags */}
-        {header.metadata.tags && header.metadata.tags.length > 0 && (
+        {header.metadata?.tags && header.metadata.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
             {header.metadata.tags.slice(0, 3).map((tag, i) => (
               <span 
@@ -363,8 +394,8 @@ const HeaderPreviewCard: React.FC<HeaderPreviewCardProps> = ({
 
         {/* Metadata */}
         <div className="flex items-center justify-between text-xs text-neutral-500 mb-3">
-          <span>Used {header.metadata.timesUsed}×</span>
-          {header.metadata.averageRating && (
+          <span>Used {header.metadata?.timesUsed || 0}×</span>
+          {header.metadata?.averageRating && (
             <span>★ {header.metadata.averageRating.toFixed(1)}</span>
           )}
         </div>
