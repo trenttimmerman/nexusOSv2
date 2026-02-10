@@ -5,14 +5,14 @@
  * 
  * Setup in Vercel:
  * 1. Go to Project Settings > Cron Jobs
- * 2. Add cron: */5 * * * * (every 5 minutes)
+ * 2. Add cron expression: every 5 minutes
  * 3. Set path: /api/cron/send-scheduled-campaigns
  * 
  * Or add to vercel.json:
  * {
  *   "crons": [{
  *     "path": "/api/cron/send-scheduled-campaigns",
- *     "schedule": "*/5 * * * *"
+ *     "schedule": "every 5 minutes"
  *   }]
  * }
  */
@@ -140,8 +140,3 @@ export default async function handler(req: any, res: any) {
     });
   }
 }
-
-// Export config for Vercel Cron
-export const config = {
-  maxDuration: 300, // 5 minutes max execution time
-};
