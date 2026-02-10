@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { EditableText } from './HeroLibrary';
+import { EditableText } from './editor';
 import { ArrowRight, ArrowLeft, Maximize2, X } from 'lucide-react';
 
 export const GALLERY_OPTIONS = [

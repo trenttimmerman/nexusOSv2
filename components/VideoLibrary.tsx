@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { EditableText } from './HeroLibrary';
+import { EditableText } from './editor';
 import { Play, Pause, Volume2, VolumeX, Sparkles, Loader2, X, Maximize2, ShoppingBag, ChevronRight, ChevronLeft } from 'lucide-react';
 
 export const VIDEO_OPTIONS = [

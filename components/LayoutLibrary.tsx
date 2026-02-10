@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { EditableText } from './HeroLibrary';
+import { EditableText } from './editor';
 import { ArrowRight, Image as ImageIcon, Layout, Columns, Grid, Check, Plus, Minus, ChevronDown, Star, Shield, Truck, RefreshCw, MessageSquare } from 'lucide-react';
 
 export const LAYOUT_OPTIONS = [

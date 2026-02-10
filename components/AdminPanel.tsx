@@ -4,6 +4,7 @@ import { ProductEditor } from './ProductEditor';
 import { StoreConfig, AdminTab, HeaderStyleId, HeroStyleId, ProductCardStyleId, FooterStyleId, ScrollbarStyleId, Product, Page, AdminPanelProps, PageBlock } from '../types';
 import { HEADER_OPTIONS, HEADER_COMPONENTS, HEADER_FIELDS, HeaderCanvas } from './HeaderLibrary';
 import { HERO_OPTIONS, HERO_COMPONENTS, HERO_FIELDS } from './HeroLibrary';
+import { HeroEditor } from './HeroEditor';
 import { PRODUCT_CARD_OPTIONS, PRODUCT_CARD_COMPONENTS, PRODUCT_GRID_FIELDS } from './ProductCardLibrary';
 import { FOOTER_OPTIONS, FOOTER_FIELDS, FOOTER_COMPONENTS } from './FooterLibrary';
 import { SOCIAL_OPTIONS, SOCIAL_COMPONENTS } from './SocialLibrary';
@@ -25,6 +26,7 @@ import { OrderManager } from './OrderManager';
 import { DomainManager } from './DomainManager';
 import { DiscountManager } from './DiscountManager';
 import { ShippingManager } from './ShippingManager';
+import { DesignerWizard } from './DesignerWizard';
 import { CollectionManager } from './CollectionManager';
 import { CategoryManager } from './CategoryManager';
 import { ClientManagement } from './ClientManagement';
@@ -34,13 +36,9 @@ import EmailSubscribers from './EmailSubscribers';
 import EmailSettings from './EmailSettings';
 import ShopifyMigration from './ShopifyMigration';
 import ShopifyDataImport from './ShopifyDataImport';
-import ShopifyImportWizard from './ShopifyImportWizard';
 import WebsiteMigration from './WebsiteMigration';
 import LoveableImport from './LoveableImport';
-import AISiteGenerator from './AISiteGenerator';
 import Customers from './Customers';
-import { DesignWizard } from './DesignWizard';
-import { UnifiedWebsiteGenerator } from './UnifiedWebsiteGenerator';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
 import { GoogleGenAI } from '@google/genai';
@@ -267,6 +265,56 @@ const PAGE_TYPE_OPTIONS = [
   { id: 'faq', name: 'FAQ', description: 'Answer common questions', icon: HelpCircle, slug: '/faq' },
   { id: 'blog', name: 'Blog', description: 'Share news and updates', icon: BookOpen, slug: '/blog' },
   { id: 'custom', name: 'Custom Page', description: 'Start with a blank canvas', icon: FileText, slug: '/new-page' },
+];
+
+// AI Wizard Questions for website generation
+const AI_WIZARD_QUESTIONS = [
+  {
+    id: 'business_name',
+    question: "What's your business name?",
+    type: 'text',
+    placeholder: 'e.g., Acme Coffee Co.'
+  },
+  {
+    id: 'business_type',
+    question: "What type of business are you?",
+    type: 'choice',
+    options: [
+      { value: 'retail', label: '🛍️ Retail Store', description: 'Sell physical products' },
+      { value: 'service', label: '💼 Service Business', description: 'Offer services' },
+      { value: 'restaurant', label: '🍽️ Restaurant/Cafe', description: 'Food & beverage' },
+      { value: 'portfolio', label: '🎨 Portfolio/Creative', description: 'Showcase work' },
+      { value: 'blog', label: '📝 Blog/Content', description: 'Share content' },
+      { value: 'other', label: '✨ Other', description: 'Something unique' }
+    ]
+  },
+  {
+    id: 'business_description',
+    question: "Tell us about your business in one sentence",
+    type: 'text',
+    placeholder: 'e.g., We make artisanal coffee and pastries with locally-sourced ingredients'
+  },
+  {
+    id: 'target_audience',
+    question: "Who are your customers?",
+    type: 'choice',
+    options: [
+      { value: 'b2c', label: '👤 Consumers', description: 'Sell to individuals' },
+      { value: 'b2b', label: '🏢 Businesses', description: 'Sell to companies' },
+      { value: 'both', label: '🌐 Both', description: 'Mixed audience' }
+    ]
+  },
+  {
+    id: 'style_preference',
+    question: "What style do you prefer?",
+    type: 'choice',
+    options: [
+      { value: 'modern', label: '✨ Modern', description: 'Clean and minimal' },
+      { value: 'bold', label: '🔥 Bold', description: 'Eye-catching and vibrant' },
+      { value: 'elegant', label: '💎 Elegant', description: 'Sophisticated and refined' },
+      { value: 'playful', label: '🎉 Playful', description: 'Fun and energetic' }
+    ]
+  }
 ];
 
 // Section Preview Thumbnail Component
@@ -616,9 +664,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [editingTaxRegionId, setEditingTaxRegionId] = useState<string | null>(null);
   const [hasUnsavedSettings, setHasUnsavedSettings] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
-
-  // Design Wizard State
-  const [isDesignWizardOpen, setIsDesignWizardOpen] = useState(false);
 
   // Wrapper for config changes to track unsaved state
   const handleConfigChange = (newConfig: StoreConfig) => {
@@ -1086,7 +1131,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
   const [isSpacerModalOpen, setIsSpacerModalOpen] = useState(false);
-  const [isShopifyWizardOpen, setIsShopifyWizardOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Auto-focus field in Hero Studio when activeField changes
@@ -1154,6 +1198,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [showWelcomeWizard, setShowWelcomeWizard] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(() => localStorage.getItem('webpilot_seen_welcome') === 'true');
   const [showWelcomeModal, setShowWelcomeModal] = useState(false); // Start false, check in useEffect
+  const [wizardMode, setWizardMode] = useState<'select' | 'ai-questions' | 'ai-generating' | 'templates'>('select');
+  const [aiWizardStep, setAiWizardStep] = useState(0);
+  const [showDesignerWizard, setShowDesignerWizard] = useState(false);
+  const [aiWizardAnswers, setAiWizardAnswers] = useState<Record<string, string>>({});
+
+  // AI Website Generation Function
+  const generateAIWebsite = () => {
+    console.log('[AI Wizard] Generating website with answers:', aiWizardAnswers);
+    setWizardMode('ai-generating');
+    // TODO: Implement actual AI generation logic
+    // For now, just transition to generating state
+  };
   
   // Check if user should see welcome modal (for new accounts)
   useEffect(() => {
@@ -1282,11 +1338,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   useEffect(() => {
     if (activeTab === AdminTab.DESIGN && !hasSeenWelcome) {
       setShowWelcomeWizard(true);
-      setActiveTab(AdminTab.AI_SITE_GENERATOR);
+      onTabChange(AdminTab.AI_SITE_GENERATOR);
       setHasSeenWelcome(true);
       localStorage.setItem('webpilot_seen_welcome', 'true');
     }
-  }, [activeTab, hasSeenWelcome]);
+  }, [activeTab, hasSeenWelcome, onTabChange]);
   const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
@@ -11098,59 +11154,59 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
     // Field categorization (same as Interface Modal)
     const toggleFields = fields.filter(f => 
-      f.startsWith('show') || 
-      f.startsWith('enable') || 
-      f === 'sticky' ||
-      f.endsWith('Dismissible') ||
-      f.endsWith('Marquee')
+      f.name.startsWith('show') || 
+      f.name.startsWith('enable') || 
+      f.name === 'sticky' ||
+      f.name.endsWith('Dismissible') ||
+      f.name.endsWith('Marquee')
     );
     
-    const toggleFieldSet = new Set(toggleFields);
+    const toggleFieldSet = new Set(toggleFields.map(f => f.name));
     
     const selectFields = fields.filter(f => 
-      f === 'navActiveStyle' ||
-      f === 'megaMenuStyle' ||
-      f === 'mobileMenuPosition' ||
-      f === 'blurIntensity' ||
-      f === 'maxWidth'
+      f.name === 'navActiveStyle' ||
+      f.name === 'megaMenuStyle' ||
+      f.name === 'mobileMenuPosition' ||
+      f.name === 'blurIntensity' ||
+      f.name === 'maxWidth'
     );
     
-    const selectFieldSet = new Set<string>(selectFields);
+    const selectFieldSet = new Set<string>(selectFields.map(f => f.name));
     
     const numberFields = fields.filter(f =>
-      f === 'iconSize' ||
-      f.includes('Opacity') ||
-      f.includes('Intensity') ||
-      f.includes('Threshold') ||
-      f.includes('Duration') ||
-      f.includes('Columns') ||
-      f === 'logoHeight' ||
-      f === 'glowIntensity'
+      f.name === 'iconSize' ||
+      f.name.includes('Opacity') ||
+      f.name.includes('Intensity') ||
+      f.name.includes('Threshold') ||
+      f.name.includes('Duration') ||
+      f.name.includes('Columns') ||
+      f.name === 'logoHeight' ||
+      f.name === 'glowIntensity'
     );
     
     const colorFields = fields.filter(f => 
-      f.toLowerCase().includes('color') || 
-      f.toLowerCase().includes('bg') ||
-      f === 'backgroundColor'
+      f.name.toLowerCase().includes('color') || 
+      f.name.toLowerCase().includes('bg') ||
+      f.name === 'backgroundColor'
     );
     
     const sizeFields = fields.filter(f =>
-      f.includes('Width') ||
-      f.includes('Height') ||
-      f.includes('padding') ||
-      f.includes('MaxHeight')
+      f.name.includes('Width') ||
+      f.name.includes('Height') ||
+      f.name.includes('padding') ||
+      f.name.includes('MaxHeight')
     );
     
-    const colorFieldSet = new Set(colorFields);
-    const numberFieldSet = new Set(numberFields);
-    const sizeFieldSet = new Set(sizeFields);
+    const colorFieldSet = new Set(colorFields.map(f => f.name));
+    const numberFieldSet = new Set(numberFields.map(f => f.name));
+    const sizeFieldSet = new Set(sizeFields.map(f => f.name));
     
     const textFields = fields.filter(f => 
-      !toggleFieldSet.has(f) && 
-      !colorFieldSet.has(f) && 
-      !(selectFieldSet as Set<string>).has(f) &&
-      !numberFieldSet.has(f) &&
-      !sizeFieldSet.has(f)
+      !toggleFieldSet.has(f.name) && 
+      !colorFieldSet.has(f.name) && 
+      !selectFieldSet.has(f.name) &&
+      !numberFieldSet.has(f.name) &&
+      !sizeFieldSet.has(f.name)
     );
 
     return (
@@ -11216,7 +11272,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                   <div className="space-y-6">
                     {/* Navigation Style Selector */}
-                    {fields.includes('navActiveStyle') && (
+                    {fields.some(f => f.name === 'navActiveStyle') && (
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Active Indicator</p>
                         <div className="grid grid-cols-2 gap-2">
@@ -11256,8 +11312,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Visibility</p>
                         <div className="grid grid-cols-2 gap-3">
-                          {toggleFields.map(key => {
-                            const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                          {toggleFields.map(field => {
+                            const key = field.name;
+                            const Meta = (HEADER_FIELD_METADATA as any)[key] || field;
                             return (
                               <button
                                 key={key}
@@ -11282,8 +11339,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Options</p>
                         <div className="space-y-3">
-                          {selectFields.map(key => {
-                            const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                          {selectFields.map(field => {
+                            const key = field.name;
+                            const Meta = (HEADER_FIELD_METADATA as any)[key] || field;
                             let options: { value: string; label: string }[] = [];
                             
                             if (key === 'megaMenuStyle') {
@@ -11346,8 +11404,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Numeric Values</p>
                         <div className="space-y-3">
-                          {numberFields.map(key => {
-                            const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                          {numberFields.map(field => {
+                            const key = field.name;
+                            const Meta = (HEADER_FIELD_METADATA as any)[key] || field;
                             let min = 0, max = 100, step = 1;
                             
                             if (key === 'iconSize') { min = 12; max = 32; step = 1; }
@@ -11386,8 +11445,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Dimensions</p>
                         <div className="space-y-3">
-                          {sizeFields.map(key => {
-                            const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                          {sizeFields.map(field => {
+                            const key = field.name;
+                            const Meta = (HEADER_FIELD_METADATA as any)[key] || field;
                             return (
                               <div key={key} className="bg-neutral-900/50 p-3 rounded-lg border border-neutral-700">
                                 <label className="text-[10px] uppercase font-bold text-neutral-500 mb-2 block">{Meta.label}</label>
@@ -11411,8 +11471,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Content</p>
                         <div className="space-y-3">
-                          {textFields.map(key => {
-                            const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                          {textFields.map(field => {
+                            const key = field.name;
+                            const Meta = (HEADER_FIELD_METADATA as any)[key] || field;
                             return (
                               <div key={key} className="bg-neutral-900/50 p-3 rounded-lg border border-neutral-700">
                                 <label className="text-[10px] uppercase font-bold text-neutral-500 mb-2 block">{Meta.label}</label>
@@ -11435,8 +11496,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Colors & Style</p>
                         <div className="grid grid-cols-2 gap-3">
-                          {colorFields.map(key => {
-                            const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                          {colorFields.map(field => {
+                            const key = field.name;
+                            const Meta = (HEADER_FIELD_METADATA as any)[key] || field;
                             return (
                               <div key={key} className="flex flex-col gap-1.5 bg-neutral-900/50 p-2.5 rounded-lg border border-neutral-700">
                                 <span className="text-[10px] text-neutral-500 font-bold uppercase truncate">{Meta.label}</span>
@@ -15086,19 +15148,7 @@ Return ONLY the JSON object, no markdown.`;
                 // Switch to Design Studio tab to customize the new design
                 onTabChange(AdminTab.DESIGN);
               }}
-              onOpenWizard={() => setIsDesignWizardOpen(true)}
             />
-            {isDesignWizardOpen && (
-              <DesignWizard
-                storeId={storeId || ''}
-                onComplete={() => {
-                  setIsDesignWizardOpen(false);
-                  // Refresh the design library
-                  onRefreshData();
-                }}
-                onClose={() => setIsDesignWizardOpen(false)}
-              />
-            )}
           </>
         );
 
@@ -16035,20 +16085,6 @@ Return ONLY the JSON object, no markdown.`;
       case AdminTab.SHOPIFY_MIGRATION:
         return (
           <div>
-            <div className="mb-6 p-6 bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-xl border border-blue-500/50">
-              <h2 className="text-2xl font-bold mb-3">🚀 New Comprehensive Import Wizard</h2>
-              <p className="text-gray-300 mb-4">
-                Experience our new step-by-step wizard with visual previews and granular control over every section.
-              </p>
-              <button
-                onClick={() => setIsShopifyWizardOpen(true)}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 font-semibold flex items-center gap-2"
-              >
-                <Upload className="w-5 h-5" />
-                Launch Import Wizard
-              </button>
-            </div>
-            
             <ShopifyMigration 
               storeId={storeId || ''} 
               onNavigateToPage={(pageId) => {
@@ -16101,17 +16137,112 @@ Return ONLY the JSON object, no markdown.`;
         );
 
       case AdminTab.AI_SITE_GENERATOR:
-        return (
-          <div className="p-8">
-            <DesignWizard
+        if (showDesignerWizard) {
+          return (
+            <DesignerWizard
               storeId={storeId || ''}
-              onComplete={() => {
-                onRefreshData();
-                onTabChange(AdminTab.DASHBOARD);
+              storeName={config.storeName || 'My Store'}
+              onComplete={(headerConfig) => {
+                // Save header config to store settings
+                console.log('[Designer V3] Header config received:', headerConfig);
+                // TODO: Save to database or update config
+                setShowDesignerWizard(false);
+                onTabChange(AdminTab.DESIGN);
               }}
-              onClose={() => onTabChange(AdminTab.DASHBOARD)}
-              onRefreshData={onRefreshData}
+              onCancel={() => setShowDesignerWizard(false)}
             />
+          );
+        }
+
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-blue-950/20 to-purple-950/20 p-8">
+            <div className="max-w-4xl mx-auto">
+              {/* Header */}
+              <div className="text-center mb-12">
+                <div className="inline-block px-4 py-2 bg-purple-600/20 border border-purple-600/30 rounded-full text-purple-400 text-sm font-medium mb-4">
+                  ✨ New in Designer V3
+                </div>
+                <h1 className="text-5xl font-black text-white mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  AI-Powered Header Designer
+                </h1>
+                <p className="text-xl text-neutral-300 max-w-2xl mx-auto">
+                  Generate unique, professionally designed headers with Gemini AI. 
+                  Fully customizable, community-driven library.
+                </p>
+              </div>
+
+              {/* Features Grid */}
+              <div className="grid grid-cols-3 gap-6 mb-12">
+                <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6 text-center">
+                  <div className="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-white font-bold mb-2">AI Generation</h3>
+                  <p className="text-neutral-400 text-sm">3 unique designs in seconds</p>
+                </div>
+                <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6 text-center">
+                  <div className="w-12 h-12 bg-purple-600/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                    </svg>
+                  </div>
+                  <h3 className="text-white font-bold mb-2">Full Customization</h3>
+                  <p className="text-neutral-400 text-sm">70+ editable properties</p>
+                </div>
+                <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6 text-center">
+                  <div className="w-12 h-12 bg-green-600/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-white font-bold mb-2">Community Library</h3>
+                  <p className="text-neutral-400 text-sm">Share and discover designs</p>
+                </div>
+              </div>
+
+              {/* CTA Button */}
+              <div className="text-center">
+                <button
+                  onClick={() => setShowDesignerWizard(true)}
+                  className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold text-lg transition-all duration-200 shadow-xl hover:shadow-2xl hover:scale-105"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Launch Header Designer
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+                <p className="text-neutral-500 text-sm mt-4">
+                  Browse library, generate with AI, or customize from scratch
+                </p>
+              </div>
+
+              {/* Info Cards */}
+              <div className="mt-12 grid grid-cols-2 gap-6">
+                <div className="bg-blue-900/10 border border-blue-800/30 rounded-xl p-6">
+                  <h4 className="text-blue-400 font-bold mb-2">🎨 Design Process</h4>
+                  <ul className="text-neutral-300 text-sm space-y-2">
+                    <li>→ Choose from library or generate 3 AI designs</li>
+                    <li>→ Customize in full-screen editor</li>
+                    <li>→ Save to community library (optional)</li>
+                    <li>→ Apply to your store instantly</li>
+                  </ul>
+                </div>
+                <div className="bg-purple-900/10 border border-purple-800/30 rounded-xl p-6">
+                  <h4 className="text-purple-400 font-bold mb-2">⚡ Powered by Gemini</h4>
+                  <ul className="text-neutral-300 text-sm space-y-2">
+                    <li>→ Latest 2026 design trends</li>
+                    <li>→ 3 distinct variants per generation</li>
+                    <li>→ Minimal, professional, and creative styles</li>
+                    <li>→ Production-ready React components</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         );
 
@@ -18335,7 +18466,20 @@ Return ONLY the JSON object, no markdown.`;
       {renderInterfaceModal()}
       {renderBlockArchitect()}
       {renderHeaderModal()}
-      {renderHeroModal()}
+      {isHeroModalOpen && (
+        <HeroEditor
+          data={selectedBlockId && activeBlock?.type === 'system-hero' ? activeBlock?.data || {} : config.heroData || {}}
+          onChange={(updates) => {
+            if (selectedBlockId) {
+              updateActiveBlockData(selectedBlockId, updates);
+            } else {
+              onConfigChange({ ...config, heroData: { ...config.heroData, ...updates } });
+            }
+            setHasUnsavedChanges(true);
+          }}
+          onClose={() => setIsHeroModalOpen(false)}
+        />
+      )}
       {renderGridModal()}
       {renderCollectionModal()}
       {renderCategoryModal()}
@@ -18355,7 +18499,7 @@ Return ONLY the JSON object, no markdown.`;
       {renderLayoutModal()}
       {renderSpacerModal()}
       {renderAddSectionLibrary()}
-      {renderWelcomeModal()}
+      {/* {renderWelcomeModal()} */}
       {renderWelcomeWizard()}
       {renderAddPageModal()}
       {renderTutorial()}
@@ -18425,17 +18569,6 @@ Return ONLY the JSON object, no markdown.`;
           )}
           <span className="text-sm font-medium whitespace-nowrap">{toast.message}</span>
         </div>
-      )}
-
-      {/* Shopify Import Wizard */}
-      {isShopifyWizardOpen && (
-        <ShopifyImportWizard
-          onClose={() => setIsShopifyWizardOpen(false)}
-          onComplete={() => {
-            setIsShopifyWizardOpen(false);
-            onTabChange(AdminTab.DASHBOARD);
-          }}
-        />
       )}
     </div>
   );
