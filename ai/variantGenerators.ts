@@ -4,9 +4,11 @@
  */
 
 import { GoogleGenAI } from '@google/genai';
+import { createHash } from 'crypto';
 
 const getGenAI = () => {
-  const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
+  // Use process.env for Node.js serverless functions
+  const apiKey = process.env.VITE_GOOGLE_AI_API_KEY;
   if (!apiKey) {
     throw new Error('VITE_GOOGLE_AI_API_KEY not configured');
   }
@@ -14,7 +16,7 @@ const getGenAI = () => {
 };
 
 /**
- * Generate visual fingerprint hash from component data (browser-compatible)
+ * Generate visual fingerprint hash from component data (Node.js compatible)
  * Used for unique variant naming
  */
 export async function generateVariantHash(data: any): Promise<string> {
@@ -25,12 +27,10 @@ export async function generateVariantHash(data: any): Promise<string> {
     typography: data.font || data.style?.fontFamily || ''
   });
   
-  // Use Web Crypto API (browser-compatible)
-  const encoder = new TextEncoder();
-  const dataBuffer = encoder.encode(visualProps);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  // Use Node.js crypto module for serverless functions
+  const hash = createHash('sha256');
+  hash.update(visualProps);
+  const hashHex = hash.digest('hex');
   
   return hashHex.substring(0, 6);
 }
