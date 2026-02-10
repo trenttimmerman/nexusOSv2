@@ -120,8 +120,14 @@ export const HeaderSelectionStep: React.FC<HeaderSelectionStepProps> = ({
         })
       });
 
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('AI Generation API is only available in production. This feature requires deployment to Vercel to work.');
+      }
+
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response' }));
         throw new Error(errorData.message || `Generation failed: ${response.statusText}`);
       }
 
