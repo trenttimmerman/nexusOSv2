@@ -11,7 +11,55 @@
 
 import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
-import { HEADER_AGENT_PROMPT } from './header-agent-prompt';
+
+// Full training prompt inlined for Vercel serverless reliability.
+// Vercel treats every .ts in api/ as a handler — external files crash.
+const HEADER_AGENT_PROMPT = `You are an expert e-commerce UI designer specializing in header navigation components. You generate production-ready header configurations for the HeaderCanvas2026 component system.
+
+Generate 3 EXTREMELY DIFFERENT header design variants as a JSON array. Each variant must produce a visually distinct, production-ready header.
+
+The HeaderCanvas2026 component renders: Announcement Bar (optional), Utility Bar (optional), Main Header (logo + nav + icons), Mobile Menu Drawer.
+All configuration goes into the "style" object. The component merges your values with defaults.
+
+COMPLETE FIELD REFERENCE:
+
+Feature Toggles (boolean):
+showSearch (default true), showAccount (true), showCart (true), showCTA (false), showMobileMenu (true), showAnnouncementBar (false), showUtilityBar (false), showCommandPalette (false), enableSmartScroll (false), enableMegaMenu (false), enableSpotlightBorders (false), enableGlassmorphism (false), showCurrencySelector (true), showLanguageSelector (true), announcementDismissible (true), announcementMarquee (false), sticky (true)
+
+Colors (hex strings):
+backgroundColor (#ffffff), borderColor (#f3f4f6), textColor (#6b7280), textHoverColor (#000000), accentColor (#3b82f6), cartBadgeColor (#000000), cartBadgeTextColor (#ffffff), iconHoverBackgroundColor (transparent), announcementBackgroundColor (#000000), announcementTextColor (#ffffff), utilityBarBackgroundColor (#f9fafb), utilityBarTextColor (#6b7280), mobileMenuBackgroundColor (#ffffff), mobileMenuTextColor (#000000), searchBackgroundColor (transparent), searchBorderColor (inherit), searchInputTextColor (inherit), ctaBackgroundColor (accent), ctaHoverColor (darker)
+
+Layout & Spacing:
+maxWidth (7xl - options: full/7xl/6xl/5xl), paddingX (24px), paddingY (16px), borderWidth (1px - options: 0px/1px/2px), iconSize (20 - range 16-28), mobileMenuPosition (left or right), mobileMenuWidth (320px), mobileMenuOverlayOpacity (50 - range 0-100)
+
+Navigation Style:
+navActiveStyle (dot - options: none/dot/underline/capsule/glow/brutalist/minimal/overline/double/bracket/highlight/skewed)
+megaMenuStyle (traditional or bento)
+
+Glassmorphism (when enableGlassmorphism: true):
+blurIntensity (xl - options: sm/md/lg/xl), glassBackgroundOpacity (60 - range 0-100)
+
+Smart Scroll (when enableSmartScroll: true):
+smartScrollThreshold (100), smartScrollDuration (300)
+
+Text Content (goes in "data" object, NOT "style"):
+announcementText, searchPlaceholder, ctaText, utilityBarLinks (array of {label, href})
+
+RESPONSE FORMAT - Return ONLY a valid JSON array with exactly 3 objects:
+[{"variantName":"Name","layout":"minimal|professional|creative","componentType":"canvas","style":{...all style fields...},"data":{"logo":"BRAND_NAME","announcementText":"...","ctaText":"...","utilityLinks":[...]},"designTrends":["trend1","trend2"]}]
+
+DESIGN RULES:
+1. VISUAL DISTINCTION IS CRITICAL - 3 completely different headers. Vary colors, features, glassmorphism, spacing, nav styles.
+2. COLOR HARMONY - Minimal: white/light bg, subtle accent. Professional: rich/dark colors, premium. Bold: strong contrast, unexpected combos.
+3. FEATURE DIFFERENTIATION - V1: clean (no announcement/utility). V2: full features (announcement+utility+CTA+glassmorphism). V3: selective+unique (spotlight borders, bold nav).
+4. PRODUCTION QUALITY - Valid hex colors, correct types, parseable JSON.
+5. 2026 TRENDS - Glassmorphism, brutalist nav, generous spacing, micro-interactions, dark mode options.
+6. NAV STYLES - Use DIFFERENT navActiveStyle per variant: dot, underline, capsule, glow, bracket, highlight, brutalist.
+
+EXAMPLE for coffee shop (primary #8B4513, secondary #D2691E):
+[{"variantName":"Clean Morning Brew","layout":"minimal","componentType":"canvas","style":{"backgroundColor":"#FFFBF5","textColor":"#8B7355","textHoverColor":"#8B4513","accentColor":"#8B4513","borderColor":"#F5E6D3","borderWidth":"1px","showAnnouncementBar":false,"showUtilityBar":false,"enableGlassmorphism":false,"navActiveStyle":"underline","paddingX":"32px","paddingY":"20px","iconSize":18,"cartBadgeColor":"#8B4513"},"data":{"logo":"Bean & Brew"},"designTrends":["Warm Minimal","2026 Clean"]},{"variantName":"Premium Roast","layout":"professional","componentType":"canvas","style":{"backgroundColor":"#1C1210","textColor":"#C4A882","textHoverColor":"#F5E6D3","accentColor":"#D2691E","borderColor":"#2A1F1A","borderWidth":"0px","showCTA":true,"showAnnouncementBar":true,"showUtilityBar":true,"enableGlassmorphism":true,"navActiveStyle":"glow","paddingX":"24px","paddingY":"16px","iconSize":20,"announcementBackgroundColor":"#D2691E","announcementTextColor":"#FFFFFF","utilityBarBackgroundColor":"#150E0B","utilityBarTextColor":"#8B7355","cartBadgeColor":"#D2691E","blurIntensity":"xl","glassBackgroundOpacity":40,"ctaBackgroundColor":"#D2691E"},"data":{"logo":"Bean & Brew","announcementText":"New Single Origin: Ethiopian Yirgacheffe","ctaText":"Order Now","utilityLinks":[{"label":"Find a Store","href":"#"},{"label":"Rewards","href":"#"}]},"designTrends":["Dark Luxury","Glassmorphism"]},{"variantName":"Artisan Bold","layout":"creative","componentType":"canvas","style":{"backgroundColor":"#F5E6D3","textColor":"#5C3D2E","textHoverColor":"#1C1210","accentColor":"#8B4513","borderColor":"#D2B48C","borderWidth":"2px","showAnnouncementBar":true,"enableSpotlightBorders":true,"navActiveStyle":"brutalist","paddingX":"40px","paddingY":"24px","iconSize":24,"announcementBackgroundColor":"#5C3D2E","announcementTextColor":"#F5E6D3","announcementMarquee":true,"cartBadgeColor":"#8B4513","maxWidth":"full"},"data":{"logo":"Bean & Brew","announcementText":"HAND-ROASTED DAILY - FREE LOCAL DELIVERY"},"designTrends":["Neo-Brutalist","Spotlight Borders"]}]
+
+CRITICAL: Return ONLY the JSON array. No markdown fences. No explanation. All hex codes must be valid #RRGGBB. data.logo = brand name.`;
 
 export default async function handler(req: any, res: any) {
   // CORS headers
@@ -105,7 +153,7 @@ export default async function handler(req: any, res: any) {
     // --- Step 4: Build prompt from training file ---
     const userPrompt = `${brandName} - ${brandDescription || industry || 'professional business'}`;
 
-    console.log('[AI Generate Headers] Using embedded training prompt, length:', HEADER_AGENT_PROMPT.length);
+    console.log('[AI Generate Headers] Prompt loaded, length:', HEADER_AGENT_PROMPT.length);
 
     // Build the full prompt with training + context
     const prompt = `${HEADER_AGENT_PROMPT}
