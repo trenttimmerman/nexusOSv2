@@ -11,8 +11,7 @@
 
 import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { HEADER_AGENT_PROMPT } from './header-agent-prompt';
 
 export default async function handler(req: any, res: any) {
   // CORS headers
@@ -106,18 +105,10 @@ export default async function handler(req: any, res: any) {
     // --- Step 4: Build prompt from training file ---
     const userPrompt = `${brandName} - ${brandDescription || industry || 'professional business'}`;
 
-    // Load the header agent training prompt
-    let systemPrompt: string;
-    try {
-      const promptPath = join(process.cwd(), 'ai', 'prompts', 'header-agent.md');
-      systemPrompt = readFileSync(promptPath, 'utf-8');
-    } catch (readErr: any) {
-      console.warn('[AI Generate Headers] Could not load prompt file, using fallback:', readErr.message);
-      systemPrompt = 'You are a UI/UX expert. Generate 3 header variants as a JSON array with variantName, layout, componentType, style, data, and designTrends fields.';
-    }
+    console.log('[AI Generate Headers] Using embedded training prompt, length:', HEADER_AGENT_PROMPT.length);
 
-    // Build the user message with context
-    const prompt = `${systemPrompt}
+    // Build the full prompt with training + context
+    const prompt = `${HEADER_AGENT_PROMPT}
 
 ---
 

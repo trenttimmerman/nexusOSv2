@@ -4,8 +4,7 @@
       "maxDuration": 300
     },
     "api/ai/generate-headers.ts": {
-      "maxDuration": 60,
-      "includeFiles": "ai/prompts/**"
+      "maxDuration": 60
     }
   },
   "rewrites": [

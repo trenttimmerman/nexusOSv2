@@ -367,7 +367,9 @@ const MOCK_NAV_LINKS = [
 ];
 
 /**
- * Map AI-generated config to HeaderCanvas data prop
+ * Map AI-generated config to HeaderCanvas data prop.
+ * IMPORTANT: Spread ALL style fields through so the AI's choices actually render.
+ * Only override fields that need special handling (e.g. sticky=false for preview).
  */
 const mapConfigToHeaderData = (header: SharedHeaderLibrary): Record<string, any> => {
   const config = header.config || {} as any;
@@ -375,58 +377,22 @@ const mapConfigToHeaderData = (header: SharedHeaderLibrary): Record<string, any>
   const data = config.data || {};
   
   return {
-    // Colors
+    // Spread ALL AI-generated style fields first (colors, toggles, layout, nav, glassmorphism, etc.)
+    ...style,
+    
+    // Merge text content from data object (AI puts these in "data" not "style")
+    ...(data.announcementText && { announcementText: data.announcementText }),
+    ...(data.ctaText && { ctaText: data.ctaText }),
+    ...(data.searchPlaceholder && { searchPlaceholder: data.searchPlaceholder }),
+    ...(data.utilityLinks && { utilityBarLinks: data.utilityLinks }),
+    
+    // Sensible fallbacks only for fields that MUST have a value
     backgroundColor: style.backgroundColor || style.background || '#ffffff',
     textColor: style.textColor || style.text || '#6b7280',
-    textHoverColor: style.textHoverColor || style.primaryColor || '#000000',
     accentColor: style.accentColor || style.primaryColor || style.primary || '#3b82f6',
-    borderColor: style.borderColor || '#f3f4f6',
-    cartBadgeColor: style.primaryColor || style.primary || '#000000',
-    cartBadgeTextColor: '#ffffff',
     
-    // Toggles
-    showSearch: style.showSearch !== false,
-    showAccount: style.showAccount !== false,
-    showCart: style.showCart !== false,
-    showAnnouncementBar: !!style.showAnnouncementBar,
-    showUtilityBar: !!style.showUtilityBar,
-    enableGlassmorphism: !!style.enableGlassmorphism,
-    enableSpotlightBorders: !!style.enableSpotlightBorders,
-    
-    // Announcement
-    announcementText: data.announcementText || style.announcementText || 'Free shipping on orders over $100 ✨',
-    announcementBackgroundColor: style.announcementBackgroundColor || style.primaryColor || '#000000',
-    announcementTextColor: style.announcementTextColor || '#ffffff',
-    announcementDismissible: true,
-    
-    // Utility bar
-    utilityBarBackgroundColor: style.utilityBarBackgroundColor || '#f9fafb',
-    utilityBarTextColor: style.utilityBarTextColor || '#6b7280',
-    showCurrencySelector: true,
-    showLanguageSelector: true,
-    utilityBarLinks: data.utilityLinks || [
-      { label: 'Help Center', href: '#' },
-      { label: 'Track Order', href: '#' },
-    ],
-    
-    // Layout
-    sticky: false, // Don't stick in preview
-    maxWidth: '7xl',
-    paddingX: '24px',
-    paddingY: '16px',
-    borderWidth: '1px',
-    borderRadius: style.borderRadius || '0',
-    iconSize: 20,
-    navActiveStyle: 'dot',
-    
-    // Glassmorphism
-    blurIntensity: 'xl',
-    glassBackgroundOpacity: 60,
-    
-    // CTA
-    showCTA: !!style.showCTA,
-    ctaText: data.ctaText || 'Shop Now',
-    ctaBackgroundColor: style.primaryColor || '#3b82f6',
+    // Preview-specific overrides
+    sticky: false, // Don't stick in preview cards
   };
 };
 
