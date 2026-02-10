@@ -370,17 +370,107 @@ const HeaderPreviewCard: React.FC<HeaderPreviewCardProps> = ({
   isAIGenerated 
 }) => {
   const isAI = isAIGenerated || header.metadata?.aiGenerated;
+  const config = header.config || {} as any;
+  const style = config.style || config.colors || {};
+  const data = config.data || {};
+  const layout = config.layout || '';
+  
+  // Extract colors for live preview
+  const bgColor = style.backgroundColor || style.background || '#1a1a2e';
+  const primaryColor = style.primaryColor || style.primary || '#3b82f6';
+  const secondaryColor = style.secondaryColor || style.secondary || '#8b5cf6';
+  const textColor = style.textColor || style.text || '#ffffff';
+  const logoText = data.logo || header.name?.split(' ')[0] || 'Store';
+  const showAnnouncement = style.showAnnouncementBar;
+  const showUtility = style.showUtilityBar;
+  const glassmorphism = style.enableGlassmorphism;
+  
+  // Render a live mini-header preview using CSS
+  const renderLivePreview = () => (
+    <div 
+      className="w-full h-full flex flex-col justify-center overflow-hidden"
+      style={{ 
+        backgroundColor: bgColor,
+        ...(glassmorphism ? { 
+          backdropFilter: 'blur(12px)',
+          background: `${bgColor}cc`
+        } : {})
+      }}
+    >
+      {/* Announcement bar */}
+      {showAnnouncement && (
+        <div 
+          className="w-full text-center py-0.5 text-[6px] truncate px-2"
+          style={{ backgroundColor: primaryColor, color: '#fff' }}
+        >
+          {data.announcementText || '✨ Free shipping on orders $50+'}
+        </div>
+      )}
+      
+      {/* Utility bar */}
+      {showUtility && (
+        <div 
+          className="w-full flex justify-end gap-2 px-3 py-0.5 text-[5px] opacity-60"
+          style={{ color: textColor, borderBottom: `1px solid ${primaryColor}22` }}
+        >
+          <span>Help</span>
+          <span>Track Order</span>
+          <span>Account</span>
+        </div>
+      )}
+      
+      {/* Main header bar */}
+      <div className="flex items-center justify-between px-3 py-1.5 flex-1">
+        {/* Logo */}
+        <div 
+          className="font-bold text-[10px] truncate max-w-[60px]"
+          style={{ color: primaryColor }}
+        >
+          {logoText}
+        </div>
+        
+        {/* Nav links */}
+        <div className="flex gap-2 text-[6px]" style={{ color: textColor }}>
+          <span className="opacity-80">Shop</span>
+          <span className="opacity-80">About</span>
+          <span className="opacity-80">Contact</span>
+        </div>
+        
+        {/* Icons placeholder */}
+        <div className="flex gap-1.5 items-center">
+          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: `${primaryColor}40` }} />
+          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: `${secondaryColor}40` }} />
+        </div>
+      </div>
+
+      {/* Bottom accent line */}
+      <div 
+        className="w-full h-[2px]"
+        style={{ 
+          background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})` 
+        }}
+      />
+    </div>
+  );
+
+  // Check if there's a real image URL (not a placeholder API path)
+  const hasRealPreview = header.preview 
+    && !header.preview.includes('/placeholder') 
+    && !header.preview.includes('/api/headers/preview')
+    && header.preview.startsWith('http');
   
   return (
     <div className="group bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden hover:border-blue-500 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20">
-      {/* Preview Image */}
+      {/* Preview */}
       <div className="relative aspect-[3/1] bg-neutral-800 overflow-hidden">
-        {header.preview && header.preview !== '/placeholder-header.png' ? (
+        {hasRealPreview ? (
           <img 
             src={header.preview} 
             alt={header.name}
             className="w-full h-full object-cover"
           />
+        ) : config.style || config.colors ? (
+          renderLivePreview()
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-800 to-neutral-900">
             <span className="text-neutral-600 text-sm font-medium">
