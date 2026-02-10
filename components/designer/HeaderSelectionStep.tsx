@@ -120,18 +120,21 @@ export const HeaderSelectionStep: React.FC<HeaderSelectionStepProps> = ({
         })
       });
 
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('AI Generation API is only available in production. This feature requires deployment to Vercel to work.');
+      // Get response text first to avoid parse errors
+      const responseText = await response.text();
+      
+      // Check if response is JSON by parsing
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('[AI Generation] Non-JSON response:', responseText.substring(0, 200));
+        throw new Error('AI Generation is only available in production (requires Vercel deployment). Please browse the header library instead.');
       }
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response' }));
-        throw new Error(errorData.message || `Generation failed: ${response.statusText}`);
+        throw new Error(data.message || data.error || `Generation failed: ${response.statusText}`);
       }
-
-      const data = await response.json();
       
       // Transform API response to SharedHeaderLibrary format
       const headers = data.headers.map((h: any) => ({
