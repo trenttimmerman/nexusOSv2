@@ -11496,8 +11496,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Colors & Style</p>
                         <div className="grid grid-cols-2 gap-3">
-                          {colorFields.map(key => {
-                            const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                          {colorFields.map(field => {
+                            const key = field.name;
+                            const Meta = (HEADER_FIELD_METADATA as any)[key] || field;
                             return (
                               <div key={key} className="flex flex-col gap-1.5 bg-neutral-900/50 p-2.5 rounded-lg border border-neutral-700">
                                 <span className="text-[10px] text-neutral-500 font-bold uppercase truncate">{Meta.label}</span>
