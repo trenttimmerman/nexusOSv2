@@ -6,8 +6,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Wand2, Sparkles, ChevronRight, Loader2, Search, Filter } from 'lucide-react';
+import { Wand2, Sparkles, ChevronRight, Loader2, Search, Filter, Maximize2, X } from 'lucide-react';
 import { SharedHeaderLibrary, HeaderConfig } from '../../types/designer';
+import { HeaderCanvas } from '../HeaderCanvas2026';
 
 interface HeaderSelectionStepProps {
   storeId: string;
@@ -356,7 +357,162 @@ export const HeaderSelectionStep: React.FC<HeaderSelectionStepProps> = ({
 };
 
 /**
- * HeaderPreviewCard - Individual header preview card
+ * Mock navigation links for header preview
+ */
+const MOCK_NAV_LINKS = [
+  { label: 'Shop', href: '/shop' },
+  { label: 'Collections', href: '/collections' },
+  { label: 'About', href: '/about' },
+  { label: 'Contact', href: '/contact' },
+];
+
+/**
+ * Map AI-generated config to HeaderCanvas data prop
+ */
+const mapConfigToHeaderData = (header: SharedHeaderLibrary): Record<string, any> => {
+  const config = header.config || {} as any;
+  const style = config.style || config.colors || {};
+  const data = config.data || {};
+  
+  return {
+    // Colors
+    backgroundColor: style.backgroundColor || style.background || '#ffffff',
+    textColor: style.textColor || style.text || '#6b7280',
+    textHoverColor: style.textHoverColor || style.primaryColor || '#000000',
+    accentColor: style.accentColor || style.primaryColor || style.primary || '#3b82f6',
+    borderColor: style.borderColor || '#f3f4f6',
+    cartBadgeColor: style.primaryColor || style.primary || '#000000',
+    cartBadgeTextColor: '#ffffff',
+    
+    // Toggles
+    showSearch: style.showSearch !== false,
+    showAccount: style.showAccount !== false,
+    showCart: style.showCart !== false,
+    showAnnouncementBar: !!style.showAnnouncementBar,
+    showUtilityBar: !!style.showUtilityBar,
+    enableGlassmorphism: !!style.enableGlassmorphism,
+    enableSpotlightBorders: !!style.enableSpotlightBorders,
+    
+    // Announcement
+    announcementText: data.announcementText || style.announcementText || 'Free shipping on orders over $100 ✨',
+    announcementBackgroundColor: style.announcementBackgroundColor || style.primaryColor || '#000000',
+    announcementTextColor: style.announcementTextColor || '#ffffff',
+    announcementDismissible: true,
+    
+    // Utility bar
+    utilityBarBackgroundColor: style.utilityBarBackgroundColor || '#f9fafb',
+    utilityBarTextColor: style.utilityBarTextColor || '#6b7280',
+    showCurrencySelector: true,
+    showLanguageSelector: true,
+    utilityBarLinks: data.utilityLinks || [
+      { label: 'Help Center', href: '#' },
+      { label: 'Track Order', href: '#' },
+    ],
+    
+    // Layout
+    sticky: false, // Don't stick in preview
+    maxWidth: '7xl',
+    paddingX: '24px',
+    paddingY: '16px',
+    borderWidth: '1px',
+    borderRadius: style.borderRadius || '0',
+    iconSize: 20,
+    navActiveStyle: 'dot',
+    
+    // Glassmorphism
+    blurIntensity: 'xl',
+    glassBackgroundOpacity: 60,
+    
+    // CTA
+    showCTA: !!style.showCTA,
+    ctaText: data.ctaText || 'Shop Now',
+    ctaBackgroundColor: style.primaryColor || '#3b82f6',
+  };
+};
+
+/**
+ * Full-screen header preview modal
+ */
+const HeaderPreviewModal: React.FC<{
+  header: SharedHeaderLibrary;
+  onClose: () => void;
+  onSelect: (header: SharedHeaderLibrary) => void;
+}> = ({ header, onClose, onSelect }) => {
+  const headerData = mapConfigToHeaderData(header);
+  const config = header.config || {} as any;
+  const logoText = config.data?.logo || header.name?.split(' ')[0] || 'Store';
+  const primaryColor = config.style?.primaryColor || config.style?.primary || config.colors?.primary || '#3b82f6';
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex flex-col bg-black/80 backdrop-blur-sm" onClick={onClose}>
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-6 py-4 bg-neutral-900 border-b border-neutral-800" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-3">
+          <h3 className="text-white font-bold text-lg">{header.name}</h3>
+          {header.metadata?.aiGenerated && (
+            <span className="px-2 py-1 bg-purple-600 text-white text-xs font-bold rounded-full flex items-center gap-1">
+              <Sparkles className="w-3 h-3" /> AI Generated
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => { onSelect(header); onClose(); }}
+            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+          >
+            Choose This Header
+            <ChevronRight className="w-4 h-4" />
+          </button>
+          <button onClick={onClose} className="p-2 hover:bg-neutral-800 rounded-lg transition-colors">
+            <X className="w-5 h-5 text-neutral-400" />
+          </button>
+        </div>
+      </div>
+
+      {/* Full-width header preview */}
+      <div className="flex-1 overflow-y-auto" onClick={e => e.stopPropagation()}>
+        {/* Preview area with white/themed background */}
+        <div className="w-full" style={{ backgroundColor: headerData.backgroundColor || '#ffffff' }}>
+          <HeaderCanvas
+            storeName={logoText}
+            links={MOCK_NAV_LINKS}
+            cartCount={3}
+            primaryColor={primaryColor}
+            data={headerData}
+          />
+        </div>
+
+        {/* Mock page content below header to show context */}
+        <div className="w-full" style={{ backgroundColor: '#f8f9fa' }}>
+          <div className="max-w-7xl mx-auto px-6 py-16">
+            {/* Hero Section Mock */}
+            <div className="rounded-2xl p-12 mb-8 text-center" style={{ backgroundColor: primaryColor + '10' }}>
+              <h1 className="text-4xl font-bold mb-4" style={{ color: '#1a1a1a' }}>Welcome to {logoText}</h1>
+              <p className="text-lg mb-6" style={{ color: '#6b7280' }}>Explore our latest collection of premium products</p>
+              <button className="px-8 py-3 rounded-lg text-white font-semibold" style={{ backgroundColor: primaryColor }}>Shop Now</button>
+            </div>
+
+            {/* Product Grid Mock */}
+            <div className="grid grid-cols-4 gap-6">
+              {['New Arrivals', 'Best Sellers', 'On Sale', 'Featured'].map((title, i) => (
+                <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm">
+                  <div className="aspect-square" style={{ backgroundColor: `${primaryColor}${['15','10','20','08'][i]}` }} />
+                  <div className="p-4">
+                    <p className="font-semibold text-sm" style={{ color: '#1a1a1a' }}>{title}</p>
+                    <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>$49.99 - $129.99</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * HeaderPreviewCard - Individual header preview card with live rendering
  */
 interface HeaderPreviewCardProps {
   header: SharedHeaderLibrary;
@@ -369,165 +525,118 @@ const HeaderPreviewCard: React.FC<HeaderPreviewCardProps> = ({
   onSelect,
   isAIGenerated 
 }) => {
+  const [showFullPreview, setShowFullPreview] = useState(false);
   const isAI = isAIGenerated || header.metadata?.aiGenerated;
   const config = header.config || {} as any;
-  const style = config.style || config.colors || {};
-  const data = config.data || {};
-  const layout = config.layout || '';
-  
-  // Extract colors for live preview
-  const bgColor = style.backgroundColor || style.background || '#1a1a2e';
-  const primaryColor = style.primaryColor || style.primary || '#3b82f6';
-  const secondaryColor = style.secondaryColor || style.secondary || '#8b5cf6';
-  const textColor = style.textColor || style.text || '#ffffff';
-  const logoText = data.logo || header.name?.split(' ')[0] || 'Store';
-  const showAnnouncement = style.showAnnouncementBar;
-  const showUtility = style.showUtilityBar;
-  const glassmorphism = style.enableGlassmorphism;
-  
-  // Render a live mini-header preview using CSS
-  const renderLivePreview = () => (
-    <div 
-      className="w-full h-full flex flex-col justify-center overflow-hidden"
-      style={{ 
-        backgroundColor: bgColor,
-        ...(glassmorphism ? { 
-          backdropFilter: 'blur(12px)',
-          background: `${bgColor}cc`
-        } : {})
-      }}
-    >
-      {/* Announcement bar */}
-      {showAnnouncement && (
-        <div 
-          className="w-full text-center py-0.5 text-[6px] truncate px-2"
-          style={{ backgroundColor: primaryColor, color: '#fff' }}
-        >
-          {data.announcementText || '✨ Free shipping on orders $50+'}
-        </div>
-      )}
-      
-      {/* Utility bar */}
-      {showUtility && (
-        <div 
-          className="w-full flex justify-end gap-2 px-3 py-0.5 text-[5px] opacity-60"
-          style={{ color: textColor, borderBottom: `1px solid ${primaryColor}22` }}
-        >
-          <span>Help</span>
-          <span>Track Order</span>
-          <span>Account</span>
-        </div>
-      )}
-      
-      {/* Main header bar */}
-      <div className="flex items-center justify-between px-3 py-1.5 flex-1">
-        {/* Logo */}
-        <div 
-          className="font-bold text-[10px] truncate max-w-[60px]"
-          style={{ color: primaryColor }}
-        >
-          {logoText}
-        </div>
-        
-        {/* Nav links */}
-        <div className="flex gap-2 text-[6px]" style={{ color: textColor }}>
-          <span className="opacity-80">Shop</span>
-          <span className="opacity-80">About</span>
-          <span className="opacity-80">Contact</span>
-        </div>
-        
-        {/* Icons placeholder */}
-        <div className="flex gap-1.5 items-center">
-          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: `${primaryColor}40` }} />
-          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: `${secondaryColor}40` }} />
-        </div>
-      </div>
+  const hasConfig = !!(config.style || config.colors);
+  const headerData = mapConfigToHeaderData(header);
+  const logoText = config.data?.logo || header.name?.split(' ')[0] || 'Store';
+  const primaryColor = config.style?.primaryColor || config.style?.primary || config.colors?.primary || '#3b82f6';
 
-      {/* Bottom accent line */}
-      <div 
-        className="w-full h-[2px]"
-        style={{ 
-          background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})` 
-        }}
-      />
-    </div>
-  );
-
-  // Check if there's a real image URL (not a placeholder API path)
-  const hasRealPreview = header.preview 
-    && !header.preview.includes('/placeholder') 
-    && !header.preview.includes('/api/headers/preview')
-    && header.preview.startsWith('http');
-  
   return (
-    <div className="group bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden hover:border-blue-500 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20">
-      {/* Preview */}
-      <div className="relative aspect-[3/1] bg-neutral-800 overflow-hidden">
-        {hasRealPreview ? (
-          <img 
-            src={header.preview} 
-            alt={header.name}
-            className="w-full h-full object-cover"
-          />
-        ) : config.style || config.colors ? (
-          renderLivePreview()
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-800 to-neutral-900">
-            <span className="text-neutral-600 text-sm font-medium">
-              {header.name}
-            </span>
-          </div>
-        )}
-        {isAI && (
-          <div className="absolute top-2 right-2">
-            <span className="px-2 py-1 bg-purple-600 text-white text-xs font-bold rounded-full flex items-center gap-1">
-              <Sparkles className="w-3 h-3" />
-              AI
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Card Content */}
-      <div className="p-4">
-        <h3 className="text-white font-semibold mb-1 truncate">{header.name}</h3>
-        {header.description && (
-          <p className="text-neutral-400 text-sm mb-3 line-clamp-2">
-            {header.description}
-          </p>
-        )}
-
-        {/* Tags */}
-        {header.metadata?.tags && Array.isArray(header.metadata.tags) && header.metadata.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {header.metadata.tags.slice(0, 3).map((tag, i) => (
-              <span 
-                key={i}
-                className="px-2 py-0.5 bg-neutral-800 text-neutral-400 text-xs rounded"
+    <>
+      <div className="group bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden hover:border-blue-500 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20">
+        {/* Live Header Preview - scaled down */}
+        <div 
+          className="relative bg-neutral-800 overflow-hidden cursor-pointer"
+          onClick={() => setShowFullPreview(true)}
+        >
+          {hasConfig ? (
+            <div className="w-full overflow-hidden" style={{ height: '140px' }}>
+              {/* Scale the real header to fit the card */}
+              <div 
+                style={{ 
+                  transform: 'scale(0.55)', 
+                  transformOrigin: 'top left', 
+                  width: '182%',
+                  pointerEvents: 'none'
+                }}
               >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+                <HeaderCanvas
+                  storeName={logoText}
+                  links={MOCK_NAV_LINKS}
+                  cartCount={3}
+                  primaryColor={primaryColor}
+                  data={{ ...headerData, sticky: false }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="h-[140px] flex items-center justify-center bg-gradient-to-br from-neutral-800 to-neutral-900">
+              <span className="text-neutral-600 text-sm font-medium">{header.name}</span>
+            </div>
+          )}
 
-        {/* Metadata */}
-        <div className="flex items-center justify-between text-xs text-neutral-500 mb-3">
-          <span>Used {header.metadata?.timesUsed || 0}×</span>
-          {header.metadata?.averageRating && (
-            <span>★ {header.metadata.averageRating.toFixed(1)}</span>
+          {/* Hover overlay with expand button */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/90 text-black rounded-lg font-medium text-sm shadow-lg">
+              <Maximize2 className="w-4 h-4" />
+              Preview Full Size
+            </div>
+          </div>
+
+          {/* AI Badge */}
+          {isAI && (
+            <div className="absolute top-2 right-2">
+              <span className="px-2 py-1 bg-purple-600 text-white text-xs font-bold rounded-full flex items-center gap-1">
+                <Sparkles className="w-3 h-3" /> AI
+              </span>
+            </div>
           )}
         </div>
 
-        {/* Select Button */}
-        <button
-          onClick={() => onSelect(header)}
-          className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 group-hover:bg-blue-700"
-        >
-          Choose This Header
-          <ChevronRight className="w-4 h-4" />
-        </button>
+        {/* Card Content */}
+        <div className="p-4">
+          <h3 className="text-white font-semibold mb-1 truncate">{header.name}</h3>
+          {header.description && (
+            <p className="text-neutral-400 text-sm mb-3 line-clamp-2">{header.description}</p>
+          )}
+
+          {/* Tags */}
+          {header.metadata?.tags && Array.isArray(header.metadata.tags) && header.metadata.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {header.metadata.tags.slice(0, 3).map((tag, i) => (
+                <span key={i} className="px-2 py-0.5 bg-neutral-800 text-neutral-400 text-xs rounded">{tag}</span>
+              ))}
+            </div>
+          )}
+
+          {/* Metadata */}
+          <div className="flex items-center justify-between text-xs text-neutral-500 mb-3">
+            <span>Used {header.metadata?.timesUsed || 0}×</span>
+            {header.metadata?.averageRating && (
+              <span>★ {header.metadata.averageRating.toFixed(1)}</span>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowFullPreview(true)}
+              className="flex-1 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-lg font-medium transition-colors flex items-center justify-center gap-1.5 text-sm"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+              Preview
+            </button>
+            <button
+              onClick={() => onSelect(header)}
+              className="flex-[2] py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              Choose This Header
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* Full-screen preview modal */}
+      {showFullPreview && (
+        <HeaderPreviewModal
+          header={header}
+          onClose={() => setShowFullPreview(false)}
+          onSelect={onSelect}
+        />
+      )}
+    </>
   );
 };
