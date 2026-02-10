@@ -54,7 +54,9 @@ export const HeaderSelectionStep: React.FC<HeaderSelectionStepProps> = ({
       }
 
       const data = await response.json();
-      setLibraryHeaders(data.headers || []);
+      // Normalize headers to ensure proper metadata structure
+      const normalizedHeaders = (data.headers || []).map((h: any) => normalizeHeader(h));
+      setLibraryHeaders(normalizedHeaders);
     } catch (err: any) {
       console.error('[Header Selection] Library fetch error:', err);
       setError(err.message || 'Failed to load header library');
@@ -68,25 +70,36 @@ export const HeaderSelectionStep: React.FC<HeaderSelectionStepProps> = ({
   const normalizeHeader = (header: any): SharedHeaderLibrary => {
     // If already has nested metadata structure, return as-is
     if (header.metadata && typeof header.metadata === 'object') {
-      return header;
+      return {
+        ...header,
+        metadata: {
+          createdBy: header.metadata.createdBy || 'unknown',
+          createdAt: header.metadata.createdAt || new Date().toISOString(),
+          timesUsed: header.metadata.timesUsed || 0,
+          averageRating: header.metadata.averageRating,
+          tags: Array.isArray(header.metadata.tags) ? header.metadata.tags : [],
+          aiGenerated: header.metadata.aiGenerated || false,
+          designTrends: Array.isArray(header.metadata.designTrends) ? header.metadata.designTrends : []
+        }
+      };
     }
 
     // Transform flat database structure to nested metadata
     return {
       id: header.id,
-      name: header.name,
+      name: header.name || 'Untitled Header',
       description: header.description,
-      component: header.component,
-      config: header.config,
-      preview: header.preview,
+      component: header.component || '',
+      config: header.config || {},
+      preview: header.preview || '/placeholder-header.png',
       metadata: {
         createdBy: header.created_by || 'unknown',
-        createdAt: header.created_at,
+        createdAt: header.created_at || new Date().toISOString(),
         timesUsed: header.times_used || 0,
         averageRating: header.average_rating,
-        tags: header.tags || [],
+        tags: Array.isArray(header.tags) ? header.tags : [],
         aiGenerated: header.ai_generated || false,
-        designTrends: header.design_trends || []
+        designTrends: Array.isArray(header.design_trends) ? header.design_trends : []
       },
       status: header.status || 'private'
     };
@@ -379,7 +392,7 @@ const HeaderPreviewCard: React.FC<HeaderPreviewCardProps> = ({
         )}
 
         {/* Tags */}
-        {header.metadata?.tags && header.metadata.tags.length > 0 && (
+        {header.metadata?.tags && Array.isArray(header.metadata.tags) && header.metadata.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
             {header.metadata.tags.slice(0, 3).map((tag, i) => (
               <span 
