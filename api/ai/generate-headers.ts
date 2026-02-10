@@ -11,6 +11,8 @@
 
 import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export default async function handler(req: any, res: any) {
   // CORS headers
@@ -101,57 +103,38 @@ export default async function handler(req: any, res: any) {
       console.warn('[AI Generate Headers] DB lookup failed (using defaults):', dbErr.message);
     }
 
-    // --- Step 4: Build prompt ---
+    // --- Step 4: Build prompt from training file ---
     const userPrompt = `${brandName} - ${brandDescription || industry || 'professional business'}`;
 
-    const prompt = `You are a UI/UX design expert. Generate 3 EXTREMELY DIFFERENT header navigation variants for:
+    // Load the header agent training prompt
+    let systemPrompt: string;
+    try {
+      const promptPath = join(process.cwd(), 'ai', 'prompts', 'header-agent.md');
+      systemPrompt = readFileSync(promptPath, 'utf-8');
+    } catch (readErr: any) {
+      console.warn('[AI Generate Headers] Could not load prompt file, using fallback:', readErr.message);
+      systemPrompt = 'You are a UI/UX expert. Generate 3 header variants as a JSON array with variantName, layout, componentType, style, data, and designTrends fields.';
+    }
 
-Business: "${userPrompt}"
-Vibe: ${vibe.name} - ${vibe.description || ''}
-Colors: Primary ${palette.primary}, Secondary ${palette.secondary}, Background ${palette.background}
+    // Build the user message with context
+    const prompt = `${systemPrompt}
 
-Create 3 variants with MAXIMUM visual contrast:
+---
 
-VARIANT 1 - MINIMAL/MODERN:
-- Clean, minimal approach with maximum negative space
-- Subtle logo, understated navigation
-- Layout: "minimal"
+## Generation Request
 
-VARIANT 2 - PROFESSIONAL/RICH:
-- Feature-rich with utility bar, search, account features
-- Premium feel with glassmorphism or spotlight effects
-- Layout: "professional"
+**Brand Name:** ${brandName}
+**Brand Description:** ${brandDescription || 'Not provided'}
+**Industry:** ${industry || 'Not specified'}
+**Vibe:** ${vibe.name} - ${vibe.description || ''}
+**Color Palette:**
+- Primary: ${palette.primary}
+- Secondary: ${palette.secondary}
+- Background: ${palette.background}
+**Style Preferences:** ${stylePreferences.join(', ')}
 
-VARIANT 3 - BOLD/UNIQUE:
-- Creative, unconventional layout
-- Strong visual personality matching vibe
-- Layout: "creative"
-
-Return ONLY valid JSON array (no markdown, no explanation):
-[
-  {
-    "variantName": "descriptive-name",
-    "layout": "minimal|professional|creative",
-    "componentType": "canvas",
-    "style": {
-      "backgroundColor": "${palette.background}",
-      "primaryColor": "${palette.primary}",
-      "secondaryColor": "${palette.secondary}",
-      "accentColor": "${palette.secondary}",
-      "borderRadius": "8",
-      "showAnnouncementBar": false,
-      "showUtilityBar": false,
-      "enableGlassmorphism": false
-    },
-    "data": {
-      "logo": "${brandName}",
-      "announcementText": "relevant announcement"
-    },
-    "designTrends": ["2026 Modern"]
-  }
-]
-
-Make each variant look COMPLETELY DIFFERENT when rendered.`;
+Generate 3 headers for "${brandName}" now. Use their brand colors. Set data.logo to "${brandName}".
+Return ONLY the JSON array.`;
 
     // --- Step 5: Call Gemini AI ---
     console.log('[AI Generate Headers] Calling Gemini...');

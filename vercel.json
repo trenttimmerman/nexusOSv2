@@ -2,6 +2,10 @@
   "functions": {
     "api/cron/send-scheduled-campaigns.ts": {
       "maxDuration": 300
+    },
+    "api/ai/generate-headers.ts": {
+      "maxDuration": 60,
+      "includeFiles": "ai/prompts/**"
     }
   },
   "rewrites": [
