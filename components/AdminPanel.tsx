@@ -1201,6 +1201,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [wizardMode, setWizardMode] = useState<'select' | 'ai-questions' | 'ai-generating' | 'templates'>('select');
   const [aiWizardStep, setAiWizardStep] = useState(0);
   const [showDesignerWizard, setShowDesignerWizard] = useState(false);
+  const [aiWizardAnswers, setAiWizardAnswers] = useState<Record<string, string>>({});
+
+  // AI Website Generation Function
+  const generateAIWebsite = () => {
+    console.log('[AI Wizard] Generating website with answers:', aiWizardAnswers);
+    setWizardMode('ai-generating');
+    // TODO: Implement actual AI generation logic
+    // For now, just transition to generating state
+  };
   
   // Check if user should see welcome modal (for new accounts)
   useEffect(() => {
@@ -11145,59 +11154,59 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
     // Field categorization (same as Interface Modal)
     const toggleFields = fields.filter(f => 
-      f.startsWith('show') || 
-      f.startsWith('enable') || 
-      f === 'sticky' ||
-      f.endsWith('Dismissible') ||
-      f.endsWith('Marquee')
+      f.name.startsWith('show') || 
+      f.name.startsWith('enable') || 
+      f.name === 'sticky' ||
+      f.name.endsWith('Dismissible') ||
+      f.name.endsWith('Marquee')
     );
     
-    const toggleFieldSet = new Set(toggleFields);
+    const toggleFieldSet = new Set(toggleFields.map(f => f.name));
     
     const selectFields = fields.filter(f => 
-      f === 'navActiveStyle' ||
-      f === 'megaMenuStyle' ||
-      f === 'mobileMenuPosition' ||
-      f === 'blurIntensity' ||
-      f === 'maxWidth'
+      f.name === 'navActiveStyle' ||
+      f.name === 'megaMenuStyle' ||
+      f.name === 'mobileMenuPosition' ||
+      f.name === 'blurIntensity' ||
+      f.name === 'maxWidth'
     );
     
-    const selectFieldSet = new Set<string>(selectFields);
+    const selectFieldSet = new Set<string>(selectFields.map(f => f.name));
     
     const numberFields = fields.filter(f =>
-      f === 'iconSize' ||
-      f.includes('Opacity') ||
-      f.includes('Intensity') ||
-      f.includes('Threshold') ||
-      f.includes('Duration') ||
-      f.includes('Columns') ||
-      f === 'logoHeight' ||
-      f === 'glowIntensity'
+      f.name === 'iconSize' ||
+      f.name.includes('Opacity') ||
+      f.name.includes('Intensity') ||
+      f.name.includes('Threshold') ||
+      f.name.includes('Duration') ||
+      f.name.includes('Columns') ||
+      f.name === 'logoHeight' ||
+      f.name === 'glowIntensity'
     );
     
     const colorFields = fields.filter(f => 
-      f.toLowerCase().includes('color') || 
-      f.toLowerCase().includes('bg') ||
-      f === 'backgroundColor'
+      f.name.toLowerCase().includes('color') || 
+      f.name.toLowerCase().includes('bg') ||
+      f.name === 'backgroundColor'
     );
     
     const sizeFields = fields.filter(f =>
-      f.includes('Width') ||
-      f.includes('Height') ||
-      f.includes('padding') ||
-      f.includes('MaxHeight')
+      f.name.includes('Width') ||
+      f.name.includes('Height') ||
+      f.name.includes('padding') ||
+      f.name.includes('MaxHeight')
     );
     
-    const colorFieldSet = new Set(colorFields);
-    const numberFieldSet = new Set(numberFields);
-    const sizeFieldSet = new Set(sizeFields);
+    const colorFieldSet = new Set(colorFields.map(f => f.name));
+    const numberFieldSet = new Set(numberFields.map(f => f.name));
+    const sizeFieldSet = new Set(sizeFields.map(f => f.name));
     
     const textFields = fields.filter(f => 
-      !toggleFieldSet.has(f) && 
-      !colorFieldSet.has(f) && 
-      !(selectFieldSet as Set<string>).has(f) &&
-      !numberFieldSet.has(f) &&
-      !sizeFieldSet.has(f)
+      !toggleFieldSet.has(f.name) && 
+      !colorFieldSet.has(f.name) && 
+      !selectFieldSet.has(f.name) &&
+      !numberFieldSet.has(f.name) &&
+      !sizeFieldSet.has(f.name)
     );
 
     return (
@@ -11263,7 +11272,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                   <div className="space-y-6">
                     {/* Navigation Style Selector */}
-                    {fields.includes('navActiveStyle') && (
+                    {fields.some(f => f.name === 'navActiveStyle') && (
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Active Indicator</p>
                         <div className="grid grid-cols-2 gap-2">
@@ -11303,8 +11312,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Visibility</p>
                         <div className="grid grid-cols-2 gap-3">
-                          {toggleFields.map(key => {
-                            const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                          {toggleFields.map(field => {
+                            const key = field.name;
+                            const Meta = (HEADER_FIELD_METADATA as any)[key] || field;
                             return (
                               <button
                                 key={key}
@@ -11329,8 +11339,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Options</p>
                         <div className="space-y-3">
-                          {selectFields.map(key => {
-                            const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                          {selectFields.map(field => {
+                            const key = field.name;
+                            const Meta = (HEADER_FIELD_METADATA as any)[key] || field;
                             let options: { value: string; label: string }[] = [];
                             
                             if (key === 'megaMenuStyle') {
@@ -11393,8 +11404,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Numeric Values</p>
                         <div className="space-y-3">
-                          {numberFields.map(key => {
-                            const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                          {numberFields.map(field => {
+                            const key = field.name;
+                            const Meta = (HEADER_FIELD_METADATA as any)[key] || field;
                             let min = 0, max = 100, step = 1;
                             
                             if (key === 'iconSize') { min = 12; max = 32; step = 1; }
@@ -11433,8 +11445,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Dimensions</p>
                         <div className="space-y-3">
-                          {sizeFields.map(key => {
-                            const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                          {sizeFields.map(field => {
+                            const key = field.name;
+                            const Meta = (HEADER_FIELD_METADATA as any)[key] || field;
                             return (
                               <div key={key} className="bg-neutral-900/50 p-3 rounded-lg border border-neutral-700">
                                 <label className="text-[10px] uppercase font-bold text-neutral-500 mb-2 block">{Meta.label}</label>
@@ -11458,8 +11471,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-3">
                         <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Content</p>
                         <div className="space-y-3">
-                          {textFields.map(key => {
-                            const Meta = (HEADER_FIELD_METADATA as any)[key] || { label: key };
+                          {textFields.map(field => {
+                            const key = field.name;
+                            const Meta = (HEADER_FIELD_METADATA as any)[key] || field;
                             return (
                               <div key={key} className="bg-neutral-900/50 p-3 rounded-lg border border-neutral-700">
                                 <label className="text-[10px] uppercase font-bold text-neutral-500 mb-2 block">{Meta.label}</label>

@@ -149,15 +149,17 @@ export default async function handler(req: any, res: any) {
       }
     }));
 
-    // Log generation for analytics
-    await supabase.from('ai_generation_log').insert({
+    // Log generation for analytics (fire-and-forget)
+    supabase.from('ai_generation_log').insert({
       store_id: storeId,
       generation_type: 'header',
       prompt: userPrompt,
       variants_generated: headers.length,
       model: 'gemini-2.0-flash-exp',
       created_at: new Date().toISOString()
-    }).catch(err => console.error('[AI Generate Headers] Log error:', err));
+    }).then(({ error }) => {
+      if (error) console.error('[AI Generate Headers] Log error:', error);
+    });
 
     return res.status(200).json({
       success: true,
