@@ -228,7 +228,49 @@ Make each variant look COMPLETELY DIFFERENT when rendered.`;
       }
     }));
 
-    // --- Step 8: Log for analytics (fire-and-forget) ---
+    // --- Step 8: Save all 3 headers to shared_header_library ---
+    try {
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        
+        const libraryEntries = headers.map((h: any) => ({
+          name: h.name,
+          description: `AI-generated ${h.config.layout || 'modern'} header`,
+          component: `// AI Generated Header: ${h.name}\n// Model: gemini-2.5-flash\n// Generated: ${new Date().toISOString()}`,
+          config: h.config,
+          preview: '',
+          created_by: storeId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          times_used: 0,
+          tags: ['AI Generated', h.config.layout || 'modern'],
+          ai_generated: true,
+          design_trends: h.metadata.designTrends || ['2026 Modern'],
+          status: 'public'
+        }));
+
+        const { data: savedHeaders, error: saveError } = await supabase
+          .from('shared_header_library')
+          .insert(libraryEntries)
+          .select();
+
+        if (saveError) {
+          console.warn('[AI Generate Headers] Library save failed (non-fatal):', saveError.message);
+        } else {
+          console.log('[AI Generate Headers] Saved', savedHeaders?.length, 'headers to library');
+          // Update response IDs with real DB IDs
+          if (savedHeaders) {
+            savedHeaders.forEach((saved: any, i: number) => {
+              if (headers[i]) headers[i].id = saved.id;
+            });
+          }
+        }
+      }
+    } catch (saveErr: any) {
+      console.warn('[AI Generate Headers] Library save error (non-fatal):', saveErr.message);
+    }
+
+    // --- Step 9: Log for analytics (fire-and-forget) ---
     try {
       if (supabaseUrl && supabaseKey) {
         const supabase = createClient(supabaseUrl, supabaseKey);
