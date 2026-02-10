@@ -448,25 +448,99 @@ const HeaderPreviewModal: React.FC<{
           />
         </div>
 
-        {/* Mock page content below header to show context */}
+        {/* Full mock storefront so user can scroll and see header in context */}
         <div className="w-full" style={{ backgroundColor: '#f8f9fa' }}>
-          <div className="max-w-7xl mx-auto px-6 py-16">
-            {/* Hero Section Mock */}
-            <div className="rounded-2xl p-12 mb-8 text-center" style={{ backgroundColor: primaryColor + '10' }}>
-              <h1 className="text-4xl font-bold mb-4" style={{ color: '#1a1a1a' }}>Welcome to {logoText}</h1>
-              <p className="text-lg mb-6" style={{ color: '#6b7280' }}>Explore our latest collection of premium products</p>
-              <button className="px-8 py-3 rounded-lg text-white font-semibold" style={{ backgroundColor: primaryColor }}>Shop Now</button>
+          <div className="max-w-7xl mx-auto px-6">
+            {/* Hero Section */}
+            <div className="rounded-2xl p-16 my-8 text-center" style={{ backgroundColor: primaryColor + '10' }}>
+              <h1 className="text-5xl font-bold mb-4" style={{ color: '#1a1a1a' }}>Welcome to {logoText}</h1>
+              <p className="text-lg mb-8 max-w-2xl mx-auto" style={{ color: '#6b7280' }}>Explore our latest collection of premium products designed for the modern lifestyle</p>
+              <button className="px-8 py-3 rounded-lg text-white font-semibold text-lg" style={{ backgroundColor: primaryColor }}>Shop Now</button>
             </div>
 
-            {/* Product Grid Mock */}
-            <div className="grid grid-cols-4 gap-6">
-              {['New Arrivals', 'Best Sellers', 'On Sale', 'Featured'].map((title, i) => (
-                <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm">
-                  <div className="aspect-square" style={{ backgroundColor: `${primaryColor}${['15','10','20','08'][i]}` }} />
-                  <div className="p-4">
-                    <p className="font-semibold text-sm" style={{ color: '#1a1a1a' }}>{title}</p>
-                    <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>$49.99 - $129.99</p>
+            {/* Category Cards */}
+            <div className="grid grid-cols-3 gap-6 mb-12">
+              {['New Arrivals', 'Best Sellers', 'Collections'].map((title, i) => (
+                <div key={i} className="rounded-xl overflow-hidden shadow-sm bg-white">
+                  <div className="h-48" style={{ backgroundColor: `${primaryColor}${['15','10','20'][i]}` }} />
+                  <div className="p-5">
+                    <p className="font-bold text-lg" style={{ color: '#1a1a1a' }}>{title}</p>
+                    <p className="text-sm mt-1" style={{ color: '#9ca3af' }}>Shop the latest →</p>
                   </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Product Grid */}
+            <h2 className="text-2xl font-bold mb-6" style={{ color: '#1a1a1a' }}>Featured Products</h2>
+            <div className="grid grid-cols-4 gap-6 mb-12">
+              {Array.from({ length: 8 }, (_, i) => ({ name: ['Classic Tee', 'Slim Hoodie', 'Canvas Bag', 'Wool Beanie', 'Leather Belt', 'Sport Watch', 'Silk Scarf', 'Vintage Cap'][i], price: ['$29.99', '$79.99', '$49.99', '$24.99', '$59.99', '$149.99', '$39.99', '$34.99'][i] })).map((product, i) => (
+                <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm">
+                  <div className="aspect-square" style={{ backgroundColor: `${primaryColor}${['08','12','06','15','10','18','05','11'][i]}` }} />
+                  <div className="p-4">
+                    <p className="font-semibold text-sm" style={{ color: '#1a1a1a' }}>{product.name}</p>
+                    <p className="text-sm mt-1 font-medium" style={{ color: primaryColor }}>{product.price}</p>
+                    <div className="flex gap-1 mt-2">
+                      {[1,2,3,4,5].map(s => (
+                        <div key={s} className="w-2 h-2 rounded-full" style={{ backgroundColor: s <= 4 ? '#fbbf24' : '#e5e7eb' }} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Banner */}
+            <div className="rounded-2xl p-12 mb-12 flex items-center justify-between" style={{ backgroundColor: primaryColor }}>
+              <div>
+                <h3 className="text-white text-2xl font-bold mb-2">Summer Sale — Up to 50% Off</h3>
+                <p className="text-white/80">Limited time offer on select styles</p>
+              </div>
+              <button className="px-6 py-3 bg-white rounded-lg font-semibold" style={{ color: primaryColor }}>Shop Sale</button>
+            </div>
+
+            {/* Testimonials */}
+            <h2 className="text-2xl font-bold mb-6" style={{ color: '#1a1a1a' }}>What Our Customers Say</h2>
+            <div className="grid grid-cols-3 gap-6 mb-12">
+              {[
+                { text: '"Absolutely love the quality. Will definitely order again!"', name: 'Sarah M.' },
+                { text: '"Fast shipping and the product exceeded my expectations."', name: 'James K.' },
+                { text: '"Best online shopping experience I have ever had."', name: 'Emma R.' }
+              ].map((review, i) => (
+                <div key={i} className="bg-white rounded-xl p-6 shadow-sm">
+                  <div className="flex gap-1 mb-3">
+                    {[1,2,3,4,5].map(s => (
+                      <div key={s} className="w-3 h-3 rounded-full" style={{ backgroundColor: '#fbbf24' }} />
+                    ))}
+                  </div>
+                  <p className="text-sm mb-3" style={{ color: '#374151' }}>{review.text}</p>
+                  <p className="text-xs font-semibold" style={{ color: '#9ca3af' }}>— {review.name}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Newsletter */}
+            <div className="rounded-2xl p-12 mb-12 text-center bg-white shadow-sm">
+              <h3 className="text-2xl font-bold mb-2" style={{ color: '#1a1a1a' }}>Join Our Newsletter</h3>
+              <p className="text-sm mb-6" style={{ color: '#9ca3af' }}>Be the first to know about new arrivals and exclusive offers</p>
+              <div className="flex max-w-md mx-auto gap-3">
+                <div className="flex-1 h-12 rounded-lg border border-gray-200 bg-gray-50" />
+                <button className="px-6 h-12 rounded-lg text-white font-semibold" style={{ backgroundColor: primaryColor }}>Subscribe</button>
+              </div>
+            </div>
+
+            {/* Footer mock */}
+            <div className="border-t border-gray-200 py-12 grid grid-cols-4 gap-8 mb-8">
+              <div>
+                <p className="font-bold text-lg mb-4" style={{ color: '#1a1a1a' }}>{logoText}</p>
+                <p className="text-sm" style={{ color: '#9ca3af' }}>Premium products for the modern lifestyle.</p>
+              </div>
+              {['Shop', 'Company', 'Support'].map((col, i) => (
+                <div key={i}>
+                  <p className="font-semibold text-sm mb-3" style={{ color: '#374151' }}>{col}</p>
+                  {['Link One', 'Link Two', 'Link Three', 'Link Four'].map((link, j) => (
+                    <p key={j} className="text-sm mb-2" style={{ color: '#9ca3af' }}>{link}</p>
+                  ))}
                 </div>
               ))}
             </div>
