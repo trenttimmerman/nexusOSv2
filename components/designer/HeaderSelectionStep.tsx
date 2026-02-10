@@ -129,7 +129,14 @@ export const HeaderSelectionStep: React.FC<HeaderSelectionStepProps> = ({
         data = JSON.parse(responseText);
       } catch (parseError) {
         console.error('[AI Generation] Non-JSON response:', responseText.substring(0, 200));
-        throw new Error('AI Generation is only available in production (requires Vercel deployment). Please browse the header library instead.');
+        
+        // Check if it's an HTML error page (dev environment)
+        if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+          throw new Error('AI Generation is only available in production (requires Vercel deployment). Please browse the header library instead.');
+        }
+        
+        // Otherwise it's a real production error - show what we can
+        throw new Error(`API Error: ${responseText.substring(0, 100)}`);
       }
 
       if (!response.ok) {
