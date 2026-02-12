@@ -24,20 +24,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Designer V3**: Complete AI-powered header generation wizard
   - 3-step wizard interface (Selection → Customization → Library Save)
-  - AI header generation using Gemini 2.0-flash-exp
+  - AI header generation using Gemini 2.5-flash with comprehensive training prompt
   - Community header library with search and filter capabilities
   - Full-screen customization editor with 70+ editable properties
   - 8 new TypeScript components in `/components/designer/`
   - 3 new API endpoints for AI generation, library browsing, and saving
   - Database migration: `shared_header_library` table with RLS policies
   - Comprehensive documentation in HANDOFF_FEB9_DESIGNER_V3.md
+- **AI Header Generation Enhancements**:
+  - Live HeaderCanvas2026 preview rendering in selection cards (commit: e66bf50)
+  - Full-screen storefront preview modal with scrollable content (commit: 6df30e9)
+  - Auto-save all 3 generated headers to `shared_header_library` (commit: e318f01)
+  - AI training prompt rewritten based on 36 real header examples (commit: de78509)
+  - 7 header design archetypes: Clean Minimal, Dark Luxury, Bold & Colorful, Frosted Glass, Editorial/Brutalist, Full-Featured Professional, Warm Artisan
 
 ### Fixed
+- **Critical Production Bugs** (see HANDOFF_FEB10_AI_HEADER_GENERATION.md):
+  - FUNCTION_INVOCATION_FAILED: `import.meta.env` crashes in Node.js serverless runtime - replaced with `process.env` (commit: 8edff1c)
+  - FUNCTION_INVOCATION_FAILED: Cross-directory imports causing Vercel bundler crashes - made generate-headers.ts fully self-contained (commit: bf46b90)
+  - FUNCTION_INVOCATION_FAILED: Sibling .ts imports in api/ treated as handlers - inlined training prompt directly (commit: 192f4a0)
+  - Cron job SyntaxError from dual ESM exports - removed named config export, moved to vercel.json (commit: 4ac1138)
 - Header color fields rendering in Header Studio (commit: 9de9d07)
 - TypeScript compilation errors in Designer V3 components (commit: 0bd93d6)
 - Header data structure normalization from API responses (commit: c22b6fe)
 - AI generation API error handling for dev environment (commits: 447ec89, db32882)
 - JSON parse errors with helpful production-only messaging
+- `mapConfigToHeaderData()` now spreads ALL style fields from AI response (commit: 93344bc)
 
 ---
 

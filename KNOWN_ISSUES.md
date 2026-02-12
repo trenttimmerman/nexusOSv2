@@ -1,6 +1,6 @@
 # Known Issues
 
-**Last Updated:** February 7, 2026
+**Last Updated:** February 12, 2026
 
 This file tracks all active bugs, issues, and technical debt in the WebPilot Commerce OS platform.
 
@@ -48,13 +48,14 @@ None at this time.
 
 Minor issues, cosmetic bugs, or technical debt.
 
-<!-- Example:
-- [ ] Footer component alignment off by 2px on mobile
-- [ ] Console warnings for deprecated React patterns
-- [ ] Missing TypeScript types in legacy components
--->
+### AI Header Generation (Feb 10, 2026)
+- [ ] THREE.js duplicate import warning in console - cosmetic only, doesn't affect functionality
+- [ ] Header preview modal uses `sticky: false` - cannot test sticky scroll behavior in full preview
+- [ ] Mega menu preview doesn't show hover interactions in scaled preview cards
 
-None at this time.
+### Build & Performance
+- [ ] Bundle size 2,915 kB (663 kB gzipped) triggers Vite warning - consider code-splitting for AdminPanel and Designer wizard
+- [ ] 36 header example `.tsx` files in `headers-examples/` folder - could move to docs/examples or gitignore to reduce repo size
 
 ---
 
