@@ -1,6 +1,6 @@
 # Known Issues
 
-**Last Updated:** February 12, 2026
+**Last Updated:** February 13, 2026
 
 This file tracks all active bugs, issues, and technical debt in the WebPilot Commerce OS platform.
 
@@ -10,11 +10,16 @@ This file tracks all active bugs, issues, and technical debt in the WebPilot Com
 
 Issues that break core functionality or affect all users.
 
-<!-- Example:
-- [ ] Payment processing fails on Safari - see maintenance/bugfixes/2026-02-07_safari-payment-bug.md
--->
-
-None at this time.
+- [ ] **AI Header Generation BROKEN in Production** - FUNCTION_INVOCATION_FAILED error
+  - **Severity:** CRITICAL - Feature completely non-functional
+  - **Environment:** Production (Vercel) only - local builds pass
+  - **Error:** `SyntaxError: Missing initializer in const declaration` in Node.js ESM parser
+  - **Impact:** All users cannot generate AI headers
+  - **Status:** Under investigation - multiple fix attempts unsuccessful
+  - **Details:** See `HANDOFF_FEB13_AI_GENERATION_CRITICAL_ERROR.md`
+  - **Workaround:** Use pre-built header templates from Design Library
+  - **Started:** February 13, 2026
+  - **Commits:** 32ac4e4, 2a265de, 60d4a9c, 1206608, 2148220 (all ineffective)
 
 ---
 
