@@ -50,6 +50,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced prompt with persona-specific layout requirements and trend references
 
 ### Fixed
+- **AI API**: Fixed try-catch nesting causing FUNCTION_INVOCATION_FAILED (commit: 35d6651)
+  - CRITICAL FIX: Corrected improperly nested try-catch blocks in serverless handler
+  - After inlining examples, code had invalid structure with double-nested try blocks
+  - Removed redundant inner try-catch, kept single comprehensive top-level try-catch
+  - Consolidated error handling into one catch block with proper JSON responses
+  - Serverless function now has valid JavaScript syntax and proper error boundaries
 - **AI API**: Fixed FUNCTION_INVOCATION_FAILED with inlined few-shot examples (commit: 7c90a65)
   - CRITICAL FIX: Removed fs/promises file system access that was crashing Vercel serverless functions
   - Vercel serverless functions cannot use readFile() to load header examples at runtime
