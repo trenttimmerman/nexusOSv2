@@ -50,6 +50,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced prompt with persona-specific layout requirements and trend references
 
 ### Fixed
+- **AI API**: Fixed FUNCTION_INVOCATION_FAILED with inlined few-shot examples (commit: 7c90a65)
+  - CRITICAL FIX: Removed fs/promises file system access that was crashing Vercel serverless functions
+  - Vercel serverless functions cannot use readFile() to load header examples at runtime
+  - Solution: Inlined 3 complete header examples directly in code as FEW_SHOT_EXAMPLES constant
+  - Examples showcase: glassmorphism, scroll detection, marquee animations, neon brutalist styling
+  - Serverless function now fully self-contained with no file system dependencies
+  - Few-shot training still active and working in production
+  - Fixed syntax error from incomplete code replacement (broken "con---" line)
 - **Designer V3**: Added missing handleCompleteWizard function (commit: aee0ef6)
   - Fixes ReferenceError when saving header in Designer V3 wizard
   - Returns final header config (customized or selected) to onComplete callback
