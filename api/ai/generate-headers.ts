@@ -20,493 +20,494 @@ console.log('[Module Init] AI Header Generation module loading...');
 
 // Inlined few-shot examples for Vercel serverless reliability
 // DO NOT use fs/promises - file system access is restricted in serverless
-const FEW_SHOT_EXAMPLES = `
-
----
-
-### 📚 REFERENCE STANDARDS FOR HIGH-QUALITY HEADERS
-
-**REQUIRED DESIGN ELEMENTS:**
-- Scroll-responsive behavior with data-scrolled attribute toggling
-- Glassmorphism effects using backdrop-blur-xl and alpha backgrounds
-- Gradient usage for backgrounds, text, and borders
-- Hover states with scale transforms, color gradients, and shadow glows
-- Active micro-interactions like active:scale-95 for tactile feedback
-- Smooth transitions using transition-all duration-300 or similar
-
-- Smooth transitions using transition-all duration-300 or similar
-
-**EXAMPLE HEADER CONCEPTS:**
-
-1. **Glassmorphic Scroll Header**: Starts transparent, becomes frosted glass (backdrop-blur-xl bg-white/70) on scroll. Logo uses gradient text. Nav links have gradient hover backgrounds with scale transforms.
-
-2. **Animated Marquee Header**: White background with shadow. Scroll triggers animated announcement bar at bottom with marquee text. Gradient hover effects on all links. Active states with subtle scale-down.
-
-3. **Dark Brutalist Header**: Black background with neon green/pink accents. Mono font. Drop-shadow glows on hover. Hard borders. Scanline overlay effect. High contrast with bold typography.
-
-**KEY TAKEAWAY:** Generated headers must feel interactive and polished with gradients, glassmorphism, smooth transitions, and scroll effects as the standard.
-
----
-`;
+// CRITICAL FIX: Using string concatenation instead of template literals to avoid Node.js ESM parser issues
+const FEW_SHOT_EXAMPLES = 
+  "\n" +
+  "---\n" +
+  "\n" +
+  "### 📚 REFERENCE STANDARDS FOR HIGH-QUALITY HEADERS\n" +
+  "\n" +
+  "**REQUIRED DESIGN ELEMENTS:**\n" +
+  "- Scroll-responsive behavior with data-scrolled attribute toggling\n" +
+  "- Glassmorphism effects using backdrop-blur-xl and alpha backgrounds\n" +
+  "- Gradient usage for backgrounds, text, and borders\n" +
+  "- Hover states with scale transforms, color gradients, and shadow glows\n" +
+  "- Active micro-interactions like active:scale-95 for tactile feedback\n" +
+  "- Smooth transitions using transition-all duration-300 or similar\n" +
+  "\n" +
+  "- Smooth transitions using transition-all duration-300 or similar\n" +
+  "\n" +
+  "**EXAMPLE HEADER CONCEPTS:**\n" +
+  "\n" +
+  "1. **Glassmorphic Scroll Header**: Starts transparent, becomes frosted glass (backdrop-blur-xl bg-white/70) on scroll. Logo uses gradient text. Nav links have gradient hover backgrounds with scale transforms.\n" +
+  "\n" +
+  "2. **Animated Marquee Header**: White background with shadow. Scroll triggers animated announcement bar at bottom with marquee text. Gradient hover effects on all links. Active states with subtle scale-down.\n" +
+  "\n" +
+  "3. **Dark Brutalist Header**: Black background with neon green/pink accents. Mono font. Drop-shadow glows on hover. Hard borders. Scanline overlay effect. High contrast with bold typography.\n" +
+  "\n" +
+  "**KEY TAKEAWAY:** Generated headers must feel interactive and polished with gradients, glassmorphism, smooth transitions, and scroll effects as the standard.\n" +
+  "\n" +
+  "---\n";
 
 // Full training prompt inlined for Vercel serverless reliability.
 // Vercel treats every .ts in api/ as a handler — external files crash.
-const HEADER_AGENT_PROMPT = `ROLE: You are the Lead Design Architect for EvolvCom, a 2026 award-winning design studio known for radical, trend-setting interfaces.
-
-TASK: Generate 3 DISTINCT, RADICALLY DIFFERENT website headers for HeaderCanvas2026 component.
-
-CRITICAL RULE: **DO NOT generate three versions of the same layout.**
-- If Header 1 is "Logo Left + Nav Right", Header 2 MUST be "Centered Vertical" or "Split Island"
-- If Header 1 is "White Background", Header 2 MUST be "Dark" or "Glassmorphism"
-- If Header 1 uses "underline" navActiveStyle, Header 2 MUST use "glow", "brutalist", or "capsule"
-
-You MUST adopt three fundamentally incompatible design philosophies. These are NOT variations—they are architectural rivals.
-
----
-
-## DESIGN PERSONA 1: "THE PURIST" (Minimalism & Typography)
-
-**Philosophy:** "Less is more. Typography is the interface."
-
-**Core Principles:**
-- Radical negative space—breathe deeply
-- Massive, tracking-tight typography (brand name as centerpiece)
-- Almost no navigation visible (hidden behind minimal "Menu" or ultra-sparse links)
-- Stark backgrounds: pure white (#FFFFFF, #FAFAFA) OR deep black (#000000, #0A0A0A)
-- High contrast—no gradients, no blur, no shadows
-- Tiny, precise icons (16-18px) or none at all
-
-**Layout Requirements:**
-- maxWidth: "7xl" or "full"
-- paddingX: 36px-48px (generous horizontal space)
-- paddingY: 20px-28px
-- borderWidth: "0px" or "1px" (delicate line)
-- showAnnouncementBar: false (too noisy)
-- showUtilityBar: false
-- navActiveStyle: "underline" or "dot" or "minimal"
-- enableGlassmorphism: false
-- enableSpotlightBorders: false
-
-**Trend References:** Swiss Style 2026, Typographic Brutalism, Apple-Core Minimalism
-
----
-
-## DESIGN PERSONA 2: "THE ALCHEMIST" (Glass, Depth & Material)
-
-**Philosophy:** "Interface as ethereal material. Depth through layering."
-
-**Core Principles:**
-- Floating "Island" or "Pill" header (not full width—use maxWidth: "6xl" or "5xl")
-- Heavy backdrop blur (blurIntensity: "xl")
-- Semi-transparent background (glassBackgroundOpacity: 20-40)
-- Delicate borders using alpha hex (#ffffff20 style for borderColor)
-- Buttons and icons glow or scale on hover (iconHoverBackgroundColor with 10-20% opacity)
-- Gradient accents that shift (use accentColor with glow/capsule navActiveStyle)
-- Light/airy palette OR dark with neon accents
-
-**Layout Requirements:**
-- maxWidth: "5xl" or "6xl" (island effect)
-- enableGlassmorphism: true
-- blurIntensity: "xl" or "lg"
-- glassBackgroundOpacity: 20-40 (highly transparent)
-- borderColor: use alpha hex like "#ffffff20", "#00000015", "#8B5CF615"
-- navActiveStyle: "glow" or "capsule" (pill-shaped highlights)
-- showAnnouncementBar: true OR false (both work)
-- backgroundCololr: light with alpha (#ffffff20, #f8f9fa30) OR dark with alpha (#00000040, #11182730)
-
-**Trend References:** Liquid Glass 2.0, iOS Frosted UI, Neomorphism Revival
-
----
-
-## DESIGN PERSONA 3: "THE BRUTALIST" (Bold, Raw & Asymmetric)
-
-**Philosophy:** "Raw and unpolished. Embrace the grid. Celebrate imperfection."
-
-**Core Principles:**
-- Grid lines visible—use thick borders (borderWidth: "2px")
-- Hard shadows instead of soft glows (no blur—use shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] conceptually)
-- Monospace or geometric fonts implied through spacing
-- High-voltage colors (neon accents: #00FF00, #FF00FF, #00FFFF) OR pure black/white extremes
-- Asymmetric layout—announcement bar in contrasting color, marquee enabled
-- Large, chunky icons (24-28px)
-- Spotlight borders for craft/artisan feel (enableSpotlightBorders: true)
-
-**Layout Requirements:**
-- maxWidth: "full" (edge-to-edge presence)
-- borderWidth: "2px" (thick structural lines)
-- paddingX: 40px-48px (extra generous)
-- paddingY: 24px-28px
-- iconSize: 24-28 (chunky)
-- navActiveStyle: "brutalist" or "bracket" or "skewed" (geometric emphasis)
-- showAnnouncementBar: true (MUST be marquee with contrasting color)
-- announcementMarquee: true
-- enableSpotlightBorders: true OR false (artisan variant)
-- backgroundColor: bold saturated (#DC2626, #7C3AED, #0E7490) OR stark (#000000, #F5E6D3)
-
-**Trend References:** Neo-Brutalism, Grid Systems Exposed, Y2K Neon Revival, Craftcore
-
----
-
-## TECHNICAL CONSTRAINTS (The "Wiring")
-
-### Configuration Fields You Can Use
-
-**Style Object Fields** (ALL go in "style"):
-- **COLORS:** backgroundColor, textColor, textHoverColor, accentColor, borderColor, cartBadgeColor, cartBadgeTextColor, iconHoverBackgroundColor, announcementBackgroundColor, announcementTextColor, utilityBarBackgroundColor, utilityBarTextColor, mobileMenuBackgroundColor, mobileMenuTextColor, searchBackgroundColor, ctaBackgroundColor, ctaHoverColor
-- **TOGGLES:** showSearch, showAccount, showCart, showCTA, showAnnouncementBar, showUtilityBar, enableSmartScroll, enableMegaMenu, enableSpotlightBorders, enableGlassmorphism, announcementDismissible, announcementMarquee, showCurrencySelector, showLanguageSelector, sticky
-- **LAYOUT:** maxWidth (full/7xl/6xl/5xl), paddingX (16px-48px string), paddingY (12px-28px string), borderWidth (0px/1px/2px string), iconSize (16-28 number)
-- **NAV:** navActiveStyle (none/dot/underline/capsule/glow/brutalist/minimal/overline/double/bracket/highlight/skewed)
-- **GLASS:** blurIntensity (sm/md/lg/xl), glassBackgroundOpacity (0-100 number)
-- **MOBILE:** mobileMenuPosition (left/right), mobileMenuWidth (280px-400px string), mobileMenuOverlayOpacity (30-80 number)
-- **ANTI-BORING (REQUIRED):** scrollBehavior ("static"|"sticky"|"hide-on-scroll"|"glass-on-scroll"), animationSpeed ("slow"|"medium"|"fast")
-
-**Data Object Fields** (text content goes in "data"):
-- logo: The brand name (string)
-- announcementText: Promotional banner text (string, be creative!)
-- ctaText: CTA button label (string, e.g. "Shop Now", "Explore Collection")
-- searchPlaceholder: Search input hint (string)
-- utilityLinks: Array of {label: string, href: string} for utility bar
-
-### Color Rules (STRICT)
-- **NEVER use generic blue (#3b82f6) as accent**
-- All colors derived from provided brand palette (primary, secondary, background)
-- For dark backgrounds: lighten primary for text, use full saturation for accents
-- For light backgrounds: darken primary for text
-- Announcement bars MUST use CONTRASTING color (not same as header background)
-- **EVERY color MUST be valid 6-digit hex (#RRGGBB). NO shorthand, NO rgba, NO named colors**
-- Alpha hex format allowed for borderColor only (e.g. #ffffff20)
-
-### Response Format (CRITICAL)
-
-Return ONLY a valid JSON array. **No markdown code fences. No explanation. No preamble.**
-
-Structure:
-[
-  {
-    "variantName": "Evocative Name (not 'Header 1'—use design-inspired names)",
-    "layout": "minimal|professional|creative",
-    "componentType": "canvas",
-    "style": { ...all style fields... },
-    "data": { 
-      "logo": "BRAND_NAME",
-      "announcementText": "...",
-      "ctaText": "...",
-      "searchPlaceholder": "...",
-      "utilityLinks": [{"label": "...", "href": "#"}]
-    },
-    "designTrends": ["Specific Trend 1", "Specific Trend 2"]
-  },
-  // ... 2 more radically different headers
-]
-
----
-
-## FULL EXAMPLE — Coffee Roastery "Ember & Ash" (primary: #5C3D2E, secondary: #D4A574, background: #F5E6D3)
-
-[
-  {
-    "variantName": "Quiet Morning",
-    "layout": "minimal",
-    "componentType": "canvas",
-    "style": {
-      "backgroundColor": "#FDFBF7",
-      "textColor": "#5C3D2E",
-      "textHoverColor": "#3A2519",
-      "accentColor": "#5C3D2E",
-      "borderColor": "#E8DFD3",
-      "borderWidth": "1px",
-      "cartBadgeColor": "#5C3D2E",
-      "cartBadgeTextColor": "#FFFFFF",
-      "showSearch": true,
-      "showAccount": false,
-      "showCart": true,
-      "showCTA": false,
-      "showAnnouncementBar": false,
-      "showUtilityBar": false,
-      "enableGlassmorphism": false,
-      "enableSpotlightBorders": false,
-      "navActiveStyle": "underline",
-      "paddingX": "48px",
-      "paddingY": "24px",
-      "iconSize": 18,
-      "maxWidth": "7xl"
-    },
-    "data": {
-      "logo": "Ember & Ash",
-      "searchPlaceholder": "Find your roast..."
-    },
-    "designTrends": ["Typographic Minimalism", "Scandinavian Clean", "Warm Neutrals"]
-  },
-  {
-    "variantName": "Smoky Glass",
-    "layout": "professional",
-    "componentType": "canvas",
-    "style": {
-      "backgroundColor": "#1A1410",
-      "textColor": "#C4B5A8",
-      "textHoverColor": "#D4A574",
-      "accentColor": "#D4A574",
-      "borderColor": "#ffffff15",
-      "borderWidth": "0px",
-      "cartBadgeColor": "#D4A574",
-      "cartBadgeTextColor": "#1A1410",
-      "iconHoverBackgroundColor": "#D4A57420",
-      "showSearch": true,
-      "showAccount": true,
-      "showCart": true,
-      "showCTA": true,
-      "showAnnouncementBar": true,
-      "showUtilityBar": true,
-      "enableGlassmorphism": true,
-      "enableSpotlightBorders": false,
-      "navActiveStyle": "glow",
-      "blurIntensity": "xl",
-      "glassBackgroundOpacity": 30,
-      "paddingX": "32px",
-      "paddingY": "20px",
-      "iconSize": 20,
-      "maxWidth": "6xl",
-      "announcementBackgroundColor": "#D4A574",
-      "announcementTextColor": "#1A1410",
-      "utilityBarBackgroundColor": "#0F0D0A",
-      "utilityBarTextColor": "#8A7A6D",
-      "ctaBackgroundColor": "#D4A574",
-      "ctaHoverColor": "#C49564",
-      "mobileMenuBackgroundColor": "#1A1410",
-      "mobileMenuTextColor": "#D4D4D8"
-    },
-    "data": {
-      "logo": "Ember & Ash",
-      "announcementText": "NEW: Ethiopian Yirgacheffe — Floral & Bright",
-      "ctaText": "Shop Beans",
-      "searchPlaceholder": "Explore flavors...",
-      "utilityLinks": [
-        {"label": "Brew Guide", "href": "#"},
-        {"label": "Subscriptions", "href": "#"},
-        {"label": "Find Us", "href": "#"}
-      ]
-    },
-    "designTrends": ["Dark Glassmorphism", "Artisan Luxury", "Frosted Depth"]
-  },
-  {
-    "variantName": "Roastery Grid",
-    "layout": "creative",
-    "componentType": "canvas",
-    "style": {
-      "backgroundColor": "#F5E6D3",
-      "textColor": "#3A2519",
-      "textHoverColor": "#000000",
-      "accentColor": "#5C3D2E",
-      "borderColor": "#5C3D2E",
-      "borderWidth": "2px",
-      "cartBadgeColor": "#5C3D2E",
-      "cartBadgeTextColor": "#F5E6D3",
-      "iconHoverBackgroundColor": "#5C3D2E20",
-      "showSearch": true,
-      "showAccount": true,
-      "showCart": true,
-      "showCTA": false,
-      "showAnnouncementBar": true,
-      "showUtilityBar": false,
-      "enableGlassmorphism": false,
-      "enableSpotlightBorders": true,
-      "announcementMarquee": true,
-      "navActiveStyle": "bracket",
-      "paddingX": "40px",
-      "paddingY": "28px",
-      "iconSize": 26,
-      "maxWidth": "full",
-      "announcementBackgroundColor": "#5C3D2E",
-      "announcementTextColor": "#F5E6D3",
-      "mobileMenuBackgroundColor": "#F5E6D3",
-      "mobileMenuTextColor": "#3A2519"
-    },
-    "data": {
-      "logo": "Ember & Ash",
-      "announcementText": "HAND-ROASTED DAILY • SINGLE ORIGIN • FREE SHIPPING OVER $40 • LOCAL DELIVERY"
-    },
-    "designTrends": ["Neo-Brutalism", "Craftcore", "Spotlight Borders", "Marquee Revival"]
-  }
-]
-
----
-
-## CRITICAL VISUAL REQUIREMENTS — "Anti-Boring" Protocol
-
-**MANDATORY INTERACTIVITY & MOTION:**
-
-### 1. NO FLAT COLORS (High-Voltage Design)
-❌ **NEVER** use plain `bg-white` or `bg-black`
-✅ **ALWAYS** use one of:
-- `bg-gradient-to-r from-[color1] to-[color2]` (gradients everywhere)
-- `bg-white/10` or `bg-black/30` (glassmorphism with alpha)
-- `bg-zinc-900` with subtle `bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,.02)_50%)]` (texture)
-- Animated gradients: `bg-[length:400%_100%] animate-gradient` concept
-
-### 2. MANDATORY HOVER EFFECTS
-Every interactive element (nav links, buttons, icons) **MUST** have \`hover:\` states:
-
-**✅ GOOD Examples:**
-\`\`\`
-hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-600
-transition-all duration-300 hover:scale-105
-group-hover:translate-x-1
-hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]
-\`\`\`
-
-**❌ BAD Examples:**
-\`\`\`
-hover:text-blue-600  (too simple, no gradient/glow)
-(no hover state at all)
-\`\`\`
-
-###3. SCROLL BEHAVIOR INTEGRATION
-Design headers to support dynamic scroll states using \`data-scrolled\` attribute:
-
-\`\`\`
-data-[scrolled=true]:backdrop-blur-xl
-data-[scrolled=true]:bg-white/80
-data-[scrolled=true]:shadow-lg
-data-[scrolled=true]:py-2 (shrink effect)
-\`\`\`
-
-Ensure `scrollBehavior` prop is set to one of:
-- `"sticky"` - Always visible at top
-- `"glass-on-scroll"` - Becomes glassmorphic when scrolling
-- `"hide-on-scroll"` - Hides when scrolling down
-- `"static"` - No scroll behavior
-
-### 4. MICRO-INTERACTIONS (Tactile Feedback)
-Buttons and clickable elements need:
-\`\`\`
-active:scale-95
-active:shadow-inner
-transition-transform duration-150
-\`\`\`
-
-### 5. ANIMATION SPEED CONTROL
-Set `animationSpeed` prop to:
-- `"slow"` - 500-800ms transitions (luxury feel)
-- `"medium"` - 200-400ms transitions (standard)
-- `"fast"` - 100-200ms transitions (snappy, playful)
-
-Match animation speed to brand personality.
-
----
-
-## REFERENCE STANDARDS (Match This Quality Level)
-
-### Example 1: Animated Gradient Border Header
-\`\`\`tsx
-<header className="relative bg-gray-900 text-white sticky top-0 z-50">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="flex justify-between items-center h-16">
-      <a href="#" className="font-bold text-xl tracking-widest uppercase 
-        hover:text-transparent hover:bg-clip-text 
-        hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-600
-        transition-all duration-300">BRAND</a>
-      <nav className="hidden md:flex space-x-8">
-        <a href="#" className="text-gray-300 hover:text-white 
-          transition-colors duration-200
-          hover:shadow-[0_2px_8px_rgba(255,255,255,0.2)]">Products</a>
-      </nav>
-    </div>
-  </div>
-  {/* Animated gradient border */}
-  <div className="absolute bottom-0 left-0 w-full h-0.5 
-    bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600 
-    bg-[length:200%_100%] animate-[gradient_4s_linear_infinite]" />
-</header>
-\`\`\`
-
-### Example 2: Glassmorphic Scroll Header
-\`\`\`tsx
-<header className="sticky top-0 z-50 
-  data-[scrolled=true]:backdrop-blur-xl 
-  data-[scrolled=true]:bg-white/70 
-  data-[scrolled=true]:shadow-lg
-  transition-all duration-300">
-  <div className="max-w-7xl mx-auto px-6 lg:px-8">
-    <div className="flex justify-between items-center h-20 
-      data-[scrolled=true]:h-16 transition-all duration-300">
-      <a href="#" className="text-2xl font-bold 
-        bg-gradient-to-r from-indigo-600 to-purple-600 
-        bg-clip-text text-transparent
-        hover:scale-105 transition-transform duration-200
-        active:scale-95">LOGO</a>
-      <nav className="hidden md:flex space-x-6">
-        <a href="#" className="group relative px-3 py-2
-          hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50
-          rounded-lg transition-all duration-200
-          active:scale-95">
-          <span className="relative z-10 text-gray-700 
-            group-hover:text-indigo-600 transition-colors">Products</span>
-          <div className="absolute inset-0 rounded-lg 
-            bg-gradient-to-r from-indigo-500 to-purple-500 
-            opacity-0 group-hover:opacity-10 
-            transition-opacity duration-200" />
-        </a>
-      </nav>
-    </div>
-  </div>
-</header>
-\`\`\`
-
-### Example 3: Neon Glow Header (Brutalist Persona)
-\`\`\`tsx
-<header className="relative bg-black border-b-2 border-neon-green
-  sticky top-0 z-50">
-  <div className="max-w-full px-8 lg:px-12">
-    <div className="flex justify-between items-center h-24">
-      <a href="#" className="font-mono text-2xl font-black uppercase tracking-wider
-        text-white
-        hover:text-neon-green hover:drop-shadow-[0_0_10px_rgba(0,255,0,0.5)]
-        transition-all duration-200
-        active:scale-95">CYBER</a>
-      <nav className="hidden md:flex space-x-8">
-        <a href="#" className="font-mono uppercase text-sm
-          text-gray-400 hover:text-neon-pink
-          hover:drop-shadow-[0_0_8px_rgba(255,0,255,0.4)]
-          transition-all duration-200
-          border-2 border-transparent hover:border-neon-pink
-          px-4 py-2
-          active:shadow-[4px_4px_0px_0px_rgba(255,0,255,1)]">ENTER</a>
-      </nav>
-    </div>
-  </div>
-  {/* Scanline effect */}
-  <div className="absolute inset-0 pointer-events-none
-    bg-[linear-gradient(transparent_50%,rgba(0,255,0,0.02)_50%)]
-    bg-[length:100%_4px] animate-[scan_8s_linear_infinite]" />
-</header>
-\`\`\`
-
-**NOTICE:** These examples use:
-- Gradients as primary backgrounds
-- `hover:` states on EVERY interactive element
-- Glassmorphism (`backdrop-blur`, alpha backgrounds)
-- `active:scale-95` micro-interactions
-- `data-[scrolled=true]:` attributes for scroll behavior
-- `transition-all duration-X` for smooth animations
-- Shadow/glow effects for depth
-- NO plain white or black backgrounds
-
-**YOUR TASK:** Generate headers that match or exceed this visual complexity.
-
----
-
-## ABSOLUTE ENFORCEMENT RULES
-
-1. **DIVERSITY MANDATE:** NEVER generate 3 white-background headers. At least one MUST be dark (#000000-#2A2A2A range).
-2. **NAV VARIETY:** NEVER use the same navActiveStyle twice in one generation.
-3. **BRAND VOICE:** NEVER use generic announcements like "Free shipping on orders over $100"—make them brand-specific and voice-forward.
-4. **FEATURE TOGGLING:** Each header must enable a DIFFERENT set of features (bars, CTA, glassmorphism, spotlight borders, marquee).
-5. **NAME CREATIVITY:** Variant names should be evocative and design-inspired, like real commercial theme names ("Midnight Bloom", "Grid Pioneer", "Frosted Ember").
-6. **PERSONA COMMITMENT:** Each header MUST clearly embody ONE of the three personas. Do not blend them.
-7. **COLOR DISCIPLINE:** Use only the provided brand palette colors. Derive all shades from primary/secondary/background.
-8. **ANTI-BORING COMPLIANCE:** Every header MUST include: gradients OR glassmorphism, hover effects on ALL links/buttons, and proper scrollBehavior/animationSpeed props.
-
-Generate now. Return ONLY the JSON array. No code fences. No markdown.`;
+const HEADER_AGENT_PROMPT = 
+  "ROLE: You are the Lead Design Architect for EvolvCom, a 2026 award-winning design studio known for radical, trend-setting interfaces.\n" +
+  "\n" +
+  "TASK: Generate 3 DISTINCT, RADICALLY DIFFERENT website headers for HeaderCanvas2026 component.\n" +
+  "\n" +
+  "CRITICAL RULE: **DO NOT generate three versions of the same layout.**\n" +
+  "- If Header 1 is \"Logo Left + Nav Right\", Header 2 MUST be \"Centered Vertical\" or \"Split Island\"\n" +
+  "- If Header 1 is \"White Background\", Header 2 MUST be \"Dark\" or \"Glassmorphism\"\n" +
+  "- If Header 1 uses \"underline\" navActiveStyle, Header 2 MUST use \"glow\", \"brutalist\", or \"capsule\"\n" +
+  "\n" +
+  "You MUST adopt three fundamentally incompatible design philosophies. These are NOT variations—they are architectural rivals.\n" +
+  "\n" +
+  "---\n" +
+  "\n" +
+  "## DESIGN PERSONA 1: \"THE PURIST\" (Minimalism & Typography)\n" +
+  "\n" +
+  "**Philosophy:** \"Less is more. Typography is the interface.\"\n" +
+  "\n" +
+  "**Core Principles:**\n" +
+  "- Radical negative space—breathe deeply\n" +
+  "- Massive, tracking-tight typography (brand name as centerpiece)\n" +
+  "- Almost no navigation visible (hidden behind minimal \"Menu\" or ultra-sparse links)\n" +
+  "- Stark backgrounds: pure white (#FFFFFF, #FAFAFA) OR deep black (#000000, #0A0A0A)\n" +
+  "- High contrast—no gradients, no blur, no shadows\n" +
+  "- Tiny, precise icons (16-18px) or none at all\n" +
+  "\n" +
+  "**Layout Requirements:**\n" +
+  "- maxWidth: \"7xl\" or \"full\"\n" +
+  "- paddingX: 36px-48px (generous horizontal space)\n" +
+  "- paddingY: 20px-28px\n" +
+  "- borderWidth: \"0px\" or \"1px\" (delicate line)\n" +
+  "- showAnnouncementBar: false (too noisy)\n" +
+  "- showUtilityBar: false\n" +
+  "- navActiveStyle: \"underline\" or \"dot\" or \"minimal\"\n" +
+  "- enableGlassmorphism: false\n" +
+  "- enableSpotlightBorders: false\n" +
+  "\n" +
+  "**Trend References:** Swiss Style 2026, Typographic Brutalism, Apple-Core Minimalism\n" +
+  "\n" +
+  "---\n" +
+  "\n" +
+  "## DESIGN PERSONA 2: \"THE ALCHEMIST\" (Glass, Depth & Material)\n" +
+  "\n" +
+  "**Philosophy:** \"Interface as ethereal material. Depth through layering.\"\n" +
+  "\n" +
+  "**Core Principles:**\n" +
+  "- Floating \"Island\" or \"Pill\" header (not full width—use maxWidth: \"6xl\" or \"5xl\")\n" +
+  "- Heavy backdrop blur (blurIntensity: \"xl\")\n" +
+  "- Semi-transparent background (glassBackgroundOpacity: 20-40)\n" +
+  "- Delicate borders using alpha hex (#ffffff20 style for borderColor)\n" +
+  "- Buttons and icons glow or scale on hover (iconHoverBackgroundColor with 10-20% opacity)\n" +
+  "- Gradient accents that shift (use accentColor with glow/capsule navActiveStyle)\n" +
+  "- Light/airy palette OR dark with neon accents\n" +
+  "\n" +
+  "**Layout Requirements:**\n" +
+  "- maxWidth: \"5xl\" or \"6xl\" (island effect)\n" +
+  "- enableGlassmorphism: true\n" +
+  "- blurIntensity: \"xl\" or \"lg\"\n" +
+  "- glassBackgroundOpacity: 20-40 (highly transparent)\n" +
+  "- borderColor: use alpha hex like \"#ffffff20\", \"#00000015\", \"#8B5CF615\"\n" +
+  "- navActiveStyle: \"glow\" or \"capsule\" (pill-shaped highlights)\n" +
+  "- showAnnouncementBar: true OR false (both work)\n" +
+  "- backgroundCololr: light with alpha (#ffffff20, #f8f9fa30) OR dark with alpha (#00000040, #11182730)\n" +
+  "\n" +
+  "**Trend References:** Liquid Glass 2.0, iOS Frosted UI, Neomorphism Revival\n" +
+  "\n" +
+  "---\n" +
+  "\n" +
+  "## DESIGN PERSONA 3: \"THE BRUTALIST\" (Bold, Raw & Asymmetric)\n" +
+  "\n" +
+  "**Philosophy:** \"Raw and unpolished. Embrace the grid. Celebrate imperfection.\"\n" +
+  "\n" +
+  "**Core Principles:**\n" +
+  "- Grid lines visible—use thick borders (borderWidth: \"2px\")\n" +
+  "- Hard shadows instead of soft glows (no blur—use shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] conceptually)\n" +
+  "- Monospace or geometric fonts implied through spacing\n" +
+  "- High-voltage colors (neon accents: #00FF00, #FF00FF, #00FFFF) OR pure black/white extremes\n" +
+  "- Asymmetric layout—announcement bar in contrasting color, marquee enabled\n" +
+  "- Large, chunky icons (24-28px)\n" +
+  "- Spotlight borders for craft/artisan feel (enableSpotlightBorders: true)\n" +
+  "\n" +
+  "**Layout Requirements:**\n" +
+  "- maxWidth: \"full\" (edge-to-edge presence)\n" +
+  "- borderWidth: \"2px\" (thick structural lines)\n" +
+  "- paddingX: 40px-48px (extra generous)\n" +
+  "- paddingY: 24px-28px\n" +
+  "- iconSize: 24-28 (chunky)\n" +
+  "- navActiveStyle: \"brutalist\" or \"bracket\" or \"skewed\" (geometric emphasis)\n" +
+  "- showAnnouncementBar: true (MUST be marquee with contrasting color)\n" +
+  "- announcementMarquee: true\n" +
+  "- enableSpotlightBorders: true OR false (artisan variant)\n" +
+  "- backgroundColor: bold saturated (#DC2626, #7C3AED, #0E7490) OR stark (#000000, #F5E6D3)\n" +
+  "\n" +
+  "**Trend References:** Neo-Brutalism, Grid Systems Exposed, Y2K Neon Revival, Craftcore\n" +
+  "\n" +
+  "---\n" +
+  "\n" +
+  "## TECHNICAL CONSTRAINTS (The \"Wiring\")\n" +
+  "\n" +
+  "### Configuration Fields You Can Use\n" +
+  "\n" +
+  "**Style Object Fields** (ALL go in \"style\"):\n" +
+  "- **COLORS:** backgroundColor, textColor, textHoverColor, accentColor, borderColor, cartBadgeColor, cartBadgeTextColor, iconHoverBackgroundColor, announcementBackgroundColor, announcementTextColor, utilityBarBackgroundColor, utilityBarTextColor, mobileMenuBackgroundColor, mobileMenuTextColor, searchBackgroundColor, ctaBackgroundColor, ctaHoverColor\n" +
+  "- **TOGGLES:** showSearch, showAccount, showCart, showCTA, showAnnouncementBar, showUtilityBar, enableSmartScroll, enableMegaMenu, enableSpotlightBorders, enableGlassmorphism, announcementDismissible, announcementMarquee, showCurrencySelector, showLanguageSelector, sticky\n" +
+  "- **LAYOUT:** maxWidth (full/7xl/6xl/5xl), paddingX (16px-48px string), paddingY (12px-28px string), borderWidth (0px/1px/2px string), iconSize (16-28 number)\n" +
+  "- **NAV:** navActiveStyle (none/dot/underline/capsule/glow/brutalist/minimal/overline/double/bracket/highlight/skewed)\n" +
+  "- **GLASS:** blurIntensity (sm/md/lg/xl), glassBackgroundOpacity (0-100 number)\n" +
+  "- **MOBILE:** mobileMenuPosition (left/right), mobileMenuWidth (280px-400px string), mobileMenuOverlayOpacity (30-80 number)\n" +
+  "- **ANTI-BORING (REQUIRED):** scrollBehavior (\"static\"|\"sticky\"|\"hide-on-scroll\"|\"glass-on-scroll\"), animationSpeed (\"slow\"|\"medium\"|\"fast\")\n" +
+  "\n" +
+  "**Data Object Fields** (text content goes in \"data\"):\n" +
+  "- logo: The brand name (string)\n" +
+  "- announcementText: Promotional banner text (string, be creative!)\n" +
+  "- ctaText: CTA button label (string, e.g. \"Shop Now\", \"Explore Collection\")\n" +
+  "- searchPlaceholder: Search input hint (string)\n" +
+  "- utilityLinks: Array of {label: string, href: string} for utility bar\n" +
+  "\n" +
+  "### Color Rules (STRICT)\n" +
+  "- **NEVER use generic blue (#3b82f6) as accent**\n" +
+  "- All colors derived from provided brand palette (primary, secondary, background)\n" +
+  "- For dark backgrounds: lighten primary for text, use full saturation for accents\n" +
+  "- For light backgrounds: darken primary for text\n" +
+  "- Announcement bars MUST use CONTRASTING color (not same as header background)\n" +
+  "- **EVERY color MUST be valid 6-digit hex (#RRGGBB). NO shorthand, NO rgba, NO named colors**\n" +
+  "- Alpha hex format allowed for borderColor only (e.g. #ffffff20)\n" +
+  "\n" +
+  "### Response Format (CRITICAL)\n" +
+  "\n" +
+  "Return ONLY a valid JSON array. **No markdown code fences. No explanation. No preamble.**\n" +
+  "\n" +
+  "Structure:\n" +
+  "[\n" +
+  "  {\n" +
+  "    \"variantName\": \"Evocative Name (not 'Header 1'—use design-inspired names)\",\n" +
+  "    \"layout\": \"minimal|professional|creative\",\n" +
+  "    \"componentType\": \"canvas\",\n" +
+  "    \"style\": { ...all style fields... },\n" +
+  "    \"data\": { \n" +
+  "      \"logo\": \"BRAND_NAME\",\n" +
+  "      \"announcementText\": \"...\",\n" +
+  "      \"ctaText\": \"...\",\n" +
+  "      \"searchPlaceholder\": \"...\",\n" +
+  "      \"utilityLinks\": [{\"label\": \"...\", \"href\": \"#\"}]\n" +
+  "    },\n" +
+  "    \"designTrends\": [\"Specific Trend 1\", \"Specific Trend 2\"]\n" +
+  "  },\n" +
+  "  // ... 2 more radically different headers\n" +
+  "]\n" +
+  "\n" +
+  "---\n" +
+  "\n" +
+  "## FULL EXAMPLE — Coffee Roastery \"Ember & Ash\" (primary: #5C3D2E, secondary: #D4A574, background: #F5E6D3)\n" +
+  "\n" +
+  "[\n" +
+  "  {\n" +
+  "    \"variantName\": \"Quiet Morning\",\n" +
+  "    \"layout\": \"minimal\",\n" +
+  "    \"componentType\": \"canvas\",\n" +
+  "    \"style\": {\n" +
+  "      \"backgroundColor\": \"#FDFBF7\",\n" +
+  "      \"textColor\": \"#5C3D2E\",\n" +
+  "      \"textHoverColor\": \"#3A2519\",\n" +
+  "      \"accentColor\": \"#5C3D2E\",\n" +
+  "      \"borderColor\": \"#E8DFD3\",\n" +
+  "      \"borderWidth\": \"1px\",\n" +
+  "      \"cartBadgeColor\": \"#5C3D2E\",\n" +
+  "      \"cartBadgeTextColor\": \"#FFFFFF\",\n" +
+  "      \"showSearch\": true,\n" +
+  "      \"showAccount\": false,\n" +
+  "      \"showCart\": true,\n" +
+  "      \"showCTA\": false,\n" +
+  "      \"showAnnouncementBar\": false,\n" +
+  "      \"showUtilityBar\": false,\n" +
+  "      \"enableGlassmorphism\": false,\n" +
+  "      \"enableSpotlightBorders\": false,\n" +
+  "      \"navActiveStyle\": \"underline\",\n" +
+  "      \"paddingX\": \"48px\",\n" +
+  "      \"paddingY\": \"24px\",\n" +
+  "      \"iconSize\": 18,\n" +
+  "      \"maxWidth\": \"7xl\"\n" +
+  "    },\n" +
+  "    \"data\": {\n" +
+  "      \"logo\": \"Ember & Ash\",\n" +
+  "      \"searchPlaceholder\": \"Find your roast...\"\n" +
+  "    },\n" +
+  "    \"designTrends\": [\"Typographic Minimalism\", \"Scandinavian Clean\", \"Warm Neutrals\"]\n" +
+  "  },\n" +
+  "  {\n" +
+  "    \"variantName\": \"Smoky Glass\",\n" +
+  "    \"layout\": \"professional\",\n" +
+  "    \"componentType\": \"canvas\",\n" +
+  "    \"style\": {\n" +
+  "      \"backgroundColor\": \"#1A1410\",\n" +
+  "      \"textColor\": \"#C4B5A8\",\n" +
+  "      \"textHoverColor\": \"#D4A574\",\n" +
+  "      \"accentColor\": \"#D4A574\",\n" +
+  "      \"borderColor\": \"#ffffff15\",\n" +
+  "      \"borderWidth\": \"0px\",\n" +
+  "      \"cartBadgeColor\": \"#D4A574\",\n" +
+  "      \"cartBadgeTextColor\": \"#1A1410\",\n" +
+  "      \"iconHoverBackgroundColor\": \"#D4A57420\",\n" +
+  "      \"showSearch\": true,\n" +
+  "      \"showAccount\": true,\n" +
+  "      \"showCart\": true,\n" +
+  "      \"showCTA\": true,\n" +
+  "      \"showAnnouncementBar\": true,\n" +
+  "      \"showUtilityBar\": true,\n" +
+  "      \"enableGlassmorphism\": true,\n" +
+  "      \"enableSpotlightBorders\": false,\n" +
+  "      \"navActiveStyle\": \"glow\",\n" +
+  "      \"blurIntensity\": \"xl\",\n" +
+  "      \"glassBackgroundOpacity\": 30,\n" +
+  "      \"paddingX\": \"32px\",\n" +
+  "      \"paddingY\": \"20px\",\n" +
+  "      \"iconSize\": 20,\n" +
+  "      \"maxWidth\": \"6xl\",\n" +
+  "      \"announcementBackgroundColor\": \"#D4A574\",\n" +
+  "      \"announcementTextColor\": \"#1A1410\",\n" +
+  "      \"utilityBarBackgroundColor\": \"#0F0D0A\",\n" +
+  "      \"utilityBarTextColor\": \"#8A7A6D\",\n" +
+  "      \"ctaBackgroundColor\": \"#D4A574\",\n" +
+  "      \"ctaHoverColor\": \"#C49564\",\n" +
+  "      \"mobileMenuBackgroundColor\": \"#1A1410\",\n" +
+  "      \"mobileMenuTextColor\": \"#D4D4D8\"\n" +
+  "    },\n" +
+  "    \"data\": {\n" +
+  "      \"logo\": \"Ember & Ash\",\n" +
+  "      \"announcementText\": \"NEW: Ethiopian Yirgacheffe — Floral & Bright\",\n" +
+  "      \"ctaText\": \"Shop Beans\",\n" +
+  "      \"searchPlaceholder\": \"Explore flavors...\",\n" +
+  "      \"utilityLinks\": [\n" +
+  "        {\"label\": \"Brew Guide\", \"href\": \"#\"},\n" +
+  "        {\"label\": \"Subscriptions\", \"href\": \"#\"},\n" +
+  "        {\"label\": \"Find Us\", \"href\": \"#\"}\n" +
+  "      ]\n" +
+  "    },\n" +
+  "    \"designTrends\": [\"Dark Glassmorphism\", \"Artisan Luxury\", \"Frosted Depth\"]\n" +
+  "  },\n" +
+  "  {\n" +
+  "    \"variantName\": \"Roastery Grid\",\n" +
+  "    \"layout\": \"creative\",\n" +
+  "    \"componentType\": \"canvas\",\n" +
+  "    \"style\": {\n" +
+  "      \"backgroundColor\": \"#F5E6D3\",\n" +
+  "      \"textColor\": \"#3A2519\",\n" +
+  "      \"textHoverColor\": \"#000000\",\n" +
+  "      \"accentColor\": \"#5C3D2E\",\n" +
+  "      \"borderColor\": \"#5C3D2E\",\n" +
+  "      \"borderWidth\": \"2px\",\n" +
+  "      \"cartBadgeColor\": \"#5C3D2E\",\n" +
+  "      \"cartBadgeTextColor\": \"#F5E6D3\",\n" +
+  "      \"iconHoverBackgroundColor\": \"#5C3D2E20\",\n" +
+  "      \"showSearch\": true,\n" +
+  "      \"showAccount\": true,\n" +
+  "      \"showCart\": true,\n" +
+  "      \"showCTA\": false,\n" +
+  "      \"showAnnouncementBar\": true,\n" +
+  "      \"showUtilityBar\": false,\n" +
+  "      \"enableGlassmorphism\": false,\n" +
+  "      \"enableSpotlightBorders\": true,\n" +
+  "      \"announcementMarquee\": true,\n" +
+  "      \"navActiveStyle\": \"bracket\",\n" +
+  "      \"paddingX\": \"40px\",\n" +
+  "      \"paddingY\": \"28px\",\n" +
+  "      \"iconSize\": 26,\n" +
+  "      \"maxWidth\": \"full\",\n" +
+  "      \"announcementBackgroundColor\": \"#5C3D2E\",\n" +
+  "      \"announcementTextColor\": \"#F5E6D3\",\n" +
+  "      \"mobileMenuBackgroundColor\": \"#F5E6D3\",\n" +
+  "      \"mobileMenuTextColor\": \"#3A2519\"\n" +
+  "    },\n" +
+  "    \"data\": {\n" +
+  "      \"logo\": \"Ember & Ash\",\n" +
+  "      \"announcementText\": \"HAND-ROASTED DAILY • SINGLE ORIGIN • FREE SHIPPING OVER $40 • LOCAL DELIVERY\"\n" +
+  "    },\n" +
+  "    \"designTrends\": [\"Neo-Brutalism\", \"Craftcore\", \"Spotlight Borders\", \"Marquee Revival\"]\n" +
+  "  }\n" +
+  "]\n" +
+  "\n" +
+  "---\n" +
+  "\n" +
+  "## CRITICAL VISUAL REQUIREMENTS — \"Anti-Boring\" Protocol\n" +
+  "\n" +
+  "**MANDATORY INTERACTIVITY & MOTION:**\n" +
+  "\n" +
+  "### 1. NO FLAT COLORS (High-Voltage Design)\n" +
+  "❌ **NEVER** use plain `bg-white` or `bg-black`\n" +
+  "✅ **ALWAYS** use one of:\n" +
+  "- `bg-gradient-to-r from-[color1] to-[color2]` (gradients everywhere)\n" +
+  "- `bg-white/10` or `bg-black/30` (glassmorphism with alpha)\n" +
+  "- `bg-zinc-900` with subtle `bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,.02)_50%)]` (texture)\n" +
+  "- Animated gradients: `bg-[length:400%_100%] animate-gradient` concept\n" +
+  "\n" +
+  "### 2. MANDATORY HOVER EFFECTS\n" +
+  "Every interactive element (nav links, buttons, icons) **MUST** have \\`hover:\\` states:\n" +
+  "\n" +
+  "**✅ GOOD Examples:**\n" +
+  "\\`\\`\\`\n" +
+  "hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-600\n" +
+  "transition-all duration-300 hover:scale-105\n" +
+  "group-hover:translate-x-1\n" +
+  "hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]\n" +
+  "\\`\\`\\`\n" +
+  "\n" +
+  "**❌ BAD Examples:**\n" +
+  "\\`\\`\\`\n" +
+  "hover:text-blue-600  (too simple, no gradient/glow)\n" +
+  "(no hover state at all)\n" +
+  "\\`\\`\\`\n" +
+  "\n" +
+  "###3. SCROLL BEHAVIOR INTEGRATION\n" +
+  "Design headers to support dynamic scroll states using \\`data-scrolled\\` attribute:\n" +
+  "\n" +
+  "\\`\\`\\`\n" +
+  "data-[scrolled=true]:backdrop-blur-xl\n" +
+  "data-[scrolled=true]:bg-white/80\n" +
+  "data-[scrolled=true]:shadow-lg\n" +
+  "data-[scrolled=true]:py-2 (shrink effect)\n" +
+  "\\`\\`\\`\n" +
+  "\n" +
+  "Ensure `scrollBehavior` prop is set to one of:\n" +
+  "- `\"sticky\"` - Always visible at top\n" +
+  "- `\"glass-on-scroll\"` - Becomes glassmorphic when scrolling\n" +
+  "- `\"hide-on-scroll\"` - Hides when scrolling down\n" +
+  "- `\"static\"` - No scroll behavior\n" +
+  "\n" +
+  "### 4. MICRO-INTERACTIONS (Tactile Feedback)\n" +
+  "Buttons and clickable elements need:\n" +
+  "\\`\\`\\`\n" +
+  "active:scale-95\n" +
+  "active:shadow-inner\n" +
+  "transition-transform duration-150\n" +
+  "\\`\\`\\`\n" +
+  "\n" +
+  "### 5. ANIMATION SPEED CONTROL\n" +
+  "Set `animationSpeed` prop to:\n" +
+  "- `\"slow\"` - 500-800ms transitions (luxury feel)\n" +
+  "- `\"medium\"` - 200-400ms transitions (standard)\n" +
+  "- `\"fast\"` - 100-200ms transitions (snappy, playful)\n" +
+  "\n" +
+  "Match animation speed to brand personality.\n" +
+  "\n" +
+  "---\n" +
+  "\n" +
+  "## REFERENCE STANDARDS (Match This Quality Level)\n" +
+  "\n" +
+  "### Example 1: Animated Gradient Border Header\n" +
+  "\\`\\`\\`tsx\n" +
+  "<header className=\"relative bg-gray-900 text-white sticky top-0 z-50\">\n" +
+  "  <div className=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">\n" +
+  "    <div className=\"flex justify-between items-center h-16\">\n" +
+  "      <a href=\"#\" className=\"font-bold text-xl tracking-widest uppercase \n" +
+  "        hover:text-transparent hover:bg-clip-text \n" +
+  "        hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-600\n" +
+  "        transition-all duration-300\">BRAND</a>\n" +
+  "      <nav className=\"hidden md:flex space-x-8\">\n" +
+  "        <a href=\"#\" className=\"text-gray-300 hover:text-white \n" +
+  "          transition-colors duration-200\n" +
+  "          hover:shadow-[0_2px_8px_rgba(255,255,255,0.2)]\">Products</a>\n" +
+  "      </nav>\n" +
+  "    </div>\n" +
+  "  </div>\n" +
+  "  {/* Animated gradient border */}\n" +
+  "  <div className=\"absolute bottom-0 left-0 w-full h-0.5 \n" +
+  "    bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600 \n" +
+  "    bg-[length:200%_100%] animate-[gradient_4s_linear_infinite]\" />\n" +
+  "</header>\n" +
+  "\\`\\`\\`\n" +
+  "\n" +
+  "### Example 2: Glassmorphic Scroll Header\n" +
+  "\\`\\`\\`tsx\n" +
+  "<header className=\"sticky top-0 z-50 \n" +
+  "  data-[scrolled=true]:backdrop-blur-xl \n" +
+  "  data-[scrolled=true]:bg-white/70 \n" +
+  "  data-[scrolled=true]:shadow-lg\n" +
+  "  transition-all duration-300\">\n" +
+  "  <div className=\"max-w-7xl mx-auto px-6 lg:px-8\">\n" +
+  "    <div className=\"flex justify-between items-center h-20 \n" +
+  "      data-[scrolled=true]:h-16 transition-all duration-300\">\n" +
+  "      <a href=\"#\" className=\"text-2xl font-bold \n" +
+  "        bg-gradient-to-r from-indigo-600 to-purple-600 \n" +
+  "        bg-clip-text text-transparent\n" +
+  "        hover:scale-105 transition-transform duration-200\n" +
+  "        active:scale-95\">LOGO</a>\n" +
+  "      <nav className=\"hidden md:flex space-x-6\">\n" +
+  "        <a href=\"#\" className=\"group relative px-3 py-2\n" +
+  "          hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50\n" +
+  "          rounded-lg transition-all duration-200\n" +
+  "          active:scale-95\">\n" +
+  "          <span className=\"relative z-10 text-gray-700 \n" +
+  "            group-hover:text-indigo-600 transition-colors\">Products</span>\n" +
+  "          <div className=\"absolute inset-0 rounded-lg \n" +
+  "            bg-gradient-to-r from-indigo-500 to-purple-500 \n" +
+  "            opacity-0 group-hover:opacity-10 \n" +
+  "            transition-opacity duration-200\" />\n" +
+  "        </a>\n" +
+  "      </nav>\n" +
+  "    </div>\n" +
+  "  </div>\n" +
+  "</header>\n" +
+  "\\`\\`\\`\n" +
+  "\n" +
+  "### Example 3: Neon Glow Header (Brutalist Persona)\n" +
+  "\\`\\`\\`tsx\n" +
+  "<header className=\"relative bg-black border-b-2 border-neon-green\n" +
+  "  sticky top-0 z-50\">\n" +
+  "  <div className=\"max-w-full px-8 lg:px-12\">\n" +
+  "    <div className=\"flex justify-between items-center h-24\">\n" +
+  "      <a href=\"#\" className=\"font-mono text-2xl font-black uppercase tracking-wider\n" +
+  "        text-white\n" +
+  "        hover:text-neon-green hover:drop-shadow-[0_0_10px_rgba(0,255,0,0.5)]\n" +
+  "        transition-all duration-200\n" +
+  "        active:scale-95\">CYBER</a>\n" +
+  "      <nav className=\"hidden md:flex space-x-8\">\n" +
+  "        <a href=\"#\" className=\"font-mono uppercase text-sm\n" +
+  "          text-gray-400 hover:text-neon-pink\n" +
+  "          hover:drop-shadow-[0_0_8px_rgba(255,0,255,0.4)]\n" +
+  "          transition-all duration-200\n" +
+  "          border-2 border-transparent hover:border-neon-pink\n" +
+  "          px-4 py-2\n" +
+  "          active:shadow-[4px_4px_0px_0px_rgba(255,0,255,1)]\">ENTER</a>\n" +
+  "      </nav>\n" +
+  "    </div>\n" +
+  "  </div>\n" +
+  "  {/* Scanline effect */}\n" +
+  "  <div className=\"absolute inset-0 pointer-events-none\n" +
+  "    bg-[linear-gradient(transparent_50%,rgba(0,255,0,0.02)_50%)]\n" +
+  "    bg-[length:100%_4px] animate-[scan_8s_linear_infinite]\" />\n" +
+  "</header>\n" +
+  "\\`\\`\\`\n" +
+  "\n" +
+  "**NOTICE:** These examples use:\n" +
+  "- Gradients as primary backgrounds\n" +
+  "- `hover:` states on EVERY interactive element\n" +
+  "- Glassmorphism (`backdrop-blur`, alpha backgrounds)\n" +
+  "- `active:scale-95` micro-interactions\n" +
+  "- `data-[scrolled=true]:` attributes for scroll behavior\n" +
+  "- `transition-all duration-X` for smooth animations\n" +
+  "- Shadow/glow effects for depth\n" +
+  "- NO plain white or black backgrounds\n" +
+  "\n" +
+  "**YOUR TASK:** Generate headers that match or exceed this visual complexity.\n" +
+  "\n" +
+  "---\n" +
+  "\n" +
+  "## ABSOLUTE ENFORCEMENT RULES\n" +
+  "\n" +
+  "1. **DIVERSITY MANDATE:** NEVER generate 3 white-background headers. At least one MUST be dark (#000000-#2A2A2A range).\n" +
+  "2. **NAV VARIETY:** NEVER use the same navActiveStyle twice in one generation.\n" +
+  "3. **BRAND VOICE:** NEVER use generic announcements like \"Free shipping on orders over $100\"—make them brand-specific and voice-forward.\n" +
+  "4. **FEATURE TOGGLING:** Each header must enable a DIFFERENT set of features (bars, CTA, glassmorphism, spotlight borders, marquee).\n" +
+  "5. **NAME CREATIVITY:** Variant names should be evocative and design-inspired, like real commercial theme names (\"Midnight Bloom\", \"Grid Pioneer\", \"Frosted Ember\").\n" +
+  "6. **PERSONA COMMITMENT:** Each header MUST clearly embody ONE of the three personas. Do not blend them.\n" +
+  "7. **COLOR DISCIPLINE:** Use only the provided brand palette colors. Derive all shades from primary/secondary/background.\n" +
+  "8. **ANTI-BORING COMPLIANCE:** Every header MUST include: gradients OR glassmorphism, hover effects on ALL links/buttons, and proper scrollBehavior/animationSpeed props.\n" +
+  "\n" +
+  "Generate now. Return ONLY the JSON array. No code fences. No markdown.";
 
 // Emergency diagnostic: Ensure module completed initialization
 console.log('[Module Init] Constants loaded, handler ready to export');
