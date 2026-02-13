@@ -145,7 +145,7 @@ const Logo: React.FC<{
   );
 
   if (onClick) {
-    return <button onClick={onClick} className="cursor-pointer">{content}</button>;
+    return <button onClick={onClick} className="cursor-pointer active:scale-95 transition-transform">{content}</button>;
   }
   return <>{content}</>;
 };
@@ -165,7 +165,7 @@ const NavItem: React.FC<{
   };
 
   return (
-    <a href={link.href} onClick={handleClick} className={className} style={style}>
+    <a href={link.href} onClick={handleClick} className={`${className} active:scale-95 inline-block transition-transform`} style={style}>
       {children || link.label}
     </a>
   );
@@ -255,6 +255,14 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
   const [isVisible, setIsVisible] = React.useState(true);
   const [lastScrollY, setLastScrollY] = React.useState(0);
   const [isScrolled, setIsScrolled] = React.useState(false);
+
+  // Archetype-specific logic derived from our experimental session
+  const getArchetypeStyles = () => {
+    if (settings.navActiveStyle === 'glow') return "backdrop-blur-xl bg-white/10 border-white/20"; // Alchemist
+    if (settings.navActiveStyle === 'minimal') return "bg-white border-b-[0.5px] border-zinc-200"; // Purist
+    if (settings.navActiveStyle === 'brutalist') return "border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"; // Brutalist
+    return "";
+  };
   
   // Smart scroll logic
   React.useEffect(() => {
@@ -357,7 +365,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
           {!isSearchOpen && (
             <button
               onClick={onSearchClick}
-              className="p-2 rounded-full transition-colors"
+              className="p-2 rounded-full transition-colors active:scale-95 transform"
               style={{ 
                 color: settings.textColor,
                 backgroundColor: 'transparent'
@@ -378,7 +386,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
       )}
       {settings.showAccount && (
         <button
-          className="p-2 rounded-full transition-colors hidden md:block"
+          className="p-2 rounded-full transition-colors hidden md:block active:scale-95 transform"
           style={{ 
             color: settings.textColor,
             backgroundColor: 'transparent'
@@ -398,7 +406,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
       {settings.showCart && (
         <button
           onClick={onOpenCart}
-          className="relative p-2 rounded-full transition-colors"
+          className="relative p-2 rounded-full transition-colors active:scale-95 transform"
           style={{ 
             color: settings.textColor,
             backgroundColor: 'transparent'
@@ -428,7 +436,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
       )}
       {settings.showMobileMenu && (
         <button
-          className="md:hidden p-2 rounded-full transition-colors"
+          className="md:hidden p-2 rounded-full transition-colors active:scale-95 transform"
           onClick={() => setIsMobileMenuOpen(true)}
           style={{ color: settings.textColor }}
         >
@@ -437,7 +445,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
       )}
       {settings.showCTA && settings.ctaText && (
         <button
-           className="hidden md:block ml-4 px-4 py-2 rounded-md font-medium text-sm transition-all"
+           className="hidden md:block ml-4 px-4 py-2 rounded-md font-medium text-sm transition-all active:scale-95 transform"
            style={{
              backgroundColor: settings.ctaBackgroundColor || settings.accentColor,
              color: '#ffffff', // Assuming white text
@@ -526,21 +534,31 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
       
       {/* Main Header */}
       <header
-        className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-[100] transition-transform duration-${settings.smartScrollDuration || 300}`}
+        data-scrolled={isScrolled}
+        className={`w-full ${settings.sticky ? 'sticky top-0' : ''} z-[100] transition-all duration-${settings.smartScrollDuration || 300} ${getArchetypeStyles()} ${
+          isScrolled ? 'py-2' : ''
+        }`}
         style={{
           ...glassStyles,
-          backgroundColor: settings.enableGlassmorphism ? glassStyles.backgroundColor : settings.backgroundColor,
-          borderBottom: `${settings.borderWidth} solid ${settings.borderColor}`,
+          // Archetype overrides: If an archetype is active, let its classes controls background/border
+          backgroundColor: ['glow', 'minimal', 'brutalist'].includes(settings.navActiveStyle || '') 
+            ? undefined 
+            : (settings.enableGlassmorphism ? glassStyles.backgroundColor : settings.backgroundColor),
+          borderBottom: ['glow', 'minimal', 'brutalist'].includes(settings.navActiveStyle || '') 
+            ? undefined 
+            : `${settings.borderWidth} solid ${settings.borderColor}`,
           transform: settings.enableSmartScroll ? (isVisible ? 'translateY(0)' : 'translateY(-100%)') : 'none',
         }}
       >
         <div
-          className={`${maxWidthClass} mx-auto relative`}
+          className={`${maxWidthClass} mx-auto relative ${
+            settings.layout === 'split-island' ? 'max-w-6xl rounded-full mt-4 shadow-2xl bg-white/90 backdrop-blur-md px-6' : ''
+          }`}
           style={{
             paddingLeft: settings.paddingX,
             paddingRight: settings.paddingX,
             paddingTop: settings.paddingY,
-            paddingBottom: settings.paddingY,
+            paddingBottom: settings.paddingY, // isScrolled handled by hydration/classes if needed, or stick to settings
             minHeight: '5rem',
           }}
         >

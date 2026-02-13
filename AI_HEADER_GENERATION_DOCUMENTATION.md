@@ -1,3 +1,36 @@
+# NexusOS v2 AI Header Generation System Documentation
+
+*Last Updated: February 13, 2026*
+
+## 1. System Architecture Overview
+
+The AI Header Generation system is designed to produce high-fidelity, radically different React header components on demand. It uses a Vercel Serverless Function to interface with Google's Gemini 2.5 Flash model, returning configuration objects that drive a flexible, master rendering component (`HeaderCanvas2026`).
+
+**Core Data Flow:**
+1.  **User Input:** Brand name, description, industry, and color preferences (via `HeaderSelectionStep`).
+2.  **API Request:** POST to `/api/ai/generate-headers`.
+3.  **AI Processing:**
+    *   Injects random seeds (aesthetic choices, background styles) to bust AI repetition.
+    *   Constructs a detailed prompt with "Anti-Boring" protocols.
+    *   Calls Gemini 2.5 Flash.
+    *   **Post-Processing:** Forces unique names from a hardcoded bank to prevent "Aether Canopy" repetition.
+4.  **Frontend Rendering:**
+    *   Receives JSON config.
+    *   `HeaderCanvas2026` component reads `layout` property (`default`, `split-island`, `logo-center-nav-left`).
+    *   Renders distinct DOM structures based on that layout key.
+
+---
+
+## 2. API Logic (`api/ai/generate-headers.ts`)
+
+This compiled TypeScript serverless function handles the AI orchestration.
+
+### Key Features:
+*   **Forced Randomization:** Uses a `randomSeed` and pre-shuffled arrays for aesthetics and nav styles *before* calling the AI.
+*   **Name Bank:** Overrides AI-generated names with a list of 100+ creative names (e.g., "Midnight Bloom", "Neon District") to solve the "same name" problem.
+*   **Explicit Layout Instruction:** Prompts the AI to select from specific structural keys: `logo-left-nav-center`, `logo-center-nav-left`, `split-island`.
+
+```typescript
 /**
  * AI Header Generation API - Vercel Serverless Function
  * Generates 3 unique header designs using Gemini AI
@@ -461,11 +494,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log('[AI Generate Headers] Prompt loaded, length:', HEADER_AGENT_PROMPT.length);
 
     // Generate random suggestions to force variety
-    const navStyles = ['glow', 'minimal', 'brutalist', 'capsule', 'underline', 'bracket'];
+    const navStyles = ['none', 'dot', 'underline', 'capsule', 'glow', 'brutalist', 'minimal', 'overline', 'double', 'bracket', 'highlight', 'skewed'];
     const shuffledNavStyles = navStyles.sort(() => Math.random() - 0.5);
     const suggestedStyles = shuffledNavStyles.slice(0, 3);
     
-    const aesthetics = ['THE ALCHEMIST (Luxury/Depth)', 'THE PURIST (Swiss-Minimalism)', 'THE BRUTALIST (Industrial-Bold)'];
+    const aesthetics = ['Minimalist Zen', 'Glassmorphism & Depth', 'Bold Brutalism', 'Gradient Maximalism', 'Y2K Cyber', 'Organic Craft'];
     const shuffledAesthetics = aesthetics.sort(() => Math.random() - 0.5);
     
     const backgroundSuggestions = [
@@ -755,3 +788,128 @@ Return ONLY the JSON array.`;
     }
   }
 }
+```
+
+---
+
+## 3. Frontend Component (`components/HeaderCanvas2026.tsx`)
+
+This is the main rendering engine. It has been updated to support `layout` prop switching, moving away from a single hardcoded structure.
+
+### Key features:
+*   **Multiple Layout Blocks:** Conditionally renders strict DOM structures based on `settings.layout` (e.g., Logo Center vs Logo Left).
+*   **Merged Props:** Combines `CANVAS_DEFAULTS` with incoming `data` to ensure no props are undefined.
+*   **Smart Scroll:** Includes logic for `sticky` vs `hide-on-scroll` behaviors.
+
+```tsx
+// THIS IS THE NEW 2026 CANVAS HEADER - TO BE MERGED INTO HeaderLibrary.tsx
+
+import React from 'react';
+import { ShoppingBag, Search, User, Menu, X } from 'lucide-react';
+import { NavLink } from '../types';
+
+// Header customization data structure
+interface HeaderData {
+  showSearch?: boolean;
+  showAccount?: boolean;
+  showCart?: boolean;
+  showCTA?: boolean;
+  showMobileMenu?: boolean;
+  showAnnouncementBar?: boolean;
+  showUtilityBar?: boolean;
+  showCommandPalette?: boolean;
+  enableSmartScroll?: boolean;
+  enableMegaMenu?: boolean;
+  megaMenuStyle?: 'traditional' | 'bento';
+  enableSpotlightBorders?: boolean;
+  enableGlassmorphism?: boolean;
+  navActiveStyle?: 'none' | 'dot' | 'underline' | 'capsule' | 'glow' | 'brutalist' | 'minimal' | 'overline' | 'double' | 'bracket' | 'highlight' | 'skewed';
+  backgroundColor?: string;
+  borderColor?: string;
+  textColor?: string;
+  textHoverColor?: string;
+  accentColor?: string;
+  cartBadgeColor?: string;
+  cartBadgeTextColor?: string;
+  iconSize?: number;
+  iconHoverBackgroundColor?: string;
+  borderWidth?: string;
+  sticky?: boolean;
+  maxWidth?: string;
+  paddingX?: string;
+  paddingY?: string;
+  announcementText?: string;
+  announcementBackgroundColor?: string;
+  announcementTextColor?: string;
+  announcementDismissible?: boolean;
+  announcementMarquee?: boolean;
+  utilityBarBackgroundColor?: string;
+  utilityBarTextColor?: string;
+  showCurrencySelector?: boolean;
+  showLanguageSelector?: boolean;
+  mobileMenuBackgroundColor?: string;
+  mobileMenuTextColor?: string;
+  mobileMenuOverlayOpacity?: number;
+  mobileMenuPosition?: 'left' | 'right';
+  mobileMenuWidth?: string;
+  blurIntensity?: 'sm' | 'md' | 'lg' | 'xl';
+  glassBackgroundOpacity?: number;
+  smartScrollThreshold?: number;
+  smartScrollDuration?: number;
+  searchPlaceholder?: string;
+  searchBackgroundColor?: string;
+  searchBorderColor?: string;
+  searchInputTextColor?: string;
+  utilityBarLinks?: Array<{ label: string; href: string }>;
+  ctaText?: string;
+  ctaBackgroundColor?: string;
+  ctaHoverColor?: string;
+  layout?: 'default' | 'logo-left-nav-center' | 'logo-center-nav-left' | 'split-island' | 'minimal';
+  [key: string]: any;
+}
+
+// ... [rest of HeaderCanvas2026.tsx code omitted for brevity but included in full file read] ...
+```
+
+---
+
+## 4. UI/Integration (`components/designer/HeaderSelectionStep.tsx`)
+
+This React component handles the user interface for picking or generating headers.
+
+### Key Updates:
+*   **Data Mapping:** The `mapConfigToHeaderData` function now explicitly extracts `layout` from the AI response and passes it to the `HeaderCanvas` prop to ensure the preview matches the generated design.
+
+```tsx
+/**
+ * Map AI-generated config to HeaderCanvas data prop.
+ * IMPORTANT: Spread ALL style fields through so the AI's choices actually render.
+ * Only override fields that need special handling (e.g. sticky=false for preview).
+ */
+const mapConfigToHeaderData = (header: SharedHeaderLibrary): Record<string, any> => {
+  const config = header.config || {} as any;
+  const style = config.style || config.colors || {};
+  const data = config.data || {};
+  
+  return {
+    // Spread ALL AI-generated style fields first (colors, toggles, nav, glassmorphism, etc.)
+    ...style,
+    
+    // Explicitly pass top-level layout config
+    layout: config.layout || style.layout || 'default',
+
+    // Merge text content from data object (AI puts these in "data" not "style")
+    ...(data.announcementText && { announcementText: data.announcementText }),
+    ...(data.ctaText && { ctaText: data.ctaText }),
+    ...(data.searchPlaceholder && { searchPlaceholder: data.searchPlaceholder }),
+    ...(data.utilityLinks && { utilityBarLinks: data.utilityLinks }),
+    // ...
+```
+
+---
+
+## 5. Summary of Fixes & Improvements
+
+1.  **Layout Repetition:** Solved by refactoring `HeaderCanvas2026.tsx` to actually render different flexbox structures based on a `layout` prop, rather than just styling changes.
+2.  **Naming Repetition:** Solved by creating a server-side "Name Bank" of 100+ creative names and overriding the AI's tendency to suggest "Aether Canopy" repeatedly.
+3.  **Vercel Caching:** Solved by injecting `Date.now()` seed into the prompt and prompt construction, forcing every request to look unique to the caching layer.
