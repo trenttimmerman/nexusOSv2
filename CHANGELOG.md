@@ -28,6 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed API syntax across 10 files: API endpoints, AI agents, React components
   - Confirmed VITE_GOOGLE_AI_API_KEY environment variable usage (correct for Vite)
   - Build passing: 14.53s, bundle 2,697 kB
+- **AI Generation API**: Fixed Vercel serverless environment variable access (commit: fe0e20a)
+  - Added fallback to check both VITE_GOOGLE_AI_API_KEY and GOOGLE_AI_API_KEY
+  - VITE_ prefix is for client-side; serverless functions need regular env vars
+  - Updated error messages with Vercel setup instructions
+  - API now returns proper JSON errors instead of HTML error pages
 
 ---
 
