@@ -50,6 +50,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced prompt with persona-specific layout requirements and trend references
 
 ### Fixed
+- **AI API**: Removed nested template literals causing parser error (commit: 2148220)
+  - CRITICAL FIX: SyntaxError "Missing initializer in const declaration"
+  - Root cause: FEW_SHOT_EXAMPLES contained full TSX code with const declarations and nested template literals
+  - Node.js ESM parser failed when encountering complex escape sequences and nested backticks
+  - Solution: Replaced full code examples with descriptive concept summaries
+  - Removed all TypeScript/JSX code blocks while maintaining training effectiveness
+  - AI prompt now uses plain text descriptions instead of code examples
+  - Build verification: npm run build passes (18.30s)
 - **AI API**: Escaped markdown code fences in template literal (commit: 1206608)
   - CRITICAL FIX: SyntaxError "Missing initializer in const declaration"
   - Root cause: HEADER_AGENT_PROMPT contained unescaped triple backticks (```) for code examples
