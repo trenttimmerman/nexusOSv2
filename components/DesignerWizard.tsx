@@ -141,6 +141,20 @@ export const DesignerWizard: React.FC<DesignerWizardProps> = ({
   };
 
   /**
+   * Complete wizard and return final header config
+   */
+  const handleCompleteWizard = () => {
+    const finalConfig = wizardState.customizedHeaderConfig || wizardState.selectedHeaderConfig;
+    if (finalConfig) {
+      onComplete(finalConfig);
+    } else {
+      console.error('[DesignerWizard] No header config to complete with');
+      // Fallback: close wizard
+      onCancel?.();
+    }
+  };
+
+  /**
    * Skip to complete (from editor or library save)
    */
   const handleSkipToComplete = () => {
