@@ -148,18 +148,29 @@ export const HeaderSelectionStep: React.FC<HeaderSelectionStepProps> = ({
       }
 
       if (!response.ok) {
-        // Handle specific error codes
+        // Handle specific error codes with detailed instructions
         if (response.status === 500 && data.step === 'env-check') {
           throw new Error(
-            'AI Generation not configured in Vercel.\n\n' +
-            'Environment variable missing. To fix:\n' +
-            '1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables\n' +
+            '⚙️ AI Service Not Configured\n\n' +
+            'The GOOGLE_AI_API_KEY environment variable is not set in Vercel.\n\n' +
+            '**How to fix:**\n' +
+            '1. Go to Vercel Dashboard → Settings → Environment Variables\n' +
             '2. Add: GOOGLE_AI_API_KEY (without VITE_ prefix)\n' +
-            '3. Value: Your Gemini API key from https://ai.google.dev/\n' +
-            '4. Redeploy your project\n\n' +
+            '3. Set value to your Google AI API key from https://ai.google.dev/\n' +
+            '4. Redeploy to apply changes\n\n' +
             'For now, browse the header library to select a design.'
           );
         }
+        
+        if (response.status === 500 && data.step === 'init-error') {
+          throw new Error(
+            '🚨 Server Error: ' + (data.message || 'API initialization failed') + '\n\n' +
+            (data.hint || 'Check Vercel deployment logs.') + '\n\n' +
+            'This usually means: missing environment variable, module import failure, or timeout.'
+          );
+        }
+        
+        // Show actual error message from API
         throw new Error(data.message || data.error || `Generation failed: ${response.statusText}`);
       }
       

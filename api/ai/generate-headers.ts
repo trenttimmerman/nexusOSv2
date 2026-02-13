@@ -9,6 +9,7 @@
  * Do NOT import from ../../ai/ (causes bundling/runtime crashes).
  */
 
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
 
@@ -96,22 +97,24 @@ Return ONLY a valid JSON array. No markdown. No explanation. No code fences.
 - Variant names should be evocative and unique, like real theme names.
 - Each header must enable a DIFFERENT set of features (bars, CTA, glassmorphism, spotlight borders).`;
 
-export default async function handler(req: any, res: any) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Wrap EVERYTHING in top-level try-catch to prevent FUNCTION_INVOCATION_FAILED
+  try {
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
 
-  // Wrap EVERYTHING in try-catch so we never get opaque FUNCTION_INVOCATION_FAILED
+  // Inner try-catch for API logic
   try {
     // --- Step 1: Validate environment ---
     // Check both VITE_ (for consistency) and regular (for Vercel serverless)
@@ -362,5 +365,23 @@ Return ONLY the JSON array.`;
       stack: error.stack?.split('\n').slice(0, 5),
       step: 'unhandled'
     });
+  }
+
+  } catch (topLevelError: any) {
+    // Catch ANY error including initialization/import failures
+    console.error('[AI Generate Headers] Top-level error:', topLevelError);
+    
+    // Ensure we ALWAYS return JSON, never let Vercel return opaque error
+    try {
+      return res.status(500).json({
+        error: 'Server initialization failed',
+        message: topLevelError?.message || 'Unknown initialization error',
+        hint: 'Check Vercel logs for details. Ensure GOOGLE_AI_API_KEY is set.',
+        step: 'init-error'
+      });
+    } catch (jsonError) {
+      // Last resort: plain text if JSON also fails
+      res.status(500).send(`Error: ${topLevelError?.message || 'Server error'}`);
+    }
   }
 }
