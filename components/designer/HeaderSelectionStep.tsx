@@ -131,9 +131,16 @@ export const HeaderSelectionStep: React.FC<HeaderSelectionStepProps> = ({
       } catch (parseError) {
         console.error('[AI Generation] Non-JSON response:', responseText.substring(0, 200));
         
-        // Check if it's an HTML error page (dev environment)
+        // Check if it's an HTML error page (dev environment API route not available)
         if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
-          throw new Error('AI Generation is only available in production (requires Vercel deployment). Please browse the header library instead.');
+          throw new Error(
+            'AI Generation endpoint requires Vercel deployment.\n\n' +
+            'The /api routes only work in production. To test AI generation:\n' +
+            '1. Push your code to GitHub\n' +
+            '2. Deploy to Vercel\n' +
+            '3. Test on your Vercel URL\n\n' +
+            'For now, browse the header library to select a design.'
+          );
         }
         
         // Otherwise it's a real production error - show what we can
@@ -141,6 +148,18 @@ export const HeaderSelectionStep: React.FC<HeaderSelectionStepProps> = ({
       }
 
       if (!response.ok) {
+        // Handle specific error codes
+        if (response.status === 500 && data.step === 'env-check') {
+          throw new Error(
+            'AI Generation not configured in Vercel.\n\n' +
+            'Environment variable missing. To fix:\n' +
+            '1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables\n' +
+            '2. Add: GOOGLE_AI_API_KEY (without VITE_ prefix)\n' +
+            '3. Value: Your Gemini API key from https://ai.google.dev/\n' +
+            '4. Redeploy your project\n\n' +
+            'For now, browse the header library to select a design.'
+          );
+        }
         throw new Error(data.message || data.error || `Generation failed: ${response.statusText}`);
       }
       

@@ -114,11 +114,13 @@ export default async function handler(req: any, res: any) {
   // Wrap EVERYTHING in try-catch so we never get opaque FUNCTION_INVOCATION_FAILED
   try {
     // --- Step 1: Validate environment ---
-    const apiKey = process.env.VITE_GOOGLE_AI_API_KEY;
+    // Check both VITE_ (for consistency) and regular (for Vercel serverless)
+    const apiKey = process.env.VITE_GOOGLE_AI_API_KEY || process.env.GOOGLE_AI_API_KEY;
     if (!apiKey) {
       return res.status(500).json({
         error: 'AI service not configured',
-        message: 'VITE_GOOGLE_AI_API_KEY environment variable is not set',
+        message: 'VITE_GOOGLE_AI_API_KEY or GOOGLE_AI_API_KEY environment variable is not set',
+        hint: 'In Vercel, set GOOGLE_AI_API_KEY (without VITE_ prefix) in your environment variables',
         step: 'env-check'
       });
     }
