@@ -471,31 +471,31 @@ Structure:
 - Animated gradients: `bg-[length:400%_100%] animate-gradient` concept
 
 ### 2. MANDATORY HOVER EFFECTS
-Every interactive element (nav links, buttons, icons) **MUST** have `hover:` states:
+Every interactive element (nav links, buttons, icons) **MUST** have \`hover:\` states:
 
 **✅ GOOD Examples:**
-```
+\`\`\`
 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-600
 transition-all duration-300 hover:scale-105
 group-hover:translate-x-1
 hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]
-```
+\`\`\`
 
 **❌ BAD Examples:**
-```
+\`\`\`
 hover:text-blue-600  (too simple, no gradient/glow)
 (no hover state at all)
-```
+\`\`\`
 
-### 3. SCROLL BEHAVIOR INTEGRATION
-Design headers to support dynamic scroll states using `data-scrolled` attribute:
+###3. SCROLL BEHAVIOR INTEGRATION
+Design headers to support dynamic scroll states using \`data-scrolled\` attribute:
 
-```
+\`\`\`
 data-[scrolled=true]:backdrop-blur-xl
 data-[scrolled=true]:bg-white/80
 data-[scrolled=true]:shadow-lg
 data-[scrolled=true]:py-2 (shrink effect)
-```
+\`\`\`
 
 Ensure `scrollBehavior` prop is set to one of:
 - `"sticky"` - Always visible at top
@@ -505,11 +505,11 @@ Ensure `scrollBehavior` prop is set to one of:
 
 ### 4. MICRO-INTERACTIONS (Tactile Feedback)
 Buttons and clickable elements need:
-```
+\`\`\`
 active:scale-95
 active:shadow-inner
 transition-transform duration-150
-```
+\`\`\`
 
 ### 5. ANIMATION SPEED CONTROL
 Set `animationSpeed` prop to:
@@ -524,7 +524,7 @@ Match animation speed to brand personality.
 ## REFERENCE STANDARDS (Match This Quality Level)
 
 ### Example 1: Animated Gradient Border Header
-```tsx
+\`\`\`tsx
 <header className="relative bg-gray-900 text-white sticky top-0 z-50">
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div className="flex justify-between items-center h-16">
@@ -544,10 +544,10 @@ Match animation speed to brand personality.
     bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600 
     bg-[length:200%_100%] animate-[gradient_4s_linear_infinite]" />
 </header>
-```
+\`\`\`
 
 ### Example 2: Glassmorphic Scroll Header
-```tsx
+\`\`\`tsx
 <header className="sticky top-0 z-50 
   data-[scrolled=true]:backdrop-blur-xl 
   data-[scrolled=true]:bg-white/70 
@@ -577,10 +577,10 @@ Match animation speed to brand personality.
     </div>
   </div>
 </header>
-```
+\`\`\`
 
 ### Example 3: Neon Glow Header (Brutalist Persona)
-```tsx
+\`\`\`tsx
 <header className="relative bg-black border-b-2 border-neon-green
   sticky top-0 z-50">
   <div className="max-w-full px-8 lg:px-12">
@@ -606,7 +606,7 @@ Match animation speed to brand personality.
     bg-[linear-gradient(transparent_50%,rgba(0,255,0,0.02)_50%)]
     bg-[length:100%_4px] animate-[scan_8s_linear_infinite]" />
 </header>
-```
+\`\`\`
 
 **NOTICE:** These examples use:
 - Gradients as primary backgrounds
