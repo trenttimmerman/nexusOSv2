@@ -12,8 +12,164 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
+
+// Inlined few-shot examples for Vercel serverless reliability
+// DO NOT use fs/promises - file system access is restricted in serverless
+const FEW_SHOT_EXAMPLES = `
+
+---
+
+### 📚 REFERENCE STANDARDS (DO NOT COPY—MATCH THIS QUALITY LEVEL)
+
+**STUDY THESE FOR:**
+- Animation patterns (scroll effects, hover states, transitions)
+- Glassmorphism implementation (\`backdrop-blur-xl\`, alpha backgrounds)
+- Gradient usage (backgrounds, text, borders)
+- Micro-interactions (\`active:scale-95\`, shadow effects)
+- Scroll behavior logic (\`useState\`, \`useEffect\`, \`data-scrolled\` attributes)
+
+### Reference Example 1: Scroll-Responsive Glassmorphic Header
+\`\`\`tsx
+import React, { useState, useEffect } from 'react';
+
+const GlassHeader: React.FC = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <header className={\`sticky top-0 z-50 transition-all duration-300
+      \${isScrolled 
+        ? 'backdrop-blur-xl bg-white/70 shadow-lg' 
+        : 'bg-transparent'}\`}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className={\`flex justify-between items-center transition-all duration-300
+          \${isScrolled ? 'h-16' : 'h-20'}\`}>
+          <a href="#" className="text-2xl font-bold 
+            bg-gradient-to-r from-indigo-600 to-purple-600 
+            bg-clip-text text-transparent
+            hover:scale-105 transition-transform duration-200
+            active:scale-95">LUXE</a>
+          <nav className="hidden md:flex space-x-6">
+            <a href="#" className="group relative px-3 py-2
+              hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50
+              rounded-lg transition-all duration-200 active:scale-95">
+              <span className="relative z-10 text-gray-700 
+                group-hover:text-indigo-600 transition-colors">Shop</span>
+              <div className="absolute inset-0 rounded-lg 
+                bg-gradient-to-r from-indigo-500 to-purple-500 
+                opacity-0 group-hover:opacity-10 
+                transition-opacity duration-200" />
+            </a>
+          </nav>
+        </div>
+      </div>
+    </header>
+  );
+};
+\`\`\`
+
+### Reference Example 2: Animated Marquee Header
+\`\`\`tsx
+import React, { useState, useEffect } from 'react';
+
+const MarqueeHeader: React.FC = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <header className="sticky top-0 z-50">
+      <style>{\`
+        @keyframes marquee {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+        .marquee-content {
+          animation: marquee 40s linear infinite;
+          display: flex;
+          width: 200%;
+        }
+      \`}</style>
+      <div className="relative bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <a href="#" className="flex items-center gap-2 text-2xl font-bold
+              hover:text-transparent hover:bg-clip-text 
+              hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-600
+              transition-all duration-300 active:scale-95">NEXUS</a>
+            <nav className="hidden md:flex space-x-6 text-sm font-medium">
+              <a href="#" className="text-gray-500 hover:text-gray-900 
+                transition-colors duration-200
+                hover:shadow-[0_2px_8px_rgba(0,0,0,0.1)]">Home</a>
+            </nav>
+          </div>
+        </div>
+        <div className={\`absolute bottom-0 left-0 w-full bg-indigo-600 
+          text-white overflow-hidden transition-all duration-500
+          \${isScrolled ? 'h-10 opacity-100' : 'h-0 opacity-0'}\`}>
+          <div className="marquee-content py-2">
+            <span className="px-4">NEW ARRIVALS • FREE SHIPPING • LIMITED TIME</span>
+            <span className="px-4">NEW ARRIVALS • FREE SHIPPING • LIMITED TIME</span>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+\`\`\`
+
+### Reference Example 3: Dark Neon Brutalist Header
+\`\`\`tsx
+import React from 'react';
+
+const BrutalistHeader: React.FC = () => {
+  return (
+    <header className="sticky top-0 z-50 bg-black border-b-2 border-green-400">
+      <div className="max-w-full px-8 lg:px-12">
+        <div className="flex justify-between items-center h-24">
+          <a href="#" className="font-mono text-2xl font-black uppercase 
+            tracking-wider text-white
+            hover:text-green-400 hover:drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]
+            transition-all duration-200 active:scale-95">CYBER</a>
+          <nav className="hidden md:flex space-x-8">
+            <a href="#" className="font-mono uppercase text-sm
+              text-gray-400 hover:text-pink-500
+              hover:drop-shadow-[0_0_8px_rgba(236,72,153,0.4)]
+              transition-all duration-200
+              border-2 border-transparent hover:border-pink-500
+              px-4 py-2 active:shadow-[4px_4px_0px_0px_rgba(236,72,153,1)]">
+              ENTER
+            </a>
+          </nav>
+        </div>
+      </div>
+      {/* Scanline effect */}
+      <div className="absolute inset-0 pointer-events-none
+        bg-[linear-gradient(transparent_50%,rgba(34,197,94,0.02)_50%)]
+        bg-[length:100%_4px]" />
+    </header>
+  );
+};
+\`\`\`
+
+**KEY TAKEAWAY:** Your generated headers should feel THIS interactive and polished.
+Headers with gradients, glassmorphism, smooth transitions, and scroll effects are the standard—not the exception.
+
+---
+`;
 
 // Full training prompt inlined for Vercel serverless reliability.
 // Vercel treats every .ts in api/ as a handler — external files crash.
@@ -570,60 +726,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // --- Step 4: Build prompt from training file ---
     const userPrompt = `${brandName} - ${brandDescription || industry || 'professional business'}`;
 
-    con--- Step 4.5: Load Few-Shot Examples from headers-examples/ ---
-    let fewShotExamples = '';
-    try {
-      // Get 2 random header examples for contextual training
-      const exampleNumbers = [1, 12, 18, 22, 28]; // Pre-selected high-quality examples
-      const selectedExamples = exampleNumbers
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 2);
-      
-      const exampleContents = await Promise.all(
-        selectedExamples.map(async (num) => {
-          try {
-            const filePath = join(process.cwd(), 'headers-examples', `Header${num}.tsx`);
-            const content = await readFile(filePath, 'utf-8');
-            return `### Reference Example ${num}:\n\`\`\`tsx\n${content}\n\`\`\`\n`;
-          } catch (err) {
-            console.warn(`[AI Generate Headers] Could not read Header${num}.tsx:`, err);
-            return '';
-          }
-        })
-      );
-      
-      const validExamples = exampleContents.filter(c => c.length > 0);
-      if (validExamples.length > 0) {
-        fewShotExamples = `
-
----
-
-### 📚 REFERENCE STANDARDS (DO NOT COPY—MATCH THIS QUALITY LEVEL)
-
-**STUDY THESE FOR:**
-- Animation patterns (scroll effects, hover states, transitions)
-- Glassmorphism implementation (\`backdrop-blur-xl\`, alpha backgrounds)
-- Gradient usage (backgrounds, text, borders)
-- Micro-interactions (\`active:scale-95\`, shadow effects)
-- Scroll behavior logic (\`useState\`, \`useEffect\`, \`data-scrolled\` attributes)
-
-${validExamples.join('\n')}
-
-**KEY TAKEAWAY:** Your generated headers should feel THIS interactive and polished.
-Headers with gradients, glassmorphism, smooth transitions, and scroll effects are the standard—not the exception.
-
----
-`;
-      }
-    } catch (err) {
-      console.warn('[AI Generate Headers] Could not load few-shot examples:', err);
-      // Non-fatal: proceed without examples
-    }
+    console.log('[AI Generate Headers] Prompt loaded, length:', HEADER_AGENT_PROMPT.length);
 
     // Build the full prompt with training + few-shot examples + context
-    const prompt = `${HEADER_AGENT_PROMPT}${fewShotExamples
-    // Build the full prompt with training + context
-    const prompt = `${HEADER_AGENT_PROMPT}
+    const prompt = `${HEADER_AGENT_PROMPT}${FEW_SHOT_EXAMPLES}
 
 ---
 
