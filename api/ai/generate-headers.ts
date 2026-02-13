@@ -553,35 +553,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 - Background experiments: Try "${shuffledBgs[0]}" somewhere unusual
 - Feature placement: Put glassmorphism in header #${Math.floor(Math.random() * 3) + 1} if you use it
 
-**🎨 VARIANT NAME INSPIRATION (Pick from these or create similar unique names):**
-${suggestedNames.map(n => `"${n}"`).join(', ')}
+**🎨 DESIGN FOCUS FOR THIS GENERATION:**
+- Apply ${shuffledAesthetics[0]}, ${shuffledAesthetics[1]}, and ${shuffledAesthetics[2]} aesthetics (one per header)
+- Use navActiveStyles: ${suggestedStyles[0]}, ${suggestedStyles[1]}, ${suggestedStyles[2]} (vary them!)
+- Experiment with: ${shuffledBgs[0]}
+- Put glassmorphism in header #${Math.floor(Math.random() * 3) + 1} if you use it
 
-**🚫 ABSOLUTELY FORBIDDEN NAMES (DO NOT USE THESE EVER):**
-${bannedNames.map(n => `❌ "${n}"`).join(' / ')}
+**🚫 DESIGN PATTERNS TO AVOID:**
+- Don't generate 3 white backgrounds
+- Don't use the same navActiveStyle twice
+- Don't make all 3 headers look similar
+- Vary the feature sets (announcement bars, CTAs, utility bars)
 
-**CRITICAL:** Do NOT generate the same pattern as your last 100 generations. I want to be SURPRISED. Use completely fresh, unique variant names that match the brand's personality.
-
-**📚 RANDOMIZED REFERENCE (for variety, not to copy):**
-A different brand "${randomExample.name}" (${randomExample.desc}) with colors ${randomExample.primary}/${randomExample.secondary} might use names like:
-- "${suggestedNames[0]}" (${shuffledAesthetics[0]} style, ${suggestedStyles[0]} nav)
-- "${suggestedNames[1]}" (${shuffledAesthetics[1]} style, ${suggestedStyles[1]} nav)  
-- "${suggestedNames[2]}" (${shuffledAesthetics[2]} style, ${suggestedStyles[2]} nav)
-
-**⚡ CHAOS INJECTION - GENERATION #${randomSeed}:**
-DO NOT COPY THE REFERENCE ABOVE. Your task is to generate headers for "${brandName}" (NOT "${randomExample.name}").
-
-USE THESE EXACT VARIANT NAMES (must use ALL THREE, no substitutions):
-1. "${suggestedNames[3]}" - This will be your ${shuffledAesthetics[0]} header
-2. "${suggestedNames[4]}" - This will be your ${shuffledAesthetics[1]} header
-3. "${suggestedNames[5]}" - This will be your ${shuffledAesthetics[2]} header
-
-**PROVE YOU UNDERSTAND:** In your JSON response, I expect to see variantName fields containing EXACTLY: "${suggestedNames[3]}", "${suggestedNames[4]}", and "${suggestedNames[5]}".
-If I see ANY OTHER NAMES (especially ${bannedNames.slice(0, 3).join(', ')}), the generation FAILS.
-
-Now generate 3 WILDLY DIFFERENT headers for "${brandName}" using THEIR colors (${palette.primary}, ${palette.secondary}), not the reference brand's.
-Each header must feel completely unique. Set data.logo to "${brandName}".
-
-REMEMBER: Names should be evocative and match ${brandName}'s vibe. Think like a professional designer naming a premium theme.
+Now generate 3 WILDLY DIFFERENT headers for "${brandName}" using colors ${palette.primary}, ${palette.secondary}.
+Each header should have a completely unique structure and feel.
 Return ONLY the JSON array.`;
 
     // --- Step 5: Call Gemini AI ---
@@ -594,9 +579,9 @@ Return ONLY the JSON array.`;
         model: 'gemini-2.5-flash',
         generationConfig: {
           responseMimeType: 'application/json',
-          temperature: 1.5, // MAXIMUM creativity to break repetitive patterns
-          topP: 0.95, // Higher nucleus sampling for more variety
-          topK: 40, // Allow more diverse token selection
+          temperature: 1.2, // High but not extreme - balance creativity with consistency
+          topP: 0.95,
+          topK: 40,
         }
       });
     } catch (initErr: any) {
@@ -649,22 +634,32 @@ Return ONLY the JSON array.`;
     }
 
     // --- Step 7: Transform to response format ---
-    const headers = variants.map((variant: any, index: number) => ({
-      id: `ai-header-${Date.now()}-${index}`,
-      name: variant.variantName || `${brandName} Header ${index + 1}`,
-      config: {
-        variant: variant.componentType || 'canvas',
-        style: variant.style || {},
-        data: variant.data || {},
-        layout: variant.layout || 'minimal'
-      },
-      preview: `/api/headers/preview?id=placeholder-${index}`,
-      metadata: {
-        generatedAt: new Date().toISOString(),
-        model: 'gemini-2.5-flash',
-        designTrends: variant.designTrends || ['2026 Modern', 'AI Generated']
-      }
-    }));
+    // FORCE UNIQUE NAMES: Replace AI-generated names with random ones from our bank
+    // This solves Gemini's pattern-memorization problem
+    const headers = variants.map((variant: any, index: number) => {
+      // Use the pre-assigned random names instead of whatever Gemini generated
+      const forcedName = suggestedNames[index + 3] || suggestedNames[index] || `${brandName} ${shuffledAesthetics[index]}`;
+      
+      console.log(`[AI Generate Headers] Replacing "${variant.variantName}" → "${forcedName}"`);
+      
+      return {
+        id: `ai-header-${Date.now()}-${index}`,
+        name: forcedName, // FORCED randomization
+        config: {
+          variant: variant.componentType || 'canvas',
+          style: variant.style || {},
+          data: variant.data || {},
+          layout: variant.layout || 'minimal'
+        },
+        preview: `/api/headers/preview?id=placeholder-${index}`,
+        metadata: {
+          generatedAt: new Date().toISOString(),
+          model: 'gemini-2.5-flash',
+          designTrends: variant.designTrends || ['2026 Modern', 'AI Generated'],
+          originalAIName: variant.variantName // Keep for debugging
+        }
+      };
+    });
 
     // --- Step 8: Save all 3 headers to shared_header_library ---
     try {
