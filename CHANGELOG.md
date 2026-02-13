@@ -50,6 +50,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced prompt with persona-specific layout requirements and trend references
 
 ### Fixed
+- **AI API**: Configured explicit Node.js runtime for AI generation function (commit: 2a265de)
+  - CRITICAL FIX: Set runtime to nodejs20.x to prevent Edge Runtime compatibility issues
+  - FUNCTION_INVOCATION_FAILED likely caused by Vercel auto-selecting Edge Runtime
+  - Edge Runtime doesn't support all Node.js APIs required by GoogleGenerativeAI package
+  - Increased memory limit to 1024MB for AI processing (from default 512MB)
+  - Function now guaranteed to run in full Node.js environment with adequate resources
+- **AI API**: Enhanced error diagnostics for FUNCTION_INVOCATION_FAILED debugging (commit: 32ac4e4)
+  - Added module initialization logging to identify serverless cold start failures
+  - Enhanced catch block with detailed error information: name, message, stack trace, timestamp
+  - Multi-level fallback for response handling: JSON → plain text → end() as last resort
+  - Version bump to v2.1.0 to force fresh Vercel deployment (clear cache)
+  - Diagnostic console.logs track module loading sequence for Vercel logs analysis
+  - If module loads, logs will appear in Vercel; if not, error is at import/initialization level
 - **AI API**: Fixed try-catch nesting causing FUNCTION_INVOCATION_FAILED (commit: 35d6651)
   - CRITICAL FIX: Corrected improperly nested try-catch blocks in serverless handler
   - After inlining examples, code had invalid structure with double-nested try blocks
