@@ -157,7 +157,7 @@ const HEADER_AGENT_PROMPT =
   "\n" +
   "[\n" +
   "  {\n" +
-  "    \"variantName\": \"Quiet Morning\",\n" +
+  "    \"variantName\": \"Morning Ritual\",\n" +
   "    \"layout\": \"minimal\",\n" +
   "    \"componentType\": \"canvas\",\n" +
   "    \"style\": {\n" +
@@ -190,7 +190,7 @@ const HEADER_AGENT_PROMPT =
   "    \"designTrends\": [\"Typographic Minimalism\", \"Scandinavian Clean\", \"Warm Neutrals\"]\n" +
   "  },\n" +
   "  {\n" +
-  "    \"variantName\": \"Smoky Glass\",\n" +
+  "    \"variantName\": \"Espresso Noir\",\n" +
   "    \"layout\": \"professional\",\n" +
   "    \"componentType\": \"canvas\",\n" +
   "    \"style\": {\n" +
@@ -241,7 +241,7 @@ const HEADER_AGENT_PROMPT =
   "    \"designTrends\": [\"Dark Glassmorphism\", \"Artisan Luxury\", \"Frosted Depth\"]\n" +
   "  },\n" +
   "  {\n" +
-  "    \"variantName\": \"Roastery Grid\",\n" +
+  "    \"variantName\": \"Bean Counter\",\n" +
   "    \"layout\": \"creative\",\n" +
   "    \"componentType\": \"canvas\",\n" +
   "    \"style\": {\n" +
@@ -606,9 +606,59 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ];
     const shuffledBgs = backgroundSuggestions.sort(() => Math.random() - 0.5);
     
+    // MASSIVE creative name bank to force variety (100+ unique names)
+    const creativeNames = [
+      // Nature-inspired
+      'Midnight Bloom', 'Desert Mirage', 'Ocean Depth', 'Forest Canopy', 'Mountain Peak',
+      'Aurora Borealis', 'Coastal Breeze', 'Alpine Meadow', 'Crimson Sunset', 'Lunar Eclipse',
+      'Storm Clouds', 'Prairie Wind', 'Coral Reef', 'Canyon Echo', 'Tidal Wash',
+      // Urban/Modern
+      'Metro Station', 'City Lights', 'Neon District', 'Concrete Jungle', 'Skyline View',
+      'Street Art', 'Urban Grid', 'Downtown Pulse', 'Subway Lines', 'Rooftop Garden',
+      'Brick & Mortar', 'Glass Tower', 'Warehouse Loft', 'Boulevard Beat', 'Plaza Central',
+      // Artistic/Abstract
+      'Chromatic Shift', 'Geometric Flow', 'Bold Strokes', 'Linear Motion', 'Radial Bloom',
+      'Pixel Perfect', 'Vector Field', 'Gradient Mesh', 'Color Theory', 'Negative Space',
+      'Golden Ratio', 'Fibonacci Spiral', 'Bauhaus Grid', 'Memphis Pop', 'Swiss Precision',
+      // Temporal/Era
+      'Retro Wave', 'Future Vision', 'Vintage Revival', 'Modern Classic', 'Neo Deco',
+      'Millennial Pink', 'Gen Z Chaos', 'Y2K Flashback', 'Cyber Punk', 'Steampunk Edge',
+      'Atomic Age', 'Space Race', 'Digital Dawn', 'Post Modern', 'Ultra Contemporary',
+      // Mood/Emotion
+      'Quiet Confidence', 'Bold Statement', 'Subtle Elegance', 'Playful Energy', 'Zen Focus',
+      'Dynamic Power', 'Calm Waters', 'Electric Vibe', 'Warm Welcome', 'Cool Detachment',
+      'Fierce Attitude', 'Gentle Touch', 'Sharp Edge', 'Soft Landing', 'Loud & Proud',
+      // Material/Texture
+      'Velvet Touch', 'Silk Screen', 'Brushed Metal', 'Frosted Glass', 'Polished Chrome',
+      'Raw Concrete', 'Smooth Marble', 'Rough Grain', 'Matte Finish', 'Glossy Sheen',
+      'Canvas Texture', 'Paper Grain', 'Digital Fabric', 'Woven Light', 'Liquid Crystal',
+      // Industry-specific
+      'Studio Session', 'Gallery Walk', 'Boutique Chic', 'Atelier Craft', 'Workshop Raw',
+      'Lab Experiment', 'Kitchen Table', 'Garden Shed', 'Garage Band', 'Corner Cafe',
+      'Market Square', 'Trading Floor', 'Creative Suite', 'Design Lab', 'Innovation Hub',
+      // Sensory
+      'Visual Symphony', 'Color Harmony', 'Contrast Theory', 'Light & Shadow', 'Depth Perception',
+      'Motion Blur', 'Sharp Focus', 'Wide Angle', 'Macro Detail', 'Panoramic View'
+    ];
+    const shuffledNames = creativeNames.sort(() => Math.random() - 0.5);
+    const suggestedNames = shuffledNames.slice(0, 6); // Give 6 name examples
+    
+    // Banned names that keep appearing
+    const bannedNames = ['Aether Canopy', 'Grid Core', 'Radiant Stream', 'Smoky Glass', 'Roastery Grid', 'Quiet Morning'];
+    
     const randomSeed = Date.now();
     
     // Build the full prompt with training + few-shot examples + context
+    // Inject randomized examples to prevent AI from memorizing patterns
+    const exampleBrands = [
+      { name: 'Ember & Ash', desc: 'Coffee Roastery', primary: '#5C3D2E', secondary: '#D4A574', bg: '#F5E6D3' },
+      { name: 'Lunar Tech', desc: 'Software Company', primary: '#1E293B', secondary: '#7C3AED', bg: '#F8FAFC' },
+      { name: 'Bloom & Co', desc: 'Flower Shop', primary: '#DB2777', secondary: '#FDE047', bg: '#FFF7ED' },
+      { name: 'Steel & Stone', desc: 'Architecture Firm', primary: '#18181B', secondary: '#71717A', bg: '#FAFAFA' },
+      { name: 'Wave Rider', desc: 'Surf Shop', primary: '#0EA5E9', secondary: '#F59E0B', bg: '#F0F9FF' }
+    ];
+    const randomExample = exampleBrands[Math.floor(Math.random() * exampleBrands.length)];
+    
     const prompt = `${HEADER_AGENT_PROMPT}${FEW_SHOT_EXAMPLES}
 
 ---
@@ -631,15 +681,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 - Background experiments: Try "${shuffledBgs[0]}" somewhere unusual
 - Feature placement: Put glassmorphism in header #${Math.floor(Math.random() * 3) + 1} if you use it
 
-**CRITICAL:** Do NOT generate the same pattern as your last 100 generations. I want to be SURPRISED.
+**🎨 VARIANT NAME INSPIRATION (Pick from these or create similar unique names):**
+${suggestedNames.map(n => `"${n}"`).join(', ')}
 
-Generate 3 WILDLY DIFFERENT headers for "${brandName}". Use their brand colors creatively (not just accent colors - use ${palette.primary} and ${palette.secondary} as backgrounds!). 
-Set data.logo to "${brandName}".
+**🚫 ABSOLUTELY FORBIDDEN NAMES (DO NOT USE THESE EVER):**
+${bannedNames.map(n => `❌ "${n}"`).join(' / ')}
 
-BREAK THE MOLD. Shock navActiveStyles (to avoid repetition): ${suggestedStyles[0]}, ${suggestedStyles[1]}, ${suggestedStyles[2]}.
+**CRITICAL:** Do NOT generate the same pattern as your last 100 generations. I want to be SURPRISED. Use completely fresh, unique variant names that match the brand's personality.
 
-Generate 3 UNIQUE headers for "${brandName}" now. Use their brand colors. Set data.logo to "${brandName}".
-Each header should feel completely different from the others. Surprise me with unexpected combinations.
+**📚 RANDOMIZED REFERENCE (for variety, not to copy):**
+A different brand "${randomExample.name}" (${randomExample.desc}) with colors ${randomExample.primary}/${randomExample.secondary} might use names like:
+- "${suggestedNames[0]}" (${shuffledAesthetics[0]} style, ${suggestedStyles[0]} nav)
+- "${suggestedNames[1]}" (${shuffledAesthetics[1]} style, ${suggestedStyles[1]} nav)  
+- "${suggestedNames[2]}" (${shuffledAesthetics[2]} style, ${suggestedStyles[2]} nav)
+
+Now generate 3 WILDLY DIFFERENT headers for "${brandName}" using THEIR colors (${palette.primary}, ${palette.secondary}), not the reference brand's.
+Each header must feel completely unique. Set data.logo to "${brandName}".
+
+REMEMBER: Names should be evocative and match ${brandName}'s vibe. Think like a professional designer naming a premium theme.
 Return ONLY the JSON array.`;
 
     // --- Step 5: Call Gemini AI ---
@@ -652,7 +711,9 @@ Return ONLY the JSON array.`;
         model: 'gemini-2.5-flash',
         generationConfig: {
           responseMimeType: 'application/json',
-          temperature: 0.9, // High creativity for radical design diversity
+          temperature: 1.5, // MAXIMUM creativity to break repetitive patterns
+          topP: 0.95, // Higher nucleus sampling for more variety
+          topK: 40, // Allow more diverse token selection
         }
       });
     } catch (initErr: any) {
