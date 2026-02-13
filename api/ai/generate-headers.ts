@@ -61,90 +61,41 @@ const HEADER_AGENT_PROMPT =
   "- If Header 1 is \"White Background\", Header 2 MUST be \"Dark\" or \"Glassmorphism\"\n" +
   "- If Header 1 uses \"underline\" navActiveStyle, Header 2 MUST use \"glow\", \"brutalist\", or \"capsule\"\n" +
   "\n" +
-  "You MUST adopt three fundamentally incompatible design philosophies. These are NOT variations—they are architectural rivals.\n" +
+  "You are a CREATIVE DIRECTOR who refuses to repeat yourself. Every generation must feel completely different.\n" +
   "\n" +
   "---\n" +
   "\n" +
-  "## DESIGN PERSONA 1: \"THE PURIST\" (Minimalism & Typography)\n" +
+  "## DESIGN INSPIRATION LIBRARY (Mix and Match Freely)\n" +
   "\n" +
-  "**Philosophy:** \"Less is more. Typography is the interface.\"\n" +
+  "**AESTHETIC 1: Minimalist Zen**\n" +
+  "Radical negative space, typography-forward, restrained palette, subtle micro-interactions\n" +
+  "Examples: underline nav, dot indicators, delicate 1px borders, no announcement bars\n" +
   "\n" +
-  "**Core Principles:**\n" +
-  "- Radical negative space—breathe deeply\n" +
-  "- Massive, tracking-tight typography (brand name as centerpiece)\n" +
-  "- Almost no navigation visible (hidden behind minimal \"Menu\" or ultra-sparse links)\n" +
-  "- Stark backgrounds: pure white (#FFFFFF, #FAFAFA) OR deep black (#000000, #0A0A0A)\n" +
-  "- High contrast—no gradients, no blur, no shadows\n" +
-  "- Tiny, precise icons (16-18px) or none at all\n" +
+  "**AESTHETIC 2: Glassmorphism & Depth**\n" +
+  "Frosted glass effects, floating islands, alpha backgrounds, blur layers, ethereal feel\n" +
+  "Examples: backdrop-blur, transparent backgrounds with color overlays, glow effects\n" +
   "\n" +
-  "**Layout Requirements:**\n" +
-  "- maxWidth: \"7xl\" or \"full\"\n" +
-  "- paddingX: 36px-48px (generous horizontal space)\n" +
-  "- paddingY: 20px-28px\n" +
-  "- borderWidth: \"0px\" or \"1px\" (delicate line)\n" +
-  "- showAnnouncementBar: false (too noisy)\n" +
-  "- showUtilityBar: false\n" +
-  "- navActiveStyle: \"underline\" or \"dot\" or \"minimal\"\n" +
-  "- enableGlassmorphism: false\n" +
-  "- enableSpotlightBorders: false\n" +
+  "**AESTHETIC 3: Bold Brutalism**\n" +
+  "Thick borders, asymmetric layouts, marquee text, spotlight effects, unapologetic colors\n" +
+  "Examples: 2px borders, neon accents, brutalist/bracket nav styles, chunky icons\n" +
   "\n" +
-  "**Trend References:** Swiss Style 2026, Typographic Brutalism, Apple-Core Minimalism\n" +
+  "**AESTHETIC 4: Gradient Maximalism**\n" +
+  "Vibrant gradient backgrounds, color-shifting text, animated borders, high-energy\n" +
+  "Examples: bg-gradient-to-r, gradient text with bg-clip-text, capsule nav with gradients\n" +
   "\n" +
-  "---\n" +
+  "**AESTHETIC 5: Y2K Cyber**\n" +
+  "Metallic sheens, drop shadows with glow, skewed elements, neon on dark, playful chaos\n" +
+  "Examples: skewed nav, double underlines, highlight effects, neon color schemes\n" +
   "\n" +
-  "## DESIGN PERSONA 2: \"THE ALCHEMIST\" (Glass, Depth & Material)\n" +
+  "**AESTHETIC 6: Organic Craft**\n" +
+  "Warm earth tones, spotlight borders, natural textures implied, artisan branding\n" +
+  "Examples: overline nav, earthy brand colors, spotlight borders, announcement bars with personality\n" +
   "\n" +
-  "**Philosophy:** \"Interface as ethereal material. Depth through layering.\"\n" +
-  "\n" +
-  "**Core Principles:**\n" +
-  "- Floating \"Island\" or \"Pill\" header (not full width—use maxWidth: \"6xl\" or \"5xl\")\n" +
-  "- Heavy backdrop blur (blurIntensity: \"xl\")\n" +
-  "- Semi-transparent background (glassBackgroundOpacity: 20-40)\n" +
-  "- Delicate borders using alpha hex (#ffffff20 style for borderColor)\n" +
-  "- Buttons and icons glow or scale on hover (iconHoverBackgroundColor with 10-20% opacity)\n" +
-  "- Gradient accents that shift (use accentColor with glow/capsule navActiveStyle)\n" +
-  "- Light/airy palette OR dark with neon accents\n" +
-  "\n" +
-  "**Layout Requirements:**\n" +
-  "- maxWidth: \"5xl\" or \"6xl\" (island effect)\n" +
-  "- enableGlassmorphism: true\n" +
-  "- blurIntensity: \"xl\" or \"lg\"\n" +
-  "- glassBackgroundOpacity: 20-40 (highly transparent)\n" +
-  "- borderColor: use alpha hex like \"#ffffff20\", \"#00000015\", \"#8B5CF615\"\n" +
-  "- navActiveStyle: \"glow\" or \"capsule\" (pill-shaped highlights)\n" +
-  "- showAnnouncementBar: true OR false (both work)\n" +
-  "- backgroundCololr: light with alpha (#ffffff20, #f8f9fa30) OR dark with alpha (#00000040, #11182730)\n" +
-  "\n" +
-  "**Trend References:** Liquid Glass 2.0, iOS Frosted UI, Neomorphism Revival\n" +
-  "\n" +
-  "---\n" +
-  "\n" +
-  "## DESIGN PERSONA 3: \"THE BRUTALIST\" (Bold, Raw & Asymmetric)\n" +
-  "\n" +
-  "**Philosophy:** \"Raw and unpolished. Embrace the grid. Celebrate imperfection.\"\n" +
-  "\n" +
-  "**Core Principles:**\n" +
-  "- Grid lines visible—use thick borders (borderWidth: \"2px\")\n" +
-  "- Hard shadows instead of soft glows (no blur—use shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] conceptually)\n" +
-  "- Monospace or geometric fonts implied through spacing\n" +
-  "- High-voltage colors (neon accents: #00FF00, #FF00FF, #00FFFF) OR pure black/white extremes\n" +
-  "- Asymmetric layout—announcement bar in contrasting color, marquee enabled\n" +
-  "- Large, chunky icons (24-28px)\n" +
-  "- Spotlight borders for craft/artisan feel (enableSpotlightBorders: true)\n" +
-  "\n" +
-  "**Layout Requirements:**\n" +
-  "- maxWidth: \"full\" (edge-to-edge presence)\n" +
-  "- borderWidth: \"2px\" (thick structural lines)\n" +
-  "- paddingX: 40px-48px (extra generous)\n" +
-  "- paddingY: 24px-28px\n" +
-  "- iconSize: 24-28 (chunky)\n" +
-  "- navActiveStyle: \"brutalist\" or \"bracket\" or \"skewed\" (geometric emphasis)\n" +
-  "- showAnnouncementBar: true (MUST be marquee with contrasting color)\n" +
-  "- announcementMarquee: true\n" +
-  "- enableSpotlightBorders: true OR false (artisan variant)\n" +
-  "- backgroundColor: bold saturated (#DC2626, #7C3AED, #0E7490) OR stark (#000000, #F5E6D3)\n" +
-  "\n" +
-  "**Trend References:** Neo-Brutalism, Grid Systems Exposed, Y2K Neon Revival, Craftcore\n" +
+  "**RULES:**\n" +
+  "- DO NOT assign aesthetics 1-2-3 in order\n" +
+  "- MIX elements from different aesthetics\n" +
+  "- RANDOMIZE which aesthetic influences which header position\n" +
+  "- BLEND unexpected combinations (e.g., minimalism + gradient, brutalism + glassmorphism)\n" +
   "\n" +
   "---\n" +
   "\n" +
@@ -513,23 +464,26 @@ const HEADER_AGENT_PROMPT =
   "\n" +
   "**WARNING:** You are generating headers repeatedly. DO NOT fall into patterns.\n" +
   "\n" +
-  "**FORBIDDEN PATTERNS (Do NOT repeat these):**\n" +
-  "- Header 1: minimal navActiveStyle + white background (OVERUSED)\n" +
-  "- Header 2: glow navActiveStyle + dark alpha + glassmorphism (OVERUSED)\n" +
-  "- Header 3: bracket navActiveStyle + black background (OVERUSED)\n" +
+  "**🚫 ABSOLUTELY FORBIDDEN PATTERNS:**\n" +
+  "- Header 1 lightweight + Header 2 glassmorphism + Header 3 dark/bold (CLICHÉ)\n" +
+  "- Always putting glassmorphism in position 2 (PREDICTABLE)\n" +
+  "- White → Dark Alpha → Black progression (BORING)\n" +
+  "- Minimal → Glow → Bracket/Brutalist sequence (ROBOTIC)\n" +
   "\n" +
-  "**REQUIRED VARIATION:**\n" +
-  "1. **Rotate navActiveStyles:** Use DIFFERENT combinations each generation. Try: underline, dot, capsule, highlight, skewed, double, overline, brutalist.\n" +
-  "2. **Mix background patterns:** Don't default to white→dark alpha→black. Try: gradient backgrounds, colored backgrounds using brand palette, light alpha over color, etc.\n" +
-  "3. **Shuffle persona assignments:** Don't always map PURIST→Header1, ALCHEMIST→Header2, BRUTALIST→Header3. Randomize which persona influences which header position.\n" +
-  "4. **Vary feature sets:** Don't always put glassmorphism in the second header. Spread announcement bars, CTAs, utility bars across different positions.\n" +
-  "5. **Explore navActiveStyle variety:** The 12 available styles (none, dot, underline, capsule, glow, brutalist, minimal, overline, double, bracket, highlight, skewed) should each have equal chance. Don't default to minimal/glow/bracket every time.\n" +
+  "**⚡ MANDATORY CHAOS RULES:**\n" +
+  "1. **SHUFFLE EVERYTHING:** Randomize which aesthetic influences which position. Don't go 1→2→3.\n" +
+  "2. **USE BRAND COLORS IN BACKGROUNDS:** At least ONE header MUST use the brand's primary or secondary color as background (not just white/black). Example: if primary is blue, try bg: #3b82f6 or a blue gradient.\n" +
+  "3. **NAVSTYLE ROULETTE:** Never use the same 3 navActiveStyles twice. Rotate through: none, dot, underline, capsule, glow, brutalist, minimal, overline, double, bracket, highlight, skewed.\n" +
+  "4. **SURPRISE GLASSMORPHISM PLACEMENT:** Put glassmorphism in position 1 OR 3 sometimes, not always position 2.\n" +
+  "5. **GRADIENT BACKGROUNDS:** Try bg-gradient-to-r using brand colors instead of solid colors.\n" +
+  "6. **ANNOUNCEMENT BAR LOTTERY:** Don't always put announcement bars in the same position. Randomize.\n" +
+  "7. **FEATURE CHAOS:** One header with minimal features, one heavily loaded, one moderate - but randomize which is which.\n" +
   "\n" +
-  "**CREATIVITY BOOST:**\n" +
-  "- Think of each generation request as a COMPLETELY NEW brand\n" +
-  "- Imagine different designer personalities creating each header\n" +
-  "- Channel different design eras (Y2K, Memphis, Bauhaus, Vaporwave, etc.)\n" +
-  "- Use unexpected combinations within personas (e.g., PURIST can use dots OR underlines, not always minimal)\n" +
+  "**🎨 CREATIVE MANDATES:**\n" +
+  "- Pretend you're 3 DIFFERENT designers with opposing tastes\n" +
+  "- Channel design eras: Art Deco, Vaporwave, Swiss Minimalism, Memphis, Bauhaus, Y2K\n" +
+  "- BREAK your own patterns - if you notice a tendency, do the opposite\n" +
+  "- Mix \"incompatible\" elements: brutalism + pastels, minimalism + gradients, glassmorphism + thick borders\n" +
   "\n" +
   "Generate now. BREAK THE PATTERN. Return ONLY the JSON array. No code fences. No markdown.";
 
@@ -635,9 +589,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log('[AI Generate Headers] Prompt loaded, length:', HEADER_AGENT_PROMPT.length);
 
     // Generate random suggestions to force variety
-    const navStyles = ['none', 'dot', 'underline', 'capsule', 'glow', 'brutalist', 'minimal', 'overline', 'double', 'bracket', 'highlight', 'skewed'];
-    const shuffledNavStyles = navStyles.sort(() => Math.random() - 0.5);
-    const suggestedStyles = shuffledNavStyles.slice(0, 3);
+    
+    const aesthetics = ['Minimalist Zen', 'Glassmorphism & Depth', 'Bold Brutalism', 'Gradient Maximalism', 'Y2K Cyber', 'Organic Craft'];
+    const shuffledAesthetics = aesthetics.sort(() => Math.random() - 0.5);
+    
+    const backgroundSuggestions = [
+      `gradient using ${palette.primary} and ${palette.secondary}`,
+      `solid ${palette.primary} as bold background`,
+      `glassmorphic with ${palette.primary} alpha overlay`,
+      `dark with ${palette.secondary} accents`,
+      `light with subtle gradient`,
+      `${palette.secondary} as primary background color`
+    ];
+    const shuffledBgs = backgroundSuggestions.sort(() => Math.random() - 0.5);
+    
     const randomSeed = Date.now();
     
     // Build the full prompt with training + few-shot examples + context
@@ -657,7 +622,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 - Background: ${palette.background}
 **Style Preferences:** ${stylePreferences.join(', ')}
 
-**VARIATION CHALLENGE:** For this specific generation, try using these navActiveStyles (to avoid repetition): ${suggestedStyles[0]}, ${suggestedStyles[1]}, ${suggestedStyles[2]}.
+**🎲 RANDOMIZATION SEEDS FOR THIS GENERATION:**
+- Suggested navActiveStyles: **${suggestedStyles[0]}**, **${suggestedStyles[1]}**, **${suggestedStyles[2]}**
+- Aesthetic order suggestion: ${shuffledAesthetics[0]} → ${shuffledAesthetics[1]} → ${shuffledAesthetics[2]}
+- Background experiments: Try "${shuffledBgs[0]}" somewhere unusual
+- Feature placement: Put glassmorphism in header #${Math.floor(Math.random() * 3) + 1} if you use it
+
+**CRITICAL:** Do NOT generate the same pattern as your last 100 generations. I want to be SURPRISED.
+
+Generate 3 WILDLY DIFFERENT headers for "${brandName}". Use their brand colors creatively (not just accent colors - use ${palette.primary} and ${palette.secondary} as backgrounds!). 
+Set data.logo to "${brandName}".
+
+BREAK THE MOLD. Shock navActiveStyles (to avoid repetition): ${suggestedStyles[0]}, ${suggestedStyles[1]}, ${suggestedStyles[2]}.
 
 Generate 3 UNIQUE headers for "${brandName}" now. Use their brand colors. Set data.logo to "${brandName}".
 Each header should feel completely different from the others. Surprise me with unexpected combinations.
