@@ -21,7 +21,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2026-02-13]
 
+### Added
+- **Designer V3: Radical Header Generation** (commit: 860146f)
+  - Implemented 3-Persona Strategy to enforce design diversity
+  - Three incompatible design philosophies: Purist (minimalism), Alchemist (glass/depth), Brutalist (bold/asymmetric)
+  - Prevents AI from defaulting to generic "Bootstrap-style" headers
+  - Enforcement rules: no duplicate navActiveStyle, at least one dark background, different feature sets per variant
+  - Increased Gemini temperature from 0.7 → 0.9 for higher creativity
+  - Added comprehensive Coffee Roastery example ("Ember & Ash") demonstrating radical differences
+  - Enhanced prompt with persona-specific layout requirements and trend references
+
 ### Fixed
+- **Designer V3**: Added missing handleCompleteWizard function (commit: aee0ef6)
+  - Fixes ReferenceError when saving header in Designer V3 wizard
+  - Returns final header config (customized or selected) to onComplete callback
+  - Includes fallback to onCancel if no config available
+- **AI API**: Comprehensive error handling for Vercel serverless (commit: 5086186)
+  - Added top-level try-catch to prevent FUNCTION_INVOCATION_FAILED errors
+  - Improved error messages with Vercel setup instructions
+  - Added VercelRequest/VercelResponse types for proper serverless handling
+  - API now always returns JSON, never opaque Vercel errors
 - **AI Integration**: Migrated to official @google/generative-ai SDK (commit: cf18767)
   - Replaced unofficial @google/genai package with Google's official SDK
   - Updated to use gemini-2.5-flash model (correct for 2026 timeline)
