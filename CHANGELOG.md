@@ -22,6 +22,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2026-02-13]
 
 ### Added
+- **Designer V3: High-Voltage Design with Few-Shot Training** (commit: 167b8df)
+  - Implemented contextual training: AI now studies 2 random header examples from /headers-examples/ before generating
+  - Pre-selected 5 high-quality examples (Header1, 12, 18, 22, 28) with advanced patterns:
+    - Scroll detection with useState/useEffect hooks
+    - Marquee animations with CSS keyframes
+    - GSAP ScrollTrigger integration
+    - Glassmorphism with backdrop-blur effects
+    - Gradient borders and text effects
+  - Few-shot examples injected into prompt under "REFERENCE STANDARDS" section
+  - Forces Gemini to match complexity level of premium headers
+  - Anti-Boring Protocol requirements fully enforced:
+    - NO FLAT COLORS: Must use gradients, alpha backgrounds, or textured patterns
+    - MANDATORY HOVER EFFECTS: Every link/button requires hover: states (scale, glow, gradient transitions)
+    - SCROLL ANIMATIONS: Support for data-[scrolled=true]: dynamic behaviors
+    - MICRO-INTERACTIONS: active:scale-95 tactile feedback on all buttons
+    - ANIMATION SPEED: Configurable via animationSpeed prop (slow/medium/fast)
+  - HeaderConfig schema already includes scrollBehavior (static|sticky|hide-on-scroll|glass-on-scroll) and animationSpeed
+  - Rule #8 enforcement: Headers MUST include gradients OR glassmorphism + hover effects on all interactive elements
 - **Designer V3: Radical Header Generation** (commit: 860146f)
   - Implemented 3-Persona Strategy to enforce design diversity
   - Three incompatible design philosophies: Purist (minimalism), Alchemist (glass/depth), Brutalist (bold/asymmetric)
