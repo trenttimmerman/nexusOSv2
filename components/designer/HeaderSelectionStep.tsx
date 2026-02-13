@@ -407,9 +407,12 @@ const mapConfigToHeaderData = (header: SharedHeaderLibrary): Record<string, any>
   const data = config.data || {};
   
   return {
-    // Spread ALL AI-generated style fields first (colors, toggles, layout, nav, glassmorphism, etc.)
+    // Spread ALL AI-generated style fields first (colors, toggles, nav, glassmorphism, etc.)
     ...style,
     
+    // Explicitly pass top-level layout config
+    layout: config.layout || style.layout || 'default',
+
     // Merge text content from data object (AI puts these in "data" not "style")
     ...(data.announcementText && { announcementText: data.announcementText }),
     ...(data.ctaText && { ctaText: data.ctaText }),

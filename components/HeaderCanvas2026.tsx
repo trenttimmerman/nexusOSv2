@@ -60,6 +60,7 @@ interface HeaderData {
   ctaText?: string;
   ctaBackgroundColor?: string;
   ctaHoverColor?: string;
+  layout?: 'default' | 'logo-left-nav-center' | 'logo-center-nav-left' | 'split-island' | 'minimal';
   [key: string]: any;
 }
 
@@ -127,6 +128,7 @@ const CANVAS_DEFAULTS: HeaderData = {
   glassBackgroundOpacity: 60,
   smartScrollThreshold: 100,
   searchPlaceholder: 'Search products...',
+  layout: 'default',
 };
 
 const Logo: React.FC<{
@@ -310,6 +312,143 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
     WebkitBackdropFilter: `blur(${settings.blurIntensity === 'sm' ? '4px' : settings.blurIntensity === 'md' ? '8px' : settings.blurIntensity === 'lg' ? '12px' : '20px'})`,
   } : {};
 
+  // Render helpers
+  const renderLogo = () => (
+    <Logo
+      storeName={storeName}
+      logoUrl={logoUrl}
+      logoHeight={logoHeight}
+      className="text-2xl font-bold tracking-tight"
+      onClick={onLogoClick}
+    />
+  );
+
+  const renderNav = () => (
+    <nav className="hidden md:flex gap-6 items-center">
+      {(links || []).map((link) => (
+        <NavItem
+          key={link.href}
+          link={link}
+          onClick={onLinkClick}
+          className="text-sm font-medium transition-colors"
+          style={{ color: settings.textColor }}
+        />
+      ))}
+    </nav>
+  );
+
+  const renderIcons = () => (
+    <div className="flex items-center gap-2">
+      {settings.showSearch && (
+        <div className="flex items-center">
+          <InlineSearch
+            isOpen={isSearchOpen || false}
+            onClose={onSearchClose || (() => {})}
+            onSubmit={onSearchSubmit}
+            placeholder={settings.searchPlaceholder}
+            inputClassName="border-b px-2 py-1"
+            inputStyle={{
+              backgroundColor: settings.searchBackgroundColor,
+              borderColor: settings.searchBorderColor,
+              color: settings.searchInputTextColor,
+            }}
+            iconColor={settings.textColor}
+          />
+          {!isSearchOpen && (
+            <button
+              onClick={onSearchClick}
+              className="p-2 rounded-full transition-colors"
+              style={{ 
+                color: settings.textColor,
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = settings.textHoverColor!;
+                e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = settings.textColor!;
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              <Search size={settings.iconSize} />
+            </button>
+          )}
+        </div>
+      )}
+      {settings.showAccount && (
+        <button
+          className="p-2 rounded-full transition-colors hidden md:block"
+          style={{ 
+            color: settings.textColor,
+            backgroundColor: 'transparent'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = settings.textHoverColor!;
+            e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = settings.textColor!;
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          <User size={settings.iconSize} />
+        </button>
+      )}
+      {settings.showCart && (
+        <button
+          onClick={onOpenCart}
+          className="relative p-2 rounded-full transition-colors"
+          style={{ 
+            color: settings.textColor,
+            backgroundColor: 'transparent'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = settings.textHoverColor!;
+            e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = settings.textColor!;
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          <ShoppingBag size={settings.iconSize} />
+          {cartCount > 0 && (
+            <span
+              className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none transform translate-x-1/4 -translate-y-1/4 rounded-full"
+              style={{
+                backgroundColor: settings.cartBadgeColor,
+                color: settings.cartBadgeTextColor,
+              }}
+            >
+              {cartCount}
+            </span>
+          )}
+        </button>
+      )}
+      {settings.showMobileMenu && (
+        <button
+          className="md:hidden p-2 rounded-full transition-colors"
+          onClick={() => setIsMobileMenuOpen(true)}
+          style={{ color: settings.textColor }}
+        >
+          <Menu size={settings.iconSize} />
+        </button>
+      )}
+      {settings.showCTA && settings.ctaText && (
+        <button
+           className="hidden md:block ml-4 px-4 py-2 rounded-md font-medium text-sm transition-all"
+           style={{
+             backgroundColor: settings.ctaBackgroundColor || settings.accentColor,
+             color: '#ffffff', // Assuming white text
+           }}
+        >
+          {settings.ctaText}
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <>
       {/* Announcement Bar */}
@@ -396,7 +535,7 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
         }}
       >
         <div
-          className={`${maxWidthClass} mx-auto flex items-center justify-between`}
+          className={`${maxWidthClass} mx-auto relative`}
           style={{
             paddingLeft: settings.paddingX,
             paddingRight: settings.paddingX,
@@ -405,137 +544,66 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
             minHeight: '5rem',
           }}
         >
-          {/* Left: Logo + Desktop Navigation */}
-          <div className="flex items-center gap-8">
-            <Logo
-              storeName={storeName}
-              logoUrl={logoUrl}
-              logoHeight={logoHeight}
-              className="text-2xl font-bold tracking-tight"
-              onClick={onLogoClick}
-            />
-            <nav className="hidden md:flex gap-6">
-              {(links || []).map((link) => (
-                <NavItem
-                  key={link.href}
-                  link={link}
-                  onClick={onLinkClick}
-                  className="text-sm font-medium"
-                  style={{ color: settings.textColor }}
-                  hoverColor={settings.textHoverColor}
-                  activeColor={settings.textHoverColor}
-                  activeStyle={settings.navActiveStyle}
-                />
-              ))}
-            </nav>
-          </div>
-
-          {/* Right: Icons */}
-          <div className="flex items-center gap-2">
-            {settings.showSearch && (
-              <div className="flex items-center">
-                <InlineSearch
-                  isOpen={isSearchOpen || false}
-                  onClose={onSearchClose || (() => {})}
-                  onSubmit={onSearchSubmit}
-                  placeholder={settings.searchPlaceholder}
-                  inputClassName="border-b px-2 py-1"
-                  inputStyle={{
-                    backgroundColor: settings.searchBackgroundColor,
-                    borderColor: settings.searchBorderColor,
-                    color: settings.searchInputTextColor,
-                  }}
-                  iconColor={settings.textColor}
-                />
-                {!isSearchOpen && (
-                  <button
-                    onClick={onSearchClick}
-                    className="p-2 rounded-full transition-colors"
-                    style={{ 
-                      color: settings.textColor,
-                      backgroundColor: 'transparent'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = settings.textHoverColor!;
-                      e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = settings.textColor!;
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    <Search size={settings.iconSize} />
-                  </button>
-                )}
+          {/* Layout Variant: Default (Logo Left, Nav Left) */}
+          {(!settings.layout || settings.layout === 'default' || settings.layout === 'minimal') && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-8">
+                {renderLogo()}
+                {renderNav()}
               </div>
-            )}
-            {settings.showAccount && (
-              <button
-                className="p-2 rounded-full transition-colors hidden md:block"
-                style={{ 
-                  color: settings.textColor,
-                  backgroundColor: 'transparent'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = settings.textHoverColor!;
-                  e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = settings.textColor!;
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                <User size={settings.iconSize} />
-              </button>
-            )}
-            {settings.showCart && (
-              <button
-                onClick={onOpenCart}
-                className="relative p-2 rounded-full transition-colors"
-                style={{ 
-                  color: settings.textColor,
-                  backgroundColor: 'transparent'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = settings.textHoverColor!;
-                  e.currentTarget.style.backgroundColor = settings.iconHoverBackgroundColor!;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = settings.textColor!;
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                <ShoppingBag size={settings.iconSize} />
-                {cartCount > 0 && (
-                  <span
-                    className="absolute top-0 right-0 w-4 h-4 text-[10px] flex items-center justify-center rounded-full"
-                    style={{
-                      backgroundColor: settings.cartBadgeColor,
-                      color: settings.cartBadgeTextColor,
-                    }}
-                  >
-                    {cartCount}
-                  </span>
-                )}
-              </button>
-            )}
-            
-            {/* Mobile Menu Button */}
-            {settings.showMobileMenu && (
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-full transition-colors"
-                style={{ 
-                  color: settings.textColor,
-                  backgroundColor: 'transparent'
-                }}
-                aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-                aria-expanded={isMobileMenuOpen}
-              >
-                {isMobileMenuOpen ? <X size={settings.iconSize} /> : <Menu size={settings.iconSize} />}
-              </button>
-            )}
-          </div>
+              {renderIcons()}
+            </div>
+          )}
+
+          {/* Layout Variant: Logo Left, Nav Center */}
+          {settings.layout === 'logo-left-nav-center' && (
+            <div className="flex items-center justify-between">
+              <div className="flex-shrink-0">
+                {renderLogo()}
+              </div>
+              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden md:block">
+                {renderNav()}
+              </div>
+              <div className="flex-shrink-0">
+                {renderIcons()}
+              </div>
+            </div>
+          )}
+
+          {/* Layout Variant: Logo Center, Nav Left */}
+          {settings.layout === 'logo-center-nav-left' && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center flex-1">
+                 <div className="hidden md:block">
+                   {renderNav()}
+                 </div>
+                 <div className="md:hidden">
+                    {/* Mobile Toggle would represent nav here on mobile */}
+                 </div>
+              </div>
+              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                {renderLogo()}
+              </div>
+              <div className="flex items-center justify-end flex-1">
+                {renderIcons()}
+              </div>
+            </div>
+          )}
+
+          {/* Layout Variant: Split Island */}
+          {settings.layout === 'split-island' && (
+            <div className="flex items-center justify-between">
+              <div className="flex-shrink-0">
+                {renderLogo()}
+              </div>
+              <div className="flex items-center gap-8">
+                {renderNav()}
+                {renderIcons()}
+              </div>
+            </div>
+          )}
+          
+          {/* REMOVED LEGACY LAYOUT & ICONS - NOW HANDLED BY renderIcons() INSIDE LAYOUT BLOCKS */}
         </div>
       </header>
       

@@ -106,7 +106,7 @@ const HEADER_AGENT_PROMPT =
   "**Style Object Fields** (ALL go in \"style\"):\n" +
   "- **COLORS:** backgroundColor, textColor, textHoverColor, accentColor, borderColor, cartBadgeColor, cartBadgeTextColor, iconHoverBackgroundColor, announcementBackgroundColor, announcementTextColor, utilityBarBackgroundColor, utilityBarTextColor, mobileMenuBackgroundColor, mobileMenuTextColor, searchBackgroundColor, ctaBackgroundColor, ctaHoverColor\n" +
   "- **TOGGLES:** showSearch, showAccount, showCart, showCTA, showAnnouncementBar, showUtilityBar, enableSmartScroll, enableMegaMenu, enableSpotlightBorders, enableGlassmorphism, announcementDismissible, announcementMarquee, showCurrencySelector, showLanguageSelector, sticky\n" +
-  "- **LAYOUT:** maxWidth (full/7xl/6xl/5xl), paddingX (16px-48px string), paddingY (12px-28px string), borderWidth (0px/1px/2px string), iconSize (16-28 number)\n" +
+  "- **LAYOUT:** layout (default/logo-left-nav-center/logo-center-nav-left/split-island), maxWidth (full/7xl/6xl/5xl), paddingX (16px-48px string), paddingY (12px-28px string), borderWidth (0px/1px/2px string), iconSize (16-28 number)\n" +
   "- **NAV:** navActiveStyle (none/dot/underline/capsule/glow/brutalist/minimal/overline/double/bracket/highlight/skewed)\n" +
   "- **GLASS:** blurIntensity (sm/md/lg/xl), glassBackgroundOpacity (0-100 number)\n" +
   "- **MOBILE:** mobileMenuPosition (left/right), mobileMenuWidth (280px-400px string), mobileMenuOverlayOpacity (30-80 number)\n" +
@@ -136,7 +136,7 @@ const HEADER_AGENT_PROMPT =
   "[\n" +
   "  {\n" +
   "    \"variantName\": \"Evocative Name (not 'Header 1'—use design-inspired names)\",\n" +
-  "    \"layout\": \"minimal|professional|creative\",\n" +
+  "    \"layout\": \"default|logo-left-nav-center|logo-center-nav-left|split-island\",\n" +
   "    \"componentType\": \"canvas\",\n" +
   "    \"style\": { ...all style fields... },\n" +
   "    \"data\": { \n" +
@@ -647,6 +647,7 @@ Return ONLY the JSON array.`;
         name: forcedName, // FORCED randomization
         config: {
           variant: variant.componentType || 'canvas',
+          layout: variant.layout || 'default', // Pass layout through
           style: variant.style || {},
           data: variant.data || {},
           layout: variant.layout || 'minimal'
