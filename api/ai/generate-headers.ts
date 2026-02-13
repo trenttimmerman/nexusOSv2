@@ -589,6 +589,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log('[AI Generate Headers] Prompt loaded, length:', HEADER_AGENT_PROMPT.length);
 
     // Generate random suggestions to force variety
+    const navStyles = ['none', 'dot', 'underline', 'capsule', 'glow', 'brutalist', 'minimal', 'overline', 'double', 'bracket', 'highlight', 'skewed'];
+    const shuffledNavStyles = navStyles.sort(() => Math.random() - 0.5);
+    const suggestedStyles = shuffledNavStyles.slice(0, 3);
     
     const aesthetics = ['Minimalist Zen', 'Glassmorphism & Depth', 'Bold Brutalism', 'Gradient Maximalism', 'Y2K Cyber', 'Organic Craft'];
     const shuffledAesthetics = aesthetics.sort(() => Math.random() - 0.5);
