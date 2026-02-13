@@ -22,6 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2026-02-13]
 
 ### Added
+- **AI Header Designer: Nexus Foundry Protocol** (commit: 6b738b0)
+  - Implemented specific design archetypes: Alchemist, Purist, Brutalist
+  - Added "Chaos Injection" logic to force archetype variety and randomize nav styles
+  - Enforced tactile feedback (`active:scale-95`) on all clickable elements
+  - Refined system prompts to prevent generic "boring" implementations
 - **Designer V3: High-Voltage Design with Few-Shot Training** (commit: 167b8df)
   - Implemented contextual training: AI now studies 2 random header examples from /headers-examples/ before generating
   - Pre-selected 5 high-quality examples (Header1, 12, 18, 22, 28) with advanced patterns:
