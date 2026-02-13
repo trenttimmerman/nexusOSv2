@@ -12,6 +12,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 
 // Full training prompt inlined for Vercel serverless reliability.
 // Vercel treats every .ts in api/ as a handler — external files crash.
@@ -568,8 +570,58 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // --- Step 4: Build prompt from training file ---
     const userPrompt = `${brandName} - ${brandDescription || industry || 'professional business'}`;
 
-    console.log('[AI Generate Headers] Prompt loaded, length:', HEADER_AGENT_PROMPT.length);
+    con--- Step 4.5: Load Few-Shot Examples from headers-examples/ ---
+    let fewShotExamples = '';
+    try {
+      // Get 2 random header examples for contextual training
+      const exampleNumbers = [1, 12, 18, 22, 28]; // Pre-selected high-quality examples
+      const selectedExamples = exampleNumbers
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 2);
+      
+      const exampleContents = await Promise.all(
+        selectedExamples.map(async (num) => {
+          try {
+            const filePath = join(process.cwd(), 'headers-examples', `Header${num}.tsx`);
+            const content = await readFile(filePath, 'utf-8');
+            return `### Reference Example ${num}:\n\`\`\`tsx\n${content}\n\`\`\`\n`;
+          } catch (err) {
+            console.warn(`[AI Generate Headers] Could not read Header${num}.tsx:`, err);
+            return '';
+          }
+        })
+      );
+      
+      const validExamples = exampleContents.filter(c => c.length > 0);
+      if (validExamples.length > 0) {
+        fewShotExamples = `
 
+---
+
+### 📚 REFERENCE STANDARDS (DO NOT COPY—MATCH THIS QUALITY LEVEL)
+
+**STUDY THESE FOR:**
+- Animation patterns (scroll effects, hover states, transitions)
+- Glassmorphism implementation (\`backdrop-blur-xl\`, alpha backgrounds)
+- Gradient usage (backgrounds, text, borders)
+- Micro-interactions (\`active:scale-95\`, shadow effects)
+- Scroll behavior logic (\`useState\`, \`useEffect\`, \`data-scrolled\` attributes)
+
+${validExamples.join('\n')}
+
+**KEY TAKEAWAY:** Your generated headers should feel THIS interactive and polished.
+Headers with gradients, glassmorphism, smooth transitions, and scroll effects are the standard—not the exception.
+
+---
+`;
+      }
+    } catch (err) {
+      console.warn('[AI Generate Headers] Could not load few-shot examples:', err);
+      // Non-fatal: proceed without examples
+    }
+
+    // Build the full prompt with training + few-shot examples + context
+    const prompt = `${HEADER_AGENT_PROMPT}${fewShotExamples
     // Build the full prompt with training + context
     const prompt = `${HEADER_AGENT_PROMPT}
 
