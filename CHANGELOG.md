@@ -19,6 +19,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2026-02-13]
+
+### Fixed
+- **AI Integration**: Migrated to official @google/generative-ai SDK (commit: cf18767)
+  - Replaced unofficial @google/genai package with Google's official SDK
+  - Updated to use gemini-2.5-flash model (correct for 2026 timeline)
+  - Fixed API syntax across 10 files: API endpoints, AI agents, React components
+  - Confirmed VITE_GOOGLE_AI_API_KEY environment variable usage (correct for Vite)
+  - Build passing: 14.53s, bundle 2,697 kB
+
+---
+
 ## [2026-02-10]
 
 ### Added
