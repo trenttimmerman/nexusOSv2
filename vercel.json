@@ -4,7 +4,9 @@
       "maxDuration": 300
     },
     "api/ai/generate-headers.ts": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "runtime": "nodejs20.x",
+      "memory": 1024
     }
   },
   "rewrites": [
