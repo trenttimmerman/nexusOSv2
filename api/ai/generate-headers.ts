@@ -364,12 +364,12 @@ const HEADER_AGENT_PROMPT =
   "###3. SCROLL BEHAVIOR INTEGRATION\n" +
   "Design headers to support dynamic scroll states using \\`data-scrolled\\` attribute:\n" +
   "\n" +
-  "\\`\\`\\`\n" +
+  "```\n" +
   "data-[scrolled=true]:backdrop-blur-xl\n" +
   "data-[scrolled=true]:bg-white/80\n" +
   "data-[scrolled=true]:shadow-lg\n" +
   "data-[scrolled=true]:py-2 (shrink effect)\n" +
-  "\\`\\`\\`\n" +
+  "```\n" +
   "\n" +
   "Ensure `scrollBehavior` prop is set to one of:\n" +
   "- `\"sticky\"` - Always visible at top\n" +
@@ -379,11 +379,11 @@ const HEADER_AGENT_PROMPT =
   "\n" +
   "### 4. MICRO-INTERACTIONS (Tactile Feedback)\n" +
   "Buttons and clickable elements need:\n" +
-  "\\`\\`\\`\n" +
+  "```\n" +
   "active:scale-95\n" +
   "active:shadow-inner\n" +
   "transition-transform duration-150\n" +
-  "\\`\\`\\`\n" +
+  "```\n" +
   "\n" +
   "### 5. ANIMATION SPEED CONTROL\n" +
   "Set `animationSpeed` prop to:\n" +
@@ -398,7 +398,7 @@ const HEADER_AGENT_PROMPT =
   "## REFERENCE STANDARDS (Match This Quality Level)\n" +
   "\n" +
   "### Example 1: Animated Gradient Border Header\n" +
-  "\\`\\`\\`tsx\n" +
+  "```tsx\n" +
   "<header className=\"relative bg-gray-900 text-white sticky top-0 z-50\">\n" +
   "  <div className=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">\n" +
   "    <div className=\"flex justify-between items-center h-16\">\n" +
@@ -480,7 +480,7 @@ const HEADER_AGENT_PROMPT =
   "    bg-[linear-gradient(transparent_50%,rgba(0,255,0,0.02)_50%)]\n" +
   "    bg-[length:100%_4px] animate-[scan_8s_linear_infinite]\" />\n" +
   "</header>\n" +
-  "\\`\\`\\`\n" +
+  "```\n" +
   "\n" +
   "**NOTICE:** These examples use:\n" +
   "- Gradients as primary backgrounds\n" +
