@@ -7,11 +7,16 @@
  * 
  * IMPORTANT: This file is fully self-contained for Vercel serverless.
  * Do NOT import from ../../ai/ (causes bundling/runtime crashes).
+ * 
+ * Version: 2.1.0 - Emergency fix for FUNCTION_INVOCATION_FAILED
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
+
+// Diagnostic: Log module initialization to help debug FUNCTION_INVOCATION_FAILED
+console.log('[Module Init] AI Header Generation module loading...');
 
 // Inlined few-shot examples for Vercel serverless reliability
 // DO NOT use fs/promises - file system access is restricted in serverless
@@ -630,7 +635,12 @@ Match animation speed to brand personality.
 
 Generate now. Return ONLY the JSON array. No code fences. No markdown.`;
 
+// Emergency diagnostic: Ensure module completed initialization
+console.log('[Module Init] Constants loaded, handler ready to export');
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  console.log('[Handler] Function invoked successfully');
+  
   // Wrap EVERYTHING in top-level try-catch to prevent FUNCTION_INVOCATION_FAILED
   try {
     // CORS headers
@@ -890,20 +900,32 @@ Return ONLY the JSON array.`;
 
   } catch (topLevelError: any) {
     // Catch ANY error including initialization/import failures
-    console.error('[AI Generate Headers] Top-level error:', topLevelError);
+    console.error('[AI Generate Headers] CRITICAL ERROR:', topLevelError);
+    console.error('[AI Generate Headers] Error stack:', topLevelError.stack);
+    console.error('[AI Generate Headers] Error name:', topLevelError.name);
+    console.error('[AI Generate Headers] Error message:', topLevelError.message);
     
     // Ensure we ALWAYS return JSON, never let Vercel return opaque error
     try {
       return res.status(500).json({
         error: 'Header generation failed',
         message: topLevelError?.message || 'Unknown error',
+        errorName: topLevelError?.name || 'UnknownError',
         stack: topLevelError.stack?.split('\n').slice(0, 5),
         hint: 'Check Vercel logs for details. Ensure GOOGLE_AI_API_KEY is set.',
-        step: 'error'
+        step: 'error',
+        timestamp: new Date().toISOString()
       });
     } catch (jsonError) {
       // Last resort: plain text if JSON also fails
-      res.status(500).send(`Error: ${topLevelError?.message || 'Server error'}`);
+      console.error('[AI Generate Headers] JSON response also failed:', jsonError);
+      try {
+        res.status(500).send(`CRITICAL ERROR: ${topLevelError?.message || 'Server error'}`);
+      } catch (sendError) {
+        // If even res.send fails, just end the response
+        console.error('[AI Generate Headers] Even res.send failed:', sendError);
+        res.end();
+      }
     }
   }
 }
