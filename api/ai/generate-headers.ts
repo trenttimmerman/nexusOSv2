@@ -151,135 +151,7 @@ const HEADER_AGENT_PROMPT =
   "  // ... 2 more radically different headers\n" +
   "]\n" +
   "\n" +
-  "---\n" +
-  "\n" +
-  "## FULL EXAMPLE — Coffee Roastery \"Ember & Ash\" (primary: #5C3D2E, secondary: #D4A574, background: #F5E6D3)\n" +
-  "\n" +
-  "[\n" +
-  "  {\n" +
-  "    \"variantName\": \"Morning Ritual\",\n" +
-  "    \"layout\": \"minimal\",\n" +
-  "    \"componentType\": \"canvas\",\n" +
-  "    \"style\": {\n" +
-  "      \"backgroundColor\": \"#FDFBF7\",\n" +
-  "      \"textColor\": \"#5C3D2E\",\n" +
-  "      \"textHoverColor\": \"#3A2519\",\n" +
-  "      \"accentColor\": \"#5C3D2E\",\n" +
-  "      \"borderColor\": \"#E8DFD3\",\n" +
-  "      \"borderWidth\": \"1px\",\n" +
-  "      \"cartBadgeColor\": \"#5C3D2E\",\n" +
-  "      \"cartBadgeTextColor\": \"#FFFFFF\",\n" +
-  "      \"showSearch\": true,\n" +
-  "      \"showAccount\": false,\n" +
-  "      \"showCart\": true,\n" +
-  "      \"showCTA\": false,\n" +
-  "      \"showAnnouncementBar\": false,\n" +
-  "      \"showUtilityBar\": false,\n" +
-  "      \"enableGlassmorphism\": false,\n" +
-  "      \"enableSpotlightBorders\": false,\n" +
-  "      \"navActiveStyle\": \"underline\",\n" +
-  "      \"paddingX\": \"48px\",\n" +
-  "      \"paddingY\": \"24px\",\n" +
-  "      \"iconSize\": 18,\n" +
-  "      \"maxWidth\": \"7xl\"\n" +
-  "    },\n" +
-  "    \"data\": {\n" +
-  "      \"logo\": \"Ember & Ash\",\n" +
-  "      \"searchPlaceholder\": \"Find your roast...\"\n" +
-  "    },\n" +
-  "    \"designTrends\": [\"Typographic Minimalism\", \"Scandinavian Clean\", \"Warm Neutrals\"]\n" +
-  "  },\n" +
-  "  {\n" +
-  "    \"variantName\": \"Espresso Noir\",\n" +
-  "    \"layout\": \"professional\",\n" +
-  "    \"componentType\": \"canvas\",\n" +
-  "    \"style\": {\n" +
-  "      \"backgroundColor\": \"#1A1410\",\n" +
-  "      \"textColor\": \"#C4B5A8\",\n" +
-  "      \"textHoverColor\": \"#D4A574\",\n" +
-  "      \"accentColor\": \"#D4A574\",\n" +
-  "      \"borderColor\": \"#ffffff15\",\n" +
-  "      \"borderWidth\": \"0px\",\n" +
-  "      \"cartBadgeColor\": \"#D4A574\",\n" +
-  "      \"cartBadgeTextColor\": \"#1A1410\",\n" +
-  "      \"iconHoverBackgroundColor\": \"#D4A57420\",\n" +
-  "      \"showSearch\": true,\n" +
-  "      \"showAccount\": true,\n" +
-  "      \"showCart\": true,\n" +
-  "      \"showCTA\": true,\n" +
-  "      \"showAnnouncementBar\": true,\n" +
-  "      \"showUtilityBar\": true,\n" +
-  "      \"enableGlassmorphism\": true,\n" +
-  "      \"enableSpotlightBorders\": false,\n" +
-  "      \"navActiveStyle\": \"glow\",\n" +
-  "      \"blurIntensity\": \"xl\",\n" +
-  "      \"glassBackgroundOpacity\": 30,\n" +
-  "      \"paddingX\": \"32px\",\n" +
-  "      \"paddingY\": \"20px\",\n" +
-  "      \"iconSize\": 20,\n" +
-  "      \"maxWidth\": \"6xl\",\n" +
-  "      \"announcementBackgroundColor\": \"#D4A574\",\n" +
-  "      \"announcementTextColor\": \"#1A1410\",\n" +
-  "      \"utilityBarBackgroundColor\": \"#0F0D0A\",\n" +
-  "      \"utilityBarTextColor\": \"#8A7A6D\",\n" +
-  "      \"ctaBackgroundColor\": \"#D4A574\",\n" +
-  "      \"ctaHoverColor\": \"#C49564\",\n" +
-  "      \"mobileMenuBackgroundColor\": \"#1A1410\",\n" +
-  "      \"mobileMenuTextColor\": \"#D4D4D8\"\n" +
-  "    },\n" +
-  "    \"data\": {\n" +
-  "      \"logo\": \"Ember & Ash\",\n" +
-  "      \"announcementText\": \"NEW: Ethiopian Yirgacheffe — Floral & Bright\",\n" +
-  "      \"ctaText\": \"Shop Beans\",\n" +
-  "      \"searchPlaceholder\": \"Explore flavors...\",\n" +
-  "      \"utilityLinks\": [\n" +
-  "        {\"label\": \"Brew Guide\", \"href\": \"#\"},\n" +
-  "        {\"label\": \"Subscriptions\", \"href\": \"#\"},\n" +
-  "        {\"label\": \"Find Us\", \"href\": \"#\"}\n" +
-  "      ]\n" +
-  "    },\n" +
-  "    \"designTrends\": [\"Dark Glassmorphism\", \"Artisan Luxury\", \"Frosted Depth\"]\n" +
-  "  },\n" +
-  "  {\n" +
-  "    \"variantName\": \"Bean Counter\",\n" +
-  "    \"layout\": \"creative\",\n" +
-  "    \"componentType\": \"canvas\",\n" +
-  "    \"style\": {\n" +
-  "      \"backgroundColor\": \"#F5E6D3\",\n" +
-  "      \"textColor\": \"#3A2519\",\n" +
-  "      \"textHoverColor\": \"#000000\",\n" +
-  "      \"accentColor\": \"#5C3D2E\",\n" +
-  "      \"borderColor\": \"#5C3D2E\",\n" +
-  "      \"borderWidth\": \"2px\",\n" +
-  "      \"cartBadgeColor\": \"#5C3D2E\",\n" +
-  "      \"cartBadgeTextColor\": \"#F5E6D3\",\n" +
-  "      \"iconHoverBackgroundColor\": \"#5C3D2E20\",\n" +
-  "      \"showSearch\": true,\n" +
-  "      \"showAccount\": true,\n" +
-  "      \"showCart\": true,\n" +
-  "      \"showCTA\": false,\n" +
-  "      \"showAnnouncementBar\": true,\n" +
-  "      \"showUtilityBar\": false,\n" +
-  "      \"enableGlassmorphism\": false,\n" +
-  "      \"enableSpotlightBorders\": true,\n" +
-  "      \"announcementMarquee\": true,\n" +
-  "      \"navActiveStyle\": \"bracket\",\n" +
-  "      \"paddingX\": \"40px\",\n" +
-  "      \"paddingY\": \"28px\",\n" +
-  "      \"iconSize\": 26,\n" +
-  "      \"maxWidth\": \"full\",\n" +
-  "      \"announcementBackgroundColor\": \"#5C3D2E\",\n" +
-  "      \"announcementTextColor\": \"#F5E6D3\",\n" +
-  "      \"mobileMenuBackgroundColor\": \"#F5E6D3\",\n" +
-  "      \"mobileMenuTextColor\": \"#3A2519\"\n" +
-  "    },\n" +
-  "    \"data\": {\n" +
-  "      \"logo\": \"Ember & Ash\",\n" +
-  "      \"announcementText\": \"HAND-ROASTED DAILY • SINGLE ORIGIN • FREE SHIPPING OVER $40 • LOCAL DELIVERY\"\n" +
-  "    },\n" +
-  "    \"designTrends\": [\"Neo-Brutalism\", \"Craftcore\", \"Spotlight Borders\", \"Marquee Revival\"]\n" +
-  "  }\n" +
-  "]\n" +
+  "**NOTE:** The example above is just a STRUCTURAL guide. Your variant names and designs MUST be completely different every time.\n" +
   "\n" +
   "---\n" +
   "\n" +
@@ -694,6 +566,17 @@ A different brand "${randomExample.name}" (${randomExample.desc}) with colors ${
 - "${suggestedNames[0]}" (${shuffledAesthetics[0]} style, ${suggestedStyles[0]} nav)
 - "${suggestedNames[1]}" (${shuffledAesthetics[1]} style, ${suggestedStyles[1]} nav)  
 - "${suggestedNames[2]}" (${shuffledAesthetics[2]} style, ${suggestedStyles[2]} nav)
+
+**⚡ CHAOS INJECTION - GENERATION #${randomSeed}:**
+DO NOT COPY THE REFERENCE ABOVE. Your task is to generate headers for "${brandName}" (NOT "${randomExample.name}").
+
+USE THESE EXACT VARIANT NAMES (must use ALL THREE, no substitutions):
+1. "${suggestedNames[3]}" - This will be your ${shuffledAesthetics[0]} header
+2. "${suggestedNames[4]}" - This will be your ${shuffledAesthetics[1]} header
+3. "${suggestedNames[5]}" - This will be your ${shuffledAesthetics[2]} header
+
+**PROVE YOU UNDERSTAND:** In your JSON response, I expect to see variantName fields containing EXACTLY: "${suggestedNames[3]}", "${suggestedNames[4]}", and "${suggestedNames[5]}".
+If I see ANY OTHER NAMES (especially ${bannedNames.slice(0, 3).join(', ')}), the generation FAILS.
 
 Now generate 3 WILDLY DIFFERENT headers for "${brandName}" using THEIR colors (${palette.primary}, ${palette.secondary}), not the reference brand's.
 Each header must feel completely unique. Set data.logo to "${brandName}".
