@@ -507,7 +507,31 @@ const HEADER_AGENT_PROMPT =
   "7. **COLOR DISCIPLINE:** Use only the provided brand palette colors. Derive all shades from primary/secondary/background.\n" +
   "8. **ANTI-BORING COMPLIANCE:** Every header MUST include: gradients OR glassmorphism, hover effects on ALL links/buttons, and proper scrollBehavior/animationSpeed props.\n" +
   "\n" +
-  "Generate now. Return ONLY the JSON array. No code fences. No markdown.";
+  "---\n" +
+  "\n" +
+  "## \uD83D\uDEAB ANTI-REPETITION PROTOCOL (CRITICAL)\n" +
+  "\n" +
+  "**WARNING:** You are generating headers repeatedly. DO NOT fall into patterns.\n" +
+  "\n" +
+  "**FORBIDDEN PATTERNS (Do NOT repeat these):**\n" +
+  "- Header 1: minimal navActiveStyle + white background (OVERUSED)\n" +
+  "- Header 2: glow navActiveStyle + dark alpha + glassmorphism (OVERUSED)\n" +
+  "- Header 3: bracket navActiveStyle + black background (OVERUSED)\n" +
+  "\n" +
+  "**REQUIRED VARIATION:**\n" +
+  "1. **Rotate navActiveStyles:** Use DIFFERENT combinations each generation. Try: underline, dot, capsule, highlight, skewed, double, overline, brutalist.\n" +
+  "2. **Mix background patterns:** Don't default to white→dark alpha→black. Try: gradient backgrounds, colored backgrounds using brand palette, light alpha over color, etc.\n" +
+  "3. **Shuffle persona assignments:** Don't always map PURIST→Header1, ALCHEMIST→Header2, BRUTALIST→Header3. Randomize which persona influences which header position.\n" +
+  "4. **Vary feature sets:** Don't always put glassmorphism in the second header. Spread announcement bars, CTAs, utility bars across different positions.\n" +
+  "5. **Explore navActiveStyle variety:** The 12 available styles (none, dot, underline, capsule, glow, brutalist, minimal, overline, double, bracket, highlight, skewed) should each have equal chance. Don't default to minimal/glow/bracket every time.\n" +
+  "\n" +
+  "**CREATIVITY BOOST:**\n" +
+  "- Think of each generation request as a COMPLETELY NEW brand\n" +
+  "- Imagine different designer personalities creating each header\n" +
+  "- Channel different design eras (Y2K, Memphis, Bauhaus, Vaporwave, etc.)\n" +
+  "- Use unexpected combinations within personas (e.g., PURIST can use dots OR underlines, not always minimal)\n" +
+  "\n" +
+  "Generate now. BREAK THE PATTERN. Return ONLY the JSON array. No code fences. No markdown.";
 
 // Emergency diagnostic: Ensure module completed initialization
 console.log('[Module Init] Constants loaded, handler ready to export');
@@ -610,12 +634,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     console.log('[AI Generate Headers] Prompt loaded, length:', HEADER_AGENT_PROMPT.length);
 
+    // Generate random suggestions to force variety
+    const navStyles = ['none', 'dot', 'underline', 'capsule', 'glow', 'brutalist', 'minimal', 'overline', 'double', 'bracket', 'highlight', 'skewed'];
+    const shuffledNavStyles = navStyles.sort(() => Math.random() - 0.5);
+    const suggestedStyles = shuffledNavStyles.slice(0, 3);
+    const randomSeed = Date.now();
+    
     // Build the full prompt with training + few-shot examples + context
     const prompt = `${HEADER_AGENT_PROMPT}${FEW_SHOT_EXAMPLES}
 
 ---
 
-## Generation Request
+## Generation Request #${randomSeed}
 
 **Brand Name:** ${brandName}
 **Brand Description:** ${brandDescription || 'Not provided'}
@@ -627,7 +657,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 - Background: ${palette.background}
 **Style Preferences:** ${stylePreferences.join(', ')}
 
-Generate 3 headers for "${brandName}" now. Use their brand colors. Set data.logo to "${brandName}".
+**VARIATION CHALLENGE:** For this specific generation, try using these navActiveStyles (to avoid repetition): ${suggestedStyles[0]}, ${suggestedStyles[1]}, ${suggestedStyles[2]}.
+
+Generate 3 UNIQUE headers for "${brandName}" now. Use their brand colors. Set data.logo to "${brandName}".
+Each header should feel completely different from the others. Surprise me with unexpected combinations.
 Return ONLY the JSON array.`;
 
     // --- Step 5: Call Gemini AI ---
