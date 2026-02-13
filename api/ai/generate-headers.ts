@@ -122,6 +122,7 @@ You MUST adopt three fundamentally incompatible design philosophies. These are N
 - **NAV:** navActiveStyle (none/dot/underline/capsule/glow/brutalist/minimal/overline/double/bracket/highlight/skewed)
 - **GLASS:** blurIntensity (sm/md/lg/xl), glassBackgroundOpacity (0-100 number)
 - **MOBILE:** mobileMenuPosition (left/right), mobileMenuWidth (280px-400px string), mobileMenuOverlayOpacity (30-80 number)
+- **ANTI-BORING (REQUIRED):** scrollBehavior ("static"|"sticky"|"hide-on-scroll"|"glass-on-scroll"), animationSpeed ("slow"|"medium"|"fast")
 
 **Data Object Fields** (text content goes in "data"):
 - logo: The brand name (string)
@@ -294,6 +295,170 @@ Structure:
 
 ---
 
+## CRITICAL VISUAL REQUIREMENTS — "Anti-Boring" Protocol
+
+**MANDATORY INTERACTIVITY & MOTION:**
+
+### 1. NO FLAT COLORS (High-Voltage Design)
+❌ **NEVER** use plain `bg-white` or `bg-black`
+✅ **ALWAYS** use one of:
+- `bg-gradient-to-r from-[color1] to-[color2]` (gradients everywhere)
+- `bg-white/10` or `bg-black/30` (glassmorphism with alpha)
+- `bg-zinc-900` with subtle `bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,.02)_50%)]` (texture)
+- Animated gradients: `bg-[length:400%_100%] animate-gradient` concept
+
+### 2. MANDATORY HOVER EFFECTS
+Every interactive element (nav links, buttons, icons) **MUST** have `hover:` states:
+
+**✅ GOOD Examples:**
+```
+hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-600
+transition-all duration-300 hover:scale-105
+group-hover:translate-x-1
+hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]
+```
+
+**❌ BAD Examples:**
+```
+hover:text-blue-600  (too simple, no gradient/glow)
+(no hover state at all)
+```
+
+### 3. SCROLL BEHAVIOR INTEGRATION
+Design headers to support dynamic scroll states using `data-scrolled` attribute:
+
+```
+data-[scrolled=true]:backdrop-blur-xl
+data-[scrolled=true]:bg-white/80
+data-[scrolled=true]:shadow-lg
+data-[scrolled=true]:py-2 (shrink effect)
+```
+
+Ensure `scrollBehavior` prop is set to one of:
+- `"sticky"` - Always visible at top
+- `"glass-on-scroll"` - Becomes glassmorphic when scrolling
+- `"hide-on-scroll"` - Hides when scrolling down
+- `"static"` - No scroll behavior
+
+### 4. MICRO-INTERACTIONS (Tactile Feedback)
+Buttons and clickable elements need:
+```
+active:scale-95
+active:shadow-inner
+transition-transform duration-150
+```
+
+### 5. ANIMATION SPEED CONTROL
+Set `animationSpeed` prop to:
+- `"slow"` - 500-800ms transitions (luxury feel)
+- `"medium"` - 200-400ms transitions (standard)
+- `"fast"` - 100-200ms transitions (snappy, playful)
+
+Match animation speed to brand personality.
+
+---
+
+## REFERENCE STANDARDS (Match This Quality Level)
+
+### Example 1: Animated Gradient Border Header
+```tsx
+<header className="relative bg-gray-900 text-white sticky top-0 z-50">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="flex justify-between items-center h-16">
+      <a href="#" className="font-bold text-xl tracking-widest uppercase 
+        hover:text-transparent hover:bg-clip-text 
+        hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-600
+        transition-all duration-300">BRAND</a>
+      <nav className="hidden md:flex space-x-8">
+        <a href="#" className="text-gray-300 hover:text-white 
+          transition-colors duration-200
+          hover:shadow-[0_2px_8px_rgba(255,255,255,0.2)]">Products</a>
+      </nav>
+    </div>
+  </div>
+  {/* Animated gradient border */}
+  <div className="absolute bottom-0 left-0 w-full h-0.5 
+    bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600 
+    bg-[length:200%_100%] animate-[gradient_4s_linear_infinite]" />
+</header>
+```
+
+### Example 2: Glassmorphic Scroll Header
+```tsx
+<header className="sticky top-0 z-50 
+  data-[scrolled=true]:backdrop-blur-xl 
+  data-[scrolled=true]:bg-white/70 
+  data-[scrolled=true]:shadow-lg
+  transition-all duration-300">
+  <div className="max-w-7xl mx-auto px-6 lg:px-8">
+    <div className="flex justify-between items-center h-20 
+      data-[scrolled=true]:h-16 transition-all duration-300">
+      <a href="#" className="text-2xl font-bold 
+        bg-gradient-to-r from-indigo-600 to-purple-600 
+        bg-clip-text text-transparent
+        hover:scale-105 transition-transform duration-200
+        active:scale-95">LOGO</a>
+      <nav className="hidden md:flex space-x-6">
+        <a href="#" className="group relative px-3 py-2
+          hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50
+          rounded-lg transition-all duration-200
+          active:scale-95">
+          <span className="relative z-10 text-gray-700 
+            group-hover:text-indigo-600 transition-colors">Products</span>
+          <div className="absolute inset-0 rounded-lg 
+            bg-gradient-to-r from-indigo-500 to-purple-500 
+            opacity-0 group-hover:opacity-10 
+            transition-opacity duration-200" />
+        </a>
+      </nav>
+    </div>
+  </div>
+</header>
+```
+
+### Example 3: Neon Glow Header (Brutalist Persona)
+```tsx
+<header className="relative bg-black border-b-2 border-neon-green
+  sticky top-0 z-50">
+  <div className="max-w-full px-8 lg:px-12">
+    <div className="flex justify-between items-center h-24">
+      <a href="#" className="font-mono text-2xl font-black uppercase tracking-wider
+        text-white
+        hover:text-neon-green hover:drop-shadow-[0_0_10px_rgba(0,255,0,0.5)]
+        transition-all duration-200
+        active:scale-95">CYBER</a>
+      <nav className="hidden md:flex space-x-8">
+        <a href="#" className="font-mono uppercase text-sm
+          text-gray-400 hover:text-neon-pink
+          hover:drop-shadow-[0_0_8px_rgba(255,0,255,0.4)]
+          transition-all duration-200
+          border-2 border-transparent hover:border-neon-pink
+          px-4 py-2
+          active:shadow-[4px_4px_0px_0px_rgba(255,0,255,1)]">ENTER</a>
+      </nav>
+    </div>
+  </div>
+  {/* Scanline effect */}
+  <div className="absolute inset-0 pointer-events-none
+    bg-[linear-gradient(transparent_50%,rgba(0,255,0,0.02)_50%)]
+    bg-[length:100%_4px] animate-[scan_8s_linear_infinite]" />
+</header>
+```
+
+**NOTICE:** These examples use:
+- Gradients as primary backgrounds
+- `hover:` states on EVERY interactive element
+- Glassmorphism (`backdrop-blur`, alpha backgrounds)
+- `active:scale-95` micro-interactions
+- `data-[scrolled=true]:` attributes for scroll behavior
+- `transition-all duration-X` for smooth animations
+- Shadow/glow effects for depth
+- NO plain white or black backgrounds
+
+**YOUR TASK:** Generate headers that match or exceed this visual complexity.
+
+---
+
 ## ABSOLUTE ENFORCEMENT RULES
 
 1. **DIVERSITY MANDATE:** NEVER generate 3 white-background headers. At least one MUST be dark (#000000-#2A2A2A range).
@@ -303,6 +468,7 @@ Structure:
 5. **NAME CREATIVITY:** Variant names should be evocative and design-inspired, like real commercial theme names ("Midnight Bloom", "Grid Pioneer", "Frosted Ember").
 6. **PERSONA COMMITMENT:** Each header MUST clearly embody ONE of the three personas. Do not blend them.
 7. **COLOR DISCIPLINE:** Use only the provided brand palette colors. Derive all shades from primary/secondary/background.
+8. **ANTI-BORING COMPLIANCE:** Every header MUST include: gradients OR glassmorphism, hover effects on ALL links/buttons, and proper scrollBehavior/animationSpeed props.
 
 Generate now. Return ONLY the JSON array. No code fences. No markdown.`;
 

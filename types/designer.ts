@@ -45,6 +45,10 @@ export interface HeaderConfig {
     fadeThreshold?: number;
   };
   
+  // High-Voltage Design Controls (Anti-Boring Protocol)
+  scrollBehavior?: 'static' | 'sticky' | 'hide-on-scroll' | 'glass-on-scroll';
+  animationSpeed?: 'slow' | 'medium' | 'fast';
+  
   // Logo
   logo: {
     type: 'text' | 'image' | 'both';
