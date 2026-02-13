@@ -4,7 +4,7 @@ import { X, Upload, Plus, Trash2, Image as ImageIcon, Sparkles, Box, Search, Sav
 import { PRODUCT_PAGE_COMPONENTS, PRODUCT_PAGE_OPTIONS } from './ProductPageLibrary';
 import { supabase } from '../lib/supabaseClient';
 import { useDataContext } from '../context/DataContext';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Lazy AI initialization to avoid build-time errors
 const getGenAI = () => {
@@ -18,7 +18,7 @@ const getGenAI = () => {
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 10) {
         throw new Error('VITE_GOOGLE_AI_API_KEY not configured');
     }
-    return new GoogleGenAI({ apiKey: apiKey.trim() });
+    return new GoogleGenerativeAI(apiKey.trim());
 };
 
 const hasAI = !!(import.meta.env.VITE_GOOGLE_AI_API_KEY?.trim());
@@ -77,13 +77,17 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
         setTimeout(async () => {
             try {
                 const genAI = getGenAI();
+                const model = genAI.getGenerativeModel({
+                    model: 'gemini-2.5-flash',
+                    generationConfig: {
+                        responseMimeType: 'text/plain',
+                        temperature: 0.7
+                    }
+                });
                 const prompt = `Write a compelling product description for "${formData.name}" in the ${formData.category || 'general'} category. Make it engaging, SEO-friendly, and 2-3 paragraphs. Format as HTML with <p> tags and <ul><li> for features. Return ONLY the HTML, no markdown code blocks.`;
                 
-                const result = await genAI.models.generateContent({
-                    model: 'gemini-2.5-flash',
-                    contents: prompt
-                });
-                const description = result.text.trim();
+                const result = await model.generateContent(prompt);
+                const description = result.response.text().trim();
                 setFormData(prev => ({
                     ...prev,
                     description
@@ -104,16 +108,20 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ product, onSave, o
         setTimeout(async () => {
             try {
                 const genAI = getGenAI();
+                const model = genAI.getGenerativeModel({
+                    model: 'gemini-2.5-flash',
+                    generationConfig: {
+                        responseMimeType: 'text/plain',
+                        temperature: 0.7
+                    }
+                });
                 const prompt = `Generate SEO metadata for product "${formData.name}". Return in this format:
 TITLE: [60 char SEO title with brand]
 DESCRIPTION: [160 char meta description]
 SLUG: [url-friendly-slug]`;
                 
-                const result = await genAI.models.generateContent({
-                    model: 'gemini-2.5-flash',
-                    contents: prompt
-                });
-                const text = result.text;
+                const result = await model.generateContent(prompt);
+                const text = result.response.text();
                 const titleMatch = text.match(/TITLE:\s*(.+)/);
                 const descMatch = text.match(/DESCRIPTION:\s*(.+)/);
                 const slugMatch = text.match(/SLUG:\s*(.+)/);

@@ -3,7 +3,7 @@
  * Generates 3 unique variants for each wizard step (vibes, colors, components)
  */
 
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createHash } from 'crypto';
 
 const getGenAI = () => {
@@ -12,7 +12,7 @@ const getGenAI = () => {
   if (!apiKey) {
     throw new Error('VITE_GOOGLE_AI_API_KEY not configured');
   }
-  return new GoogleGenAI({ apiKey });
+  return new GoogleGenerativeAI(apiKey);
 };
 
 /**
@@ -102,12 +102,15 @@ Return ONLY valid JSON array (no markdown, no explanation):
 
 Make each vibe DISTINCTLY different. One bold, one refined, one unexpected.`;
 
-  const model = genAI.models;
-  const result = await model.generateContent({
+  const model = genAI.getGenerativeModel({
     model: 'gemini-2.5-flash',
-    contents: prompt,
+    generationConfig: {
+      responseMimeType: 'application/json',
+      temperature: 0.7
+    }
   });
-  const text = result.text.trim();
+  const result = await model.generateContent(prompt);
+  const text = result.response.text().trim();
   
   const json = extractJSON(text);
   return JSON.parse(json);
@@ -148,12 +151,15 @@ Return ONLY valid JSON array (no markdown):
 
 One palette should be bold, one refined, one unexpected.`;
 
-  const model = genAI.models;
-  const result = await model.generateContent({
+  const model = genAI.getGenerativeModel({
     model: 'gemini-2.5-flash',
-    contents: prompt,
+    generationConfig: {
+      responseMimeType: 'application/json',
+      temperature: 0.7
+    }
   });
-  const text = result.text.trim();
+  const result = await model.generateContent(prompt);
+  const text = result.response.text().trim();
   
   const json = extractJSON(text);
   return JSON.parse(json);
@@ -271,12 +277,15 @@ Return ONLY valid JSON array (no markdown):
 Make each variant VISUALLY and STRUCTURALLY different.`;
   }
 
-  const model = genAI.models;
-  const result = await model.generateContent({
+  const model = genAI.getGenerativeModel({
     model: 'gemini-2.5-flash',
-    contents: prompt,
+    generationConfig: {
+      responseMimeType: 'application/json',
+      temperature: 0.7
+    }
   });
-  const text = result.text.trim();
+  const result = await model.generateContent(prompt);
+  const text = result.response.text().trim();
   
   const json = extractJSON(text);
   const variants = JSON.parse(json);

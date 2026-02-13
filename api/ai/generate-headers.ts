@@ -9,7 +9,7 @@
  * Do NOT import from ../../ai/ (causes bundling/runtime crashes).
  */
 
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
 
 // Full training prompt inlined for Vercel serverless reliability.
@@ -212,9 +212,17 @@ Return ONLY the JSON array.`;
 
     // --- Step 5: Call Gemini AI ---
     console.log('[AI Generate Headers] Calling Gemini...');
-    let genAI: GoogleGenAI;
+    let genAI: GoogleGenerativeAI;
+    let model: any;
     try {
-      genAI = new GoogleGenAI({ apiKey });
+      genAI = new GoogleGenerativeAI(apiKey);
+      model = genAI.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.7,
+        }
+      });
     } catch (initErr: any) {
       return res.status(500).json({
         error: 'Failed to initialize AI client',
@@ -225,11 +233,8 @@ Return ONLY the JSON array.`;
 
     let aiText: string;
     try {
-      const result = await genAI.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-      });
-      aiText = (result.text || '').trim();
+      const result = await model.generateContent(prompt);
+      aiText = result.response.text().trim();
       console.log('[AI Generate Headers] Gemini response length:', aiText.length);
     } catch (aiErr: any) {
       return res.status(500).json({

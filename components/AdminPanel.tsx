@@ -41,7 +41,7 @@ import LoveableImport from './LoveableImport';
 import Customers from './Customers';
 import { supabase } from '../lib/supabaseClient';
 import { DashboardHome } from './Dashboard';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Initialize Gemini AI - only if key is set and not empty
 let genAI: any = null;

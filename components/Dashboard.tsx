@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useData } from '../context/DataContext';
 import { CheckCircle2, Circle, Package, CreditCard, Truck, Palette, FileText, ExternalLink } from 'lucide-react';
 import Products from './Products';

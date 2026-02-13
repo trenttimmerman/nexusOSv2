@@ -6,7 +6,7 @@
  * 2. Page Builder Agent: Converts blueprint -> PageBlock arrays for each page
  */
 
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PageBlock } from '../types';
 
 // Initialize Gemini AI
@@ -15,7 +15,7 @@ const getGenAI = () => {
   if (!apiKey) {
     throw new Error('VITE_GOOGLE_AI_API_KEY not configured');
   }
-  return new GoogleGenAI({ apiKey });
+  return new GoogleGenerativeAI(apiKey);
 };
 
 // Load prompts (these will be imported as strings via Vite)
@@ -130,18 +130,19 @@ export interface SiteBlueprint {
 export async function generateSiteBlueprint(userPrompt: string): Promise<SiteBlueprint> {
   const genAI = getGenAI();
   
-  const model = genAI.models;
-  
   const fullPrompt = `${architectPrompt}\n\n---\n\nUser's Business Description:\n"${userPrompt}"\n\nGenerate the complete JSON blueprint now:`;
   
   console.log('[Architect Agent] Generating blueprint...');
   
-  const result = await model.generateContent({
+  const model = genAI.getGenerativeModel({
     model: 'gemini-2.5-flash',
-    contents: fullPrompt,
+    generationConfig: {
+      responseMimeType: 'application/json',
+      temperature: 0.7
+    }
   });
-
-  const text = result.text.trim();
+  const result = await model.generateContent(fullPrompt);
+  const text = result.response.text().trim();
   console.log('[Architect Agent] Raw response:', text.substring(0, 200) + '...');
   
   // Extract JSON from response using robust extraction
@@ -167,18 +168,20 @@ export async function generatePageContent(
   pageType: 'home' | 'about' | 'shop' | 'contact',
   pageName: string
 ): Promise<PageBlock[]> {
-  const genAI = getGenAI();
-  const model = genAI.models;
   
   const contextPrompt = `${pageBuilderPrompt}\n\n---\n\nSite Blueprint:\n${JSON.stringify(blueprint, null, 2)}\n\n---\n\nPage Information:\n- Page Type: ${pageType}\n- Page Name: ${pageName}\n\nGenerate the PageBlock array for this page now:`;
   
   console.log(`[Page Builder Agent] Generating ${pageType} page...`);
   
-  const result = await model.generateContent({
+  const model = genAI.getGenerativeModel({
     model: 'gemini-2.5-flash',
-    contents: contextPrompt,
+    generationConfig: {
+      responseMimeType: 'application/json',
+      temperature: 0.7
+    }
   });
-
+  const result = await model.generateContent(contextPrompt);
+  const text = result.response.text()
   const text = result.text.trim();
   console.log(`[Page Builder Agent] Raw response length: ${text.length} chars`);
   

@@ -26,7 +26,7 @@ import {
   CheckSquare
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 
 export const CollectionManager: React.FC = () => {
@@ -65,7 +65,7 @@ export const CollectionManager: React.FC = () => {
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 10) {
       throw new Error('VITE_GOOGLE_AI_API_KEY not configured');
     }
-    return new GoogleGenAI({ apiKey: apiKey.trim() });
+    return new GoogleGenerativeAI(apiKey.trim());
   };
   
   const hasAI = !!(import.meta.env.VITE_GOOGLE_AI_API_KEY?.trim());
@@ -240,13 +240,17 @@ export const CollectionManager: React.FC = () => {
     setIsGenerating('description');
     try {
       const genAI = getGenAI();
+      const model = genAI.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+          responseMimeType: 'text/plain',
+          temperature: 0.7
+        }
+      });
       const prompt = `Write a compelling 2-3 sentence description for a product collection called "${formData.name}". Make it engaging and SEO-friendly. Return ONLY the description text, no quotes or extra formatting.`;
       
-      const result = await genAI.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt
-      });
-      const description = result.text.trim();
+      const result = await model.generateContent(prompt);
+      const description = result.response.text().trim();
       setFormData(prev => ({ ...prev, description }));
     } catch (error) {
       console.error('AI generation failed:', error);
@@ -263,6 +267,13 @@ export const CollectionManager: React.FC = () => {
     setIsGenerating('seo');
     try {
       const genAI = getGenAI();
+      const model = genAI.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+          responseMimeType: 'text/plain',
+          temperature: 0.7
+        }
+      });
       const prompt = `Generate SEO metadata for a product collection called "${formData.name}".
       
 Return in this exact format:
@@ -271,11 +282,8 @@ DESCRIPTION: [SEO description under 160 characters]
 
 Return ONLY those two lines, nothing else.`;
       
-      const result = await genAI.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt
-      });
-      const text = result.text.trim();
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim();
       
       const titleMatch = text.match(/TITLE:\s*(.+)/);
       const descMatch = text.match(/DESCRIPTION:\s*(.+)/);

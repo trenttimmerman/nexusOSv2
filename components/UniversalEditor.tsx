@@ -3,7 +3,7 @@ import { ChevronLeft, Layout, Image as ImageIcon, Type, AlignLeft, AlignCenter, 
 import { UniversalSectionData } from '../lib/smartMapper';
 import { useData } from '../context/DataContext';
 import { supabase } from '../lib/supabaseClient';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Initialize Gemini AI - only if key is set and not empty
 const genAI = (import.meta.env.VITE_GEMINI_API_KEY && import.meta.env.VITE_GEMINI_API_KEY.trim()) 
