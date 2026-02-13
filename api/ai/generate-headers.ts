@@ -647,8 +647,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-  // Inner try-catch for API logic
-  try {
     // --- Step 1: Validate environment ---
     // Check both VITE_ (for consistency) and regular (for Vercel serverless)
     const apiKey = process.env.VITE_GOOGLE_AI_API_KEY || process.env.GOOGLE_AI_API_KEY;
@@ -890,16 +888,6 @@ Return ONLY the JSON array.`;
     console.log('[AI Generate Headers] Success! Returning', headers.length, 'headers');
     return res.status(200).json({ success: true, headers });
 
-  } catch (error: any) {
-    console.error('[AI Generate Headers] Unhandled error:', error);
-    return res.status(500).json({
-      error: 'Header generation failed',
-      message: error.message || 'Unknown error',
-      stack: error.stack?.split('\n').slice(0, 5),
-      step: 'unhandled'
-    });
-  }
-
   } catch (topLevelError: any) {
     // Catch ANY error including initialization/import failures
     console.error('[AI Generate Headers] Top-level error:', topLevelError);
@@ -907,10 +895,11 @@ Return ONLY the JSON array.`;
     // Ensure we ALWAYS return JSON, never let Vercel return opaque error
     try {
       return res.status(500).json({
-        error: 'Server initialization failed',
-        message: topLevelError?.message || 'Unknown initialization error',
+        error: 'Header generation failed',
+        message: topLevelError?.message || 'Unknown error',
+        stack: topLevelError.stack?.split('\n').slice(0, 5),
         hint: 'Check Vercel logs for details. Ensure GOOGLE_AI_API_KEY is set.',
-        step: 'init-error'
+        step: 'error'
       });
     } catch (jsonError) {
       // Last resort: plain text if JSON also fails
