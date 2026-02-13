@@ -50,12 +50,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced prompt with persona-specific layout requirements and trend references
 
 ### Fixed
-- **AI API**: Configured explicit Node.js runtime for AI generation function (commit: 2a265de)
-  - CRITICAL FIX: Set runtime to nodejs20.x to prevent Edge Runtime compatibility issues
-  - FUNCTION_INVOCATION_FAILED likely caused by Vercel auto-selecting Edge Runtime
-  - Edge Runtime doesn't support all Node.js APIs required by GoogleGenerativeAI package
-  - Increased memory limit to 1024MB for AI processing (from default 512MB)
-  - Function now guaranteed to run in full Node.js environment with adequate resources
+- **Build**: Fixed invalid Vercel configuration syntax (commit: 60d4a9c)
+  - CRITICAL FIX: Removed invalid `runtime: "nodejs20.x"` from vercel.json
+  - That syntax is for AWS Lambda, not Vercel - caused build error "Function Runtimes must have a valid version"
+  - Vercel uses Node.js runtime by default for .ts files in api/ directory
+  - Kept memory: 1024 configuration which is valid for Vercel
+  - Build now proceeds correctly
 - **AI API**: Enhanced error diagnostics for FUNCTION_INVOCATION_FAILED debugging (commit: 32ac4e4)
   - Added module initialization logging to identify serverless cold start failures
   - Enhanced catch block with detailed error information: name, message, stack trace, timestamp
