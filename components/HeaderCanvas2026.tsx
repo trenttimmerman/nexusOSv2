@@ -324,8 +324,8 @@ export const HeaderCanvas: React.FC<HeaderProps> = ({
   const renderLogo = () => (
     <Logo
       storeName={storeName}
-      logoUrl={logoUrl}
-      logoHeight={logoHeight}
+      logoUrl={logoUrl || settings.logoUrl}
+      logoHeight={logoHeight || settings.logoHeight}
       className="text-2xl font-bold tracking-tight"
       onClick={onLogoClick}
     />

@@ -184,6 +184,7 @@ export const DesignerWizard: React.FC<DesignerWizardProps> = ({
         }
         return (
           <HeaderEditorStep
+            storeName={storeName}
             headerConfig={wizardState.customizedHeaderConfig || wizardState.selectedHeaderConfig}
             headerVariant="canvas" // TODO: detect from selected header
             onUpdateConfig={handleUpdateConfig}

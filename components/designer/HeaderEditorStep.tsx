@@ -9,8 +9,10 @@ import React, { useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { HeaderConfig } from '../../types/designer';
 import { HEADER_FIELDS } from '../HeaderLibrary';
+import { HeaderCanvas } from '../HeaderCanvas2026';
 
 interface HeaderEditorStepProps {
+  storeName: string;
   headerConfig: HeaderConfig;
   headerVariant: string;
   onUpdateConfig: (config: HeaderConfig) => void;
@@ -20,6 +22,7 @@ interface HeaderEditorStepProps {
 }
 
 export const HeaderEditorStep: React.FC<HeaderEditorStepProps> = ({
+  storeName,
   headerConfig,
   headerVariant,
   onUpdateConfig,
@@ -156,7 +159,7 @@ export const HeaderEditorStep: React.FC<HeaderEditorStepProps> = ({
                 
                 {/* Header Preview Container */}
                 <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
-                  <HeaderPreviewRenderer config={config} variant={headerVariant} />
+                  <HeaderPreviewRenderer config={config} variant={headerVariant} storeName={storeName} />
                 </div>
 
                 {/* Preview Info */}
@@ -297,106 +300,45 @@ function renderFieldControl(field: any, config: any, onChange: (name: string, va
 interface HeaderPreviewRendererProps {
   config: HeaderConfig;
   variant: string;
+  storeName: string;
 }
 
-const HeaderPreviewRenderer: React.FC<HeaderPreviewRendererProps> = ({ config, variant }) => {
-  // This will render the actual header component
-  // For now, a placeholder that shows the config visually
+const HeaderPreviewRenderer: React.FC<HeaderPreviewRendererProps> = ({ config, variant, storeName }) => {
+  // Use the actual header component implementation for 1:1 preview accuracy
+  // We provide dummy navigation data for visualization purposes
+  const dummyLinks = [
+    { label: 'New Arrivals', href: '#' },
+    { label: 'Best Sellers', href: '#' },
+    { label: 'Accessories', href: '#' },
+    { label: 'SALE', href: '#' },
+  ];
+
+  // Helper to ensure CSS units are present
+  const formatUnit = (val: any) => (typeof val === 'number' ? `${val}px` : val);
+
+  const processedConfig = {
+    ...config,
+    paddingX: formatUnit(config.paddingX),
+    paddingY: formatUnit(config.paddingY),
+    borderWidth: formatUnit(config.borderWidth),
+  };
   
+  // Extract logo configuration from potential nested structure or flat properties
+  // This ensures logo renders regardless of where it's stored in config
+  const logoUrl = config.logo?.imageUrl || (config as any).logoUrl;
+  const logoHeight = config.logo?.imageHeight || (config as any).logoHeight;
+
   return (
-    <div className="relative">
-      {/* Announcement Bar */}
-      {config.showAnnouncementBar && (
-        <div 
-          className="py-2 px-4 text-center text-sm"
-          style={{ 
-            backgroundColor: config.announcementBackgroundColor || '#3b82f6',
-            color: config.announcementTextColor || '#ffffff'
-          }}
-        >
-          {config.announcementText || 'Free shipping on orders over $50!'}
-        </div>
-      )}
-
-      {/* Main Header */}
-      <div 
-        className="relative"
-        style={{
-          backgroundColor: config.backgroundColor || '#ffffff',
-          borderBottom: `1px solid ${config.borderColor || '#e5e7eb'}`
-        }}
-      >
-        {/* Glassmorphism overlay */}
-        {config.enableGlassmorphism && (
-          <div className="absolute inset-0 backdrop-blur-md bg-white/30" />
-        )}
-
-        <div className="relative max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-8">
-            <div 
-              className="font-bold"
-              style={{
-                fontSize: config.logoFontSize || '24px',
-                color: config.logoColor || '#000000',
-                fontFamily: config.logoFont || 'system-ui'
-              }}
-            >
-              LOGO
-            </div>
-
-            {/* Navigation (placeholder) */}
-            <nav className="hidden md:flex items-center gap-6">
-              {['Shop', 'About', 'Contact'].map((item) => (
-                <a 
-                  key={item}
-                  href="#"
-                  style={{
-                    color: config.navLinkColor || '#6b7280',
-                    fontSize: config.navFontSize || '14px'
-                  }}
-                  className="hover:opacity-80 transition-opacity"
-                >
-                  {item}
-                </a>
-              ))}
-            </nav>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-4">
-            <button className="p-2">🔍</button>
-            <button className="p-2">👤</button>
-            <button className="p-2">🛒</button>
-          </div>
-        </div>
-
-        {/* Spotlight borders */}
-        {config.enableSpotlightBorders && (
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
-        )}
-      </div>
-
-      {/* Utility Bar (if enabled) */}
-      {config.showUtilityBar && config.utilityLinks && (
-        <div 
-          className="py-2 px-6 border-b text-xs"
-          style={{
-            backgroundColor: config.utilityBackgroundColor || '#f9fafb',
-            borderColor: config.borderColor || '#e5e7eb'
-          }}
-        >
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {config.utilityLinks.map((link: any, i: number) => (
-                <a key={i} href="#" className="hover:underline" style={{ color: config.utilityLinkColor || '#6b7280' }}>
-                  {link.text || link.label || `Link ${i + 1}`}
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="preview-container isolate relative">
+      <HeaderCanvas 
+        storeName={storeName || "My Store"}
+        logoUrl={logoUrl}
+        logoHeight={logoHeight}
+        links={dummyLinks}
+        cartCount={3}
+        primaryColor="#3b82f6"
+        data={processedConfig}
+      />
     </div>
   );
 };
